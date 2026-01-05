@@ -1,0 +1,436 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Sign PDF (Pro)">
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script is:inline>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  </script>
+  <script type="module" src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+  <div class="max-w-6xl mx-auto px-4 min-h-[80vh]">
+    <div class="text-center mb-8 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+        Sign PDF Pro
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Gambar tanda tangan atau upload gambar PNG, lalu tempel posisinya sesuka hati.
+      </p>
+    </div>
+
+    <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-slate-300 dark:border-slate-600 rounded-3xl p-12 cursor-pointer hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800/50 transition-all group text-center animate-on-scroll">
+      <div class="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </div>
+      <h3 class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2">Pilih PDF</h3>
+      <input type="file" id="file-input" accept="application/pdf" class="hidden" />
+    </div>
+
+    <div id="workspace" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20 animate-fade-in">
+      
+      <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg sticky top-24">
+          
+          <div class="flex p-1 bg-slate-100 dark:bg-slate-700 rounded-lg mb-6">
+            <button id="tab-draw" class="flex-1 py-2 px-4 rounded-md text-sm font-bold bg-white dark:bg-slate-600 text-blue-600 shadow-sm transition-all">Gambar TTD</button>
+            <button id="tab-upload" class="flex-1 py-2 px-4 rounded-md text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-300 transition-all">Upload PNG</button>
+          </div>
+
+          <div id="mode-draw" class="space-y-4">
+            <div class="border-2 border-slate-200 dark:border-slate-600 rounded-xl overflow-hidden bg-white touch-none relative h-40">
+               <canvas id="pad-canvas" class="w-full h-full cursor-crosshair"></canvas>
+               <div class="absolute top-2 right-2 flex gap-1">
+                 <button id="clear-pad" class="p-1 bg-slate-200 hover:bg-red-100 text-slate-500 hover:text-red-500 rounded" title="Hapus"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+               </div>
+            </div>
+            
+            <div class="flex items-center justify-between">
+               <div class="flex gap-2">
+                  <button class="w-6 h-6 rounded-full bg-black ring-2 ring-transparent focus:ring-blue-500 color-btn" data-color="#000000"></button>
+                  <button class="w-6 h-6 rounded-full bg-blue-600 ring-2 ring-transparent focus:ring-blue-500 color-btn" data-color="#2563eb"></button>
+               </div>
+               <input type="range" id="pen-size" min="1" max="5" value="2" class="w-20 h-2 bg-slate-200 rounded-lg accent-blue-600" />
+            </div>
+
+            <button id="apply-draw" class="w-full bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+              Pakai Tanda Tangan Ini
+            </button>
+          </div>
+
+          <div id="mode-upload" class="hidden space-y-4">
+            <div class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors relative">
+               <input type="file" id="img-input" accept="image/png, image/jpeg" class="absolute inset-0 opacity-0 cursor-pointer" />
+               <div class="text-slate-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <span class="text-xs font-bold">Upload PNG (Transparan)</span>
+               </div>
+            </div>
+            <p class="text-xs text-center text-slate-400">Disarankan menggunakan file PNG tanpa background.</p>
+          </div>
+
+          <hr class="border-slate-200 dark:border-slate-700" />
+          
+          <div class="space-y-3">
+             <div class="flex justify-between text-xs font-bold text-slate-500">
+                <span>Ukuran TTD</span>
+                <span id="scale-val">100%</span>
+             </div>
+             <input type="range" id="sig-scale" min="20" max="200" value="100" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+          </div>
+
+          <button id="save-pdf-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 mt-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Simpan PDF
+          </button>
+        </div>
+      </div>
+
+      <div class="lg:col-span-2 flex flex-col items-center">
+        <div class="bg-slate-200 dark:bg-slate-900 p-4 rounded-xl border border-slate-300 dark:border-slate-700 shadow-inner w-full flex justify-center overflow-auto relative min-h-[500px]">
+           
+           <p class="absolute top-2 text-xs text-slate-500 font-mono z-0">Preview Halaman 1</p>
+
+           <div id="preview-container" class="relative shadow-2xl mt-6 select-none">
+              <canvas id="pdf-render" class="block bg-white"></canvas>
+              
+              <div id="sig-overlay" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-move group border border-dashed border-blue-400 hover:bg-blue-500/10 transition-colors" style="width: 150px; height: auto;">
+                 <img id="sig-image" src="" class="w-full h-full object-contain pointer-events-none" />
+                 
+                 <button id="remove-sig" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 hidden group-hover:block transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                 </button>
+              </div>
+           </div>
+
+        </div>
+        <p class="text-xs text-slate-500 mt-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l4 4l-4 4"/><path d="M3 3l18 18"/><path d="M9 5l4 4l-4 4"/></svg>
+            Tips: Gambar atau upload TTD di menu kiri, lalu geser posisinya di kanan.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<script type="module">
+  // --- 1. SETUP & IMPORTS ---
+  const { PDFDocument } = await import('https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.esm.js');
+
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const workspace = document.getElementById('workspace');
+  
+  // Canvas Elements
+  const pdfCanvas = document.getElementById('pdf-render');
+  const padCanvas = document.getElementById('pad-canvas');
+  const padCtx = padCanvas.getContext('2d');
+  
+  // Signature Overlay
+  const previewContainer = document.getElementById('preview-container');
+  const sigOverlay = document.getElementById('sig-overlay');
+  const sigImage = document.getElementById('sig-image');
+  const removeSigBtn = document.getElementById('remove-sig');
+  
+  // Controls
+  const tabDraw = document.getElementById('tab-draw');
+  const tabUpload = document.getElementById('tab-upload');
+  const modeDraw = document.getElementById('mode-draw');
+  const modeUpload = document.getElementById('mode-upload');
+  const clearPadBtn = document.getElementById('clear-pad');
+  const applyDrawBtn = document.getElementById('apply-draw');
+  const imgInput = document.getElementById('img-input');
+  const sigScale = document.getElementById('sig-scale');
+  const scaleVal = document.getElementById('scale-val');
+  const savePdfBtn = document.getElementById('save-pdf-btn');
+  const colorBtns = document.querySelectorAll('.color-btn');
+  const penSize = document.getElementById('pen-size');
+
+  let currentFile = null;
+  let isDrawing = false;
+  let signatureData = null; // Base64 image data
+  
+  // Drawing Settings
+  let penColor = '#000000';
+  let penWidth = 2;
+
+  // --- 2. TAB SWITCHING ---
+  function switchTab(mode) {
+    if (mode === 'draw') {
+        tabDraw.className = "flex-1 py-2 px-4 rounded-md text-sm font-bold bg-white dark:bg-slate-600 text-blue-600 shadow-sm transition-all";
+        tabUpload.className = "flex-1 py-2 px-4 rounded-md text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-300 transition-all";
+        modeDraw.classList.remove('hidden');
+        modeUpload.classList.add('hidden');
+        resizePad(); // Refresh canvas size
+    } else {
+        tabUpload.className = "flex-1 py-2 px-4 rounded-md text-sm font-bold bg-white dark:bg-slate-600 text-blue-600 shadow-sm transition-all";
+        tabDraw.className = "flex-1 py-2 px-4 rounded-md text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-300 transition-all";
+        modeUpload.classList.remove('hidden');
+        modeDraw.classList.add('hidden');
+    }
+  }
+  tabDraw.addEventListener('click', () => switchTab('draw'));
+  tabUpload.addEventListener('click', () => switchTab('upload'));
+
+  // --- 3. DRAWING PAD LOGIC ---
+  function resizePad() {
+    const parent = padCanvas.parentElement;
+    padCanvas.width = parent.clientWidth;
+    padCanvas.height = parent.clientHeight;
+    padCtx.lineCap = 'round';
+    padCtx.lineJoin = 'round';
+    padCtx.strokeStyle = penColor;
+    padCtx.lineWidth = penWidth;
+  }
+  window.addEventListener('resize', resizePad);
+  setTimeout(resizePad, 500); // Init resize
+
+  function getPos(e) {
+    const rect = padCanvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  }
+
+  ['mousedown', 'touchstart'].forEach(ev => {
+    padCanvas.addEventListener(ev, (e) => {
+        isDrawing = true;
+        const pos = getPos(e);
+        padCtx.beginPath();
+        padCtx.moveTo(pos.x, pos.y);
+        e.preventDefault();
+    }, { passive: false });
+  });
+
+  ['mousemove', 'touchmove'].forEach(ev => {
+    padCanvas.addEventListener(ev, (e) => {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        padCtx.lineTo(pos.x, pos.y);
+        padCtx.stroke();
+        e.preventDefault();
+    }, { passive: false });
+  });
+
+  ['mouseup', 'touchend'].forEach(ev => {
+    padCanvas.addEventListener(ev, () => isDrawing = false);
+  });
+
+  clearPadBtn.addEventListener('click', () => {
+    padCtx.clearRect(0, 0, padCanvas.width, padCanvas.height);
+  });
+
+  colorBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        penColor = e.target.dataset.color;
+        padCtx.strokeStyle = penColor;
+        colorBtns.forEach(b => b.classList.remove('ring-2', 'ring-blue-500'));
+        e.target.classList.add('ring-2', 'ring-blue-500');
+    });
+  });
+
+  penSize.addEventListener('input', (e) => {
+      penWidth = e.target.value;
+      padCtx.lineWidth = penWidth;
+  });
+
+  // Apply Drawing
+  applyDrawBtn.addEventListener('click', () => {
+      signatureData = padCanvas.toDataURL('image/png');
+      showSignatureOnPdf(signatureData);
+  });
+
+  // --- 4. UPLOAD IMAGE LOGIC ---
+  imgInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+              signatureData = ev.target.result;
+              showSignatureOnPdf(signatureData);
+          };
+          reader.readAsDataURL(file);
+      }
+  });
+
+  // --- 5. RENDER PDF ---
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async (e) => {
+    if (fileInput.files[0]) {
+      currentFile = fileInput.files[0];
+      dropZone.classList.add('hidden');
+      workspace.classList.remove('hidden');
+      workspace.classList.add('grid');
+      resizePad(); // Ensure pad is ready
+      await renderPdfPage(currentFile);
+    }
+  });
+
+  async function renderPdfPage(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 1.0 });
+
+    pdfCanvas.width = viewport.width;
+    pdfCanvas.height = viewport.height;
+    previewContainer.style.width = `${viewport.width}px`;
+    previewContainer.style.height = `${viewport.height}px`;
+
+    const context = pdfCanvas.getContext('2d');
+    await page.render({ canvasContext: context, viewport: viewport }).promise;
+  }
+
+  // --- 6. OVERLAY & DRAG LOGIC ---
+  function showSignatureOnPdf(dataUrl) {
+      sigImage.src = dataUrl;
+      sigOverlay.classList.remove('hidden');
+      sigOverlay.style.top = '50%';
+      sigOverlay.style.left = '50%';
+      window.showToast("Tanda tangan ditambahkan. Geser untuk mengatur posisi.", "info");
+  }
+
+  removeSigBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Biar gak trigger drag
+      sigOverlay.classList.add('hidden');
+      signatureData = null;
+  });
+
+  // Scale Logic
+  sigScale.addEventListener('input', (e) => {
+      const val = e.target.value;
+      scaleVal.innerText = `${val}%`;
+      // Default width is around 150px
+      const newWidth = 150 * (val / 100);
+      sigOverlay.style.width = `${newWidth}px`;
+  });
+
+  // Draggable Logic (Simple implementation)
+  let isDraggingSig = false;
+  
+  // Koordinat relatif overlay (Persentase)
+  let finalXPercent = 0.5;
+  let finalYPercent = 0.5;
+
+  sigOverlay.addEventListener('mousedown', startDragSig);
+  sigOverlay.addEventListener('touchstart', startDragSig, { passive: false });
+
+  document.addEventListener('mousemove', dragSig);
+  document.addEventListener('touchmove', dragSig, { passive: false });
+
+  document.addEventListener('mouseup', stopDragSig);
+  document.addEventListener('touchend', stopDragSig);
+
+  function startDragSig(e) {
+      if(e.target === removeSigBtn) return;
+      isDraggingSig = true;
+      e.preventDefault();
+  }
+
+  function dragSig(e) {
+      if (!isDraggingSig) return;
+      e.preventDefault();
+
+      let clientX, clientY;
+      if (e.touches) {
+          clientX = e.touches[0].clientX;
+          clientY = e.touches[0].clientY;
+      } else {
+          clientX = e.clientX;
+          clientY = e.clientY;
+      }
+
+      const rect = previewContainer.getBoundingClientRect();
+      let x = clientX - rect.left;
+      let y = clientY - rect.top;
+
+      // Batasi area
+      x = Math.max(0, Math.min(x, rect.width));
+      y = Math.max(0, Math.min(y, rect.height));
+
+      // Pindahkan (Center point cursor)
+      sigOverlay.style.left = `${x}px`;
+      sigOverlay.style.top = `${y}px`;
+      
+      // Update Transform agar drag point di tengah element
+      sigOverlay.style.transform = "translate(-50%, -50%)";
+
+      // Simpan persentase posisi untuk PDF saving
+      finalXPercent = x / rect.width;
+      finalYPercent = y / rect.height;
+  }
+
+  function stopDragSig() {
+      isDraggingSig = false;
+  }
+
+  // --- 7. SAVE TO PDF LOGIC ---
+  savePdfBtn.addEventListener('click', async () => {
+      if (!currentFile) return;
+      if (sigOverlay.classList.contains('hidden')) {
+          return window.showToast("Belum ada tanda tangan yang ditempel!", "error");
+      }
+
+      const originalText = savePdfBtn.innerHTML;
+      savePdfBtn.innerText = "Memproses...";
+      savePdfBtn.disabled = true;
+
+      try {
+          const arrayBuffer = await currentFile.arrayBuffer();
+          const pdfDoc = await PDFDocument.load(arrayBuffer);
+          const pages = pdfDoc.getPages();
+          const page = pages[0]; // Logic halaman 1 dulu
+          const { width, height } = page.getSize();
+
+          // Embed gambar
+          let embeddedImage;
+          if (signatureData.startsWith('data:image/png')) {
+              embeddedImage = await pdfDoc.embedPng(signatureData);
+          } else {
+              embeddedImage = await pdfDoc.embedJpg(signatureData);
+          }
+
+          // Hitung Ukuran di PDF
+          // Kita ambil lebar overlay di layar, bandingkan dengan lebar canvas
+          // Lalu proporsikan ke lebar PDF
+          const overlayRect = sigOverlay.getBoundingClientRect();
+          const containerRect = previewContainer.getBoundingClientRect();
+          
+          const scaleRatio = overlayRect.width / containerRect.width;
+          const pdfImgWidth = width * scaleRatio;
+          
+          // Jaga aspect ratio gambar asli
+          const imgDims = embeddedImage.scaleToFit(pdfImgWidth, pdfImgWidth); 
+
+          // Hitung Posisi
+          // HTML (0,0 Top-Left) -> PDF (0,0 Bottom-Left)
+          const xPos = width * finalXPercent - (imgDims.width / 2);
+          const yPos = height - (height * finalYPercent) - (imgDims.height / 2);
+
+          page.drawImage(embeddedImage, {
+              x: xPos,
+              y: yPos,
+              width: imgDims.width,
+              height: imgDims.height,
+          });
+
+          const pdfBytes = await pdfDoc.save();
+          const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = `signed-${currentFile.name}`;
+          link.click();
+          
+          window.showToast("Berhasil! Dokumen ditandatangani.", "success");
+
+      } catch (err) {
+          console.error(err);
+          window.showToast("Gagal menyimpan PDF.", "error");
+      } finally {
+          savePdfBtn.innerHTML = originalText;
+          savePdfBtn.disabled = false;
+      }
+  });
+</script>

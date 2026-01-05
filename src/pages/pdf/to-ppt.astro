@@ -1,0 +1,115 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="PDF to PowerPoint">
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script is:inline>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  </script>
+  <script is:inline src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <div class="text-center mb-10 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">
+        PDF to PowerPoint
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Konversi dokumen PDF menjadi slide presentasi (.pptx) yang bisa diedit.
+      </p>
+    </div>
+
+    <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-slate-300 dark:border-slate-600 rounded-3xl p-12 cursor-pointer hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-slate-800/50 transition-all group text-center animate-on-scroll">
+      <div class="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M8 17h2"/><path d="M14 13h2"/><path d="M14 17h2"/></svg>
+      </div>
+      <h3 class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2">Pilih PDF</h3>
+      <input type="file" id="file-input" accept="application/pdf" class="hidden" />
+    </div>
+
+    <div id="process-area" class="hidden max-w-xl mx-auto mt-10 text-center animate-fade-in">
+      <h3 id="filename" class="font-bold text-lg mb-2 text-slate-700 dark:text-slate-200">filename.pdf</h3>
+      
+      <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-4 mb-4 overflow-hidden">
+        <div id="progress-bar" class="bg-orange-500 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+      <p id="status-text" class="text-slate-500 text-sm">Menyiapkan konversi...</p>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const processArea = document.getElementById('process-area');
+  const progressBar = document.getElementById('progress-bar');
+  const statusText = document.getElementById('status-text');
+  const filenameDisplay = document.getElementById('filename');
+
+  dropZone.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', async (e) => {
+    if (fileInput.files[0]) {
+      const file = fileInput.files[0];
+      filenameDisplay.innerText = file.name;
+      dropZone.classList.add('hidden');
+      processArea.classList.remove('hidden');
+      await convertToPPT(file);
+    }
+  });
+
+  async function convertToPPT(file) {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      // @ts-ignore
+      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+      const totalPages = pdf.numPages;
+      
+      // Init PptxGenJS
+      // @ts-ignore
+      const pptx = new PptxGenJS();
+      pptx.layout = 'LAYOUT_16x9'; // Default layout
+
+      for (let i = 1; i <= totalPages; i++) {
+        // Update Progress
+        const percent = Math.round((i / totalPages) * 100);
+        progressBar.style.width = `${percent}%`;
+        statusText.innerText = `Memproses halaman ${i} dari ${totalPages}...`;
+
+        // Render Page to Canvas
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 2.0 }); // High res for quality
+        
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+        // Convert to Image Data
+        const imgData = canvas.toDataURL('image/jpeg', 0.8);
+
+        // Add Slide
+        const slide = pptx.addSlide();
+        // Fit image to slide (cover)
+        slide.background = { data: imgData };
+      }
+
+      statusText.innerText = "Membuat file PowerPoint...";
+      
+      // Save
+      await pptx.writeFile({ fileName: `converted-${file.name}.pptx` });
+      
+      statusText.innerText = "Selesai! File terunduh.";
+      window.showToast("Berhasil konversi ke PowerPoint!", "success");
+
+    } catch (err) {
+      console.error(err);
+      statusText.innerText = "Gagal memproses file.";
+      statusText.classList.add("text-red-500");
+      window.showToast("Gagal konversi.", "error");
+    }
+  }
+</script>

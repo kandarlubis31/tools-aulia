@@ -1,0 +1,193 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Compress PDF">
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script is:inline>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  </script>
+
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    
+    <div class="text-center mb-10 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">
+        Compress PDF
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Kurangi ukuran file PDF dengan teknik re-sampling cerdas.
+      </p>
+    </div>
+
+    <div 
+      id="drop-zone"
+      class="max-w-2xl mx-auto border-3 border-dashed border-slate-300 dark:border-slate-600 rounded-3xl p-12 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-slate-800/50 transition-all group text-center animate-on-scroll"
+    >
+      <div class="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6Z"/><path d="M10 12V2h4v10"/><path d="m14 2-4 4-4-4"/></svg>
+      </div>
+      <h3 class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2">Upload PDF Besar</h3>
+      <p class="text-slate-500 dark:text-slate-400 font-medium">Klik atau tarik file ke sini</p>
+      <input type="file" id="file-input" accept="application/pdf" class="hidden" />
+    </div>
+
+    <div id="controls-area" class="hidden max-w-2xl mx-auto mt-8 bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl animate-fade-in">
+      
+      <div class="flex items-center gap-4 mb-6">
+        <div class="w-12 h-12 bg-red-100 text-red-500 rounded-lg flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <h3 id="filename" class="font-bold text-slate-700 dark:text-slate-200 truncate">filename.pdf</h3>
+          <p id="filesize" class="text-sm text-slate-500">0 MB</p>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <label class="flex justify-between font-bold text-slate-700 dark:text-slate-300 mb-2">
+          <span>Tingkat Kompresi</span>
+          <span id="quality-val" class="text-emerald-500">Normal (0.7)</span>
+        </label>
+        <input 
+          type="range" 
+          id="quality-range" 
+          min="0.1" 
+          max="1.0" 
+          step="0.1" 
+          value="0.7" 
+          class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+        />
+        <div class="flex justify-between text-xs text-slate-400 mt-2">
+          <span>Ekstrem (Burik)</span>
+          <span>Kualitas Asli</span>
+        </div>
+      </div>
+
+      <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6 text-sm text-amber-800 dark:text-amber-200 flex gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p>Metode ini akan mengubah teks menjadi gambar (Rasterize) untuk mengurangi ukuran file secara drastis. Teks mungkin tidak bisa diseleksi lagi.</p>
+      </div>
+
+      <button id="compress-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-emerald-500/30 transition-all active:scale-95 flex items-center justify-center gap-2">
+        Mulai Kompresi
+      </button>
+
+      <div id="progress-container" class="hidden mt-4">
+        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 mb-2 overflow-hidden">
+          <div id="progress-bar" class="bg-emerald-500 h-2.5 rounded-full" style="width: 0%"></div>
+        </div>
+        <p id="progress-text" class="text-center text-xs text-slate-500">Memproses halaman 1...</p>
+      </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { PDFDocument } from 'pdf-lib';
+
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const controlsArea = document.getElementById('controls-area');
+  const filename = document.getElementById('filename');
+  const filesize = document.getElementById('filesize');
+  const qualityRange = document.getElementById('quality-range') as HTMLInputElement;
+  const qualityVal = document.getElementById('quality-val');
+  const compressBtn = document.getElementById('compress-btn') as HTMLButtonElement;
+  const progressContainer = document.getElementById('progress-container');
+  const progressBar = document.getElementById('progress-bar');
+  const progressText = document.getElementById('progress-text');
+
+  let currentFile: File | null = null;
+
+  dropZone?.addEventListener('click', () => fileInput.click());
+
+  fileInput?.addEventListener('change', (e) => {
+    if (fileInput.files && fileInput.files[0]) {
+      const file = fileInput.files[0];
+      if (file.type !== 'application/pdf') return alert('Mohon upload file PDF!');
+      
+      currentFile = file;
+      if(filename) filename.innerText = file.name;
+      if(filesize) filesize.innerText = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+      
+      dropZone?.classList.add('hidden');
+      controlsArea?.classList.remove('hidden');
+    }
+  });
+
+  qualityRange?.addEventListener('input', (e) => {
+    const val = (e.target as HTMLInputElement).value;
+    if(qualityVal) {
+      if(val === '1.0') qualityVal.innerText = "Maksimal (1.0)";
+      else if (val <= '0.4') qualityVal.innerText = `Ekstrem (${val})`;
+      else qualityVal.innerText = `Normal (${val})`;
+    }
+  });
+
+  compressBtn?.addEventListener('click', async () => {
+    if (!currentFile) return;
+
+    compressBtn.disabled = true;
+    compressBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    progressContainer?.classList.remove('hidden');
+
+    try {
+      const quality = parseFloat(qualityRange.value);
+      const arrayBuffer = await currentFile.arrayBuffer();
+      // @ts-ignore
+      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+      const totalPages = pdf.numPages;
+
+      // Buat PDF Baru
+      const newPdf = await PDFDocument.create();
+
+      for (let i = 1; i <= totalPages; i++) {
+        // Update Progress
+        const percent = Math.round((i / totalPages) * 100);
+        if(progressBar) progressBar.style.width = `${percent}%`;
+        if(progressText) progressText.innerText = `Memproses halaman ${i} dari ${totalPages}...`;
+
+        // Render Page ke Canvas
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 }); // Scale standar biar kebaca
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+        // Convert Canvas ke JPG (Kompresi terjadi di sini)
+        const imgUrl = canvas.toDataURL('image/jpeg', quality);
+        
+        // Embed ke PDF Baru
+        const jpgImage = await newPdf.embedJpg(imgUrl);
+        const newPage = newPdf.addPage([jpgImage.width, jpgImage.height]);
+        newPage.drawImage(jpgImage, {
+          x: 0,
+          y: 0,
+          width: jpgImage.width,
+          height: jpgImage.height,
+        });
+      }
+
+      const pdfBytes = await newPdf.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `compressed-${currentFile.name}`;
+      link.click();
+
+      if(progressText) progressText.innerText = "Selesai! File sedang didownload.";
+
+    } catch (err) {
+      console.error(err);
+      alert("Gagal mengompresi PDF.");
+    } finally {
+      compressBtn.disabled = false;
+      compressBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      setTimeout(() => progressContainer?.classList.add('hidden'), 3000);
+    }
+  });
+</script>

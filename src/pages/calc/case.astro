@@ -1,0 +1,109 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Case Converter">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <div class="text-center mb-8 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-pink-500">
+        Case Converter
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Ubah format huruf teks Anda dengan satu klik.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-2 mb-6 animate-fade-in">
+       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="upper">UPPERCASE</button>
+       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="lower">lowercase</button>
+       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="title">Title Case</button>
+       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="sentence">Sentence case</button>
+       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="camel">camelCase</button>
+       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="snake">snake_case</button>
+       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="kebab">kebab-case</button>
+    </div>
+
+    <div class="flex flex-col h-96 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in">
+       <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+          <span class="text-xs font-bold text-slate-500 uppercase">Text Editor</span>
+          <div class="flex gap-2">
+             <button id="copy-btn" class="text-xs font-bold text-fuchsia-600 hover:text-fuchsia-700">Copy</button>
+             <button id="clear-btn" class="text-xs font-bold text-red-500 hover:text-red-600 ml-2">Clear</button>
+          </div>
+       </div>
+       <textarea id="text-input" class="flex-1 w-full p-6 font-sans text-lg bg-transparent text-slate-800 dark:text-slate-200 outline-none resize-none" placeholder="Ketik atau tempel teks di sini..."></textarea>
+       
+       <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500">
+          <span id="char-count">0 karakter</span> | <span id="word-count">0 kata</span>
+       </div>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+  const input = document.getElementById('text-input');
+  const copyBtn = document.getElementById('copy-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const charCount = document.getElementById('char-count');
+  const wordCount = document.getElementById('word-count');
+  const btns = document.querySelectorAll('.case-btn');
+
+  function updateCounts() {
+    const val = input.value;
+    charCount.innerText = `${val.length} karakter`;
+    wordCount.innerText = `${val.trim().split(/\s+/).filter(w => w).length} kata`;
+  }
+
+  function convert(type) {
+    let val = input.value;
+    if(!val) return;
+
+    switch(type) {
+        case 'upper': 
+            val = val.toUpperCase(); 
+            break;
+        case 'lower': 
+            val = val.toLowerCase(); 
+            break;
+        case 'title': 
+            val = val.toLowerCase().replace(/(?:^|\s)\w/g, a => a.toUpperCase());
+            break;
+        case 'sentence': 
+            val = val.toLowerCase().replace(/(^\w|\.\s+\w)/gm, a => a.toUpperCase());
+            break;
+        case 'camel':
+            val = val.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
+            break;
+        case 'snake':
+            val = val && val.match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+                      .map(x => x.toLowerCase())
+                      .join('_');
+            break;
+        case 'kebab':
+            val = val && val.match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+                      .map(x => x.toLowerCase())
+                      .join('-');
+            break;
+    }
+    input.value = val;
+    updateCounts();
+  }
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', (e) => convert(e.target.dataset.case));
+  });
+
+  input.addEventListener('input', updateCounts);
+  
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(input.value);
+    window.showToast("Teks disalin!", "success");
+  });
+
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    updateCounts();
+    input.focus();
+  });
+</script>

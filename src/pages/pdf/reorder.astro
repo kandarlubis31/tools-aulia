@@ -1,0 +1,176 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Reorder PDF Pages">
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script is:inline>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  </script>
+  <script type="module" src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+  <div class="max-w-6xl mx-auto px-4 min-h-[80vh]">
+    <div class="text-center mb-8 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-purple-600">
+        Reorder Pages
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Seret dan lepas (Drag & Drop) halaman untuk mengatur ulang urutannya.
+      </p>
+    </div>
+
+    <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-slate-300 dark:border-slate-600 rounded-3xl p-12 cursor-pointer hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-slate-800/50 transition-all group text-center animate-on-scroll">
+      <div class="w-20 h-20 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/><rect x="8" y="8" width="8" height="8" rx="2" ry="2"/></svg>
+      </div>
+      <h3 class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2">Pilih PDF</h3>
+      <input type="file" id="file-input" accept="application/pdf" class="hidden" />
+    </div>
+
+    <div id="workspace" class="hidden pb-20 animate-fade-in">
+      <div class="sticky top-24 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg mb-8 flex justify-between items-center max-w-4xl mx-auto">
+         <span class="text-sm font-bold text-slate-500">Drag halaman untuk menukar posisi</span>
+         <button id="save-btn" class="bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all active:scale-95 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Simpan Urutan Baru
+         </button>
+      </div>
+
+      <div id="pages-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 select-none"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script type="module">
+  const { PDFDocument } = await import('https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.esm.js');
+
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const workspace = document.getElementById('workspace');
+  const pagesGrid = document.getElementById('pages-grid');
+  const saveBtn = document.getElementById('save-btn');
+
+  let currentFile = null;
+  let pageOrder = []; // Array of original indices
+  let draggedItem = null;
+
+  dropZone.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', async (e) => {
+    if (fileInput.files[0]) {
+      currentFile = fileInput.files[0];
+      dropZone.classList.add('hidden');
+      workspace.classList.remove('hidden');
+      await renderThumbnails(currentFile);
+    }
+  });
+
+  async function renderThumbnails(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    const totalPages = pdf.numPages;
+    pageOrder = Array.from({ length: totalPages }, (_, i) => i); // [0, 1, 2, ...]
+
+    pagesGrid.innerHTML = '';
+
+    for (let i = 1; i <= totalPages; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 0.5 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      canvas.className = "w-full h-auto rounded shadow-sm pointer-events-none";
+      await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+      // Wrapper Card
+      const card = document.createElement('div');
+      card.className = "relative bg-slate-200 dark:bg-slate-800 p-2 rounded-lg cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-violet-500 transition-all draggable-item";
+      card.draggable = true;
+      card.dataset.index = i - 1; // Original Index
+
+      // Badge
+      const badge = document.createElement('span');
+      badge.className = "absolute top-3 left-3 bg-slate-900/80 text-white text-xs font-bold px-2 py-1 rounded shadow-sm z-10";
+      badge.innerText = i;
+
+      card.appendChild(badge);
+      card.appendChild(canvas);
+      pagesGrid.appendChild(card);
+
+      // Drag Events
+      card.addEventListener('dragstart', handleDragStart);
+      card.addEventListener('dragover', handleDragOver);
+      card.addEventListener('drop', handleDrop);
+      card.addEventListener('dragend', handleDragEnd);
+    }
+  }
+
+  function handleDragStart(e) {
+    draggedItem = this;
+    this.classList.add('opacity-50', 'scale-95');
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+  }
+
+  function handleDrop(e) {
+    e.stopPropagation();
+    if (draggedItem !== this) {
+      // Swap DOM
+      const allItems = [...pagesGrid.querySelectorAll('.draggable-item')];
+      const draggedIdx = allItems.indexOf(draggedItem);
+      const droppedIdx = allItems.indexOf(this);
+
+      if (draggedIdx < droppedIdx) {
+        this.after(draggedItem);
+      } else {
+        this.before(draggedItem);
+      }
+    }
+    return false;
+  }
+
+  function handleDragEnd() {
+    this.classList.remove('opacity-50', 'scale-95');
+    draggedItem = null;
+  }
+
+  saveBtn.addEventListener('click', async () => {
+    if (!currentFile) return;
+    saveBtn.innerText = "Memproses...";
+    saveBtn.disabled = true;
+
+    try {
+      const arrayBuffer = await currentFile.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      const newPdf = await PDFDocument.create();
+
+      // Get new order from DOM
+      const newOrderIndices = [...pagesGrid.querySelectorAll('.draggable-item')].map(item => parseInt(item.dataset.index));
+
+      const copiedPages = await newPdf.copyPages(pdfDoc, newOrderIndices);
+      copiedPages.forEach(page => newPdf.addPage(page));
+
+      const pdfBytes = await newPdf.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `reordered-${currentFile.name}`;
+      link.click();
+      
+      window.showToast("Berhasil mengatur ulang halaman!", "success");
+
+    } catch (err) {
+      console.error(err);
+      window.showToast("Gagal menyimpan PDF.", "error");
+    } finally {
+      saveBtn.innerText = "Simpan Urutan Baru";
+      saveBtn.disabled = false;
+    }
+  });
+</script>

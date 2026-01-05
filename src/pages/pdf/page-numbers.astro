@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Add Page Numbers">
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <div class="text-center mb-10 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-fuchsia-500">
+        Add Page Numbers
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">Tambahkan penomoran halaman otomatis (1 dari N) ke PDF.</p>
+    </div>
+
+    <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-slate-300 dark:border-slate-600 rounded-3xl p-12 cursor-pointer hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-slate-800/50 transition-all group text-center animate-on-scroll">
+      <div class="w-20 h-20 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+      </div>
+      <h3 class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2">Pilih PDF</h3>
+      <input type="file" id="file-input" accept="application/pdf" class="hidden" />
+    </div>
+
+    <div id="controls-area" class="hidden max-w-md mx-auto mt-8 bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl animate-fade-in text-center">
+      <p id="filename" class="text-sm font-medium text-slate-500 mb-6 truncate">filename.pdf</p>
+      
+      <button id="process-btn" class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+        Tambahkan Nomor Halaman
+      </button>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const controlsArea = document.getElementById('controls-area');
+  const filenameDisplay = document.getElementById('filename');
+  const processBtn = document.getElementById('process-btn');
+
+  let currentFile = null;
+
+  dropZone?.addEventListener('click', () => fileInput.click());
+
+  fileInput?.addEventListener('change', (e) => {
+    if (fileInput.files && fileInput.files[0]) {
+      currentFile = fileInput.files[0];
+      if (filenameDisplay) filenameDisplay.innerText = currentFile.name;
+      dropZone.classList.add('hidden');
+      controlsArea.classList.remove('hidden');
+    }
+  });
+
+  processBtn?.addEventListener('click', async () => {
+    if (!currentFile) return;
+
+    const originalText = processBtn.innerHTML;
+    processBtn.innerText = "Memproses...";
+    processBtn.disabled = true;
+
+    try {
+      // @ts-ignore
+      const { PDFDocument, rgb, StandardFonts } = PDFLib;
+      const arrayBuffer = await currentFile.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const pages = pdfDoc.getPages();
+      const totalPages = pages.length;
+
+      pages.forEach((page, idx) => {
+        const { width } = page.getSize();
+        const text = `${idx + 1} / ${totalPages}`;
+        const textSize = 12;
+        const textWidth = helveticaFont.widthOfTextAtSize(text, textSize);
+
+        page.drawText(text, {
+          x: (width / 2) - (textWidth / 2),
+          y: 20, // 20px dari bawah
+          size: textSize,
+          font: helveticaFont,
+          color: rgb(0, 0, 0),
+        });
+      });
+
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `numbered-${currentFile.name}`;
+      link.click();
+      
+      window.showToast("Nomor halaman berhasil ditambahkan!", "success");
+
+    } catch (err) {
+      console.error(err);
+      window.showToast("Gagal memproses PDF.", "error");
+    } finally {
+      processBtn.innerHTML = originalText;
+      processBtn.disabled = false;
+    }
+  });
+</script>

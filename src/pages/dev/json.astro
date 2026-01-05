@@ -1,0 +1,99 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="JSON Formatter & Validator">
+  <div class="max-w-6xl mx-auto px-4 min-h-[80vh] flex flex-col">
+    <div class="text-center mb-6 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-500">
+        JSON Formatter
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Validasi, rapikan (Beautify), atau kompres (Minify) data JSON.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-2 mb-4 justify-end animate-fade-in">
+      <button id="format-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+        Beautify
+      </button>
+      <button id="minify-btn" class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        Minify
+      </button>
+      <button id="copy-btn" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95">
+        Copy
+      </button>
+      <button id="clear-btn" class="bg-red-100 hover:bg-red-200 text-red-600 font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95">
+        Clear
+      </button>
+    </div>
+
+    <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 pb-12 animate-fade-in">
+       
+       <div class="flex flex-col h-full bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div class="bg-slate-100 dark:bg-slate-900 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+             <span class="text-xs font-bold text-slate-500 uppercase">Input JSON</span>
+          </div>
+          <textarea id="json-input" class="flex-1 w-full p-4 font-mono text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none resize-none" placeholder='{"paste": "your_json_here"}' spellcheck="false"></textarea>
+       </div>
+
+       <div class="flex flex-col h-full bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div class="bg-slate-100 dark:bg-slate-900 px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex justify-between">
+             <span class="text-xs font-bold text-slate-500 uppercase">Result</span>
+             <span id="status" class="text-xs font-bold text-emerald-500 hidden">Valid JSON</span>
+          </div>
+          <textarea id="json-output" readonly class="flex-1 w-full p-4 font-mono text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none resize-none" placeholder="Hasil akan muncul di sini..."></textarea>
+       </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const input = document.getElementById('json-input');
+  const output = document.getElementById('json-output');
+  const status = document.getElementById('status');
+  const formatBtn = document.getElementById('format-btn');
+  const minifyBtn = document.getElementById('minify-btn');
+  const copyBtn = document.getElementById('copy-btn');
+  const clearBtn = document.getElementById('clear-btn');
+
+  function processJSON(minify = false) {
+    const raw = input.value.trim();
+    if (!raw) return;
+
+    try {
+        const obj = JSON.parse(raw);
+        const res = JSON.stringify(obj, null, minify ? 0 : 4);
+        output.value = res;
+        
+        status.innerText = "Valid JSON";
+        status.className = "text-xs font-bold text-emerald-500";
+        status.classList.remove('hidden');
+        input.classList.remove('border-red-500');
+    } catch (err) {
+        output.value = err.message;
+        status.innerText = "Invalid JSON";
+        status.className = "text-xs font-bold text-red-500";
+        status.classList.remove('hidden');
+        window.showToast('Format JSON salah!', 'error');
+    }
+  }
+
+  formatBtn.addEventListener('click', () => processJSON(false));
+  minifyBtn.addEventListener('click', () => processJSON(true));
+  
+  copyBtn.addEventListener('click', () => {
+    if (!output.value) return;
+    navigator.clipboard.writeText(output.value);
+    window.showToast('JSON disalin!', 'success');
+  });
+
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    output.value = '';
+    status.classList.add('hidden');
+  });
+</script>

@@ -1,0 +1,121 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="PDF to JPG Converter">
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script is:inline>
+    // Set worker src
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  </script>
+
+  <div class="flex flex-col items-center justify-center min-h-[60vh]">
+    <div class="max-w-4xl w-full bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl text-center">
+      <h1 class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">
+        PDF to JPG Converter
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 mb-8">Ubah halaman PDF menjadi gambar kualitas tinggi.</p>
+
+      <div 
+        id="drop-zone"
+        class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-10 cursor-pointer hover:border-red-500 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all"
+      >
+        <div class="flex flex-col items-center gap-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-400"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="14" r="3"/></svg>
+          <span class="text-slate-500 dark:text-slate-300 font-medium">Pilih file PDF Anda</span>
+          <input type="file" id="file-input" accept="application/pdf" class="hidden" />
+        </div>
+      </div>
+
+      <div id="results" class="hidden mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
+      
+      <div id="loading" class="hidden mt-8 text-red-500 font-bold animate-pulse">
+        Memproses halaman PDF...
+      </div>
+
+      <button id="reset-btn" class="hidden mt-8 mx-auto text-slate-500 hover:text-red-500">Reset / Upload Ulang</button>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const resultsDiv = document.getElementById('results');
+  const loadingDiv = document.getElementById('loading');
+  const resetBtn = document.getElementById('reset-btn');
+
+  // Trigger Input
+  dropZone?.addEventListener('click', () => fileInput.click());
+
+  fileInput?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      await processPDF(file);
+    } else {
+      alert("Harap upload file PDF!");
+    }
+  });
+
+  async function processPDF(file) {
+    dropZone.classList.add('hidden');
+    loadingDiv.classList.remove('hidden');
+    resultsDiv.innerHTML = '';
+    
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+      
+      loadingDiv.classList.add('hidden');
+      resultsDiv.classList.remove('hidden');
+      resetBtn.classList.remove('hidden');
+
+      // Loop setiap halaman
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 }); // Scale 1.5 biar tajem
+        
+        // Buat Canvas
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        // Render Page ke Canvas
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+        // Convert Canvas ke Image Blob
+        const imgUrl = canvas.toDataURL('image/jpeg', 0.8);
+        
+        // Buat Card Tampilan
+        const card = document.createElement('div');
+        card.className = "bg-slate-50 dark:bg-slate-700 p-3 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm flex flex-col gap-3";
+        card.innerHTML = `
+          <div class="relative overflow-hidden rounded-lg border border-slate-200">
+            <img src="${imgUrl}" class="w-full h-auto" />
+            <span class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">Halaman ${i}</span>
+          </div>
+          <a href="${imgUrl}" download="page-${i}.jpg" class="w-full bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-2 rounded-lg text-center transition-colors">
+            Download JPG
+          </a>
+        `;
+        resultsDiv.appendChild(card);
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Gagal memproses PDF. File mungkin rusak atau terpassword.");
+      loadingDiv.classList.add('hidden');
+      dropZone.classList.remove('hidden');
+    }
+  }
+
+  resetBtn?.addEventListener('click', () => {
+    fileInput.value = '';
+    resultsDiv.classList.add('hidden');
+    resultsDiv.innerHTML = '';
+    resetBtn.classList.add('hidden');
+    dropZone.classList.remove('hidden');
+  });
+</script>

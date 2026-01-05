@@ -1,0 +1,656 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Unit Converter">
+  <div class="max-w-6xl mx-auto px-4 min-h-[60vh]">
+    <div class="text-center mb-10 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-lime-500 to-green-600">
+        Unit Converter
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Konversi berbagai satuan dengan mudah dan akurat.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
+      <div class="lg:col-span-2">
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          
+          <div class="flex flex-wrap p-1 bg-slate-100 dark:bg-slate-700 rounded-xl mb-8 gap-1">
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-600 shadow-sm text-lime-600 dark:text-lime-400 transition-all" data-cat="length">Panjang</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="weight">Berat</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="temp">Suhu</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="volume">Volume</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="area">Area</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="speed">Kecepatan</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="time">Waktu</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="data">Data</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+              
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-500 uppercase">Dari</label>
+              <input type="number" id="input-val" value="1" class="w-full p-4 text-xl font-bold bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-lime-500 focus:ring-2 focus:ring-lime-200 dark:focus:ring-lime-900 transition-all" />
+              <select id="select-from" class="w-full p-2 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none focus:border-lime-500"></select>
+            </div>
+
+            <div class="flex flex-col items-center justify-center gap-4">
+              <button id="swap-btn" class="p-3 bg-lime-100 dark:bg-lime-900/30 rounded-full text-lime-600 hover:bg-lime-200 dark:hover:bg-lime-900/50 transition-colors shadow-sm hover:shadow-md" title="Tukar Satuan (Ctrl+S)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+              </button>
+              <button id="reverse-btn" class="text-xs text-slate-500 hover:text-lime-600 dark:text-slate-400 dark:hover:text-lime-400 transition-colors" title="Balik Nilai (Ctrl+R)">
+                Konversi Terbalik
+              </button>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-500 uppercase">Ke</label>
+              <div class="relative">
+                <input type="number" id="output-val" readonly class="w-full p-4 text-xl font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-500 cursor-not-allowed" />
+                <button id="copy-btn" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-lime-600 dark:hover:text-lime-400 transition-colors" title="Salin Hasil (Ctrl+C)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+              </div>
+              <select id="select-to" class="w-full p-2 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none focus:border-lime-500"></select>
+            </div>
+          </div>
+
+          <div id="formula-container" class="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl hidden border border-slate-100 dark:border-slate-700">
+            <p class="text-xs font-bold text-slate-500 uppercase mb-2">Rumus:</p>
+            <p id="formula-text" class="text-sm text-slate-700 dark:text-slate-300 font-mono break-all"></p>
+          </div>
+
+          <div id="comparison-container" class="mt-6 hidden">
+            <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Perbandingan Cepat:</p>
+            <div id="comparison-table" class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50 dark:bg-slate-900">
+                  <tr>
+                    <th class="text-left py-2 px-3 font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">Satuan</th>
+                    <th class="text-right py-2 px-3 font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">Nilai</th>
+                  </tr>
+                </thead>
+                <tbody id="comparison-tbody" class="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">Favorit</h3>
+            <button id="add-favorite-btn" class="p-1.5 rounded-lg bg-lime-50 text-lime-600 hover:bg-lime-100 dark:bg-lime-900/30 dark:text-lime-400 dark:hover:bg-lime-900/50 transition-colors" title="Tambah ke Favorit (Ctrl+F)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+          </div>
+          <div id="favorites-container" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada favorit</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">Riwayat</h3>
+            <button id="clear-history-btn" class="text-xs font-medium text-slate-500 hover:text-red-500 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700">Hapus Semua</button>
+          </div>
+          <div id="history-container" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada riwayat</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4">Konversi Umum</h3>
+          <div id="common-conversions" class="space-y-2">
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .favorite-item, .history-item, .common-conversion-item {
+    @apply flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700 hover:bg-white hover:shadow-md dark:hover:bg-slate-600 transition-all cursor-pointer;
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 20px;
+  }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #475569;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+  }
+</style>
+
+<script>
+  // Data Satuan & Faktor Konversi
+  // FIX: Menambahkan tanda kutip pada key yang mengandung simbol spesial
+  const units = {
+    length: {
+      m: 1, km: 1000, cm: 0.01, mm: 0.001, 
+      mi: 1609.34, yd: 0.9144, ft: 0.3048, 'in': 0.0254,
+      nm: 1852, 'μm': 0.000001, 'Å': 0.0000000001
+    },
+    weight: {
+      g: 1, kg: 1000, mg: 0.001, 
+      lb: 453.592, oz: 28.3495, ton: 1000000,
+      st: 6350.29, ct: 0.2
+    },
+    temp: {
+      c: 'Celsius', f: 'Fahrenheit', k: 'Kelvin', r: 'Rankine', 'ré': 'Réaumur'
+    },
+    volume: {
+      l: 1, ml: 0.001, 'm³': 1000, 'cm³': 0.001,
+      gal: 3.78541, qt: 0.946353, pt: 0.473176,
+      fl_oz: 0.0295735, tbsp: 0.0147868, tsp: 0.00492892
+    },
+    area: {
+      'm²': 1, 'km²': 1000000, 'cm²': 0.0001, 'mm²': 0.000001,
+      ha: 10000, acre: 4046.86, 'ft²': 0.092903, 'in²': 0.00064516
+    },
+    speed: {
+      'm/s': 1, 'km/h': 0.277778, mph: 0.44704, 'ft/s': 0.3048,
+      knot: 0.514444, Mach: 343
+    },
+    time: {
+      s: 1, ms: 0.001, 'μs': 0.000001, ns: 0.000000001,
+      min: 60, h: 3600, d: 86400, wk: 604800,
+      mo: 2629746, yr: 31556952
+    },
+    data: {
+      B: 1, KB: 1024, MB: 1048576, GB: 1073741824,
+      TB: 1099511627776, PB: 1125899906842624,
+      bit: 0.125, Kbit: 128, Mbit: 131072, Gbit: 134217728
+    }
+  };
+
+  const labels = {
+    m: 'Meter (m)', km: 'Kilometer (km)', cm: 'Centimeter (cm)', mm: 'Millimeter (mm)',
+    mi: 'Mile (mi)', yd: 'Yard (yd)', ft: 'Foot (ft)', 'in': 'Inch (in)',
+    nm: 'Nautical Mile (nm)', 'μm': 'Micrometer (μm)', 'Å': 'Angstrom (Å)',
+    g: 'Gram (g)', kg: 'Kilogram (kg)', mg: 'Milligram (mg)', 
+    lb: 'Pound (lb)', oz: 'Ounce (oz)', ton: 'Ton', st: 'Stone (st)', ct: 'Carat (ct)',
+    c: 'Celsius (°C)', f: 'Fahrenheit (°F)', k: 'Kelvin (K)', r: 'Rankine (°R)', 'ré': 'Réaumur (°Ré)',
+    l: 'Liter (L)', ml: 'Milliliter (mL)', 'm³': 'Cubic Meter (m³)', 'cm³': 'Cubic Centimeter (cm³)',
+    gal: 'Gallon (gal)', qt: 'Quart (qt)', pt: 'Pint (pt)',
+    fl_oz: 'Fluid Ounce (fl oz)', tbsp: 'Tablespoon (tbsp)', tsp: 'Teaspoon (tsp)',
+    'm²': 'Square Meter (m²)', 'km²': 'Square Kilometer (km²)', 'cm²': 'Square Centimeter (cm²)', 'mm²': 'Square Millimeter (mm²)',
+    ha: 'Hectare (ha)', acre: 'Acre', 'ft²': 'Square Foot (ft²)', 'in²': 'Square Inch (in²)',
+    'm/s': 'Meter/Second (m/s)', 'km/h': 'Kilometer/Hour (km/h)', mph: 'Mile/Hour (mph)', 'ft/s': 'Foot/Second (ft/s)',
+    knot: 'Knot', Mach: 'Mach',
+    s: 'Second (s)', ms: 'Millisecond (ms)', 'μs': 'Microsecond (μs)', ns: 'Nanosecond (ns)',
+    min: 'Minute (min)', h: 'Hour (h)', d: 'Day (d)', wk: 'Week (wk)',
+    mo: 'Month (mo)', yr: 'Year (yr)',
+    B: 'Byte (B)', KB: 'Kilobyte (KB)', MB: 'Megabyte (MB)', GB: 'Gigabyte (GB)',
+    TB: 'Terabyte (TB)', PB: 'Petabyte (PB)',
+    bit: 'Bit', Kbit: 'Kilobit (Kbit)', Mbit: 'Megabit (Mbit)', Gbit: 'Gigabit (Gbit)'
+  };
+
+  const commonConversions = {
+    length: [
+      { from: 'km', to: 'mi', desc: 'Kilometer ke Mil' },
+      { from: 'm', to: 'ft', desc: 'Meter ke Kaki' },
+      { from: 'cm', to: 'in', desc: 'Sentimeter ke Inci' }
+    ],
+    weight: [
+      { from: 'kg', to: 'lb', desc: 'Kilogram ke Pon' },
+      { from: 'g', to: 'oz', desc: 'Gram ke Ons' },
+      { from: 'kg', to: 'ton', desc: 'Kilogram ke Ton' }
+    ],
+    temp: [
+      { from: 'c', to: 'f', desc: 'Celsius ke Fahrenheit' },
+      { from: 'c', to: 'k', desc: 'Celsius ke Kelvin' },
+      { from: 'f', to: 'c', desc: 'Fahrenheit ke Celsius' }
+    ],
+    volume: [
+      { from: 'l', to: 'gal', desc: 'Liter ke Galon' },
+      { from: 'ml', to: 'fl_oz', desc: 'Mililiter ke Ons Cair' },
+      { from: 'm³', to: 'l', desc: 'Meter Kubik ke Liter' }
+    ],
+    area: [
+      { from: 'm²', to: 'ft²', desc: 'Meter Persegi ke Kaki Persegi' },
+      { from: 'km²', to: 'acre', desc: 'Kilometer Persegi ke Acre' },
+      { from: 'ha', to: 'acre', desc: 'Hektar ke Acre' }
+    ],
+    speed: [
+      { from: 'km/h', to: 'mph', desc: 'km/jam ke mil/jam' },
+      { from: 'm/s', to: 'km/h', desc: 'Meter/detik ke km/jam' },
+      { from: 'km/h', to: 'knot', desc: 'km/jam ke Knot' }
+    ],
+    time: [
+      { from: 'd', to: 'h', desc: 'Hari ke Jam' },
+      { from: 'h', to: 'min', desc: 'Jam ke Menit' },
+      { from: 'min', to: 's', desc: 'Menit ke Detik' }
+    ],
+    data: [
+      { from: 'GB', to: 'MB', desc: 'Gigabyte ke Megabyte' },
+      { from: 'MB', to: 'KB', desc: 'Megabyte ke Kilobyte' },
+      { from: 'B', to: 'bit', desc: 'Byte ke Bit' }
+    ]
+  };
+
+  let currentCat = 'length';
+  let conversionHistory = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
+  let favorites = JSON.parse(localStorage.getItem('conversionFavorites') || '[]');
+
+  // Elements
+  const tabs = document.querySelectorAll('.tab-btn');
+  const inputVal = document.getElementById('input-val');
+  const outputVal = document.getElementById('output-val');
+  const selectFrom = document.getElementById('select-from');
+  const selectTo = document.getElementById('select-to');
+  const swapBtn = document.getElementById('swap-btn');
+  const reverseBtn = document.getElementById('reverse-btn');
+  const copyBtn = document.getElementById('copy-btn');
+  const addFavoriteBtn = document.getElementById('add-favorite-btn');
+  const clearHistoryBtn = document.getElementById('clear-history-btn');
+  const favoritesContainer = document.getElementById('favorites-container');
+  const historyContainer = document.getElementById('history-container');
+  const commonConversionsContainer = document.getElementById('common-conversions');
+  const formulaContainer = document.getElementById('formula-container');
+  const formulaText = document.getElementById('formula-text');
+  const comparisonContainer = document.getElementById('comparison-container');
+  const comparisonTbody = document.getElementById('comparison-tbody');
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    populateSelects();
+    renderHistory();
+    renderFavorites();
+    renderCommonConversions();
+    convert();
+  });
+
+  function populateSelects() {
+    selectFrom.innerHTML = '';
+    selectTo.innerHTML = '';
+    
+    Object.keys(units[currentCat]).forEach(key => {
+        const opt1 = new Option(labels[key], key);
+        const opt2 = new Option(labels[key], key);
+        selectFrom.add(opt1);
+        selectTo.add(opt2);
+    });
+
+    // Default Selection based on category
+    const defaults = {
+        length: ['m', 'cm'],
+        weight: ['kg', 'lb'],
+        temp: ['c', 'f'],
+        volume: ['l', 'ml'],
+        area: ['m²', 'ft²'],
+        speed: ['km/h', 'mph'],
+        time: ['h', 'min'],
+        data: ['GB', 'MB']
+    };
+
+    if (defaults[currentCat]) {
+        selectFrom.value = defaults[currentCat][0];
+        selectTo.value = defaults[currentCat][1];
+    }
+    
+    convert();
+    renderCommonConversions();
+  }
+
+  function convert() {
+    const val = parseFloat(inputVal.value);
+    const from = selectFrom.value;
+    const to = selectTo.value;
+
+    if (isNaN(val)) { 
+      outputVal.value = ''; 
+      formulaContainer.classList.add('hidden');
+      comparisonContainer.classList.add('hidden');
+      return; 
+    }
+
+    let result = 0;
+    let formula = '';
+
+    if (currentCat === 'temp') {
+        // Temperature Logic
+        if (from === to) result = val;
+        else if (from === 'c' && to === 'f') { result = (val * 9/5) + 32; formula = `${val}°C × 9/5 + 32 = ${result.toFixed(4)}°F`; }
+        else if (from === 'c' && to === 'k') { result = val + 273.15; formula = `${val}°C + 273.15 = ${result.toFixed(4)}K`; }
+        else if (from === 'c' && to === 'r') { result = (val + 273.15) * 1.8; formula = `(${val}°C + 273.15) × 1.8 = ${result.toFixed(4)}°R`; }
+        else if (from === 'c' && to === 'ré') { result = val * 0.8; formula = `${val}°C × 0.8 = ${result.toFixed(4)}°Ré`; }
+        else if (from === 'f' && to === 'c') { result = (val - 32) * 5/9; formula = `(${val}°F - 32) × 5/9 = ${result.toFixed(4)}°C`; }
+        // Simple fallback for others to avoid massive if-else nesting for now
+        else {
+            // Convert to Celsius first
+            let cVal = val;
+            if (from === 'f') cVal = (val - 32) * 5/9;
+            else if (from === 'k') cVal = val - 273.15;
+            else if (from === 'r') cVal = (val - 491.67) * 5/9;
+            else if (from === 'ré') cVal = val * 1.25;
+
+            // Convert Celsius to Target
+            if (to === 'c') result = cVal;
+            else if (to === 'f') result = (cVal * 9/5) + 32;
+            else if (to === 'k') result = cVal + 273.15;
+            else if (to === 'r') result = (cVal + 273.15) * 1.8;
+            else if (to === 'ré') result = cVal * 0.8;
+            
+            formula = `Konversi via Celsius: ${cVal.toFixed(2)}°C`;
+        }
+    } else {
+        // Standard Factor Logic
+        const base = val * units[currentCat][from]; 
+        result = base / units[currentCat][to]; 
+        formula = `${val} ${labels[from]} × ${units[currentCat][from]} ÷ ${units[currentCat][to]} = ${result.toFixed(4)} ${labels[to]}`;
+    }
+
+    // Format output
+    outputVal.value = Number.isInteger(result) ? result : parseFloat(result.toFixed(6));
+    
+    // Show formula
+    formulaText.textContent = formula;
+    formulaContainer.classList.remove('hidden');
+    
+    // Update comparison table
+    updateComparisonTable(val, from);
+  }
+
+  function updateComparisonTable(value, fromUnit) {
+    comparisonTbody.innerHTML = '';
+    
+    // Show top 5 comparisons
+    const unitsToShow = Object.keys(units[currentCat]).filter(unit => unit !== fromUnit).slice(0, 5);
+    
+    unitsToShow.forEach(unit => {
+      let result = 0;
+      
+      if (currentCat === 'temp') {
+        // Simplified logic for table preview (just reuse convert logic conceptually)
+        // For simplicity in this block, we skip temp detailed table calculation to avoid redundancy errors
+        // Ideally refactor 'convert' to return value, but for now:
+        result = 0; // Placeholder
+      } else {
+        const base = value * units[currentCat][fromUnit];
+        result = base / units[currentCat][unit];
+      }
+      
+      if (currentCat !== 'temp') {
+          const formattedResult = Number.isInteger(result) ? result : parseFloat(result.toFixed(4));
+          
+          const row = document.createElement('tr');
+          row.className = 'border-b border-slate-100 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors';
+          row.innerHTML = `
+            <td class="py-3 px-3 text-slate-700 dark:text-slate-300 text-xs font-medium">${labels[unit]}</td>
+            <td class="py-3 px-3 text-right font-mono text-slate-700 dark:text-slate-300 text-xs">${formattedResult}</td>
+          `;
+          comparisonTbody.appendChild(row);
+      }
+    });
+    
+    if (currentCat !== 'temp') {
+        comparisonContainer.classList.remove('hidden');
+    } else {
+        comparisonContainer.classList.add('hidden'); // Hide for temp to simplify
+    }
+  }
+
+  function addToHistory() {
+    const val = inputVal.value;
+    const from = selectFrom.value;
+    const to = selectTo.value;
+    const result = outputVal.value;
+    
+    if (!val || !result) return;
+    
+    const historyItem = {
+      id: Date.now(),
+      category: currentCat,
+      from: { unit: from, label: labels[from], value: val },
+      to: { unit: to, label: labels[to], value: result },
+      date: new Date().toLocaleString('id-ID')
+    };
+    
+    // Avoid duplicates
+    const exists = conversionHistory.some(item => 
+      item.category === historyItem.category &&
+      item.from.unit === historyItem.from.unit &&
+      item.to.unit === historyItem.to.unit &&
+      item.from.value === historyItem.from.value
+    );
+    
+    if (!exists) {
+      conversionHistory.unshift(historyItem);
+      if (conversionHistory.length > 20) conversionHistory = conversionHistory.slice(0, 20);
+      localStorage.setItem('conversionHistory', JSON.stringify(conversionHistory));
+      renderHistory();
+    }
+  }
+
+  function renderHistory() {
+    if (conversionHistory.length === 0) {
+      historyContainer.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada riwayat</p>';
+      return;
+    }
+    
+    historyContainer.innerHTML = conversionHistory.map(item => `
+      <div class="history-item group" data-id="${item.id}">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-sm font-bold text-slate-700 dark:text-slate-200">${item.from.value} ${item.from.unit}</span>
+            <svg class="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            <span class="text-sm font-bold text-lime-600 dark:text-lime-400">${item.to.value} ${item.to.unit}</span>
+          </div>
+          <p class="text-[10px] text-slate-400">${item.date}</p>
+        </div>
+        <button class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-lime-600 transition-all p-1" title="Gunakan">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </button>
+      </div>
+    `).join('');
+    
+    document.querySelectorAll('.history-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = parseInt(btn.dataset.id);
+        const item = conversionHistory.find(h => h.id === id);
+        if (item) {
+          if (currentCat !== item.category) {
+            currentCat = item.category;
+            updateTabs();
+            populateSelects();
+          }
+          inputVal.value = item.from.value;
+          selectFrom.value = item.from.unit;
+          selectTo.value = item.to.unit;
+          convert();
+          window.showToast('Riwayat diterapkan!', 'success');
+        }
+      });
+    });
+  }
+
+  function addToFavorites() {
+    const from = selectFrom.value;
+    const to = selectTo.value;
+    
+    const exists = favorites.some(item => 
+      item.category === currentCat &&
+      item.from === from &&
+      item.to === to
+    );
+    
+    if (exists) {
+      window.showToast('Sudah ada di favorit!', 'info');
+      return;
+    }
+    
+    const favoriteItem = {
+      id: Date.now(),
+      category: currentCat,
+      from: from,
+      to: to,
+      fromLabel: labels[from],
+      toLabel: labels[to]
+    };
+    
+    favorites.push(favoriteItem);
+    localStorage.setItem('conversionFavorites', JSON.stringify(favorites));
+    renderFavorites();
+    window.showToast('Ditambahkan ke favorit!', 'success');
+  }
+
+  function renderFavorites() {
+    const currentFavorites = favorites.filter(item => item.category === currentCat);
+    
+    if (currentFavorites.length === 0) {
+      favoritesContainer.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Tidak ada favorit kategori ini</p>';
+      return;
+    }
+    
+    favoritesContainer.innerHTML = currentFavorites.map(item => `
+      <div class="favorite-item group" data-id="${item.id}">
+        <div class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+          <span>${item.from}</span>
+          <svg class="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          <span>${item.to}</span>
+        </div>
+        <button class="delete-fav text-slate-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    `).join('');
+    
+    document.querySelectorAll('.favorite-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.delete-fav')) return;
+        const id = parseInt(item.dataset.id);
+        const fav = favorites.find(f => f.id === id);
+        if (fav) {
+          selectFrom.value = fav.from;
+          selectTo.value = fav.to;
+          convert();
+          window.showToast('Favorit diterapkan!', 'success');
+        }
+      });
+    });
+    
+    document.querySelectorAll('.delete-fav').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.closest('.favorite-item').dataset.id);
+        favorites = favorites.filter(f => f.id !== id);
+        localStorage.setItem('conversionFavorites', JSON.stringify(favorites));
+        renderFavorites();
+        window.showToast('Dihapus dari favorit', 'success');
+      });
+    });
+  }
+
+  function renderCommonConversions() {
+    if (!commonConversions[currentCat]) {
+      commonConversionsContainer.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Tidak ada konversi umum</p>';
+      return;
+    }
+    
+    commonConversionsContainer.innerHTML = commonConversions[currentCat].map(item => `
+      <div class="common-conversion-item group" data-from="${item.from}" data-to="${item.to}">
+        <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-lime-600 dark:group-hover:text-lime-400 transition-colors">${item.desc}</span>
+        <svg class="w-4 h-4 text-slate-400 group-hover:text-lime-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    `).join('');
+    
+    document.querySelectorAll('.common-conversion-item').forEach(item => {
+      item.addEventListener('click', () => {
+        selectFrom.value = item.dataset.from;
+        selectTo.value = item.dataset.to;
+        convert();
+        window.showToast('Konversi umum diterapkan!', 'success');
+      });
+    });
+  }
+
+  function updateTabs() {
+    tabs.forEach(t => {
+      t.classList.remove('bg-white', 'dark:bg-slate-600', 'shadow-sm', 'text-lime-600', 'dark:text-lime-400');
+      t.classList.add('text-slate-500', 'hover:text-slate-700', 'dark:text-slate-400');
+      if (t.dataset.cat === currentCat) {
+        t.classList.remove('text-slate-500', 'hover:text-slate-700', 'dark:text-slate-400');
+        t.classList.add('bg-white', 'dark:bg-slate-600', 'shadow-sm', 'text-lime-600', 'dark:text-lime-400');
+      }
+    });
+  }
+
+  // Event Listeners
+  tabs.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      currentCat = e.target.dataset.cat;
+      updateTabs();
+      populateSelects();
+      renderFavorites();
+    });
+  });
+
+  [inputVal, selectFrom, selectTo].forEach(el => el.addEventListener('input', () => {
+    convert();
+    // Debounce history add
+    clearTimeout(window.historyTimeout);
+    window.historyTimeout = setTimeout(addToHistory, 1000);
+  }));
+
+  swapBtn.addEventListener('click', () => {
+    const temp = selectFrom.value;
+    selectFrom.value = selectTo.value;
+    selectTo.value = temp;
+    convert();
+    window.showToast('Satuan ditukar', 'success');
+  });
+
+  reverseBtn.addEventListener('click', () => {
+    const tempVal = inputVal.value;
+    inputVal.value = outputVal.value;
+    outputVal.value = tempVal;
+    
+    const tempUnit = selectFrom.value;
+    selectFrom.value = selectTo.value;
+    selectTo.value = tempUnit;
+    
+    convert();
+    window.showToast('Nilai dibalik', 'success');
+  });
+
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(outputVal.value);
+    window.showToast('Hasil disalin!', 'success');
+  });
+
+  addFavoriteBtn.addEventListener('click', addToFavorites);
+
+  clearHistoryBtn.addEventListener('click', () => {
+    conversionHistory = [];
+    localStorage.setItem('conversionHistory', JSON.stringify(conversionHistory));
+    renderHistory();
+    window.showToast('Riwayat dihapus', 'success');
+  });
+
+  // Shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 's') { e.preventDefault(); swapBtn.click(); }
+      if (e.key === 'r') { e.preventDefault(); reverseBtn.click(); }
+      if (e.key === 'f') { e.preventDefault(); addFavoriteBtn.click(); }
+      if (e.key === 'c' && document.activeElement !== inputVal) { 
+        e.preventDefault(); copyBtn.click(); 
+      }
+    }
+  });
+</script>

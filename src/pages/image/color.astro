@@ -1,0 +1,507 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Advanced Color Picker">
+  <div class="max-w-7xl mx-auto px-4 min-h-[80vh]">
+    <div class="text-center mb-8 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-500">
+        Advanced Color Picker
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Ambil warna dari layar (EyeDropper) atau upload gambar untuk analisis warna presisi dengan palette generator.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in pb-20">
+      
+      <div class="lg:col-span-2 space-y-6">
+        
+        <div id="eyedropper-section" class="hidden bg-gradient-to-r from-pink-600 to-rose-600 p-1 rounded-2xl shadow-lg">
+           <div class="bg-white dark:bg-slate-800 p-6 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div class="flex items-center gap-4">
+                 <div class="p-3 bg-pink-100 dark:bg-pink-900/30 text-pink-600 rounded-full animate-pulse">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.9.9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l-9 9H6v-3l9-9Z"/></svg>
+                 </div>
+                 <div>
+                    <h3 class="font-bold text-slate-800 dark:text-white">Pipet Layar (EyeDropper)</h3>
+                    <p class="text-xs text-slate-500">Ambil warna dari pixel mana saja di monitor Anda.</p>
+                 </div>
+              </div>
+              <button id="btn-eyedropper" class="w-full sm:w-auto px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-lg hover:scale-105 transition shadow-lg flex items-center justify-center gap-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                 Buka Pipet
+              </button>
+           </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden">
+           <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
+              <span class="font-bold text-slate-600 dark:text-slate-300 text-sm uppercase">Image Color Picker</span>
+              <label class="cursor-pointer text-xs font-bold text-pink-600 hover:text-pink-700 bg-pink-100 dark:bg-pink-900/30 px-3 py-1.5 rounded-lg transition hover:shadow-sm">
+                 📂 Upload Gambar
+                 <input type="file" id="file-input" accept="image/*" class="hidden" />
+              </label>
+           </div>
+           
+           <div class="relative bg-slate-100 dark:bg-slate-950 flex items-center justify-center min-h-[400px] overflow-hidden group cursor-crosshair">
+              <div id="placeholder-text" class="absolute text-center px-4 pointer-events-none">
+                <div class="text-6xl mb-4 opacity-50">🖼️</div>
+                <p class="text-slate-400 font-medium">Upload gambar untuk mulai picking</p>
+                <p class="text-slate-500 text-sm mt-2">Mendukung JPG, PNG, WEBP</p>
+              </div>
+              
+              <canvas id="image-canvas" class="max-w-full max-h-[500px] shadow-2xl hidden cursor-crosshair"></canvas>
+              
+              <div id="magnifier" class="hidden absolute w-32 h-32 rounded-full border-4 border-white shadow-2xl bg-white pointer-events-none z-50 overflow-hidden" style="transform: translate(-50%, -50%);">
+                 <canvas id="mag-canvas" width="128" height="128" class="w-full h-full"></canvas>
+                 <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-1 h-3 bg-red-500/80 shadow-sm"></div>
+                    <div class="w-3 h-1 bg-red-500/80 shadow-sm absolute"></div>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        <div id="palette-section" class="hidden bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-fade-in">
+          <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-slate-600 dark:text-slate-300 text-sm uppercase">🎨 Dominant Palette</span>
+              <button id="extract-palette-btn" class="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-100 dark:bg-rose-900/30 px-3 py-1.5 rounded-lg transition">
+                Refresh Palette
+              </button>
+            </div>
+          </div>
+          <div class="p-6">
+            <div id="palette-grid" class="grid grid-cols-2 md:grid-cols-5 gap-4">
+               </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="lg:col-span-1 space-y-6">
+         
+         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl sticky top-24">
+            <div class="mb-6 text-center">
+               <div id="color-preview" class="w-full h-32 rounded-xl shadow-lg mb-3 border-4 border-white dark:border-slate-600 transition-all" style="background-color: #ec4899;"></div>
+               <span id="contrast-badge" class="inline-block px-3 py-1.5 rounded-lg text-xs font-bold uppercase bg-slate-100 text-slate-600 shadow-sm">Text: WHITE</span>
+            </div>
+
+            <div class="space-y-4">
+               <div class="relative group">
+                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">HEX</label>
+                  <div class="flex items-center gap-2 mt-1">
+                     <input type="text" id="val-hex" value="#ec4899" readonly class="flex-1 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-lg font-mono text-base font-bold text-slate-700 dark:text-slate-200 outline-none border border-slate-200 dark:border-slate-700 focus:border-pink-500" />
+                     <button class="copy-btn p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-lg transition" data-target="val-hex" title="Copy HEX">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                     </button>
+                  </div>
+               </div>
+
+               <div class="relative group">
+                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">RGB</label>
+                  <div class="flex items-center gap-2 mt-1">
+                     <input type="text" id="val-rgb" value="236, 72, 153" readonly class="flex-1 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-lg font-mono text-sm font-medium text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700" />
+                     <button class="copy-btn p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-lg transition" data-target="val-rgb" title="Copy RGB">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                     </button>
+                  </div>
+               </div>
+
+               <div class="relative group">
+                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">HSL</label>
+                  <div class="flex items-center gap-2 mt-1">
+                     <input type="text" id="val-hsl" value="330, 81%, 60%" readonly class="flex-1 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-lg font-mono text-sm font-medium text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700" />
+                     <button class="copy-btn p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-lg transition" data-target="val-hsl" title="Copy HSL">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                     </button>
+                  </div>
+               </div>
+
+               <div class="relative group">
+                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">CMYK</label>
+                  <div class="flex items-center gap-2 mt-1">
+                     <input type="text" id="val-cmyk" value="0, 69, 35, 7" readonly class="flex-1 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-lg font-mono text-sm font-medium text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700" />
+                     <button class="copy-btn p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-lg transition" data-target="val-cmyk" title="Copy CMYK">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                     </button>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg">
+            <h4 class="font-bold text-slate-700 dark:text-slate-200 mb-4 text-sm uppercase tracking-wide">🎨 Harmonies</h4>
+            <div class="space-y-4">
+              <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Complementary</p>
+                <div id="harmony-complementary" class="flex gap-2"></div>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Analogous</p>
+                <div id="harmony-analogous" class="flex gap-2"></div>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Triadic</p>
+                <div id="harmony-triadic" class="flex gap-2"></div>
+              </div>
+            </div>
+         </div>
+
+         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm uppercase tracking-wide">📌 Recent</h4>
+              <button id="clear-history" class="text-xs text-red-500 hover:text-red-600 font-medium">Clear</button>
+            </div>
+            <div id="history-grid" class="grid grid-cols-5 gap-2"></div>
+         </div>
+
+      </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Elements
+  const eyeDropperSection = document.getElementById('eyedropper-section');
+  const btnEyeDropper = document.getElementById('btn-eyedropper');
+  const fileInput = document.getElementById('file-input');
+  const canvas = document.getElementById('image-canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const placeholder = document.getElementById('placeholder-text');
+  
+  const magnifier = document.getElementById('magnifier');
+  const magCanvas = document.getElementById('mag-canvas') as HTMLCanvasElement;
+  const magCtx = magCanvas.getContext('2d');
+
+  const paletteSection = document.getElementById('palette-section');
+  const extractPaletteBtn = document.getElementById('extract-palette-btn');
+  const paletteGrid = document.getElementById('palette-grid');
+
+  // Outputs
+  const preview = document.getElementById('color-preview');
+  const contrastBadge = document.getElementById('contrast-badge');
+  const valHex = document.getElementById('val-hex') as HTMLInputElement;
+  const valRgb = document.getElementById('val-rgb') as HTMLInputElement;
+  const valHsl = document.getElementById('val-hsl') as HTMLInputElement;
+  const valCmyk = document.getElementById('val-cmyk') as HTMLInputElement;
+  const historyGrid = document.getElementById('history-grid');
+  const clearHistoryBtn = document.getElementById('clear-history');
+
+  const harmonyComplementary = document.getElementById('harmony-complementary');
+  const harmonyAnalogous = document.getElementById('harmony-analogous');
+  const harmonyTriadic = document.getElementById('harmony-triadic');
+
+  let history = [];
+  let currentImage = null;
+
+  // --- 1. EYEDROPPER API ---
+  // @ts-ignore
+  if (window.EyeDropper) {
+    eyeDropperSection.classList.remove('hidden');
+    
+    btnEyeDropper.addEventListener('click', async () => {
+        try {
+            // @ts-ignore
+            const eyeDropper = new EyeDropper();
+            const result = await eyeDropper.open();
+            updateColor(result.sRGBHex);
+        } catch (e) {
+            console.log("User canceled");
+        }
+    });
+  }
+
+  // --- 2. IMAGE PICKER & MAGNIFIER ---
+  fileInput.addEventListener('change', (e) => {
+    const file = (e.target as HTMLInputElement).files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                currentImage = img;
+                
+                // Resize logic for canvas performance (max 800px width)
+                const maxWidth = 800; 
+                let w = img.width;
+                let h = img.height;
+                
+                if(w > maxWidth) {
+                    h = (h * maxWidth) / w;
+                    w = maxWidth;
+                }
+
+                canvas.width = w;
+                canvas.height = h;
+                ctx.drawImage(img, 0, 0, w, h);
+                
+                canvas.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                paletteSection.classList.remove('hidden');
+                
+                // Auto extract palette
+                const palette = extractDominantColors(5);
+                displayPalette(palette);
+            };
+            img.src = event.target.result as string;
+        };
+        reader.readAsDataURL(file);
+    }
+  });
+
+  // Magnifier Logic
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    
+    // Scale coordinate (in case CSS resizes canvas)
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    // Show Magnifier
+    magnifier.classList.remove('hidden');
+    magnifier.style.left = `${e.clientX - rect.left}px`;
+    magnifier.style.top = `${e.clientY - rect.top}px`;
+
+    // Zoom Config
+    const zoom = 4;
+    const sourceSize = 32; // Size of area to copy
+    
+    // Clear
+    magCtx.fillStyle = "white";
+    magCtx.fillRect(0, 0, 128, 128);
+
+    // Disable smoothing for pixelated effect
+    magCtx.imageSmoothingEnabled = false;
+
+    try {
+        magCtx.drawImage(
+            canvas, 
+            x - sourceSize/2, 
+            y - sourceSize/2, 
+            sourceSize, sourceSize, 
+            0, 0, 128, 128
+        );
+    } catch(err) {}
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    magnifier.classList.add('hidden');
+  });
+
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = Math.floor((e.clientX - rect.left) * scaleX);
+    const y = Math.floor((e.clientY - rect.top) * scaleY);
+    
+    const pixel = ctx.getImageData(x, y, 1, 1).data;
+    // Check if transparent
+    if(pixel[3] === 0) return;
+
+    const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+    updateColor(hex);
+  });
+
+  // --- 3. PALETTE EXTRACTION ---
+  extractPaletteBtn.addEventListener('click', () => {
+    if(!currentImage) return;
+    const palette = extractDominantColors(5);
+    displayPalette(palette);
+  });
+
+  function extractDominantColors(count = 5) {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const pixels = imageData.data;
+    const colorMap = new Map();
+    
+    // Sample pixels (step 40 for speed)
+    for(let i = 0; i < pixels.length; i += 40) {
+      const r = pixels[i];
+      const g = pixels[i + 1];
+      const b = pixels[i + 2];
+      const a = pixels[i + 3];
+      
+      if(a < 125) continue; // Skip transparency
+      
+      // Round to nearest 10 to group similar colors
+      const rr = Math.round(r / 10) * 10;
+      const rg = Math.round(g / 10) * 10;
+      const rb = Math.round(b / 10) * 10;
+      
+      const key = `${rr},${rg},${rb}`;
+      colorMap.set(key, (colorMap.get(key) || 0) + 1);
+    }
+    
+    const sorted = Array.from(colorMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, count);
+    
+    return sorted.map(([rgb]) => {
+      const [r, g, b] = rgb.split(',').map(Number);
+      return rgbToHex(r, g, b);
+    });
+  }
+
+  function displayPalette(colors) {
+    paletteGrid.innerHTML = colors.map(hex => `
+      <div class="group cursor-pointer" onclick="updateColor('${hex}')">
+        <div class="w-full h-16 rounded-xl shadow-sm border border-slate-200 dark:border-slate-600 transition-all group-hover:scale-105 group-hover:shadow-md" 
+             style="background-color: ${hex};">
+        </div>
+        <p class="text-[10px] font-mono text-center mt-1 text-slate-500">${hex}</p>
+      </div>
+    `).join('');
+  }
+
+  // --- 4. COLOR LOGIC ---
+  function updateColor(hex) {
+    const rgb = hexToRgb(hex);
+    const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    const cmyk = rgbToCmyk(rgb.r, rgb.g, rgb.b);
+
+    // Update UI Values
+    preview.style.backgroundColor = hex;
+    valHex.value = hex;
+    valRgb.value = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+    valHsl.value = `${hsl.h}°, ${hsl.s}%, ${hsl.l}%`;
+    valCmyk.value = `${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%`;
+
+    // Contrast Check (YIQ)
+    const yiq = ((rgb.r * 299) + (rgb.g * 587) + (rgb.b * 114)) / 1000;
+    const textColor = (yiq >= 128) ? 'black' : 'white';
+    contrastBadge.innerText = `Text: ${textColor.toUpperCase()}`;
+    contrastBadge.style.color = textColor;
+    contrastBadge.style.backgroundColor = hex;
+
+    // Harmonies
+    updateHarmonies(hsl.h);
+
+    // History
+    addToHistory(hex);
+  }
+
+  function updateHarmonies(hue) {
+    // Complementary
+    const comp = [(hue + 180) % 360];
+    renderHarmonies(harmonyComplementary, comp);
+
+    // Analogous
+    const analog = [(hue - 30 + 360) % 360, hue, (hue + 30) % 360];
+    renderHarmonies(harmonyAnalogous, analog);
+
+    // Triadic
+    const triad = [hue, (hue + 120) % 360, (hue + 240) % 360];
+    renderHarmonies(harmonyTriadic, triad);
+  }
+
+  function renderHarmonies(container, hues) {
+    container.innerHTML = hues.map(h => {
+      const hex = hslToHex(h, 70, 50); // Saturation 70, Lightness 50 for vibrant colors
+      return `<div class="flex-1 h-10 rounded-lg shadow-sm cursor-pointer border border-slate-200 dark:border-slate-600 hover:scale-110 transition" 
+                   style="background-color: ${hex};" 
+                   onclick="updateColor('${hex}')" 
+                   title="${hex}"></div>`;
+    }).join('');
+  }
+
+  // --- HISTORY LOGIC ---
+  function addToHistory(hex) {
+    if(history.length > 0 && history[0] === hex) return;
+    history.unshift(hex);
+    if(history.length > 10) history.pop();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    historyGrid.innerHTML = history.map(c => `
+        <div class="w-full h-8 rounded-md cursor-pointer border border-slate-200 dark:border-slate-600 shadow-sm transition-all hover:scale-110" 
+             style="background-color: ${c};" 
+             onclick="updateColor('${c}')"
+             title="${c}">
+        </div>
+    `).join('');
+  }
+
+  clearHistoryBtn.addEventListener('click', () => {
+    history = [];
+    renderHistory();
+  });
+
+  // --- MATH HELPERS ---
+  function rgbToHex(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+
+  function hexToRgb(hex) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return { r, g, b };
+  }
+
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) { h = s = 0; } 
+    else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+    return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+  }
+
+  function hslToHex(h, s, l) {
+    l /= 100;
+    const a = s * Math.min(l, 1 - l) / 100;
+    const f = n => {
+      const k = (n + h / 30) % 12;
+      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color);
+    };
+    return rgbToHex(f(0), f(8), f(4));
+  }
+
+  function rgbToCmyk(r, g, b) {
+    let c = 1 - (r / 255);
+    let m = 1 - (g / 255);
+    let y = 1 - (b / 255);
+    let k = Math.min(c, m, y);
+    
+    if(k === 1) return { c: 0, m: 0, y: 0, k: 100 };
+    
+    return {
+        c: Math.round(((c - k) / (1 - k)) * 100),
+        m: Math.round(((m - k) / (1 - k)) * 100),
+        y: Math.round(((y - k) / (1 - k)) * 100),
+        k: Math.round(k * 100)
+    };
+  }
+
+  // Global Access
+  window.updateColor = updateColor;
+
+  // Copy Buttons
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        // @ts-ignore
+        const targetId = e.currentTarget.dataset.target;
+        const target = document.getElementById(targetId) as HTMLInputElement;
+        navigator.clipboard.writeText(target.value);
+        window.showToast("Copied!", "success");
+    });
+  });
+</script>

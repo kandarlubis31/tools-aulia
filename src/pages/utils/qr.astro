@@ -1,0 +1,803 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="QR Code Generator">
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  
+  <div class="max-w-6xl mx-auto px-4 min-h-[60vh]">
+    <div class="text-center mb-10 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-violet-500">
+        QR Code Generator
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Ubah teks, link, atau data lainnya menjadi kode QR kustom dengan berbagai opsi.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in pb-20">
+      
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          <div class="mb-4">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tipe QR Code</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button class="qr-type-btn active" data-type="text">Teks/URL</button>
+              <button class="qr-type-btn" data-type="wifi">WiFi</button>
+              <button class="qr-type-btn" data-type="email">Email</button>
+              <button class="qr-type-btn" data-type="sms">SMS</button>
+              <button class="qr-type-btn" data-type="phone">Telepon</button>
+              <button class="qr-type-btn" data-type="vcard">Kontak</button>
+              <button class="qr-type-btn" data-type="location">Lokasi</button>
+              <button class="qr-type-btn" data-type="event">Acara</button>
+            </div>
+          </div>
+          
+          <div id="qr-input-fields">
+            <div id="text-input" class="qr-input-container">
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Isi Konten</label>
+              <textarea id="qr-text" placeholder="https://example.com atau teks apa pun" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+            </div>
+            
+            <div id="wifi-input" class="qr-input-container hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Nama Jaringan (SSID)</label>
+                  <input type="text" id="wifi-ssid" placeholder="Nama WiFi" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Kata Sandi</label>
+                  <input type="text" id="wifi-password" placeholder="Kata sandi WiFi" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Enkripsi</label>
+                <select id="wifi-encryption" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all">
+                  <option value="WPA">WPA/WPA2</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">Tanpa Kata Sandi</option>
+                </select>
+              </div>
+            </div>
+            
+            <div id="email-input" class="qr-input-container hidden">
+              <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Alamat Email</label>
+                <input type="email" id="email-address" placeholder="email@example.com" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+              </div>
+              <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Subjek</label>
+                <input type="text" id="email-subject" placeholder="Subjek email" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Pesan</label>
+                <textarea id="email-message" placeholder="Isi pesan email" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+              </div>
+            </div>
+            
+            <div id="sms-input" class="qr-input-container hidden">
+              <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Nomor Telepon</label>
+                <input type="tel" id="sms-number" placeholder="+628123456789" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Pesan</label>
+                <textarea id="sms-message" placeholder="Isi pesan SMS" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+              </div>
+            </div>
+            
+            <div id="phone-input" class="qr-input-container hidden">
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Nomor Telepon</label>
+              <input type="tel" id="phone-number" placeholder="+628123456789" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+            </div>
+            
+            <div id="vcard-input" class="qr-input-container hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Nama Depan</label>
+                  <input type="text" id="vcard-firstname" placeholder="John" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Nama Belakang</label>
+                  <input type="text" id="vcard-lastname" placeholder="Doe" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Organisasi</label>
+                  <input type="text" id="vcard-org" placeholder="Perusahaan" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Judul</label>
+                  <input type="text" id="vcard-title" placeholder="Manajer" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Telepon</label>
+                  <input type="tel" id="vcard-phone" placeholder="+628123456789" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Email</label>
+                  <input type="email" id="vcard-email" placeholder="email@example.com" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Alamat</label>
+                <input type="text" id="vcard-address" placeholder="Jl. Contoh No. 123, Jakarta" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+              </div>
+            </div>
+            
+            <div id="location-input" class="qr-input-container hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Lintang (Latitude)</label>
+                  <input type="text" id="location-lat" placeholder="-6.2088" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Bujur (Longitude)</label>
+                  <input type="text" id="location-lng" placeholder="106.8456" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Query (Opsional)</label>
+                <input type="text" id="location-query" placeholder="Monas, Jakarta" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+              </div>
+            </div>
+            
+            <div id="event-input" class="qr-input-container hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Judul Acara</label>
+                  <input type="text" id="event-title" placeholder="Meeting Tim" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Lokasi</label>
+                  <input type="text" id="event-location" placeholder="Ruang Meeting 1" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tanggal Mulai</label>
+                  <input type="datetime-local" id="event-start" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tanggal Selesai</label>
+                  <input type="datetime-local" id="event-end" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Deskripsi</label>
+                <textarea id="event-description" placeholder="Deskripsi acara" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4">Kustomisasi</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Warna QR</label>
+              <div class="flex items-center gap-2">
+                <input type="color" id="qr-color" value="#000000" class="w-full h-10 rounded cursor-pointer border border-slate-300 dark:border-slate-600" />
+                <input type="text" id="qr-color-hex" value="#000000" class="w-24 p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-sm focus:border-indigo-500 outline-none font-mono" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Warna Background</label>
+              <div class="flex items-center gap-2">
+                <input type="color" id="bg-color" value="#ffffff" class="w-full h-10 rounded cursor-pointer border border-slate-300 dark:border-slate-600" />
+                <input type="text" id="bg-color-hex" value="#ffffff" class="w-24 p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-sm focus:border-indigo-500 outline-none font-mono" />
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6">
+            <label class="flex justify-between text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+              <span>Ukuran</span>
+              <span id="size-val">250px</span>
+            </label>
+            <input type="range" id="qr-size" min="100" max="500" value="250" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
+          </div>
+          
+          <div class="mt-6">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tingkat Koreksi Error</label>
+            <div class="grid grid-cols-4 gap-2">
+              <button class="error-level-btn" data-level="L">Rendah (7%)</button>
+              <button class="error-level-btn active" data-level="M">Sedang (15%)</button>
+              <button class="error-level-btn" data-level="Q">Tinggi (25%)</button>
+              <button class="error-level-btn" data-level="H">Tertinggi (30%)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4">Preview</h3>
+          <div class="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 p-6 rounded-xl">
+            <div class="bg-white p-4 rounded-xl shadow-lg transition-transform hover:scale-105 duration-300">
+              <canvas id="qr-code"></canvas>
+            </div>
+            <p class="mt-4 text-sm text-slate-500 font-medium">Preview Live</p>
+          </div>
+        </div>
+        
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4">Aksi</h3>
+          
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <button id="download-png-btn" class="action-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                PNG
+              </button>
+              <button id="download-jpg-btn" class="action-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                JPG
+              </button>
+            </div>
+            
+            <button id="copy-btn" class="action-btn w-full">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Salin ke Clipboard
+            </button>
+            
+            <button id="share-btn" class="action-btn w-full">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+              Bagikan
+            </button>
+            
+            <button id="reset-btn" class="action-btn w-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+              Reset
+            </button>
+          </div>
+        </div>
+        
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">Riwayat</h3>
+            <button id="clear-history-btn" class="text-xs text-slate-500 hover:text-red-500 transition-colors font-medium">Hapus Semua</button>
+          </div>
+          <div id="history-container" class="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada riwayat</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</BaseLayout>
+
+<style>
+  .qr-type-btn, .error-level-btn, .action-btn {
+    @apply px-4 py-2 rounded-lg font-medium text-sm transition-all;
+  }
+  
+  .qr-type-btn {
+    @apply bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 border border-transparent;
+  }
+  
+  .qr-type-btn.active {
+    @apply bg-indigo-600 text-white hover:bg-indigo-700 shadow-md;
+  }
+  
+  .error-level-btn {
+    @apply bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 border border-transparent;
+  }
+  
+  .error-level-btn.active {
+    @apply bg-indigo-600 text-white hover:bg-indigo-700 shadow-md;
+  }
+  
+  .action-btn {
+    @apply bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2;
+  }
+  
+  .history-item {
+    @apply flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer;
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 20px;
+  }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #475569;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+  }
+</style>
+
+<script>
+  // Elements
+  const canvas = document.getElementById('qr-code');
+  const qrTypeButtons = document.querySelectorAll('.qr-type-btn');
+  const errorLevelButtons = document.querySelectorAll('.error-level-btn');
+  const qrInputContainers = document.querySelectorAll('.qr-input-container');
+  const qrColor = document.getElementById('qr-color');
+  const qrColorHex = document.getElementById('qr-color-hex');
+  const bgColor = document.getElementById('bg-color');
+  const bgColorHex = document.getElementById('bg-color-hex');
+  const qrSize = document.getElementById('qr-size');
+  const sizeVal = document.getElementById('size-val');
+  const downloadPngBtn = document.getElementById('download-png-btn');
+  const downloadJpgBtn = document.getElementById('download-jpg-btn');
+  const copyBtn = document.getElementById('copy-btn');
+  const shareBtn = document.getElementById('share-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const clearHistoryBtn = document.getElementById('clear-history-btn');
+  const historyContainer = document.getElementById('history-container');
+  
+  // QR Code instance
+  // @ts-ignore
+  let qr = new QRious({
+    element: canvas,
+    value: 'https://paklubis.my.id',
+    size: 250,
+    foreground: '#000000',
+    background: '#ffffff',
+    level: 'M'
+  });
+  
+  // Current QR type
+  let currentQRType = 'text';
+  
+  // History
+  let qrHistory = JSON.parse(localStorage.getItem('qrHistory') || '[]');
+  
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    renderHistory();
+    updateQR();
+  });
+  
+  // QR Type Selection
+  qrTypeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Update active state
+      qrTypeButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // Show/hide input containers
+      // @ts-ignore
+      const type = btn.dataset.type;
+      currentQRType = type;
+      
+      qrInputContainers.forEach(container => {
+        container.classList.add('hidden');
+      });
+      
+      document.getElementById(`${type}-input`).classList.remove('hidden');
+      
+      // Update QR
+      updateQR();
+    });
+  });
+  
+  // Error Level Selection
+  errorLevelButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Update active state
+      errorLevelButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // Update QR
+      updateQR();
+    });
+  });
+  
+  // Color Sync
+  qrColor.addEventListener('input', (e) => {
+    // @ts-ignore
+    qrColorHex.value = e.target.value;
+    updateQR();
+  });
+  
+  qrColorHex.addEventListener('input', (e) => {
+    // @ts-ignore
+    if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+      // @ts-ignore
+      qrColor.value = e.target.value;
+      updateQR();
+    }
+  });
+  
+  bgColor.addEventListener('input', (e) => {
+    // @ts-ignore
+    bgColorHex.value = e.target.value;
+    updateQR();
+  });
+  
+  bgColorHex.addEventListener('input', (e) => {
+    // @ts-ignore
+    if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+      // @ts-ignore
+      bgColor.value = e.target.value;
+      updateQR();
+    }
+  });
+  
+  // Size Slider
+  qrSize.addEventListener('input', (e) => {
+    // @ts-ignore
+    sizeVal.innerText = `${e.target.value}px`;
+    updateQR();
+  });
+  
+  // Add input event listeners to all input fields
+  document.querySelectorAll('input, textarea, select').forEach(el => {
+    el.addEventListener('input', debounce(updateQR, 300));
+  });
+  
+  // Update QR Code
+  function updateQR() {
+    let qrValue = '';
+    
+    // Generate QR value based on type
+    switch (currentQRType) {
+      case 'text':
+        // @ts-ignore
+        qrValue = document.getElementById('qr-text').value || 'https://paklubis.my.id';
+        break;
+        
+      case 'wifi':
+        // @ts-ignore
+        const ssid = document.getElementById('wifi-ssid').value || 'NetworkName';
+        // @ts-ignore
+        const password = document.getElementById('wifi-password').value || '';
+        // @ts-ignore
+        const encryption = document.getElementById('wifi-encryption').value || 'WPA';
+        qrValue = `WIFI:T:${encryption};S:${ssid};P:${password};;`;
+        break;
+        
+      case 'email':
+        // @ts-ignore
+        const email = document.getElementById('email-address').value || 'email@example.com';
+        // @ts-ignore
+        const subject = document.getElementById('email-subject').value || '';
+        // @ts-ignore
+        const message = document.getElementById('email-message').value || '';
+        qrValue = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+        break;
+        
+      case 'sms':
+        // @ts-ignore
+        const number = document.getElementById('sms-number').value || '';
+        // @ts-ignore
+        const smsMessage = document.getElementById('sms-message').value || '';
+        qrValue = `sms:${number}?body=${encodeURIComponent(smsMessage)}`;
+        break;
+        
+      case 'phone':
+        // @ts-ignore
+        const phoneNumber = document.getElementById('phone-number').value || '';
+        qrValue = `tel:${phoneNumber}`;
+        break;
+        
+      case 'vcard':
+        // @ts-ignore
+        const firstName = document.getElementById('vcard-firstname').value || '';
+        // @ts-ignore
+        const lastName = document.getElementById('vcard-lastname').value || '';
+        // @ts-ignore
+        const org = document.getElementById('vcard-org').value || '';
+        // @ts-ignore
+        const title = document.getElementById('vcard-title').value || '';
+        // @ts-ignore
+        const vcardPhone = document.getElementById('vcard-phone').value || '';
+        // @ts-ignore
+        const vcardEmail = document.getElementById('vcard-email').value || '';
+        // @ts-ignore
+        const address = document.getElementById('vcard-address').value || '';
+        
+        qrValue = `BEGIN:VCARD
+VERSION:3.0
+FN:${firstName} ${lastName}
+ORG:${org}
+TITLE:${title}
+TEL:${vcardPhone}
+EMAIL:${vcardEmail}
+ADR:;;${address};;;;
+END:VCARD`;
+        break;
+        
+      case 'location':
+        // @ts-ignore
+        const lat = document.getElementById('location-lat').value || '';
+        // @ts-ignore
+        const lng = document.getElementById('location-lng').value || '';
+        // @ts-ignore
+        const query = document.getElementById('location-query').value || '';
+        
+        if (lat && lng) {
+          qrValue = `geo:${lat},${lng}${query ? '?q=' + encodeURIComponent(query) : ''}`;
+        } else if (query) {
+          qrValue = `http://maps.google.com/maps?q=${encodeURIComponent(query)}`;
+        }
+        break;
+        
+      case 'event':
+        // @ts-ignore
+        const eventTitle = document.getElementById('event-title').value || '';
+        // @ts-ignore
+        const eventLocation = document.getElementById('event-location').value || '';
+        // @ts-ignore
+        const eventStart = document.getElementById('event-start').value || '';
+        // @ts-ignore
+        const eventEnd = document.getElementById('event-end').value || '';
+        // @ts-ignore
+        const eventDescription = document.getElementById('event-description').value || '';
+        
+        // Format dates for iCal
+        const formatDateTime = (dateTime) => {
+          if (!dateTime) return '';
+          const date = new Date(dateTime);
+          return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+        };
+        
+        qrValue = `BEGIN:VEVENT
+SUMMARY:${eventTitle}
+LOCATION:${eventLocation}
+DTSTART:${formatDateTime(eventStart)}
+DTEND:${formatDateTime(eventEnd)}
+DESCRIPTION:${eventDescription}
+END:VEVENT`;
+        break;
+    }
+    
+    // Get active error level
+    // @ts-ignore
+    const activeErrorLevel = document.querySelector('.error-level-btn.active').dataset.level;
+    
+    // Update QR
+    qr.set({
+      value: qrValue,
+      // @ts-ignore
+      foreground: qrColor.value,
+      // @ts-ignore
+      background: bgColor.value,
+      // @ts-ignore
+      size: parseInt(qrSize.value),
+      level: activeErrorLevel
+    });
+  }
+  
+  // Download PNG
+  downloadPngBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'qrcode.png';
+    // @ts-ignore
+    link.href = canvas.toDataURL();
+    link.click();
+    
+    // Add to history
+    addToHistory('PNG');
+    
+    window.showToast('QR Code diunduh sebagai PNG!', 'success');
+  });
+  
+  // Download JPG
+  downloadJpgBtn.addEventListener('click', () => {
+    // Create a temporary canvas with white background
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    // @ts-ignore
+    tempCanvas.width = canvas.width;
+    // @ts-ignore
+    tempCanvas.height = canvas.height;
+    
+    // Fill white background
+    tempCtx.fillStyle = '#ffffff';
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    
+    // Draw the QR code on top
+    // @ts-ignore
+    tempCtx.drawImage(canvas, 0, 0);
+    
+    // Download as JPG
+    const link = document.createElement('a');
+    link.download = 'qrcode.jpg';
+    link.href = tempCanvas.toDataURL('image/jpeg', 0.9);
+    link.click();
+    
+    // Add to history
+    addToHistory('JPG');
+    
+    window.showToast('QR Code diunduh sebagai JPG!', 'success');
+  });
+  
+  // Copy to Clipboard
+  copyBtn.addEventListener('click', async () => {
+    try {
+      // @ts-ignore
+      canvas.toBlob(async (blob) => {
+        // @ts-ignore
+        const item = new ClipboardItem({ 'image/png': blob });
+        await navigator.clipboard.write([item]);
+        window.showToast('QR Code disalin ke clipboard!', 'success');
+      });
+    } catch (err) {
+      window.showToast('Gagal menyalin ke clipboard', 'error');
+    }
+  });
+  
+  // Share
+  shareBtn.addEventListener('click', async () => {
+    // @ts-ignore
+    if (navigator.share) {
+      try {
+        // @ts-ignore
+        canvas.toBlob(async (blob) => {
+          // @ts-ignore
+          const file = new File([blob], 'qrcode.png', { type: 'image/png' });
+          // @ts-ignore
+          await navigator.share({
+            title: 'QR Code',
+            text: 'Lihat QR Code yang saya buat',
+            files: [file]
+          });
+        });
+      } catch (err) {
+        window.showToast('Gagal membagikan QR Code', 'error');
+      }
+    } else {
+      window.showToast('Browser Anda tidak mendukung fitur berbagi', 'error');
+    }
+  });
+  
+  // Reset
+  resetBtn.addEventListener('click', () => {
+    // Reset all inputs
+    document.querySelectorAll('input, textarea, select').forEach(el => {
+      // @ts-ignore
+      if (el.type === 'color') {
+        if (el.id === 'qr-color') { // @ts-ignore 
+            el.value = '#000000'; 
+        }
+        if (el.id === 'bg-color') { // @ts-ignore
+            el.value = '#ffffff'; 
+        }
+      } else if (el.id === 'qr-size') {
+        // @ts-ignore
+        el.value = '250';
+        sizeVal.innerText = '250px';
+      } else if (el.id === 'qr-color-hex') {
+        // @ts-ignore
+        el.value = '#000000';
+      } else if (el.id === 'bg-color-hex') {
+        // @ts-ignore
+        el.value = '#ffffff';
+      } else {
+        // @ts-ignore
+        el.value = '';
+      }
+    });
+    
+    // Reset QR type
+    qrTypeButtons.forEach(btn => {
+      btn.classList.remove('active');
+      // @ts-ignore
+      if (btn.dataset.type === 'text') {
+        btn.classList.add('active');
+      }
+    });
+    
+    // Reset error level
+    errorLevelButtons.forEach(btn => {
+      btn.classList.remove('active');
+      // @ts-ignore
+      if (btn.dataset.level === 'M') {
+        btn.classList.add('active');
+      }
+    });
+    
+    // Show text input
+    qrInputContainers.forEach(container => {
+      container.classList.add('hidden');
+    });
+    document.getElementById('text-input').classList.remove('hidden');
+    
+    // Reset current QR type
+    currentQRType = 'text';
+    
+    // Update QR
+    updateQR();
+    
+    window.showToast('Form berhasil direset!', 'success');
+  });
+  
+  // Clear History
+  clearHistoryBtn.addEventListener('click', () => {
+    qrHistory = [];
+    localStorage.setItem('qrHistory', JSON.stringify(qrHistory));
+    renderHistory();
+    window.showToast('Riwayat dihapus!', 'success');
+  });
+  
+  // Add to History
+  function addToHistory(format) {
+    const now = new Date();
+    const historyItem = {
+      id: Date.now(),
+      type: currentQRType,
+      format: format,
+      date: now.toLocaleString('id-ID'),
+      // @ts-ignore
+      dataUrl: canvas.toDataURL()
+    };
+    
+    qrHistory.unshift(historyItem);
+    
+    // Keep only last 10 items
+    if (qrHistory.length > 10) {
+      qrHistory = qrHistory.slice(0, 10);
+    }
+    
+    localStorage.setItem('qrHistory', JSON.stringify(qrHistory));
+    renderHistory();
+  }
+  
+  // Render History
+  function renderHistory() {
+    if (qrHistory.length === 0) {
+      historyContainer.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada riwayat</p>';
+      return;
+    }
+    
+    historyContainer.innerHTML = qrHistory.map(item => `
+      <div class="history-item" data-id="${item.id}">
+        <div class="flex items-center gap-3">
+          <img src="${item.dataUrl}" alt="QR Code" class="w-10 h-10 rounded border border-slate-200 dark:border-slate-600 bg-white">
+          <div>
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-300 uppercase">${item.type} - ${item.format}</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400">${item.date}</p>
+          </div>
+        </div>
+        <button class="text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors p-1" title="Unduh">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        </button>
+      </div>
+    `).join('');
+    
+    // Add click event to history items
+    document.querySelectorAll('.history-item button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // @ts-ignore
+        const id = parseInt(btn.closest('.history-item').dataset.id);
+        // @ts-ignore
+        const item = qrHistory.find(h => h.id === id);
+        if (item) {
+          const link = document.createElement('a');
+          link.download = `qrcode-${item.type}-${item.id}.${item.format.toLowerCase()}`;
+          link.href = item.dataUrl;
+          link.click();
+          window.showToast('QR Code dari riwayat diunduh!', 'success');
+        }
+      });
+    });
+  }
+  
+  // Debounce function
+  function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+      // @ts-ignore
+      const context = this;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+  }
+</script>

@@ -1,0 +1,133 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Edit PDF Metadata">
+  <script type="module" src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+  <div class="max-w-4xl mx-auto px-4 min-h-[80vh]">
+    <div class="text-center mb-8 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500">
+        Edit Metadata
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Ubah informasi Judul, Penulis, Subjek, dan Kata Kunci dokumen PDF.
+      </p>
+    </div>
+
+    <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-slate-300 dark:border-slate-600 rounded-3xl p-12 cursor-pointer hover:border-cyan-500 hover:bg-cyan-50 dark:hover:bg-slate-800/50 transition-all group text-center animate-on-scroll">
+      <div class="w-20 h-20 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      </div>
+      <h3 class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2">Pilih PDF</h3>
+      <input type="file" id="file-input" accept="application/pdf" class="hidden" />
+    </div>
+
+    <div id="form-area" class="hidden max-w-2xl mx-auto mt-8 bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl animate-fade-in">
+      <h3 class="font-bold text-lg mb-6 pb-2 border-b border-slate-200 dark:border-slate-700">Informasi Dokumen</h3>
+      
+      <div class="space-y-4">
+        <div>
+            <label class="block text-sm font-bold text-slate-500 mb-1">Judul (Title)</label>
+            <input type="text" id="meta-title" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600" />
+        </div>
+        <div>
+            <label class="block text-sm font-bold text-slate-500 mb-1">Penulis (Author)</label>
+            <input type="text" id="meta-author" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600" />
+        </div>
+        <div>
+            <label class="block text-sm font-bold text-slate-500 mb-1">Subjek (Subject)</label>
+            <input type="text" id="meta-subject" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600" />
+        </div>
+        <div>
+            <label class="block text-sm font-bold text-slate-500 mb-1">Kata Kunci (Keywords)</label>
+            <input type="text" id="meta-keywords" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600" placeholder="Dipisahkan koma" />
+        </div>
+        <div class="grid grid-cols-2 gap-4 pt-2 text-xs text-slate-400">
+            <div><span class="font-bold">Creator:</span> <span id="info-creator">-</span></div>
+            <div><span class="font-bold">Producer:</span> <span id="info-producer">-</span></div>
+        </div>
+      </div>
+
+      <button id="save-btn" class="w-full mt-8 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+        Simpan Perubahan
+      </button>
+    </div>
+  </div>
+</BaseLayout>
+
+<script type="module">
+  const { PDFDocument } = await import('https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.esm.js');
+
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const formArea = document.getElementById('form-area');
+  const saveBtn = document.getElementById('save-btn');
+
+  // Inputs
+  const inpTitle = document.getElementById('meta-title');
+  const inpAuthor = document.getElementById('meta-author');
+  const inpSubject = document.getElementById('meta-subject');
+  const inpKeywords = document.getElementById('meta-keywords');
+  
+  let currentFile = null;
+
+  dropZone.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', async (e) => {
+    if (fileInput.files[0]) {
+      currentFile = fileInput.files[0];
+      dropZone.classList.add('hidden');
+      formArea.classList.remove('hidden');
+      await loadMetadata(currentFile);
+    }
+  });
+
+  async function loadMetadata(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    // Load tanpa update existing info dulu
+    const pdfDoc = await PDFDocument.load(arrayBuffer, { updateMetadata: false });
+    
+    inpTitle.value = pdfDoc.getTitle() || '';
+    inpAuthor.value = pdfDoc.getAuthor() || '';
+    inpSubject.value = pdfDoc.getSubject() || '';
+    inpKeywords.value = pdfDoc.getKeywords() || '';
+    
+    document.getElementById('info-creator').innerText = pdfDoc.getCreator() || '-';
+    document.getElementById('info-producer').innerText = pdfDoc.getProducer() || '-';
+  }
+
+  saveBtn.addEventListener('click', async () => {
+    if (!currentFile) return;
+    saveBtn.innerText = "Menyimpan...";
+    saveBtn.disabled = true;
+
+    try {
+        const arrayBuffer = await currentFile.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(arrayBuffer);
+
+        pdfDoc.setTitle(inpTitle.value);
+        pdfDoc.setAuthor(inpAuthor.value);
+        pdfDoc.setSubject(inpSubject.value);
+        pdfDoc.setKeywords(inpKeywords.value.split(','));
+        pdfDoc.setProducer('Aulia Tools (pdf-lib)');
+        pdfDoc.setCreator('Aulia Tools');
+
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `metadata-${currentFile.name}`;
+        link.click();
+        
+        window.showToast("Metadata berhasil diperbarui!", "success");
+
+    } catch (err) {
+        console.error(err);
+        window.showToast("Gagal menyimpan metadata.", "error");
+    } finally {
+        saveBtn.innerText = "Simpan Perubahan";
+        saveBtn.disabled = false;
+    }
+  });
+</script>

@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Percentage Calculator">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <div class="text-center mb-8 pt-8 animate-on-scroll">
+      <h1 class="text-3xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-blue-600">Percentage Calc</h1>
+      <p class="text-slate-600 dark:text-slate-400">Hitung persen diskon, kenaikan, dan proporsi dengan mudah.</p>
+    </div>
+
+    <div class="grid gap-6 animate-fade-in">
+       
+       <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow flex flex-wrap items-center gap-2">
+          <span class="font-bold text-slate-500">Berapa</span>
+          <input type="number" id="p1-x" class="w-20 p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-center" placeholder="X" />
+          <span class="font-bold text-slate-500">% dari</span>
+          <input type="number" id="p1-y" class="w-24 p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-center" placeholder="Y" />
+          <span class="font-bold text-slate-500">?</span>
+          <span id="res-1" class="ml-auto text-2xl font-bold text-indigo-600 dark:text-indigo-400">0</span>
+       </div>
+
+       <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow flex flex-wrap items-center gap-2">
+          <input type="number" id="p2-x" class="w-20 p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-center" placeholder="X" />
+          <span class="font-bold text-slate-500">adalah berapa % dari</span>
+          <input type="number" id="p2-y" class="w-24 p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-center" placeholder="Y" />
+          <span class="font-bold text-slate-500">?</span>
+          <span id="res-2" class="ml-auto text-2xl font-bold text-indigo-600 dark:text-indigo-400">0%</span>
+       </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  function calc1() {
+    const x = parseFloat((document.getElementById('p1-x') as HTMLInputElement).value) || 0;
+    const y = parseFloat((document.getElementById('p1-y') as HTMLInputElement).value) || 0;
+    document.getElementById('res-1')!.innerText = (x / 100 * y).toString();
+  }
+  
+  function calc2() {
+    const x = parseFloat((document.getElementById('p2-x') as HTMLInputElement).value) || 0;
+    const y = parseFloat((document.getElementById('p2-y') as HTMLInputElement).value) || 0;
+    document.getElementById('res-2')!.innerText = y ? `${((x / y) * 100).toFixed(2)}%` : '0%';
+  }
+
+  ['p1-x', 'p1-y'].forEach(id => document.getElementById(id)?.addEventListener('input', calc1));
+  ['p2-x', 'p2-y'].forEach(id => document.getElementById(id)?.addEventListener('input', calc2));
+</script>

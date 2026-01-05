@@ -1,0 +1,174 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="PDF Merger">
+  <div class="flex flex-col items-center justify-center min-h-[60vh]">
+    
+    <div class="max-w-2xl w-full bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl text-center">
+      <h1 class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">
+        PDF Merger
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 mb-8">Gabungkan banyak file PDF menjadi satu file urut dan rapi.</p>
+
+      <div 
+        id="drop-zone"
+        class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-10 cursor-pointer hover:border-red-500 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all group"
+      >
+        <div class="flex flex-col items-center gap-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-400 group-hover:text-red-500 transition-colors">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+          <span class="text-slate-500 dark:text-slate-300 font-medium">Klik untuk pilih file PDF (Bisa banyak sekaligus)</span>
+          <input type="file" id="file-input" accept="application/pdf" multiple class="hidden" />
+        </div>
+      </div>
+
+      <div id="file-list-container" class="hidden mt-6 text-left">
+        <h3 class="text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">File Terpilih:</h3>
+        <ul id="file-list" class="space-y-2 mb-6 max-h-60 overflow-y-auto pr-2">
+          </ul>
+
+        <div class="flex gap-4 justify-center pt-4 border-t border-slate-200 dark:border-slate-700">
+          <button id="merge-btn" class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-bold transition-all shadow-lg shadow-red-500/20 active:scale-95 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            Gabungkan PDF
+          </button>
+          <button id="reset-btn" class="text-slate-500 dark:text-slate-400 hover:text-red-500 px-4 py-2 transition-colors">
+            Reset
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { PDFDocument } from 'pdf-lib';
+
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const fileListContainer = document.getElementById('file-list-container');
+  const fileList = document.getElementById('file-list');
+  const mergeBtn = document.getElementById('merge-btn');
+  const resetBtn = document.getElementById('reset-btn');
+
+  let selectedFiles: File[] = [];
+
+  // --- 1. HANDLING INPUT FILES ---
+  if (dropZone && fileInput) {
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    fileInput.addEventListener('change', (e) => {
+      if (fileInput.files && fileInput.files.length > 0) {
+        // Tambahkan file baru ke array (spread operator biar gak nimpah)
+        selectedFiles = [...selectedFiles, ...Array.from(fileInput.files)];
+        updateUI();
+      }
+    });
+
+    // Drag & Drop
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-red-500'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-red-500'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-red-500');
+      if (e.dataTransfer?.files) {
+        const newFiles = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+        selectedFiles = [...selectedFiles, ...newFiles];
+        updateUI();
+      }
+    });
+  }
+
+  // --- 2. UPDATE UI LIST ---
+  function updateUI() {
+    if (!fileList || !fileListContainer || !dropZone) return;
+
+    fileList.innerHTML = ''; // Reset list visual
+    
+    if (selectedFiles.length > 0) {
+      dropZone.classList.add('hidden'); // Sembunyikan dropzone besar
+      fileListContainer.classList.remove('hidden'); // Munculkan list
+
+      selectedFiles.forEach((file, index) => {
+        const li = document.createElement('li');
+        li.className = "flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg border border-slate-200 dark:border-slate-600";
+        li.innerHTML = `
+          <div class="flex items-center gap-3 overflow-hidden">
+            <span class="w-6 h-6 bg-red-100 dark:bg-red-900/30 text-red-500 rounded flex items-center justify-center text-xs font-bold">${index + 1}</span>
+            <span class="text-sm font-medium truncate text-slate-700 dark:text-slate-200">${file.name}</span>
+            <span class="text-xs text-slate-400">(${(file.size / 1024).toFixed(1)} KB)</span>
+          </div>
+          <button data-index="${index}" class="remove-btn text-slate-400 hover:text-red-500 p-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        `;
+        fileList.appendChild(li);
+      });
+
+      // Add event listener buat tombol hapus per item
+      document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt((e.currentTarget as HTMLElement).dataset.index || '0');
+          selectedFiles.splice(idx, 1);
+          updateUI();
+        });
+      });
+
+    } else {
+      dropZone.classList.remove('hidden');
+      fileListContainer.classList.add('hidden');
+    }
+  }
+
+  // --- 3. LOGIC MERGE PDF ---
+  mergeBtn?.addEventListener('click', async () => {
+    if (selectedFiles.length === 0) return;
+
+    const originalText = mergeBtn.innerText;
+    mergeBtn.innerText = "Memproses...";
+    mergeBtn.setAttribute('disabled', 'true');
+    mergeBtn.classList.add('opacity-75', 'cursor-not-allowed');
+
+    try {
+      // Bikin dokumen PDF baru kosong
+      const mergedPdf = await PDFDocument.create();
+
+      // Loop semua file yang diupload
+      for (const file of selectedFiles) {
+        const fileBuffer = await file.arrayBuffer();
+        const pdf = await PDFDocument.load(fileBuffer);
+        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        copiedPages.forEach((page) => mergedPdf.addPage(page));
+      }
+
+      // Simpan jadi file
+      const pdfBytes = await mergedPdf.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `merged-document-${Date.now()}.pdf`;
+      link.click();
+
+    } catch (error) {
+      console.error(error);
+      alert('Gagal menggabungkan PDF. Pastikan file tidak corrupt atau dipassword.');
+    } finally {
+      mergeBtn.innerText = originalText;
+      mergeBtn.removeAttribute('disabled');
+      mergeBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+    }
+  });
+
+  // --- 4. RESET ---
+  resetBtn?.addEventListener('click', () => {
+    selectedFiles = [];
+    if(fileInput) fileInput.value = '';
+    updateUI();
+  });
+</script>
