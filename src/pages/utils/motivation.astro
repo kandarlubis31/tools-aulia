@@ -1,0 +1,585 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Inspiration Generator V4">
+  <div class="max-w-4xl mx-auto px-4 min-h-[80vh] flex flex-col justify-center items-center py-10">
+    
+    <div class="text-center mb-8 animate-on-scroll">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-fuchsia-500 tracking-tight">
+        Butuh Inspirasi?
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 text-lg">
+        Quote harian dengan fitur terjemahan otomatis.
+      </p>
+    </div>
+
+    <div class="w-full max-w-2xl flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+        
+        <div class="relative w-full md:w-1/2">
+            <select id="category-select" class="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-violet-500 appearance-none cursor-pointer shadow-sm">
+                <option value="random">Campur Aduk</option>
+                <option value="coding">Coding & Tech</option>
+                <option value="wisdom">Life & Wisdom</option>
+                <option value="business">Business & Success</option>
+                <option value="motivational">Motivational</option>
+                <option value="humor">Humor</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                <svg class="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider pl-2">Mode:</span>
+            <button id="mode-toggle" class="relative inline-flex h-8 w-32 items-center rounded-lg transition-colors duration-300 focus:outline-none bg-slate-200 dark:bg-slate-700">
+                <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out translate-x-1"></span>
+                <span class="absolute left-0 w-1/2 text-[10px] font-bold text-center text-slate-600 dark:text-slate-300 z-10 pointer-events-none">OFFLINE</span>
+                <span class="absolute right-0 w-1/2 text-[10px] font-bold text-center text-slate-600 dark:text-slate-300 z-10 pointer-events-none">ONLINE</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="w-full max-w-2xl bg-white dark:bg-slate-800 p-8 md:p-12 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden transition-all duration-300 group">
+      
+      <div id="status-badge" class="absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span>Offline Database</span>
+      </div>
+
+      <div class="absolute top-4 right-8 text-8xl text-violet-100 dark:text-violet-900/30 font-serif select-none pointer-events-none">”</div>
+
+      <div id="quote-container" class="relative z-10 flex flex-col h-full justify-center min-h-[180px] text-center mt-6">
+        <h2 id="quote-text" class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 leading-relaxed transition-opacity duration-300">
+          "Menyiapkan inspirasi..."
+        </h2>
+        
+        <div class="mt-8">
+            <cite id="quote-author" class="text-lg font-medium text-violet-600 dark:text-violet-400 not-italic">
+              — System
+            </cite>
+        </div>
+      </div>
+
+      <div class="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button id="translate-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+          </button>
+          
+          <button id="copy-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-violet-500 transition-colors" title="Salin">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          </button>
+          <button id="favorite-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-red-500 transition-colors" title="Favorit">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          </button>
+          <button id="share-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-violet-500 transition-colors" title="Bagikan">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+          </button>
+      </div>
+    </div>
+
+    <div class="mt-10 flex flex-col items-center gap-4">
+        <button id="generate-btn" class="group relative inline-flex items-center justify-center gap-3 px-10 py-4 font-bold text-white transition-all duration-200 bg-slate-900 dark:bg-white dark:text-slate-900 text-lg rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-xl shadow-violet-500/20">
+            <span>Cari Lagi</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-180 transition-transform duration-500"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+        </button>
+        <div class="flex items-center gap-4">
+            <p class="text-xs text-center text-slate-400">Tekan <kbd class="font-sans px-1 border rounded">Spasi</kbd> untuk acak</p>
+            <button id="settings-btn" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Pengaturan</button>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-100 transition-transform">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Pengaturan</h3>
+                <button id="close-settings" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Bahasa Terjemahan</label>
+                    <select id="target-lang" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-violet-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                        <option value="id" selected>🇮🇩 Indonesia</option>
+                        <option value="es">🇪🇸 Spanish</option>
+                        <option value="fr">🇫🇷 French</option>
+                        <option value="de">🇩🇪 German</option>
+                        <option value="ja">🇯🇵 Japanese</option>
+                        <option value="ko">🇰🇷 Korean</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Auto-refresh (detik)</label>
+                    <input type="number" id="auto-refresh" min="0" max="60" value="0" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-violet-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                    <p class="text-[10px] text-slate-400 mt-1">Isi 0 untuk mematikan auto-refresh.</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Ukuran Teks</label>
+                    <select id="text-size" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-violet-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                        <option value="text-xl">Kecil</option>
+                        <option value="text-2xl" selected>Sedang</option>
+                        <option value="text-3xl">Besar</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-bold text-slate-700 dark:text-slate-300">Tampilkan Author</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="show-author" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500"></div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="mt-8">
+                <button id="save-settings" class="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-violet-500/30">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="favorites-section" class="hidden mt-16 w-full max-w-2xl animate-fade-in-up">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-red-500"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    Quote Favorit
+                </h3>
+                <button id="clear-favorites" class="text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-colors">Hapus Semua</button>
+            </div>
+            <div id="favorites-list" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-2">
+                </div>
+        </div>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+  // --- 1. LOCAL DATABASE (OFFLINE MODE) ---
+  const localDB = [
+    { text: "Talk is cheap. Show me the code.", author: "Linus Torvalds", tag: "coding" },
+    { text: "It works on my machine.", author: "Anonymous", tag: "coding" },
+    { text: "Code is like humor. When you have to explain it, it's bad.", author: "Cory House", tag: "coding" },
+    { text: "Simplicity is the soul of efficiency.", author: "Austin Freeman", tag: "coding" },
+    { text: "Java is to JavaScript what car is to Carpet.", author: "Chris Heilmann", tag: "coding" },
+    { text: "Life is what happens when you're busy making other plans.", author: "John Lennon", tag: "wisdom" },
+    { text: "Get busy living or get busy dying.", author: "Stephen King", tag: "wisdom" },
+    { text: "The only way to do great work is to love what you do.", author: "Steve Jobs", tag: "business" },
+    { text: "Success is not final; failure is not fatal.", author: "Winston Churchill", tag: "business" },
+    { text: "Opportunities don't happen. You create them.", author: "Chris Grosser", tag: "business" },
+    { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb", tag: "wisdom" },
+    { text: "Your limitation—it's only your imagination.", author: "Unknown", tag: "motivational" },
+    { text: "Great things never come from comfort zones.", author: "Unknown", tag: "motivational" },
+    { text: "Dream it. Wish it. Do it.", author: "Unknown", tag: "motivational" },
+    { text: "Success doesn't just find you. You have to go out and get it.", author: "Unknown", tag: "motivational" },
+    { text: "The harder you work for something, the greater you'll feel when you achieve it.", author: "Unknown", tag: "motivational" },
+    { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson", tag: "motivational" },
+    { text: "A day without laughter is a day wasted.", author: "Charlie Chaplin", tag: "humor" },
+    { text: "I'm not lazy, I'm on energy saving mode.", author: "Unknown", tag: "humor" },
+    { text: "I told my wife she was drawing her eyebrows too high. She looked surprised.", author: "Unknown", tag: "humor" }
+  ];
+
+  // --- 2. STATE MANAGEMENT ---
+  let isOnline = localStorage.getItem('quoteMode') === 'online'; 
+  let currentQuote = {};
+  let originalQuote = {}; // Menyimpan quote asli sebelum translate
+  let isTranslated = false;
+  let techQuotesCache = [];
+  let favorites = JSON.parse(localStorage.getItem('favoriteQuotes') || '[]');
+  let autoRefreshInterval = null;
+  let settings = JSON.parse(localStorage.getItem('quoteSettings') || '{"autoRefresh": 0, "textSize": "text-2xl", "showAuthor": true, "targetLang": "id"}');
+
+  // --- 3. ELEMENTS ---
+  const quoteText = document.getElementById('quote-text');
+  const quoteAuthor = document.getElementById('quote-author');
+  const statusBadge = document.getElementById('status-badge');
+  const modeToggle = document.getElementById('mode-toggle');
+  const modeIndicator = document.getElementById('mode-indicator');
+  const categorySelect = document.getElementById('category-select');
+  const generateBtn = document.getElementById('generate-btn');
+  const copyBtn = document.getElementById('copy-btn');
+  const favoriteBtn = document.getElementById('favorite-btn');
+  const shareBtn = document.getElementById('share-btn');
+  const translateBtn = document.getElementById('translate-btn');
+  const settingsBtn = document.getElementById('settings-btn');
+  const settingsModal = document.getElementById('settings-modal');
+  const closeSettingsBtn = document.getElementById('close-settings');
+  const saveSettingsBtn = document.getElementById('save-settings');
+  const autoRefreshInput = document.getElementById('auto-refresh');
+  const textSizeSelect = document.getElementById('text-size');
+  const showAuthorCheckbox = document.getElementById('show-author');
+  const targetLangSelect = document.getElementById('target-lang');
+  const favoritesSection = document.getElementById('favorites-section');
+  const favoritesList = document.getElementById('favorites-list');
+  const clearFavoritesBtn = document.getElementById('clear-favorites');
+
+  // --- 4. CORE FUNCTIONS ---
+
+  function updateModeUI() {
+      if (isOnline) {
+          modeIndicator.style.transform = 'translateX(100%) translateX(4px)'; 
+          modeIndicator.classList.add('bg-emerald-400');
+          modeIndicator.classList.remove('bg-white');
+          
+          statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="text-emerald-600 dark:text-emerald-400">Online API</span>';
+          statusBadge.className = "absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-[10px] font-bold uppercase tracking-widest";
+      } else {
+          modeIndicator.style.transform = 'translateX(4px)';
+          modeIndicator.classList.remove('bg-emerald-400');
+          modeIndicator.classList.add('bg-white');
+
+          statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span class="text-slate-500 dark:text-slate-400">Local Database</span>';
+          statusBadge.className = "absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold uppercase tracking-widest";
+      }
+  }
+
+  function applySettings() {
+      quoteText.className = `${settings.textSize} font-bold text-slate-800 dark:text-slate-100 leading-relaxed transition-opacity duration-300`;
+      quoteAuthor.style.display = settings.showAuthor ? 'block' : 'none';
+      
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+      if (settings.autoRefresh > 0) autoRefreshInterval = setInterval(getQuote, settings.autoRefresh * 1000);
+  }
+
+  async function getQuote() {
+      // Reset State Translate
+      isTranslated = false;
+      translateBtn.classList.remove('text-blue-500', 'bg-blue-100');
+      translateBtn.classList.add('text-slate-500', 'bg-slate-100');
+
+      // UI Loading State
+      generateBtn.disabled = true;
+      generateBtn.classList.add('opacity-75');
+      const btnContent = generateBtn.innerHTML;
+      generateBtn.innerHTML = '<span class="animate-spin">Wait...</span>';
+
+      const category = categorySelect.value;
+      let quoteData = null;
+
+      try {
+          if (isOnline) {
+              quoteData = await fetchOnlineQuote(category);
+          }
+          
+          if (!quoteData) {
+              quoteData = getLocalQuote(category);
+              if (isOnline) {
+                  window.showToast('Koneksi lambat, mengambil data lokal.', 'info');
+              }
+          }
+
+      } catch (e) {
+          console.error("Critical Error:", e);
+          quoteData = getLocalQuote(category);
+      }
+
+      displayQuote(quoteData);
+      updateFavoriteButton();
+
+      // Restore Button
+      generateBtn.innerHTML = btnContent;
+      generateBtn.disabled = false;
+      generateBtn.classList.remove('opacity-75');
+  }
+
+  // --- API HANDLERS ---
+
+  async function fetchOnlineQuote(category) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000); 
+
+      try {
+          if (category === 'coding') {
+              if (techQuotesCache.length === 0) {
+                  const res = await fetch('https://cdn.jsdelivr.net/gh/skolakoda/programming-quotes-api@master/backup/quotes.json', { signal: controller.signal });
+                  if (!res.ok) throw new Error('Tech API Failed');
+                  techQuotesCache = await res.json();
+              }
+              clearTimeout(timeoutId);
+              const random = techQuotesCache[Math.floor(Math.random() * techQuotesCache.length)];
+              return { text: random.en, author: random.author };
+          }
+          else {
+              const res = await fetch('https://dummyjson.com/quotes/random', { signal: controller.signal });
+              clearTimeout(timeoutId);
+              
+              if (!res.ok) throw new Error('DummyJSON Failed');
+              const data = await res.json();
+              return { text: data.quote, author: data.author };
+          }
+
+      } catch (error) {
+          console.error("Fetch Error:", error);
+          return null;
+      }
+  }
+
+  function getLocalQuote(category) {
+      let pool = localDB;
+      if (category !== 'random') {
+          const filtered = localDB.filter(q => q.tag === category);
+          if (filtered.length > 0) pool = filtered;
+      }
+      const random = pool[Math.floor(Math.random() * pool.length)];
+      return { text: random.text, author: random.author };
+  }
+
+  // --- TRANSLATION LOGIC ---
+  async function toggleTranslation() {
+      if (isTranslated) {
+          // Revert to original
+          displayQuote(originalQuote);
+          isTranslated = false;
+          translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+          translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+          window.showToast('Kembali ke teks asli', 'info');
+      } else {
+          // Translate
+          if (!isOnline && !navigator.onLine) {
+              window.showToast('Fitur translate butuh internet!', 'error');
+              return;
+          }
+
+          const originalText = currentQuote.text;
+          const target = settings.targetLang || 'id';
+          
+          translateBtn.innerHTML = '<span class="animate-spin">⏳</span>';
+          translateBtn.disabled = true;
+
+          try {
+              const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(originalText)}&langpair=en|${target}`);
+              const data = await res.json();
+              
+              if (data.responseStatus === 200) {
+                  const translatedText = data.responseData.translatedText;
+                  displayQuote({ text: translatedText, author: currentQuote.author });
+                  isTranslated = true;
+                  
+                  translateBtn.classList.remove('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+                  translateBtn.classList.add('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+                  window.showToast('Berhasil diterjemahkan', 'success');
+              } else {
+                  throw new Error('Limit API tercapai');
+              }
+          } catch (e) {
+              window.showToast('Gagal menerjemahkan. Coba lagi nanti.', 'error');
+          } finally {
+              // Restore Icon
+              translateBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>';
+              translateBtn.disabled = false;
+          }
+      }
+  }
+
+  function displayQuote(data) {
+      if (!isTranslated) originalQuote = data; // Simpan original hanya saat render awal
+      currentQuote = data; // Update state current untuk fungsi copy/share
+      
+      quoteText.style.opacity = '0';
+      quoteAuthor.style.opacity = '0';
+
+      setTimeout(() => {
+          quoteText.innerText = `"${data.text}"`;
+          quoteAuthor.innerText = `— ${data.author}`;
+          
+          quoteText.style.opacity = '1';
+          quoteAuthor.style.opacity = '1';
+      }, 200);
+  }
+
+  // --- FAVORITES & SETTINGS (Standard) ---
+  function updateFavoriteButton() {
+    const isFavorite = favorites.some(fav => fav.text === currentQuote.text);
+    if (isFavorite) {
+      favoriteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-red-500"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+    } else {
+      favoriteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+    }
+  }
+
+  function toggleFavorite() {
+    const isFavorite = favorites.some(fav => fav.text === currentQuote.text);
+    if (isFavorite) {
+      favorites = favorites.filter(fav => fav.text !== currentQuote.text);
+      window.showToast('Dihapus dari favorit', 'info');
+    } else {
+      favorites.push({...currentQuote, id: Date.now()});
+      window.showToast('Ditambahkan ke favorit', 'success');
+    }
+    localStorage.setItem('favoriteQuotes', JSON.stringify(favorites));
+    updateFavoriteButton();
+    renderFavorites();
+  }
+
+  function renderFavorites() {
+    if (favorites.length === 0) {
+      favoritesList.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada quote favorit</p>';
+      favoritesSection.classList.add('hidden');
+      return;
+    }
+    favoritesSection.classList.remove('hidden');
+    favoritesList.innerHTML = favorites.map(fav => `
+      <div class="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors cursor-pointer group flex justify-between items-start favorite-item" data-text="${fav.text.replace(/"/g, '&quot;')}" data-author="${fav.author.replace(/"/g, '&quot;')}">
+          <div class="flex-1">
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-300 line-clamp-2">"${fav.text}"</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">- ${fav.author}</p>
+          </div>
+          <button class="delete-fav ml-2 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition-colors" data-id="${fav.id}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.favorite-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            if (e.target.closest('.delete-fav')) return;
+            const text = item.dataset.text;
+            const author = item.dataset.author;
+            // Reset translate state when loading fav
+            isTranslated = false;
+            translateBtn.classList.remove('text-blue-500', 'bg-blue-100');
+            translateBtn.classList.add('text-slate-500', 'bg-slate-100');
+            
+            displayQuote({text, author});
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+
+    document.querySelectorAll('.delete-fav').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.dataset.id);
+            favorites = favorites.filter(f => f.id !== id);
+            localStorage.setItem('favoriteQuotes', JSON.stringify(favorites));
+            renderFavorites();
+            updateFavoriteButton();
+        });
+    });
+  }
+
+  // --- LISTENERS ---
+  modeToggle.addEventListener('click', () => {
+      isOnline = !isOnline;
+      localStorage.setItem('quoteMode', isOnline ? 'online' : 'offline');
+      updateModeUI();
+      getQuote();
+  });
+
+  generateBtn.addEventListener('click', getQuote);
+  categorySelect.addEventListener('change', getQuote);
+  translateBtn.addEventListener('click', toggleTranslation);
+  favoriteBtn.addEventListener('click', toggleFavorite);
+
+  copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(`${quoteText.innerText} ${quoteAuthor.innerText}`);
+      window.showToast('Quote disalin!', 'success');
+  });
+
+shareBtn.addEventListener('click', async () => {
+      // A. Ambil Link Halaman Ini
+      const currentUrl = window.location.href; 
+
+      // B. Susun Pesan Promosi yang Rapi
+      const quotePart = `"${quoteText.innerText}"\n${quoteAuthor.innerText}`;
+      
+      // Footer promosi (Ganti kata-katanya sesuai selera marketing lu)
+      const footerPart = `\n\n✨ Dapatkan suntikan semangat harian di:\n${currentUrl}`;
+      
+      // Gabungkan
+      const fullMessage = quotePart + footerPart;
+
+      // C. Eksekusi Share
+      if (navigator.share) {
+          try {
+              // Share Native (HP: WA, IG, Telegram)
+              await navigator.share({
+                  // Title biasanya muncul di email/notes
+                  title: 'Inspirasi Developer', 
+                  // Text adalah isi pesan utama (termasuk link)
+                  text: fullMessage 
+              });
+          } catch (err) {
+              if (err.name !== 'AbortError') {
+                  // Kalau share native error, fallback ke copy
+                  copyToClipboardFallback(fullMessage);
+              }
+          }
+      } else {
+          // Fallback Desktop (Windows/Mac) -> Auto Copy
+          copyToClipboardFallback(fullMessage);
+      }
+  });
+  
+  function copyToClipboardFallback(text) {
+      navigator.clipboard.writeText(text).then(() => {
+          // Ubah icon tombol share jadi tanda centang (Visual Feedback)
+          const originalHTML = shareBtn.innerHTML;
+          shareBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M20 6 9 17l-5-5"/></svg>';
+          
+          // Toast notifikasi yang lebih jelas
+          window.showToast('Teks & Link Website berhasil disalin!', 'success');
+          
+          // Kembalikan icon setelah 2 detik
+          setTimeout(() => {
+              shareBtn.innerHTML = originalHTML;
+          }, 2000);
+      }).catch(err => {
+          window.showToast('Gagal menyalin. Izin clipboard ditolak.', 'error');
+      });
+  }
+
+  settingsBtn.addEventListener('click', () => {
+      settingsModal.classList.remove('hidden');
+      autoRefreshInput.value = settings.autoRefresh;
+      textSizeSelect.value = settings.textSize;
+      showAuthorCheckbox.checked = settings.showAuthor;
+      targetLangSelect.value = settings.targetLang || 'id';
+  });
+
+  closeSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
+
+  saveSettingsBtn.addEventListener('click', () => {
+      settings = {
+          autoRefresh: parseInt(autoRefreshInput.value),
+          textSize: textSizeSelect.value,
+          showAuthor: showAuthorCheckbox.checked,
+          targetLang: targetLangSelect.value
+      };
+      localStorage.setItem('quoteSettings', JSON.stringify(settings));
+      applySettings();
+      settingsModal.classList.add('hidden');
+      window.showToast('Pengaturan disimpan!', 'success');
+  });
+
+  clearFavoritesBtn.addEventListener('click', () => {
+    if (confirm('Yakin ingin menghapus semua favorit?')) {
+      favorites = [];
+      localStorage.setItem('favoriteQuotes', JSON.stringify(favorites));
+      updateFavoriteButton();
+      renderFavorites();
+      window.showToast('Semua favorit dihapus', 'info');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && document.activeElement.tagName !== 'BUTTON' && document.activeElement.tagName !== 'SELECT' && document.activeElement.tagName !== 'INPUT') {
+          e.preventDefault();
+          getQuote();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        settingsBtn.click();
+      }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+      updateModeUI();
+      renderFavorites();
+      applySettings();
+      getQuote();
+  });
+</script>

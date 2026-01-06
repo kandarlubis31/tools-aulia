@@ -1,0 +1,653 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Ultimate Brainstorm & Facts">
+  <div class="max-w-4xl mx-auto px-4 min-h-[85vh] flex flex-col justify-center items-center py-10">
+    
+    <div class="text-center mb-8 animate-on-scroll">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600 tracking-tight">
+        Infinite Spark
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 text-lg max-w-lg mx-auto">
+        Generator ide proyek, fakta unik, dan trivia teknologi. Dilengkapi fitur translate dan statistik.
+      </p>
+    </div>
+
+    <div class="w-full max-w-3xl mb-8 flex flex-col gap-4">
+        
+        <div class="flex flex-wrap justify-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 shadow-sm" data-type="facts">
+                🌍 Random Facts
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700" data-type="ideas">
+                🚀 App Ideas
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700" data-type="trivia">
+                💾 Tech Trivia
+            </button>
+            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700" data-type="hacks">
+                ⚡ Life Hacks
+            </button>
+        </div>
+
+        <div class="flex justify-between items-center px-2">
+            <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider pl-2">Mode:</span>
+                <button id="mode-toggle" class="relative inline-flex h-8 w-32 items-center rounded-lg transition-colors duration-300 focus:outline-none bg-slate-200 dark:bg-slate-700">
+                    <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out translate-x-1"></span>
+                    <span class="absolute left-0 w-1/2 text-[10px] font-bold text-center text-slate-600 dark:text-slate-300 z-10 pointer-events-none">OFFLINE</span>
+                    <span class="absolute right-0 w-1/2 text-[10px] font-bold text-center text-slate-600 dark:text-slate-300 z-10 pointer-events-none">ONLINE</span>
+                </button>
+            </div>
+            
+            <div id="status-badge" class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                <span>Local DB</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-full max-w-2xl bg-white dark:bg-slate-800 p-8 md:p-12 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden group transition-all hover:shadow-amber-500/10 min-h-[300px] flex flex-col justify-between">
+      
+      <div class="absolute -top-6 -right-6 text-9xl opacity-5 dark:opacity-10 pointer-events-none select-none transition-transform group-hover:rotate-12">
+          💡
+      </div>
+
+      <div class="relative z-10 text-center flex-1 flex flex-col justify-center">
+          <span id="category-badge" class="inline-block mx-auto px-3 py-1 mb-6 text-[10px] font-bold tracking-widest uppercase rounded-full bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400 border border-amber-100 dark:border-amber-800 transition-all">
+              DID YOU KNOW?
+          </span>
+          
+          <h2 id="content-text" class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 leading-relaxed animate-fade-in transition-opacity duration-300">
+            Tekan tombol di bawah untuk mulai mencari inspirasi...
+          </h2>
+      </div>
+
+      <div class="relative z-10 flex justify-center gap-3 mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
+          <button id="translate-btn" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+          </button>
+          <button id="copy-btn" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 hover:text-amber-500 transition-colors" title="Copy">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          </button>
+          <button id="favorite-btn" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 hover:text-red-500 transition-colors" title="Save">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          </button>
+          <button id="share-btn" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 hover:text-blue-500 transition-colors" title="Share">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+          </button>
+      </div>
+    </div>
+
+    <div class="mt-10 flex flex-col items-center gap-4">
+        <button id="generate-btn" class="group relative inline-flex items-center justify-center gap-3 px-12 py-4 font-bold text-white transition-all duration-200 bg-slate-900 dark:bg-white dark:text-slate-900 text-lg rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-xl shadow-amber-500/20">
+            <span>Generate Spark</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-12 transition-transform duration-500"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M15.5 8.5v.01"/><path d="M9 14a6 6 0 0 0 6 0"/></svg>
+        </button>
+        <div class="flex items-center gap-4">
+            <p class="text-xs text-center text-slate-400">Tekan <kbd class="font-sans px-1 border rounded bg-slate-100 dark:bg-slate-800">Spasi</kbd> untuk acak</p>
+            <button id="settings-btn" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors underline decoration-dotted">Pengaturan</button>
+        </div>
+    </div>
+
+    <div class="mt-16 grid grid-cols-3 gap-4 w-full max-w-2xl text-center">
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+            <div id="total-view" class="text-2xl font-black text-slate-800 dark:text-white">0</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1">Ide Ditemukan</div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+            <div id="fav-cat" class="text-lg font-bold text-amber-500 truncate px-2">-</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1">Top Kategori</div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+            <div id="daily-streak" class="text-2xl font-black text-slate-800 dark:text-white">0</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1">Streak Harian</div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity animate-fade-in">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-100 transition-transform">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Pengaturan</h3>
+                <button id="close-settings" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Target Translate</label>
+                    <select id="target-lang" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-amber-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                        <option value="id" selected>🇮🇩 Indonesia</option>
+                        <option value="es">🇪🇸 Spanish</option>
+                        <option value="ja">🇯🇵 Japanese</option>
+                        <option value="ko">🇰🇷 Korean</option>
+                        <option value="fr">🇫🇷 French</option>
+                        <option value="de">🇩🇪 German</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Auto-refresh (detik)</label>
+                    <input type="number" id="auto-refresh" min="0" max="60" value="0" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-amber-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                    <p class="text-[10px] text-slate-400 mt-1">Isi 0 untuk mematikan.</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Ukuran Font</label>
+                    <select id="text-size" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-amber-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                        <option value="text-xl">Kecil</option>
+                        <option value="text-2xl" selected>Sedang</option>
+                        <option value="text-3xl">Besar</option>
+                        <option value="text-4xl">Raksasa</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mt-8">
+                <button id="save-settings" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-amber-500/30">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="favorites-section" class="hidden mt-16 w-full max-w-2xl animate-fade-in-up">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-red-500"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    Saved Sparks
+                </h3>
+                <button id="clear-favorites" class="text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-colors">Hapus Semua</button>
+            </div>
+            <div id="favorites-list" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2"></div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+  </div>
+</BaseLayout>
+
+<script>
+  // --- 1. DATABASES (Expanded) ---
+  
+  // App Ideas
+  const appIdeas = [
+    "Expense Tracker dengan fitur scan struk belanja (OCR).",
+    "Aplikasi pencari resep berdasarkan bahan sisa di kulkas.",
+    "Portfolio Generator statis berbasis Markdown untuk desainer.",
+    "Ekstensi browser pemblokir spoiler film/series populer.",
+    "Water Reminder dengan notifikasi suara karakter lucu.",
+    "Sistem Absensi Pintar menggunakan QR Code & Geolocation.",
+    "Bot Telegram pengirim ringkasan berita teknologi harian.",
+    "Platform donasi barang bekas berbasis lokasi terdekat.",
+    "Markdown Editor real-time dengan fitur kolaborasi tim.",
+    "Clone Trello sederhana (Kanban) menggunakan React/Vue.",
+    "API Generator Data Dummy (Nama Indonesia) untuk testing.",
+    "Dashboard Crypto dengan alert harga real-time via WA.",
+    "Manajemen Tugas Kuliah dengan matriks prioritas Eisenhower.",
+    "Game Typing Speed multiplayer real-time via WebSocket.",
+    "Kompresor Gambar Lokal (WebAssembly) tanpa upload server.",
+    "Aplikasi Jurnal Harian dengan analisis mood AI sederhana.",
+    "Sistem Booking Lapangan Futsal online.",
+    "Kalkulator Gizi Harian berdasarkan foto makanan.",
+    "Platform Crowdfunding khusus proyek mahasiswa.",
+    "Aplikasi Manajemen Kost (Tagihan, Laporan Kerusakan)."
+  ];
+
+  // Tech Trivia
+  const techTrivia = [
+    "Bug komputer pertama adalah ngengat asli di relay Harvard Mark II (1947).",
+    "Domain pertama di dunia adalah symbolics.com (15 Maret 1985).",
+    "Keyboard QWERTY didesain untuk memperlambat pengetikan agar mesin tik tidak macet.",
+    "Email sudah ditemukan sebelum adanya World Wide Web (WWW).",
+    "Password komputer pertama kali diciptakan Fernando Corbato (1960).",
+    "Logo Firefox sebenarnya adalah Panda Merah, bukan Rubah.",
+    "Nama awal Google adalah 'BackRub'.",
+    "90% mata uang di dunia hanya berupa data digital, bukan uang fisik.",
+    "PHP awalnya singkatan dari 'Personal Home Page'.",
+    "Python dinamakan dari grup komedi 'Monty Python', bukan ular.",
+    "Kamera web pertama dibuat di Cambridge untuk memantau mesin kopi.",
+    "Linux digunakan oleh 100% dari 500 superkomputer teratas di dunia.",
+    "SpaceX menggunakan C++ dan Linux untuk menerbangkan roket Falcon 9.",
+    "Hard disk pertama (1956) beratnya 1 ton tapi cuma muat 5MB data.",
+    "Wi-Fi ditemukan secara tidak sengaja saat meneliti lubang hitam."
+  ];
+
+  // Life Hacks
+  const lifeHacks = [
+    "Coding stuck? Coba 'Rubber Duck Debugging' (curhat ke bebek karet).",
+    "Pakai Teknik Pomodoro (25 menit kerja, 5 menit istirahat) biar fokus.",
+    "Tekan Win + V di Windows untuk melihat history clipboard.",
+    "Di Chrome, tekan Ctrl + Shift + T untuk buka tab yang baru ditutup.",
+    "Tambahkan 'ss' sebelum 'youtube.com' di URL untuk download video.",
+    "Gunakan atribut 'alt' pada gambar agar SEO website naik.",
+    "Jangan hafal syntax, hafalkan konsep. Syntax bisa di-Google.",
+    "Minum air putih! Otak butuh hidrasi untuk logika kompleks.",
+    "Tekan Ctrl + K di banyak aplikasi (Discord/Slack/VSCode) untuk search cepat.",
+    "Gunakan mode 'Incognito' untuk cek harga tiket pesawat (biar murah).",
+    "Matikan notifikasi HP saat deep work coding.",
+    "Gunakan Password Manager, jangan pakai password yang sama di semua akun.",
+    "Belajar shortcut keyboard VS Code biar coding secepat kilat.",
+    "Olahraga mata 20-20-20: Tiap 20 menit, lihat objek 20 kaki, selama 20 detik.",
+    "Gunakan GitHub Copilot atau ChatGPT sebagai asisten, bukan pengganti otak."
+  ];
+
+  // Random Facts (Fallback Offline)
+  const offlineFacts = [
+    "Madu tidak pernah basi. Ditemukan di makam Mesir kuno masih bisa dimakan.",
+    "Gurita punya tiga jantung dan darahnya biru.",
+    "Pisang secara botani adalah buah beri, tapi stroberi bukan.",
+    "Rata-rata orang menghabiskan 6 bulan hidupnya menunggu lampu merah.",
+    "Semut tidak pernah tidur.",
+    "Kertas tidak bisa dilipat dua lebih dari 7 kali (secara umum).",
+    "Venus adalah satu-satunya planet yang berputar searah jarum jam.",
+    "Siput bisa tidur selama 3 tahun.",
+    "Nama asli boneka Barbie adalah Barbara Millicent Roberts.",
+    "Kudanil susu-nya berwarna merah muda.",
+    "Manusia berbagi 50% DNA dengan pisang.",
+    "Di Jepang, ada lebih banyak hewan peliharaan daripada anak-anak.",
+    "Lumba-lumba tidur dengan satu mata terbuka.",
+    "Cokelat pernah digunakan sebagai mata uang oleh suku Aztec.",
+    "Jerapah tidak memiliki pita suara."
+  ];
+
+  // --- 2. STATE ---
+  let currentType = 'facts'; 
+  let currentContent = "";
+  let originalContent = ""; // Backup for translation
+  let isTranslated = false;
+  let isOnline = localStorage.getItem('brainMode') === 'online';
+  let favorites = JSON.parse(localStorage.getItem('brainstormFavs') || '[]');
+  let userStats = JSON.parse(localStorage.getItem('brainStats') || '{"total": 0, "catCounts": {}, "lastDate": null, "streak": 0}');
+  let settings = JSON.parse(localStorage.getItem('brainSettings') || '{"autoRefresh": 0, "textSize": "text-2xl", "targetLang": "id"}');
+  let autoRefreshInterval = null;
+
+  // --- 3. ELEMENTS ---
+  const contentText = document.getElementById('content-text');
+  const categoryBadge = document.getElementById('category-badge');
+  const generateBtn = document.getElementById('generate-btn');
+  const copyBtn = document.getElementById('copy-btn');
+  const shareBtn = document.getElementById('share-btn');
+  const favoriteBtn = document.getElementById('favorite-btn');
+  const translateBtn = document.getElementById('translate-btn');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const favoritesSection = document.getElementById('favorites-section');
+  const favoritesList = document.getElementById('favorites-list');
+  const clearFavoritesBtn = document.getElementById('clear-favorites');
+  const toastContainer = document.getElementById('toast-container');
+  const modeToggle = document.getElementById('mode-toggle');
+  const modeIndicator = document.getElementById('mode-indicator');
+  const statusBadge = document.getElementById('status-badge');
+  const settingsBtn = document.getElementById('settings-btn');
+  const settingsModal = document.getElementById('settings-modal');
+  const closeSettingsBtn = document.getElementById('close-settings');
+  const saveSettingsBtn = document.getElementById('save-settings');
+  const autoRefreshInput = document.getElementById('auto-refresh');
+  const textSizeSelect = document.getElementById('text-size');
+  const targetLangSelect = document.getElementById('target-lang');
+  const totalViewEl = document.getElementById('total-view');
+  const favCatEl = document.getElementById('fav-cat');
+  const dailyStreakEl = document.getElementById('daily-streak');
+
+  // --- 4. CORE FUNCTIONS ---
+
+  // Update Mode UI
+  function updateModeUI() {
+      if (isOnline) {
+          modeIndicator.style.transform = 'translateX(100%) translateX(4px)'; 
+          modeIndicator.classList.add('bg-amber-400');
+          modeIndicator.classList.remove('bg-white');
+          
+          statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span class="text-amber-600 dark:text-amber-400">Online API</span>';
+      } else {
+          modeIndicator.style.transform = 'translateX(4px)';
+          modeIndicator.classList.remove('bg-amber-400');
+          modeIndicator.classList.add('bg-white');
+
+          statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span class="text-slate-500 dark:text-slate-400">Local DB</span>';
+      }
+  }
+
+  // Toast
+  window.showToast = function(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 font-medium text-sm border ${
+        type === 'success' ? 'bg-emerald-500 border-emerald-400 text-white' : 
+        type === 'error' ? 'bg-red-500 border-red-400 text-white' :
+        'bg-blue-500 border-blue-400 text-white'
+    }`;
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.remove('translate-y-full', 'opacity-0'));
+    setTimeout(() => {
+        toast.classList.add('translate-y-full', 'opacity-0');
+        setTimeout(() => toastContainer.removeChild(toast), 300);
+    }, 3000);
+  };
+
+  // Stats Logic
+  function trackStat(type) {
+      userStats.total++;
+      userStats.catCounts[type] = (userStats.catCounts[type] || 0) + 1;
+      
+      const today = new Date().toDateString();
+      if(userStats.lastDate !== today) {
+          userStats.streak = (userStats.lastDate === new Date(Date.now() - 86400000).toDateString()) 
+              ? userStats.streak + 1 
+              : 1;
+          userStats.lastDate = today;
+      }
+      
+      localStorage.setItem('brainStats', JSON.stringify(userStats));
+      updateStatsDisplay();
+  }
+
+  function updateStatsDisplay() {
+      totalViewEl.innerText = userStats.total;
+      dailyStreakEl.innerText = userStats.streak;
+      
+      let max = 0;
+      let fav = '-';
+      for(const [cat, count] of Object.entries(userStats.catCounts)) {
+          if(count > max) { max = count; fav = cat; }
+      }
+      favCatEl.innerText = fav.charAt(0).toUpperCase() + fav.slice(1);
+  }
+
+  // Settings
+  function applySettings() {
+      contentText.className = `${settings.textSize} font-bold text-slate-800 dark:text-slate-100 leading-relaxed animate-fade-in transition-opacity duration-300`;
+      
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+      if (settings.autoRefresh > 0) autoRefreshInterval = setInterval(generateContent, settings.autoRefresh * 1000);
+  }
+
+  function getRandomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  // Generate Content
+  async function generateContent() {
+      // Reset Translation
+      isTranslated = false;
+      translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+      translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+
+      // UI Loading
+      generateBtn.disabled = true;
+      generateBtn.classList.add('opacity-75', 'scale-95');
+      const originalText = generateBtn.innerHTML;
+      generateBtn.innerHTML = '<span class="animate-pulse">Thinking...</span>';
+      
+      // Animasi Text Out
+      contentText.style.opacity = '0';
+
+      setTimeout(async () => {
+          let result = "";
+          
+          try {
+              if (currentType === 'facts') {
+                  if (isOnline) {
+                      const res = await fetch('https://uselessfacts.jsph.pl/api/v2/facts/random');
+                      const data = await res.json();
+                      result = data.text;
+                  } else {
+                      result = getRandomItem(offlineFacts);
+                  }
+              } else if (currentType === 'ideas') {
+                  result = getRandomItem(appIdeas);
+              } else if (currentType === 'trivia') {
+                  result = getRandomItem(techTrivia);
+              } else {
+                  result = getRandomItem(lifeHacks);
+              }
+          } catch (e) {
+              result = getRandomItem(offlineFacts); // Fallback
+              if(isOnline) showToast('Koneksi lambat, menggunakan data lokal', 'info');
+          }
+
+          // Update Content
+          currentContent = result;
+          originalContent = result; // Backup original
+          contentText.innerText = result;
+          trackStat(currentType);
+          
+          // Animasi Text In
+          contentText.style.opacity = '1';
+          
+          // Restore Button
+          generateBtn.disabled = false;
+          generateBtn.classList.remove('opacity-75', 'scale-95');
+          generateBtn.innerHTML = originalText;
+          
+          updateFavoriteButton();
+      }, 300);
+  }
+
+  // Translate
+  async function toggleTranslation() {
+      if (isTranslated) {
+          contentText.innerText = originalContent;
+          currentContent = originalContent;
+          isTranslated = false;
+          translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+          translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+          showToast('Kembali ke asli');
+      } else {
+          if (!isOnline && !navigator.onLine) {
+              showToast('Fitur translate butuh internet!', 'error');
+              return;
+          }
+
+          const target = settings.targetLang || 'id';
+          translateBtn.disabled = true;
+          translateBtn.innerHTML = '<span class="animate-spin">⏳</span>';
+
+          try {
+              const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(currentContent)}&langpair=en|${target}`);
+              const data = await res.json();
+              
+              if(data.responseStatus === 200) {
+                  currentContent = data.responseData.translatedText;
+                  contentText.innerText = currentContent;
+                  isTranslated = true;
+                  
+                  translateBtn.classList.remove('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+                  translateBtn.classList.add('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+                  showToast('Berhasil diterjemahkan', 'success');
+              } else {
+                  throw new Error('Limit API');
+              }
+          } catch(e) {
+              showToast('Gagal translate', 'error');
+          } finally {
+              translateBtn.disabled = false;
+              translateBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>';
+          }
+      }
+  }
+
+  // Switch Tabs
+  function switchTab(type) {
+      currentType = type;
+      
+      // Update UI Tabs
+      tabBtns.forEach(btn => {
+          if (btn.dataset.type === type) {
+              btn.className = "tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 transform scale-105 shadow-sm";
+          } else {
+              btn.className = "tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700";
+          }
+      });
+
+      // Update Badge Text
+      const badges = {
+          facts: "DID YOU KNOW?",
+          ideas: "PROJECT IDEA",
+          trivia: "TECH TRIVIA",
+          hacks: "LIFE HACK"
+      };
+      categoryBadge.innerText = badges[type];
+
+      generateContent();
+  }
+
+  // Favorites
+  function updateFavoriteButton() {
+      const isFav = favorites.includes(originalContent); // Check original content
+      if (isFav) {
+          favoriteBtn.classList.add('text-red-500', 'bg-red-50', 'dark:bg-red-900/30');
+          favoriteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+      } else {
+          favoriteBtn.classList.remove('text-red-500', 'bg-red-50', 'dark:bg-red-900/30');
+          favoriteBtn.classList.add('text-slate-500');
+          favoriteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+      }
+  }
+
+  function toggleFavorite() {
+      if (!originalContent) return;
+      
+      if (favorites.includes(originalContent)) {
+          favorites = favorites.filter(f => f !== originalContent);
+          showToast('Dihapus dari favorit');
+      } else {
+          favorites.push(originalContent);
+          showToast('Disimpan ke favorit!', 'success');
+      }
+      localStorage.setItem('brainstormFavs', JSON.stringify(favorites));
+      updateFavoriteButton();
+      renderFavorites();
+  }
+
+  function renderFavorites() {
+      if (favorites.length === 0) {
+          favoritesSection.classList.add('hidden');
+          return;
+      }
+      favoritesSection.classList.remove('hidden');
+      favoritesList.innerHTML = favorites.map(text => `
+          <div class="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg flex justify-between items-start group hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors mb-2">
+              <p class="text-sm text-slate-700 dark:text-slate-200 line-clamp-2 cursor-pointer flex-1" onclick="loadFavorite('${text.replace(/'/g, "\\'")}')">${text}</p>
+              <button onclick="removeFavorite('${text.replace(/'/g, "\\'")}')" class="ml-2 text-slate-400 hover:text-red-500 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+          </div>
+      `).join('');
+  }
+
+  window.loadFavorite = function(text) {
+      currentContent = text;
+      originalContent = text;
+      contentText.innerText = text;
+      
+      // Reset Translation UI
+      isTranslated = false;
+      translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+      translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+      
+      updateFavoriteButton();
+      window.scrollTo({top:0, behavior:'smooth'});
+  };
+
+  window.removeFavorite = function(text) {
+      favorites = favorites.filter(f => f !== text);
+      localStorage.setItem('brainstormFavs', JSON.stringify(favorites));
+      renderFavorites();
+      updateFavoriteButton();
+  };
+
+  // --- ACTIONS ---
+  
+  modeToggle.addEventListener('click', () => {
+      isOnline = !isOnline;
+      localStorage.setItem('brainMode', isOnline ? 'online' : 'offline');
+      updateModeUI();
+      generateContent();
+  });
+
+  tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.type));
+  });
+
+  generateBtn.addEventListener('click', generateContent);
+  favoriteBtn.addEventListener('click', toggleFavorite);
+  translateBtn.addEventListener('click', toggleTranslation);
+
+  copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(currentContent);
+      showToast('Teks disalin!', 'success');
+  });
+
+  shareBtn.addEventListener('click', async () => {
+      const fullMessage = `"${currentContent}"\n\n✨ Inspirasi via ToolsAulia:\n${window.location.href}`;
+      
+      if (navigator.share) {
+          try {
+              await navigator.share({ title: 'Spark Idea', text: fullMessage });
+          } catch(e) {
+              if(e.name !== 'AbortError') {
+                  navigator.clipboard.writeText(fullMessage);
+                  showToast('Link & Teks disalin!');
+              }
+          }
+      } else {
+          navigator.clipboard.writeText(fullMessage);
+          showToast('Link & Teks disalin!');
+      }
+  });
+
+  // Settings
+  settingsBtn.addEventListener('click', () => {
+      settingsModal.classList.remove('hidden');
+      autoRefreshInput.value = settings.autoRefresh;
+      textSizeSelect.value = settings.textSize;
+      targetLangSelect.value = settings.targetLang || 'id';
+  });
+
+  closeSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
+
+  saveSettingsBtn.addEventListener('click', () => {
+      settings = {
+          autoRefresh: parseInt(autoRefreshInput.value),
+          textSize: textSizeSelect.value,
+          targetLang: targetLangSelect.value
+      };
+      localStorage.setItem('brainSettings', JSON.stringify(settings));
+      applySettings();
+      settingsModal.classList.add('hidden');
+      showToast('Pengaturan disimpan!', 'success');
+  });
+
+  clearFavoritesBtn.addEventListener('click', () => {
+      if(confirm('Hapus semua?')) {
+          favorites = [];
+          localStorage.setItem('brainstormFavs', JSON.stringify(favorites));
+          renderFavorites();
+          updateFavoriteButton();
+      }
+  });
+
+  document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT') {
+          e.preventDefault();
+          generateContent();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        settingsBtn.click();
+      }
+  });
+
+  // Init
+  document.addEventListener('DOMContentLoaded', () => {
+      updateModeUI();
+      renderFavorites();
+      updateStatsDisplay();
+      applySettings();
+      generateContent(); 
+  });
+
+</script>

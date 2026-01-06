@@ -1,148 +1,463 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Data Mata Uang (Biar HTML lebih bersih)
+const currencies = [
+  { code: 'IDR', flag: '🇮🇩', name: 'Rupiah Indonesia' },
+  { code: 'USD', flag: '🇺🇸', name: 'Dolar Amerika' },
+  { code: 'EUR', flag: '🇪🇺', name: 'Euro' },
+  { code: 'SGD', flag: '🇸🇬', name: 'Dolar Singapura' },
+  { code: 'MYR', flag: '🇲🇾', name: 'Ringgit Malaysia' },
+  { code: 'JPY', flag: '🇯🇵', name: 'Yen Jepang' },
+  { code: 'GBP', flag: '🇬🇧', name: 'Poundsterling Inggris' },
+  { code: 'AUD', flag: '🇦🇺', name: 'Dolar Australia' },
+  { code: 'CNY', flag: '🇨🇳', name: 'Yuan China' },
+  { code: 'KRW', flag: '🇰🇷', name: 'Won Korea' },
+  { code: 'SAR', flag: '🇸🇦', name: 'Riyal Arab' },
+  { code: 'THB', flag: '🇹🇭', name: 'Baht Thailand' },
+  { code: 'HKD', flag: '🇭🇰', name: 'Dolar Hong Kong' },
+  { code: 'CAD', flag: '🇨🇦', name: 'Dolar Kanada' },
+  { code: 'CHF', flag: '🇨🇭', name: 'Franc Swiss' },
+  { code: 'INR', flag: '🇮🇳', name: 'Rupee India' },
+  { code: 'PHP', flag: '🇵🇭', name: 'Peso Filipina' },
+  { code: 'VND', flag: '🇻🇳', name: 'Dong Vietnam' },
+  { code: 'NZD', flag: '🇳🇿', name: 'Dolar Selandia Baru' },
+  { code: 'MXN', flag: '🇲🇽', name: 'Peso Meksiko' },
+  { code: 'TRY', flag: '🇹🇷', name: 'Lira Turki' },
+  { code: 'RUB', flag: '🇷🇺', name: 'Rubel Rusia' },
+  { code: 'BRL', flag: '🇧🇷', name: 'Real Brasil' },
+];
 ---
 
 <BaseLayout pageTitle="Real-time Currency Converter">
-  <div class="max-w-xl mx-auto px-4 min-h-[60vh]">
-    <div class="text-center mb-8 pt-8 animate-on-scroll">
-      <h1 class="text-3xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">
+  <div class="max-w-6xl mx-auto px-4 min-h-[60vh]">
+    <div class="text-center mb-10 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">
         Konversi Mata Uang
       </h1>
       <p class="text-slate-600 dark:text-slate-400">
-        Kurs live real-time (Update harian/jam).
+        Cek kurs terkini dengan data real-time. Cepat, akurat, dan bisa disimpan.
       </p>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl animate-fade-in relative overflow-hidden">
-      
-      <div id="loading" class="absolute inset-0 bg-white/80 dark:bg-slate-900/80 z-10 flex items-center justify-center backdrop-blur-sm">
-        <div class="flex flex-col items-center gap-2">
-            <svg class="animate-spin h-8 w-8 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <span class="text-sm font-bold text-emerald-600">Mengambil Data Kurs...</span>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
+      <div class="lg:col-span-2">
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl animate-fade-in relative overflow-hidden">
+          
+          <div id="loading" class="absolute inset-0 bg-white/90 dark:bg-slate-900/90 z-20 flex items-center justify-center backdrop-blur-sm transition-opacity duration-300">
+            <div class="flex flex-col items-center gap-3">
+                <div class="w-10 h-10 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin"></div>
+                <div class="text-center">
+                  <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">Memuat Data Kurs...</span>
+                </div>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            
+            <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Jumlah Uang</label>
+                <div class="relative">
+                  <input type="number" id="amount" value="1" min="0" step="any" class="w-full p-4 text-2xl font-bold rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900 outline-none transition-all text-slate-800 dark:text-white placeholder-slate-400 pr-20 shadow-inner" placeholder="0" />
+                  <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1 bg-white dark:bg-slate-800 p-1 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700">
+                    <button class="quick-amount px-2 py-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-slate-600 dark:text-slate-300 text-xs font-bold transition-colors" data-amount="10">10</button>
+                    <button class="quick-amount px-2 py-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-slate-600 dark:text-slate-300 text-xs font-bold transition-colors" data-amount="100">100</button>
+                    <button class="quick-amount px-2 py-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-slate-600 dark:text-slate-300 text-xs font-bold transition-colors" data-amount="1000">1K</button>
+                  </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center gap-4 relative">
+                <div class="flex-1 w-full">
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Dari</label>
+                    <div class="relative">
+                      <select id="from-currency" class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-700 border-r-[16px] border-transparent outline-none font-bold text-slate-700 dark:text-slate-200 cursor-pointer shadow-sm focus:ring-2 focus:ring-emerald-500/20">
+                          {currencies.map(curr => (
+                              <option value={curr.code} selected={curr.code === 'USD'}>{curr.flag} {curr.code} - {curr.name}</option>
+                          ))}
+                      </select>
+                    </div>
+                </div>
+
+                <button id="swap-btn" class="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-800 hover:scale-110 hover:rotate-180 transition-all duration-300 shadow-md z-10 md:mt-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10h14l-4-4"/><path d="M17 14H3l4 4"/></svg>
+                </button>
+
+                <div class="flex-1 w-full">
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Ke</label>
+                    <div class="relative">
+                      <select id="to-currency" class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-700 border-r-[16px] border-transparent outline-none font-bold text-slate-700 dark:text-slate-200 cursor-pointer shadow-sm focus:ring-2 focus:ring-emerald-500/20">
+                          {currencies.map(curr => (
+                              <option value={curr.code} selected={curr.code === 'IDR'}>{curr.flag} {curr.code} - {curr.name}</option>
+                          ))}
+                      </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-8 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-center relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor" class="text-emerald-600"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg>
+                </div>
+                <p class="text-sm text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider mb-2">Total Konversi</p>
+                <div id="result" class="text-4xl md:text-5xl font-black text-slate-800 dark:text-white break-words tracking-tight">
+                    ...
+                </div>
+                <div class="flex justify-center items-center gap-2 mt-3">
+                    <p id="rate-info" class="text-xs bg-white dark:bg-black/20 px-2 py-1 rounded text-slate-500 font-mono border border-slate-100 dark:border-slate-700">Loading...</p>
+                </div>
+                <p id="last-updated" class="text-[10px] text-slate-400 mt-2 italic">Menunggu data...</p>
+            </div>
+
+            <div class="flex gap-3">
+              <button id="add-favorite-btn" class="flex-1 flex items-center justify-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-bold py-3 px-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-600 transition-all shadow-sm active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                Simpan
+              </button>
+              <button id="copy-btn" class="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Salin Hasil
+              </button>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800 flex items-start gap-3">
+                <svg class="w-5 h-5 text-blue-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p class="text-xs text-blue-700 dark:text-blue-300">
+                    Tips: Tekan <span class="font-bold bg-white dark:bg-black/20 px-1 rounded">Swap</span> untuk balik kurs. Data akan disimpan otomatis agar loading instan di kunjungan berikutnya.
+                </p>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="space-y-6">
-        
-        <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Jumlah Uang</label>
-            <input type="number" id="amount" value="1" min="0" class="w-full p-4 text-2xl font-bold rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-emerald-500 outline-none transition-all text-slate-800 dark:text-white placeholder-slate-400" placeholder="0" />
-        </div>
-
-        <div class="flex items-center gap-2">
-            <div class="flex-1">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Dari</label>
-                <select id="from-currency" class="w-full p-3 rounded-xl bg-slate-100 dark:bg-slate-700 border border-transparent hover:border-slate-300 dark:hover:border-slate-600 font-bold text-slate-700 dark:text-slate-200 cursor-pointer outline-none appearance-none text-center">
-                    <option value="USD">🇺🇸 USD</option>
-                    <option value="IDR">🇮🇩 IDR</option>
-                    <option value="EUR">🇪🇺 EUR</option>
-                    <option value="SGD">🇸🇬 SGD</option>
-                    <option value="MYR">🇲🇾 MYR</option>
-                    <option value="JPY">🇯🇵 JPY</option>
-                    <option value="GBP">🇬🇧 GBP</option>
-                    <option value="AUD">🇦🇺 AUD</option>
-                    <option value="CNY">🇨🇳 CNY</option>
-                    <option value="KRW">🇰🇷 KRW</option>
-                    <option value="SAR">🇸🇦 SAR</option>
-                </select>
-            </div>
-
-            <button id="swap-btn" class="mt-5 p-3 rounded-full bg-slate-100 dark:bg-slate-700 text-emerald-600 hover:bg-emerald-100 hover:scale-110 transition-all shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 14.25L2.25 9l5.25-5.25"/><path d="M2.25 9h19.5"/><path d="M16.5 9.75L21.75 15l-5.25 5.25"/><path d="M21.75 15H2.25"/></svg>
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+            Pasangan Populer
+          </h3>
+          <div class="grid grid-cols-2 gap-2">
+            <button class="popular-pair group p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 transition-all text-xs font-bold text-slate-600 dark:text-slate-300" data-from="USD" data-to="IDR">
+              🇺🇸 USD <span class="text-slate-400 group-hover:text-emerald-500">→</span> 🇮🇩 IDR
             </button>
-
-            <div class="flex-1">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ke</label>
-                <select id="to-currency" class="w-full p-3 rounded-xl bg-slate-100 dark:bg-slate-700 border border-transparent hover:border-slate-300 dark:hover:border-slate-600 font-bold text-slate-700 dark:text-slate-200 cursor-pointer outline-none appearance-none text-center">
-                    <option value="IDR" selected>🇮🇩 IDR</option>
-                    <option value="USD">🇺🇸 USD</option>
-                    <option value="EUR">🇪🇺 EUR</option>
-                    <option value="SGD">🇸🇬 SGD</option>
-                    <option value="MYR">🇲🇾 MYR</option>
-                    <option value="JPY">🇯🇵 JPY</option>
-                    <option value="GBP">🇬🇧 GBP</option>
-                    <option value="AUD">🇦🇺 AUD</option>
-                    <option value="CNY">🇨🇳 CNY</option>
-                    <option value="KRW">🇰🇷 KRW</option>
-                    <option value="SAR">🇸🇦 SAR</option>
-                </select>
-            </div>
+            <button class="popular-pair group p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 transition-all text-xs font-bold text-slate-600 dark:text-slate-300" data-from="EUR" data-to="IDR">
+              🇪🇺 EUR <span class="text-slate-400 group-hover:text-emerald-500">→</span> 🇮🇩 IDR
+            </button>
+            <button class="popular-pair group p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 transition-all text-xs font-bold text-slate-600 dark:text-slate-300" data-from="SGD" data-to="IDR">
+              🇸🇬 SGD <span class="text-slate-400 group-hover:text-emerald-500">→</span> 🇮🇩 IDR
+            </button>
+            <button class="popular-pair group p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 transition-all text-xs font-bold text-slate-600 dark:text-slate-300" data-from="MYR" data-to="IDR">
+              🇲🇾 MYR <span class="text-slate-400 group-hover:text-emerald-500">→</span> 🇮🇩 IDR
+            </button>
+            <button class="popular-pair group p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 transition-all text-xs font-bold text-slate-600 dark:text-slate-300" data-from="JPY" data-to="IDR">
+              🇯🇵 JPY <span class="text-slate-400 group-hover:text-emerald-500">→</span> 🇮🇩 IDR
+            </button>
+            <button class="popular-pair group p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 transition-all text-xs font-bold text-slate-600 dark:text-slate-300" data-from="SAR" data-to="IDR">
+              🇸🇦 SAR <span class="text-slate-400 group-hover:text-emerald-500">→</span> 🇮🇩 IDR
+            </button>
+          </div>
         </div>
 
-        <div class="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-center">
-            <p class="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-1">Hasil Konversi</p>
-            <div id="result" class="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white break-words">
-                ...
-            </div>
-            <p id="rate-info" class="text-xs text-slate-400 mt-2 font-mono">1 USD = ... IDR</p>
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">Favorit</h3>
+            <button id="clear-favorites-btn" class="text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 px-2 py-1 rounded transition-colors">Hapus Semua</button>
+          </div>
+          <div id="favorites-container" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+            <div class="text-center py-6 text-slate-400 text-xs italic">Belum ada yang disimpan</div>
+          </div>
         </div>
 
-        <p class="text-[10px] text-center text-slate-400">
-            Data provided by open.er-api.com (Public API). Update mungkin tertunda.
-        </p>
-
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">Riwayat</h3>
+            <button id="clear-history-btn" class="text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 px-2 py-1 rounded transition-colors">Hapus Semua</button>
+          </div>
+          <div id="history-container" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+            <div class="text-center py-6 text-slate-400 text-xs italic">Belum ada riwayat</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </BaseLayout>
 
+<style>
+  .favorite-item, .history-item {
+    @apply flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 transition-all cursor-pointer;
+  }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
+</style>
+
 <script>
-  const amountEl = document.getElementById('amount') as HTMLInputElement;
-  const fromEl = document.getElementById('from-currency') as HTMLSelectElement;
-  const toEl = document.getElementById('to-currency') as HTMLSelectElement;
+  // Elements
+  const amountEl = document.getElementById('amount');
+  const fromEl = document.getElementById('from-currency');
+  const toEl = document.getElementById('to-currency');
   const resultEl = document.getElementById('result');
   const rateInfoEl = document.getElementById('rate-info');
+  const lastUpdatedEl = document.getElementById('last-updated');
   const swapBtn = document.getElementById('swap-btn');
   const loadingEl = document.getElementById('loading');
+  const addFavoriteBtn = document.getElementById('add-favorite-btn');
+  const copyBtn = document.getElementById('copy-btn');
+  const clearFavoritesBtn = document.getElementById('clear-favorites-btn');
+  const clearHistoryBtn = document.getElementById('clear-history-btn');
+  const favoritesContainer = document.getElementById('favorites-container');
+  const historyContainer = document.getElementById('history-container');
 
+  // State
   let rates = {};
+  let lastUpdated = null;
+  let conversionHistory = [];
+  let favorites = [];
 
-  // Fetch Data API
-  async function fetchRates() {
+  // Safe JSON Parse Helper
+  const safeParse = (key, fallback) => {
     try {
-      // Menggunakan API gratis tanpa key
-      const response = await fetch('https://open.er-api.com/v6/latest/USD');
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : fallback;
+    } catch (e) {
+        return fallback;
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Load local storage data safely
+    conversionHistory = safeParse('currencyHistory', []);
+    favorites = safeParse('currencyFavorites', []);
+    
+    renderHistory();
+    renderFavorites();
+    initData();
+  });
+
+  async function initData() {
+    // 1. STRATEGI: Tampilkan Cache DULU (Instant Load)
+    const cachedData = safeParse('ratesCache', null);
+    
+    if (cachedData && cachedData.rates) {
+        console.log('⚡ Menggunakan Data Cache (Instant)');
+        rates = cachedData.rates;
+        lastUpdated = new Date(cachedData.time_last_update_utc || Date.now());
+        
+        // Langsung sembunyikan loading & hitung
+        hideLoading(); 
+        calculate();
+        updateLastUpdated();
+        
+        // Tetap update data di background (Silent Update)
+        await fetchRates(true); 
+    } else {
+        // Kalau tidak ada cache sama sekali, baru munculkan loading
+        console.log('🌐 Cache kosong, mengambil data baru...');
+        await fetchRates(false); 
+    }
+  }
+
+  async function fetchRates(isSilent = false) {
+    try {
+      // Timeout 5 detik agar tidak stuck loading selamanya
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const response = await fetch('https://open.er-api.com/v6/latest/USD', {
+          signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
       const data = await response.json();
-      rates = data.rates;
       
-      loadingEl.classList.add('hidden');
-      calculate();
+      if (data.result === 'success') {
+        rates = data.rates;
+        lastUpdated = new Date(data.time_last_update_utc);
+        
+        // Simpan ke Cache
+        localStorage.setItem('ratesCache', JSON.stringify(data));
+        localStorage.setItem('ratesCacheTime', Date.now().toString());
+
+        if (!isSilent) hideLoading();
+        
+        calculate();
+        updateLastUpdated();
+        
+        if (isSilent) console.log('🔄 Data berhasil diperbarui di background');
+      } 
     } catch (error) {
-      alert("Gagal mengambil data kurs. Periksa koneksi internet.");
-      loadingEl.classList.add('hidden');
+      console.warn('Gagal update data:', error);
+      // Jika loading masih muncul (bukan silent update) dan error, matikan loading
+      if (!isSilent) {
+          hideLoading();
+          window.showToast("Koneksi lambat. Menggunakan data offline.", 'error');
+      }
+    }
+  }
+
+  function hideLoading() {
+      if (!loadingEl.classList.contains('hidden')) {
+          loadingEl.classList.add('opacity-0', 'pointer-events-none');
+          setTimeout(() => loadingEl.classList.add('hidden'), 300);
+      }
+  }
+
+  function updateLastUpdated() {
+    if (lastUpdated) {
+      const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      lastUpdatedEl.textContent = `Data: ${lastUpdated.toLocaleDateString('id-ID', options)}`;
     }
   }
 
   function formatCurrency(num, currency) {
-    return new Intl.NumberFormat('id-ID', { 
-        style: 'currency', 
-        currency: currency,
-        maximumFractionDigits: 2 
-    }).format(num);
+    try {
+      return new Intl.NumberFormat('id-ID', { 
+          style: 'currency', 
+          currency: currency,
+          maximumFractionDigits: 2
+      }).format(num);
+    } catch (e) {
+      return `${currency} ${num.toFixed(2)}`;
+    }
   }
 
   function calculate() {
-    const amount = parseFloat(amountEl.value) || 0;
+    const amountVal = parseFloat(amountEl.value);
     const from = fromEl.value;
     const to = toEl.value;
 
-    // Kalkulasi Cross Rate (Karena base API adalah USD)
-    // Rumus: (Amount / RateFrom) * RateTo
+    // Validasi basic
+    if (isNaN(amountVal) || !rates[from] || !rates[to]) {
+        // Jangan reset ke 0 jika user sedang mengetik koma/titik
+        if (amountEl.value === '' || amountEl.value === '.') return;
+        resultEl.innerText = '...';
+        return;
+    }
+
     const rateFrom = rates[from];
     const rateTo = rates[to];
     
-    if (!rateFrom || !rateTo) return;
-
-    const converted = (amount / rateFrom) * rateTo;
+    // Rumus Cross Rate
+    const converted = (amountVal / rateFrom) * rateTo;
     const singleUnit = (1 / rateFrom) * rateTo;
 
     resultEl.innerText = formatCurrency(converted, to);
     rateInfoEl.innerText = `1 ${from} = ${formatCurrency(singleUnit, to)}`;
+    
+    // Debounce save history
+    saveHistoryDebounced(amountVal, from, to, formatCurrency(converted, to));
   }
 
-  // Event Listeners
-  [amountEl, fromEl, toEl].forEach(el => el.addEventListener('input', calculate));
+  let historyTimeout;
+  function saveHistoryDebounced(amount, from, to, resultStr) {
+    clearTimeout(historyTimeout);
+    historyTimeout = setTimeout(() => {
+        if (amount <= 0) return;
+        
+        const item = {
+            id: Date.now(),
+            amount, from, to,
+            result: resultStr,
+            date: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})
+        };
+        
+        // Prevent duplicate spam
+        if (conversionHistory.length > 0) {
+            const last = conversionHistory[0];
+            if (last.amount === amount && last.from === from && last.to === to) return;
+        }
 
+        conversionHistory.unshift(item);
+        if (conversionHistory.length > 10) conversionHistory.pop();
+        localStorage.setItem('currencyHistory', JSON.stringify(conversionHistory));
+        renderHistory();
+    }, 1500);
+  }
+
+  function renderHistory() {
+    if (!conversionHistory || conversionHistory.length === 0) {
+      historyContainer.innerHTML = '<div class="text-center py-6 text-slate-400 text-xs italic">Belum ada riwayat</div>';
+      return;
+    }
+    
+    historyContainer.innerHTML = conversionHistory.map(item => `
+      <div class="history-item group" data-amount="${item.amount}" data-from="${item.from}" data-to="${item.to}">
+        <div>
+          <p class="text-sm font-bold text-slate-700 dark:text-slate-200">${item.amount} ${item.from}</p>
+          <p class="text-xs text-emerald-600 dark:text-emerald-400 font-bold">= ${item.result}</p>
+        </div>
+        <span class="text-[10px] text-slate-400 group-hover:text-emerald-500 transition-colors">${item.date}</span>
+      </div>
+    `).join('');
+
+    // Re-attach listeners
+    document.querySelectorAll('.history-item').forEach(item => {
+        item.addEventListener('click', () => {
+            amountEl.value = item.dataset.amount;
+            fromEl.value = item.dataset.from;
+            toEl.value = item.dataset.to;
+            calculate();
+        });
+    });
+  }
+
+  function addToFavorites() {
+    const from = fromEl.value;
+    const to = toEl.value;
+    
+    if (favorites.some(f => f.from === from && f.to === to)) {
+        window.showToast('Sudah ada di favorit', 'error');
+        return;
+    }
+
+    favorites.push({ id: Date.now(), from, to });
+    localStorage.setItem('currencyFavorites', JSON.stringify(favorites));
+    renderFavorites();
+    window.showToast('Disimpan ke favorit', 'success');
+  }
+
+  function renderFavorites() {
+    if (!favorites || favorites.length === 0) {
+      favoritesContainer.innerHTML = '<div class="text-center py-6 text-slate-400 text-xs italic">Belum ada favorit</div>';
+      return;
+    }
+
+    favoritesContainer.innerHTML = favorites.map(item => `
+      <div class="favorite-item" data-from="${item.from}" data-to="${item.to}">
+        <span class="text-sm font-bold text-slate-700 dark:text-slate-200">${item.from} <span class="text-emerald-500">→</span> ${item.to}</span>
+        <button class="delete-fav p-1 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded text-slate-400 hover:text-rose-500 transition-colors" data-id="${item.id}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    `).join('');
+
+    // Attach click to apply
+    document.querySelectorAll('.favorite-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            if(e.target.closest('.delete-fav')) return;
+            fromEl.value = item.dataset.from;
+            toEl.value = item.dataset.to;
+            calculate();
+            window.showToast('Favorit diterapkan', 'success');
+        });
+    });
+
+    // Attach click to delete
+    document.querySelectorAll('.delete-fav').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.dataset.id);
+            favorites = favorites.filter(f => f.id !== id);
+            localStorage.setItem('currencyFavorites', JSON.stringify(favorites));
+            renderFavorites();
+        });
+    });
+  }
+
+  // --- Event Listeners ---
+  [amountEl, fromEl, toEl].forEach(el => el.addEventListener('input', calculate));
+  
   swapBtn.addEventListener('click', () => {
     const temp = fromEl.value;
     fromEl.value = toEl.value;
@@ -150,6 +465,40 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     calculate();
   });
 
-  // Init
-  fetchRates();
+  addFavoriteBtn.addEventListener('click', addToFavorites);
+  
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(resultEl.innerText);
+    window.showToast('Hasil disalin!', 'success');
+  });
+
+  clearFavoritesBtn.addEventListener('click', () => {
+      if(confirm('Hapus semua favorit?')) {
+          favorites = [];
+          localStorage.setItem('currencyFavorites', JSON.stringify(favorites));
+          renderFavorites();
+      }
+  });
+
+  clearHistoryBtn.addEventListener('click', () => {
+      conversionHistory = [];
+      localStorage.setItem('currencyHistory', JSON.stringify(conversionHistory));
+      renderHistory();
+  });
+
+  document.querySelectorAll('.quick-amount').forEach(btn => {
+      btn.addEventListener('click', () => {
+          amountEl.value = btn.dataset.amount;
+          calculate();
+      });
+  });
+
+  document.querySelectorAll('.popular-pair').forEach(btn => {
+      btn.addEventListener('click', () => {
+          fromEl.value = btn.dataset.from;
+          toEl.value = btn.dataset.to;
+          calculate();
+          window.showToast('Pasangan diterapkan', 'success');
+      });
+  });
 </script>

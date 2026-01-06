@@ -1,0 +1,713 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Ultimate Jokes Generator">
+  <div class="max-w-4xl mx-auto px-4 min-h-[85vh] flex flex-col justify-center items-center py-10">
+    
+    <div class="text-center mb-8 animate-on-scroll">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600 tracking-tight">
+        Pusat Humor
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 text-lg max-w-lg mx-auto">
+        Koleksi jokes receh, programming, dan tebak-tebakan. Lengkap dengan fitur translate!
+      </p>
+    </div>
+
+    <div class="w-full max-w-2xl flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+        
+        <div class="relative w-full md:w-2/3">
+            <select id="category-select" class="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-cyan-500 appearance-none cursor-pointer shadow-sm transition-all hover:border-cyan-400">
+                <option value="Any">🎲 Campur Aduk (Semua)</option>
+                <option value="Programming">💻 Programming (Anak IT)</option>
+                <option value="Misc">🌍 Umum (Receh)</option>
+                <option value="Pun">🤡 Plesetan (Pun)</option>
+                <option value="Spooky">👻 Horor Lucu</option>
+                <option value="Christmas">🎄 Edisi Natal</option>
+                <option value="Indonesia">🇮🇩 Indonesia (Lokal)</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                <svg class="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full md:w-auto justify-center">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider pl-2">Mode:</span>
+            <button id="mode-toggle" class="relative inline-flex h-8 w-32 items-center rounded-lg transition-colors duration-300 focus:outline-none bg-slate-200 dark:bg-slate-700">
+                <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out translate-x-1"></span>
+                <span class="absolute left-0 w-1/2 text-[10px] font-bold text-center text-slate-600 dark:text-slate-300 z-10 pointer-events-none">OFFLINE</span>
+                <span class="absolute right-0 w-1/2 text-[10px] font-bold text-center text-slate-600 dark:text-slate-300 z-10 pointer-events-none">ONLINE</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="network-status" class="hidden fixed top-24 right-4 px-4 py-2 rounded-lg text-sm font-bold z-50 transition-all duration-300 shadow-lg border border-white/20 backdrop-blur-md">
+        <span id="network-text"></span>
+    </div>
+
+    <div class="w-full max-w-2xl bg-white dark:bg-slate-800 p-8 md:p-12 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden transition-all duration-300 group hover:shadow-cyan-500/10">
+      
+      <div id="status-badge" class="absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span>Offline DB</span>
+      </div>
+
+    <div class="absolute top-6 right-8 text-8xl opacity-10 dark:opacity-20 select-none pointer-events-none z-0 grayscale transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110">
+    😂
+    </div>
+      <div id="joke-container" class="relative z-10 flex flex-col h-full justify-center min-h-[200px] text-center mt-6">
+        
+        <h2 id="joke-setup" class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 leading-relaxed transition-opacity duration-300">
+          "Siap-siap ketawa..."
+        </h2>
+        
+        <div id="joke-delivery-container" class="mt-6 pt-6 border-t border-dashed border-slate-200 dark:border-slate-700 hidden opacity-0 transition-opacity duration-500">
+            <p id="joke-delivery" class="text-xl md:text-2xl font-black text-blue-600 dark:text-blue-400 italic">
+              ...tunggu tanggal mainnya!
+            </p>
+        </div>
+
+        <div class="mt-6">
+             <span id="joke-tag" class="inline-block px-3 py-1 text-[10px] font-bold tracking-widest uppercase rounded-full bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+              RANDOM
+            </span>
+        </div>
+      </div>
+
+      <div class="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button id="translate-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+          </button>
+          <button id="copy-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-cyan-500 transition-colors" title="Copy">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          </button>
+          <button id="favorite-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-red-500 transition-colors" title="Favorit">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          </button>
+          <button id="share-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-blue-500 transition-colors" title="Share with Link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+          </button>
+      </div>
+    </div>
+
+    <div class="mt-10 flex flex-col items-center gap-4">
+        <button id="generate-btn" class="group relative inline-flex items-center justify-center gap-3 px-10 py-4 font-bold text-white transition-all duration-200 bg-slate-900 dark:bg-white dark:text-slate-900 text-lg rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-xl shadow-cyan-500/20">
+            <span>Joke Baru</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-12 transition-transform duration-500"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M15.5 8.5v.01"/><path d="M9 14a6 6 0 0 0 6 0"/></svg>
+        </button>
+        <div class="flex items-center gap-4">
+            <p class="text-xs text-center text-slate-400">Tekan <kbd class="font-sans px-1 border rounded bg-slate-100 dark:bg-slate-800">Spasi</kbd> untuk acak</p>
+            <button id="settings-btn" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors underline decoration-dotted">Pengaturan</button>
+        </div>
+    </div>
+
+    <div class="mt-16 grid grid-cols-3 gap-4 w-full max-w-2xl text-center">
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+            <div id="total-view" class="text-2xl font-black text-slate-800 dark:text-white">0</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1">Jokes Dibaca</div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+            <div id="fav-cat" class="text-lg font-bold text-cyan-500 truncate px-2">-</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1">Top Kategori</div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+            <div id="daily-streak" class="text-2xl font-black text-slate-800 dark:text-white">0</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1">Streak Tawa</div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity animate-fade-in">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-100 transition-transform">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Pengaturan</h3>
+                <button id="close-settings" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Target Translate</label>
+                    <select id="target-lang" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-cyan-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                        <option value="id" selected>🇮🇩 Indonesia</option>
+                        <option value="es">🇪🇸 Spanish</option>
+                        <option value="ja">🇯🇵 Japanese (JA)</option>
+                        <option value="ko">🇰🇷 Korean</option>
+                        <option value="de">🇩🇪 German</option>
+                        <option value="fr">🇫🇷 French</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Auto-refresh (detik)</label>
+                    <input type="number" id="auto-refresh" min="0" max="60" value="0" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-cyan-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                    <p class="text-[10px] text-slate-400 mt-1">Isi 0 untuk mematikan.</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Ukuran Font</label>
+                    <select id="text-size" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-cyan-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                        <option value="text-xl">Kecil</option>
+                        <option value="text-2xl" selected>Sedang</option>
+                        <option value="text-3xl">Besar</option>
+                        <option value="text-4xl">Raksasa</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mt-8">
+                <button id="save-settings" class="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-cyan-500/30">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="favorites-section" class="hidden mt-16 w-full max-w-2xl animate-fade-in-up">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-red-500"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    Koleksi Favorit
+                </h3>
+                <button id="clear-favorites" class="text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-colors">Hapus Semua</button>
+            </div>
+            <div id="favorites-list" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-2">
+                </div>
+        </div>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+  // --- 1. LOCAL DATABASE (OFFLINE MODE) ---
+  const localJokes = [
+    { type: "twopart", setup: "Why do Java programmers wear glasses?", delivery: "Because they don't C#.", category: "Programming" },
+    { type: "single", joke: "I treat my password like my toothbrush. I don't let anyone else use it, and I change it every six months.", category: "Security" },
+    { type: "twopart", setup: "How many programmers does it take to change a light bulb?", delivery: "None. It's a hardware problem.", category: "Programming" },
+    { type: "single", joke: "Debugging becomes significantly easier if you first admit that you are the problem.", category: "Programming" },
+    { type: "twopart", setup: "Why was the JavaScript developer sad?", delivery: "Because he didn't know how to 'null' his feelings.", category: "Programming" },
+    { type: "twopart", setup: "What do you call a fake noodle?", delivery: "An Impasta.", category: "Pun" },
+    { type: "single", joke: "My wife told me to stop impersonating a flamingo. I had to put my foot down.", category: "Pun" },
+    { type: "twopart", setup: "Why did the developer quit his job?", delivery: "Because he didn't get arrays.", category: "Programming" },
+    { type: "single", joke: "Algorithm: A word used by programmers when they don't want to explain what they did.", category: "Programming" },
+    { type: "twopart", setup: "Why do spooky ghosts love elevators?", delivery: "Because it lifts their spirits.", category: "Spooky" },
+    { type: "twopart", setup: "What falls, but never needs a bandage?", delivery: "The rain.", category: "Misc" },
+    { type: "single", joke: "I'm on a seafood diet. I see food and I eat it.", category: "Misc" },
+    { type: "twopart", setup: "Why don't scientists trust atoms?", delivery: "Because they make up everything.", category: "Misc" },
+    { type: "single", joke: "There are only 10 types of people in the world: those who understand binary, and those who don't.", category: "Programming" },
+    { type: "twopart", setup: "What is a programmer's favorite hangout place?", delivery: "Foo Bar.", category: "Programming" },
+    { type: "single", joke: "Programmer: A machine that turns coffee into code.", category: "Programming" },
+    { type: "twopart", setup: "Why did the edge server go bankrupt?", delivery: "Because it didn't have enough cache.", category: "Programming" },
+    { type: "twopart", setup: "What did the ocean say to the beach?", delivery: "Nothing, it just waved.", category: "Pun" },
+    { type: "single", joke: "Parallel lines have so much in common. It's a shame they'll never meet.", category: "Pun" },
+    { type: "twopart", setup: "How do you comfort a JavaScript bug?", delivery: "You console it.", category: "Programming" },
+    { type: "single", joke: "Why do programmers prefer dark mode? Because light attracts bugs.", category: "Programming" },
+    { type: "twopart", setup: "Why do programmers always mix up Halloween and Christmas?", delivery: "Because Oct 31 equals Dec 25.", category: "Programming" },
+    { type: "single", joke: "A SQL query walks into a bar, walks up to two tables and says, 'Can I join you?'", category: "Programming" },
+    { type: "twopart", setup: "Why do Java developers wear glasses?", delivery: "Because they can't C#.", category: "Programming" },
+    { type: "single", joke: "There are 10 types of people in the world: those who understand binary, those who don't, and those who didn't expect this joke to be in base 3.", category: "Programming" },
+    // Indonesian Jokes
+    { type: "twopart", setup: "Apa bedanya programmer dengan wanita?", delivery: "Programmer mencari bug, wanita mencari bagus.", category: "Indonesia" },
+    { type: "twopart", setup: "Kenapa komputer jadi kedinginan?", delivery: "Karena lupa baju Windows.", category: "Indonesia" },
+    { type: "single", joke: "Apa persamaannya kopi dan coding? Kalau kurang manis, banyak error.", category: "Indonesia" },
+    { type: "twopart", setup: "Apa yang dikatakan programmer kepada pacarnya?", delivery: "Aku cinta kamu tanpa syarat (if).", category: "Indonesia" },
+    { type: "single", joke: "Hidup itu seperti array, kadang indeksnya mulai dari nol.", category: "Indonesia" },
+    { type: "twopart", setup: "Kenapa programmer suka dark mode?", delivery: "Karena light attracts bug (cahaya menarik bug).", category: "Indonesia" },
+    { type: "single", joke: "Programmer tidak percaya pada Valentine, mereka lebih percaya pada boolean.", category: "Indonesia" },
+    { type: "twopart", setup: "Apa yang terjadi ketika programmer lapar?", delivery: "Mereka makan byte per byte.", category: "Indonesia" },
+    { type: "single", joke: "Debugging itu seperti detektif, tapi si pembunuhnya adalah kamu sendiri.", category: "Indonesia" },
+    { type: "twopart", setup: "Kenapa programmer tidak suka alam?", delivery: "Karena terlalu banyak bug (serangga).", category: "Indonesia" }
+  ];
+
+  // --- 2. STATE MANAGEMENT ---
+  let isOnline = localStorage.getItem('jokeMode') === 'online';
+  let currentJoke = {};
+  let originalJoke = {}; // Backup for translation revert
+  let isTranslated = false;
+  let favorites = JSON.parse(localStorage.getItem('favoriteJokes') || '[]');
+  let autoRefreshInterval = null;
+  let userStats = JSON.parse(localStorage.getItem('jokeStats') || '{"total": 0, "catCounts": {}, "lastDate": null, "streak": 0}');
+  let settings = JSON.parse(localStorage.getItem('jokeSettings') || '{"autoRefresh": 0, "textSize": "text-2xl", "targetLang": "id"}');
+
+  // --- 3. ELEMENTS ---
+  const setupText = document.getElementById('joke-setup');
+  const deliveryText = document.getElementById('joke-delivery');
+  const deliveryContainer = document.getElementById('joke-delivery-container');
+  const tagBadge = document.getElementById('joke-tag');
+  const generateBtn = document.getElementById('generate-btn');
+  const categorySelect = document.getElementById('category-select');
+  const modeToggle = document.getElementById('mode-toggle');
+  const modeIndicator = document.getElementById('mode-indicator');
+  const statusBadge = document.getElementById('status-badge');
+  const copyBtn = document.getElementById('copy-btn');
+  const shareBtn = document.getElementById('share-btn');
+  const translateBtn = document.getElementById('translate-btn');
+  const favoriteBtn = document.getElementById('favorite-btn');
+  const settingsBtn = document.getElementById('settings-btn');
+  const settingsModal = document.getElementById('settings-modal');
+  const closeSettingsBtn = document.getElementById('close-settings');
+  const saveSettingsBtn = document.getElementById('save-settings');
+  const autoRefreshInput = document.getElementById('auto-refresh');
+  const textSizeSelect = document.getElementById('text-size');
+  const targetLangSelect = document.getElementById('target-lang');
+  const favoritesSection = document.getElementById('favorites-section');
+  const favoritesList = document.getElementById('favorites-list');
+  const clearFavoritesBtn = document.getElementById('clear-favorites');
+  const totalViewEl = document.getElementById('total-view');
+  const favCatEl = document.getElementById('fav-cat');
+  const dailyStreakEl = document.getElementById('daily-streak');
+  const networkStatus = document.getElementById('network-status');
+  const networkText = document.getElementById('network-text');
+  
+  // --- 4. CORE FUNCTIONS ---
+
+  // Network Status
+  function updateNetworkStatus() {
+    if (navigator.onLine) {
+      networkStatus.className = 'fixed top-24 right-4 px-4 py-2 rounded-lg text-sm font-bold z-50 transition-all duration-300 bg-green-500 text-white shadow-lg border border-white/20';
+      networkText.textContent = 'Koneksi Stabil';
+      setTimeout(() => networkStatus.classList.add('hidden'), 3000);
+    } else {
+      networkStatus.className = 'fixed top-24 right-4 px-4 py-2 rounded-lg text-sm font-bold z-50 transition-all duration-300 bg-red-500 text-white shadow-lg border border-white/20';
+      networkText.textContent = 'Koneksi Terputus';
+      networkStatus.classList.remove('hidden');
+      if (isOnline) {
+        isOnline = false;
+        localStorage.setItem('jokeMode', 'offline');
+        updateModeUI();
+        window.showToast('Mode otomatis beralih ke offline', 'warning');
+      }
+    }
+  }
+
+  function updateModeUI() {
+      if (isOnline) {
+          modeIndicator.style.transform = 'translateX(100%) translateX(4px)'; 
+          modeIndicator.classList.add('bg-cyan-400');
+          modeIndicator.classList.remove('bg-white');
+          statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span><span class="text-cyan-600 dark:text-cyan-400">Online API</span>';
+          statusBadge.className = "absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-100 dark:bg-cyan-900/30 text-[10px] font-bold uppercase tracking-widest";
+      } else {
+          modeIndicator.style.transform = 'translateX(4px)';
+          modeIndicator.classList.remove('bg-cyan-400');
+          modeIndicator.classList.add('bg-white');
+          statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span class="text-slate-500 dark:text-slate-400">Local Database</span>';
+          statusBadge.className = "absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold uppercase tracking-widest";
+      }
+  }
+
+  function applySettings() {
+      setupText.className = `${settings.textSize} font-bold text-slate-800 dark:text-slate-100 leading-relaxed transition-opacity duration-300`;
+      
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+      if (settings.autoRefresh > 0) autoRefreshInterval = setInterval(getJoke, settings.autoRefresh * 1000);
+  }
+
+  // --- TRACK STATS ---
+  function trackStat(category) {
+      userStats.total++;
+      userStats.catCounts[category] = (userStats.catCounts[category] || 0) + 1;
+      
+      const today = new Date().toDateString();
+      if(userStats.lastDate !== today) {
+          userStats.streak = (userStats.lastDate === new Date(Date.now() - 86400000).toDateString()) 
+              ? userStats.streak + 1 
+              : 1;
+          userStats.lastDate = today;
+      }
+      
+      localStorage.setItem('jokeStats', JSON.stringify(userStats));
+      updateStatsDisplay();
+  }
+
+  function updateStatsDisplay() {
+      totalViewEl.innerText = userStats.total;
+      dailyStreakEl.innerText = userStats.streak;
+      
+      let max = 0;
+      let fav = '-';
+      for(const [cat, count] of Object.entries(userStats.catCounts)) {
+          if(count > max) { max = count; fav = cat; }
+      }
+      favCatEl.innerText = fav;
+  }
+
+  // --- MAIN LOGIC ---
+  async function getJoke() {
+      // 1. Reset State Translation UI
+      isTranslated = false;
+      translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+      translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+
+      // 2. Set Button Loading
+      generateBtn.disabled = true;
+      generateBtn.classList.add('opacity-75');
+      // Save content if needed, but we hardcode the reset
+      generateBtn.innerHTML = '<span class="animate-spin">⏳</span>';
+
+      const category = categorySelect.value;
+      let jokeData = null;
+
+      try {
+          if (isOnline) {
+              jokeData = await fetchOnlineJoke(category);
+          }
+          // Fallback logic
+          if (!jokeData) {
+              jokeData = getLocalJoke(category);
+              if (isOnline) window.showToast('Koneksi lambat, mengambil dari lokal.', 'info');
+          }
+      } catch (e) {
+          jokeData = getLocalJoke(category);
+      } finally {
+          // 3. THIS ALWAYS RUNS: Restore data & button
+          
+          // IMPORTANT: Save Original Data HERE for Translation Revert
+          originalJoke = JSON.parse(JSON.stringify(jokeData));
+          
+          trackStat(jokeData.category || 'Misc');
+          displayJoke(jokeData);
+          updateFavoriteButton();
+          
+          // Restore Button
+          generateBtn.disabled = false;
+          generateBtn.classList.remove('opacity-75');
+          generateBtn.innerHTML = `<span>Joke Baru</span> <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-12 transition-transform duration-500"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M15.5 8.5v.01"/><path d="M9 14a6 6 0 0 0 6 0"/></svg>`;
+      }
+  }
+
+  async function fetchOnlineJoke(category) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+      try {
+          const url = `https://v2.jokeapi.dev/joke/${category}?blacklistFlags=nsfw,religious,political,racist,sexist,explicit&safe-mode`;
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          
+          if (!res.ok) throw new Error('API Error');
+          const data = await res.json();
+          if (data.error) throw new Error('JokeAPI Error');
+
+          return data;
+      } catch (error) {
+          return null;
+      }
+  }
+
+  function getLocalJoke(category) {
+      let pool = localJokes;
+      if (category !== 'Any') {
+          if(category === 'Programming' || category === 'Indonesia') {
+             pool = localJokes.filter(j => j.category === category);
+          } else {
+             const filtered = localJokes.filter(j => j.category === category);
+             if(filtered.length > 0) pool = filtered;
+          }
+      }
+      return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function displayJoke(data) {
+      currentJoke = data;
+      // Note: originalJoke is set in getJoke(), NOT here to prevent overwriting during translate toggle
+
+      setupText.style.opacity = '0';
+      deliveryContainer.classList.add('hidden');
+      tagBadge.style.opacity = '0';
+
+      setTimeout(() => {
+          tagBadge.innerText = data.category || 'Random';
+          
+          if (data.type === 'single') {
+              setupText.innerText = `"${data.joke}"`;
+              deliveryContainer.classList.add('hidden');
+          } else {
+              setupText.innerText = `"${data.setup}"`;
+              deliveryText.innerText = data.delivery;
+              deliveryContainer.classList.remove('hidden');
+              
+              setTimeout(() => {
+                  deliveryContainer.classList.remove('opacity-0');
+              }, 100);
+          }
+
+          setupText.style.opacity = '1';
+          tagBadge.style.opacity = '1';
+          deliveryContainer.classList.remove('opacity-0'); 
+      }, 200);
+  }
+
+  // --- TRANSLATE LOGIC (FIXED REVERT) ---
+  async function toggleTranslation() {
+      if (isTranslated) {
+          // REVERT LOGIC: Use the originalJoke saved in getJoke()
+          displayJoke(originalJoke);
+          isTranslated = false;
+          translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+          translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+          window.showToast('Kembali ke bahasa asli', 'info');
+      } else {
+          // TRANSLATE LOGIC
+          if (!isOnline && !navigator.onLine) {
+              window.showToast('Fitur translate butuh internet!', 'error');
+              return;
+          }
+
+          const target = settings.targetLang || 'id';
+          const originalIcon = translateBtn.innerHTML;
+          translateBtn.innerHTML = '<span class="animate-spin">⏳</span>';
+          translateBtn.disabled = true;
+
+          try {
+              // Combine text for API
+              let textToTranslate = currentJoke.type === 'single' ? currentJoke.joke : `${currentJoke.setup} ||| ${currentJoke.delivery}`;
+              
+              const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(textToTranslate)}&langpair=en|${target}`);
+              const data = await res.json();
+              
+              if (data.responseStatus === 200) {
+                  const translatedText = data.responseData.translatedText;
+                  
+                  // Create NEW object for translation, DO NOT touch originalJoke
+                  let newJoke = { ...currentJoke };
+                  
+                  if (currentJoke.type === 'single') {
+                      newJoke.joke = translatedText;
+                  } else {
+                      const separator = "|||";
+                      if (translatedText.includes(separator)) {
+                          const parts = translatedText.split(separator);
+                          newJoke.setup = parts[0].trim();
+                          newJoke.delivery = parts[1].trim();
+                      } else {
+                          newJoke.setup = translatedText;
+                          newJoke.delivery = ""; 
+                      }
+                  }
+
+                  displayJoke(newJoke);
+                  isTranslated = true;
+                  
+                  translateBtn.classList.remove('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+                  translateBtn.classList.add('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+                  window.showToast('Berhasil diterjemahkan', 'success');
+              } else {
+                  throw new Error('Limit API');
+              }
+          } catch (e) {
+              window.showToast('Gagal translate. Coba lagi.', 'error');
+          } finally {
+              translateBtn.innerHTML = originalIcon;
+              translateBtn.disabled = false;
+          }
+      }
+  }
+
+  // --- FAVORITES ---
+  function updateFavoriteButton() {
+    const isFavorite = favorites.some(fav => {
+        // Compare with original content to support saving even when translated
+        const checkAgainst = isTranslated ? originalJoke : currentJoke;
+        if(checkAgainst.type === 'single') return fav.joke === checkAgainst.joke;
+        return fav.setup === checkAgainst.setup;
+    });
+
+    if (isFavorite) {
+      favoriteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-red-500"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+      favoriteBtn.classList.add('text-red-500', 'bg-red-50', 'dark:bg-red-900/30');
+      favoriteBtn.classList.remove('text-slate-500');
+    } else {
+      favoriteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+      favoriteBtn.classList.remove('text-red-500', 'bg-red-50', 'dark:bg-red-900/30');
+      favoriteBtn.classList.add('text-slate-500');
+    }
+  }
+
+  function toggleFavorite() {
+    const jokeToSave = isTranslated ? originalJoke : currentJoke;
+    
+    const isFavorite = favorites.some(fav => {
+        if(jokeToSave.type === 'single') return fav.joke === jokeToSave.joke;
+        return fav.setup === jokeToSave.setup;
+    });
+
+    if (isFavorite) {
+      favorites = favorites.filter(fav => {
+          if(jokeToSave.type === 'single') return fav.joke !== jokeToSave.joke;
+          return fav.setup !== jokeToSave.setup;
+      });
+      window.showToast('Dihapus dari favorit', 'info');
+    } else {
+      favorites.push({...jokeToSave, id: Date.now()});
+      window.showToast('Ditambahkan ke favorit', 'success');
+    }
+    
+    localStorage.setItem('favoriteJokes', JSON.stringify(favorites));
+    updateFavoriteButton();
+    renderFavorites();
+  }
+
+  function renderFavorites() {
+    if (favorites.length === 0) {
+      favoritesList.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada joke favorit</p>';
+      favoritesSection.classList.add('hidden');
+      return;
+    }
+    
+    favoritesSection.classList.remove('hidden');
+    
+    favoritesList.innerHTML = favorites.map(fav => {
+        const content = fav.type === 'single' ? fav.joke : `${fav.setup} ${fav.delivery}`;
+        return `
+      <div class="fav-item p-3 bg-slate-50 dark:bg-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors cursor-pointer group flex justify-between items-start" data-id="${fav.id}">
+          <div class="flex-1">
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-300 line-clamp-2">"${content}"</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase text-[10px] font-bold tracking-wider">${fav.category || 'Misc'}</p>
+          </div>
+          <button class="delete-fav ml-2 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition-colors" data-id="${fav.id}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+      </div>
+    `}).join('');
+
+    document.querySelectorAll('.fav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            if (e.target.closest('.delete-fav')) return;
+            const id = parseInt(item.dataset.id);
+            const fav = favorites.find(f => f.id === id);
+            if(fav) {
+                isTranslated = false;
+                translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+                translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+                
+                // IMPORTANT: Restore original when loading from favs
+                originalJoke = JSON.parse(JSON.stringify(fav)); 
+                displayJoke(fav);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                updateFavoriteButton();
+            }
+        });
+    });
+
+    document.querySelectorAll('.delete-fav').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.dataset.id);
+            favorites = favorites.filter(f => f.id !== id);
+            localStorage.setItem('favoriteJokes', JSON.stringify(favorites));
+            renderFavorites();
+            updateFavoriteButton();
+        });
+    });
+  }
+
+  // --- ACTIONS ---
+  modeToggle.addEventListener('click', () => {
+      isOnline = !isOnline;
+      localStorage.setItem('jokeMode', isOnline ? 'online' : 'offline');
+      updateModeUI();
+      getJoke();
+  });
+
+  generateBtn.addEventListener('click', getJoke);
+  categorySelect.addEventListener('change', getJoke);
+  translateBtn.addEventListener('click', toggleTranslation);
+  favoriteBtn.addEventListener('click', toggleFavorite);
+
+  copyBtn.addEventListener('click', () => {
+      let text = "";
+      if (currentJoke.type === 'single') {
+          text = currentJoke.joke;
+      } else {
+          text = `${currentJoke.setup}\n\n> ${currentJoke.delivery}`;
+      }
+      navigator.clipboard.writeText(text);
+      window.showToast('Joke disalin!', 'success');
+  });
+
+  shareBtn.addEventListener('click', async () => {
+      const currentUrl = window.location.href;
+      let jokeContent = "";
+      
+      if (currentJoke.type === 'single') {
+          jokeContent = `"${currentJoke.joke}"`;
+      } else {
+          jokeContent = `"${currentJoke.setup}"\n\n😂 ${currentJoke.delivery}`;
+      }
+
+      const fullMessage = `${jokeContent}\n\nCari hiburan lainnya di:\n${currentUrl}`;
+
+      if (navigator.share) {
+          try {
+              await navigator.share({
+                  title: 'Daily Jokes',
+                  text: fullMessage
+              });
+          } catch (err) {
+              if (err.name !== 'AbortError') {
+                  navigator.clipboard.writeText(fullMessage);
+                  window.showToast('Link & Joke disalin!', 'success');
+              }
+          }
+      } else {
+          navigator.clipboard.writeText(fullMessage);
+          window.showToast('Link & Joke disalin!', 'success');
+      }
+  });
+
+  settingsBtn.addEventListener('click', () => {
+      settingsModal.classList.remove('hidden');
+      autoRefreshInput.value = settings.autoRefresh;
+      textSizeSelect.value = settings.textSize;
+      targetLangSelect.value = settings.targetLang || 'id';
+  });
+
+  closeSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
+
+  saveSettingsBtn.addEventListener('click', () => {
+      settings = {
+          autoRefresh: parseInt(autoRefreshInput.value),
+          textSize: textSizeSelect.value,
+          targetLang: targetLangSelect.value
+      };
+      localStorage.setItem('jokeSettings', JSON.stringify(settings));
+      applySettings();
+      settingsModal.classList.add('hidden');
+      window.showToast('Pengaturan disimpan!', 'success');
+  });
+
+  clearFavoritesBtn.addEventListener('click', () => {
+    if (confirm('Hapus semua joke favorit?')) {
+      favorites = [];
+      localStorage.setItem('favoriteJokes', JSON.stringify(favorites));
+      updateFavoriteButton();
+      renderFavorites();
+      window.showToast('Semua favorit dihapus', 'info');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && document.activeElement.tagName !== 'BUTTON' && document.activeElement.tagName !== 'SELECT' && document.activeElement.tagName !== 'INPUT') {
+          e.preventDefault();
+          getJoke();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        settingsBtn.click();
+      }
+  });
+
+  // Init
+  window.addEventListener('online', updateNetworkStatus);
+  window.addEventListener('offline', updateNetworkStatus);
+
+  document.addEventListener('DOMContentLoaded', () => {
+      updateModeUI();
+      updateStatsDisplay();
+      renderFavorites();
+      applySettings();
+      getJoke();
+      updateNetworkStatus();
+  });
+</script>

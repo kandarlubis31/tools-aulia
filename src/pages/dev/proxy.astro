@@ -1,0 +1,155 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="CORS Proxy & API Tester">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh]">
+    <div class="text-center mb-10 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-fuchsia-500">
+        CORS Proxy & API Tester
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Bypass CORS policy dan test API endpoint langsung dari browser.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in pb-20">
+      
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          
+          <div class="flex gap-2 mb-4">
+            <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-700 font-bold text-slate-700 dark:text-slate-200 border border-transparent">
+              GET
+            </div>
+            <input type="url" id="target-url" placeholder="https://api.example.com/data.json" class="flex-1 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-violet-500 outline-none transition-all w-full" />
+          </div>
+
+          <button id="send-btn" class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2">
+            <span id="btn-text">Kirim Request</span>
+            <div id="loader" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          </button>
+
+        </div>
+
+        <div class="bg-slate-900 text-slate-200 p-6 rounded-2xl shadow-xl font-mono text-sm overflow-hidden relative group border border-slate-800">
+            <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button id="copy-res" class="p-2 bg-slate-700 hover:bg-slate-600 rounded text-xs text-white transition-colors">Copy</button>
+            </div>
+            <pre id="response-body" class="whitespace-pre-wrap break-all min-h-[200px] max-h-[500px] overflow-y-auto custom-scrollbar text-emerald-400">Menunggu request...</pre>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4">Status</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
+              <span class="text-slate-500">Status Code</span>
+              <span id="status-code" class="font-mono font-bold text-slate-700 dark:text-slate-200">-</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
+              <span class="text-slate-500">Latency</span>
+              <span id="latency" class="font-mono font-bold text-slate-700 dark:text-slate-200">-</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Size</span>
+              <span id="size" class="font-mono font-bold text-slate-700 dark:text-slate-200">-</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-5 rounded-xl border border-blue-100 dark:border-blue-800">
+            <h4 class="text-sm font-bold text-blue-700 dark:text-blue-300 mb-2">Cara Pakai di Code:</h4>
+            <code class="block bg-white dark:bg-slate-900 p-3 rounded-lg text-xs text-slate-600 dark:text-slate-300 break-all border border-slate-200 dark:border-slate-700">
+                const res = await fetch('/api/proxy?url=' + targetUrl);
+            </code>
+            <p class="text-xs text-blue-600 dark:text-blue-400 mt-3 leading-relaxed">
+                Gunakan endpoint internal ini di aplikasi front-end kamu untuk menghindari error CORS saat mengambil data dari API publik.
+            </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 20px; }
+</style>
+
+<script>
+  const targetUrlInput = document.getElementById('target-url');
+  const sendBtn = document.getElementById('send-btn');
+  const btnText = document.getElementById('btn-text');
+  const loader = document.getElementById('loader');
+  const responseBody = document.getElementById('response-body');
+  const statusCode = document.getElementById('status-code');
+  const latency = document.getElementById('latency');
+  const size = document.getElementById('size');
+  const copyRes = document.getElementById('copy-res');
+
+  sendBtn.addEventListener('click', async () => {
+    const url = targetUrlInput.value;
+    if(!url) {
+        alert('Masukkan URL target!');
+        return;
+    }
+
+    sendBtn.disabled = true;
+    sendBtn.classList.add('opacity-70', 'cursor-not-allowed');
+    btnText.innerText = 'Memuat...';
+    loader.classList.remove('hidden');
+    responseBody.innerText = 'Mengambil data...';
+    responseBody.className = 'whitespace-pre-wrap break-all min-h-[200px] max-h-[500px] overflow-y-auto custom-scrollbar text-slate-400';
+
+    const startTime = performance.now();
+
+    try {
+        const res = await fetch(`/api/proxy?url=${encodeURIComponent(url)}`);
+        const endTime = performance.now();
+        
+        statusCode.innerText = res.status;
+        statusCode.className = res.status >= 200 && res.status < 300 
+            ? 'font-mono font-bold text-emerald-500' 
+            : 'font-mono font-bold text-red-500';
+            
+        latency.innerText = `${Math.round(endTime - startTime)} ms`;
+        
+        const contentType = res.headers.get('content-type');
+        let textData = await res.text();
+        
+        size.innerText = `${(textData.length / 1024).toFixed(2)} KB`;
+
+        if (contentType && contentType.includes('application/json')) {
+            try {
+                const jsonObj = JSON.parse(textData);
+                textData = JSON.stringify(jsonObj, null, 2);
+                responseBody.className = 'whitespace-pre-wrap break-all min-h-[200px] max-h-[500px] overflow-y-auto custom-scrollbar text-emerald-400 font-bold';
+            } catch(e) {}
+        } else {
+             responseBody.className = 'whitespace-pre-wrap break-all min-h-[200px] max-h-[500px] overflow-y-auto custom-scrollbar text-slate-200';
+        }
+
+        responseBody.innerText = textData;
+
+    } catch (error) {
+        responseBody.innerText = 'Error: ' + error.message;
+        statusCode.innerText = 'ERR';
+    } finally {
+        sendBtn.disabled = false;
+        sendBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+        btnText.innerText = 'Kirim Request';
+        loader.classList.add('hidden');
+    }
+  });
+
+  copyRes.addEventListener('click', () => {
+    navigator.clipboard.writeText(responseBody.innerText);
+    const originalText = copyRes.innerText;
+    copyRes.innerText = 'Disalin!';
+    setTimeout(() => copyRes.innerText = originalText, 2000);
+  });
+</script>
