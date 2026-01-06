@@ -151,7 +151,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 <button id="clear-favorites" class="text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-colors">Hapus Semua</button>
             </div>
             <div id="favorites-list" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-2">
-                </div>
+            </div>
         </div>
     </div>
 
@@ -186,7 +186,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // --- 2. STATE MANAGEMENT ---
   let isOnline = localStorage.getItem('quoteMode') === 'online'; 
   let currentQuote = {};
-  let originalQuote = {}; // Menyimpan quote asli sebelum translate
+  let originalQuote = {}; // Menyimpan quote asli
   let isTranslated = false;
   let techQuotesCache = [];
   let favorites = JSON.parse(localStorage.getItem('favoriteQuotes') || '[]');
@@ -246,12 +246,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   async function getQuote() {
-      // Reset State Translate
+      // 1. Reset State Translate
       isTranslated = false;
-      translateBtn.classList.remove('text-blue-500', 'bg-blue-100');
-      translateBtn.classList.add('text-slate-500', 'bg-slate-100');
+      translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+      translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
 
-      // UI Loading State
+      // 2. UI Loading State
       generateBtn.disabled = true;
       generateBtn.classList.add('opacity-75');
       const btnContent = generateBtn.innerHTML;
@@ -276,6 +276,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           console.error("Critical Error:", e);
           quoteData = getLocalQuote(category);
       }
+
+      // 3. Simpan Original State (PENTING FIX)
+      originalQuote = { ...quoteData }; 
+      currentQuote = quoteData;
 
       displayQuote(quoteData);
       updateFavoriteButton();
@@ -328,17 +332,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       return { text: random.text, author: random.author };
   }
 
-  // --- TRANSLATION LOGIC ---
+  // --- TRANSLATION LOGIC (FIXED) ---
   async function toggleTranslation() {
       if (isTranslated) {
-          // Revert to original
+          // REVERT LOGIC: Ambil dari backup originalQuote
           displayQuote(originalQuote);
+          currentQuote = originalQuote; // Update state
           isTranslated = false;
+          
           translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
           translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
           window.showToast('Kembali ke teks asli', 'info');
       } else {
-          // Translate
+          // TRANSLATE LOGIC
           if (!isOnline && !navigator.onLine) {
               window.showToast('Fitur translate butuh internet!', 'error');
               return;
@@ -356,7 +362,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               
               if (data.responseStatus === 200) {
                   const translatedText = data.responseData.translatedText;
-                  displayQuote({ text: translatedText, author: currentQuote.author });
+                  
+                  // Update Display & Current State
+                  const translatedData = { text: translatedText, author: currentQuote.author };
+                  displayQuote(translatedData);
+                  currentQuote = translatedData;
                   isTranslated = true;
                   
                   translateBtn.classList.remove('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
@@ -368,7 +378,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           } catch (e) {
               window.showToast('Gagal menerjemahkan. Coba lagi nanti.', 'error');
           } finally {
-              // Restore Icon
               translateBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>';
               translateBtn.disabled = false;
           }
@@ -376,8 +385,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   function displayQuote(data) {
-      if (!isTranslated) originalQuote = data; // Simpan original hanya saat render awal
-      currentQuote = data; // Update state current untuk fungsi copy/share
+      // HAPUS logic state management dari sini. 
+      // Fungsi ini murni hanya untuk update DOM.
       
       quoteText.style.opacity = '0';
       quoteAuthor.style.opacity = '0';
@@ -402,7 +411,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   function toggleFavorite() {
+    // Favorit selalu menyimpan apa yang sedang dilihat (currentQuote)
     const isFavorite = favorites.some(fav => fav.text === currentQuote.text);
+    
     if (isFavorite) {
       favorites = favorites.filter(fav => fav.text !== currentQuote.text);
       window.showToast('Dihapus dari favorit', 'info');
@@ -439,12 +450,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             if (e.target.closest('.delete-fav')) return;
             const text = item.dataset.text;
             const author = item.dataset.author;
-            // Reset translate state when loading fav
+            
+            // Ketika load dari favorit, anggap itu original
+            originalQuote = { text, author };
+            currentQuote = { text, author };
+            
+            // Reset translate state
             isTranslated = false;
-            translateBtn.classList.remove('text-blue-500', 'bg-blue-100');
-            translateBtn.classList.add('text-slate-500', 'bg-slate-100');
+            translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
+            translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
             
             displayQuote({text, author});
+            updateFavoriteButton();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
@@ -479,51 +496,33 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       window.showToast('Quote disalin!', 'success');
   });
 
-shareBtn.addEventListener('click', async () => {
-      // A. Ambil Link Halaman Ini
+  shareBtn.addEventListener('click', async () => {
       const currentUrl = window.location.href; 
-
-      // B. Susun Pesan Promosi yang Rapi
       const quotePart = `"${quoteText.innerText}"\n${quoteAuthor.innerText}`;
-      
-      // Footer promosi (Ganti kata-katanya sesuai selera marketing lu)
       const footerPart = `\n\n✨ Dapatkan suntikan semangat harian di:\n${currentUrl}`;
-      
-      // Gabungkan
       const fullMessage = quotePart + footerPart;
 
-      // C. Eksekusi Share
       if (navigator.share) {
           try {
-              // Share Native (HP: WA, IG, Telegram)
               await navigator.share({
-                  // Title biasanya muncul di email/notes
                   title: 'Inspirasi Developer', 
-                  // Text adalah isi pesan utama (termasuk link)
                   text: fullMessage 
               });
           } catch (err) {
               if (err.name !== 'AbortError') {
-                  // Kalau share native error, fallback ke copy
                   copyToClipboardFallback(fullMessage);
               }
           }
       } else {
-          // Fallback Desktop (Windows/Mac) -> Auto Copy
           copyToClipboardFallback(fullMessage);
       }
   });
   
   function copyToClipboardFallback(text) {
       navigator.clipboard.writeText(text).then(() => {
-          // Ubah icon tombol share jadi tanda centang (Visual Feedback)
           const originalHTML = shareBtn.innerHTML;
           shareBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M20 6 9 17l-5-5"/></svg>';
-          
-          // Toast notifikasi yang lebih jelas
           window.showToast('Teks & Link Website berhasil disalin!', 'success');
-          
-          // Kembalikan icon setelah 2 detik
           setTimeout(() => {
               shareBtn.innerHTML = originalHTML;
           }, 2000);
