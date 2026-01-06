@@ -3,48 +3,324 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="Percentage Calculator">
-  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
-    <div class="text-center mb-8 pt-8 animate-on-scroll">
-      <h1 class="text-3xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-blue-600">Percentage Calc</h1>
-      <p class="text-slate-600 dark:text-slate-400">Hitung persen diskon, kenaikan, dan proporsi dengan mudah.</p>
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    
+    <div class="text-center mb-12 animate-on-scroll">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-blue-600 tracking-tight">
+        Kalkulator Persentase
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
+        Hitung persen diskon, kenaikan harga, dan proporsi dengan cepat dan akurat.
+      </p>
     </div>
 
-    <div class="grid gap-6 animate-fade-in">
-       
-       <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow flex flex-wrap items-center gap-2">
-          <span class="font-bold text-slate-500">Berapa</span>
-          <input type="number" id="p1-x" class="w-20 p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-center" placeholder="X" />
-          <span class="font-bold text-slate-500">% dari</span>
-          <input type="number" id="p1-y" class="w-24 p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-center" placeholder="Y" />
-          <span class="font-bold text-slate-500">?</span>
-          <span id="res-1" class="ml-auto text-2xl font-bold text-indigo-600 dark:text-indigo-400">0</span>
-       </div>
+    <div class="grid gap-8 animate-fade-in">
+        
+      <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl transition-all hover:shadow-2xl hover:border-indigo-200 dark:hover:border-indigo-800">
+        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
+          <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 0 0-7z"></path></svg>
+          </div>
+          Berapa X% dari Y?
+        </h3>
+        
+        <div class="flex flex-col md:flex-row items-center gap-4 mb-6 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-2 w-full md:w-auto">
+              <input type="number" id="p1-x" class="flex-1 w-24 p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-center font-bold text-lg outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm" placeholder="X" />
+              <span class="font-bold text-slate-400 text-xl">%</span>
+          </div>
+          <span class="font-bold text-slate-500">dari</span>
+          <input type="number" id="p1-y" class="w-full md:w-32 p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-center font-bold text-lg outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm" placeholder="Y" />
+          <span class="font-bold text-slate-500 hidden md:inline">=</span>
+          <div class="w-full md:ml-auto p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800 text-center md:text-right">
+              <span id="res-1" class="text-3xl font-black text-indigo-600 dark:text-indigo-400">0</span>
+          </div>
+        </div>
 
-       <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow flex flex-wrap items-center gap-2">
-          <input type="number" id="p2-x" class="w-20 p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-center" placeholder="X" />
-          <span class="font-bold text-slate-500">adalah berapa % dari</span>
-          <input type="number" id="p2-y" class="w-24 p-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-center" placeholder="Y" />
-          <span class="font-bold text-slate-500">?</span>
-          <span id="res-2" class="ml-auto text-2xl font-bold text-indigo-600 dark:text-indigo-400">0%</span>
-       </div>
+        <div class="flex flex-wrap gap-2">
+          <button class="example-btn px-4 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" data-x="25" data-y="200" data-calc="1">
+            25% dari 200
+          </button>
+          <button class="example-btn px-4 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" data-x="10" data-y="500" data-calc="1">
+            10% dari 500
+          </button>
+          <button class="example-btn px-4 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" data-x="11" data-y="100000" data-calc="1">
+            PPN 11%
+          </button>
+        </div>
+      </div>
 
+      <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl transition-all hover:shadow-2xl hover:border-blue-200 dark:hover:border-blue-800">
+        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
+          <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+          </div>
+          X adalah berapa % dari Y?
+        </h3>
+        
+        <div class="flex flex-col md:flex-row items-center gap-4 mb-6 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+          <input type="number" id="p2-x" class="w-full md:w-24 p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-center font-bold text-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm" placeholder="X" />
+          <span class="font-bold text-slate-500">adalah</span>
+          <div class="w-full md:w-auto p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 text-center min-w-[120px]">
+              <span id="res-2" class="text-3xl font-black text-blue-600 dark:text-blue-400">0%</span>
+          </div>
+          <span class="font-bold text-slate-500">dari</span>
+          <input type="number" id="p2-y" class="w-full md:w-32 p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-center font-bold text-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm" placeholder="Y" />
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button class="example-btn px-4 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" data-x="50" data-y="200" data-calc="2">
+            50 dari 200
+          </button>
+          <button class="example-btn px-4 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" data-x="25" data-y="100" data-calc="2">
+            25 dari 100
+          </button>
+          <button class="example-btn px-4 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" data-x="80" data-y="100" data-calc="2">
+            Nilai 80 (KKM 100)
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl transition-all hover:shadow-2xl hover:border-emerald-200 dark:hover:border-emerald-800">
+        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-3">
+          <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 18 13.5 15.5 8.5 10.5"></polyline></svg>
+          </div>
+          Kenaikan / Penurunan
+        </h3>
+        
+        <div class="flex flex-col gap-6 mb-6 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-3 w-full">
+                <input type="number" id="p3-x" class="flex-1 p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-center font-bold text-lg outline-none focus:ring-2 focus:ring-emerald-500 transition-all shadow-sm" placeholder="Nilai Awal" />
+                <span class="font-bold text-slate-400 text-lg">±</span>
+                <div class="flex items-center gap-2 flex-1">
+                    <input type="number" id="p3-percent" class="flex-1 p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-center font-bold text-lg outline-none focus:ring-2 focus:ring-emerald-500 transition-all shadow-sm" placeholder="%" />
+                    <span class="font-bold text-slate-400 text-xl">%</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="p-4 bg-white dark:bg-slate-800 rounded-xl border border-green-200 dark:border-green-800 text-center shadow-sm">
+                    <span class="text-xs font-bold text-green-500 uppercase tracking-widest block mb-1">Naik (Increase)</span>
+                    <span id="res-3-inc" class="text-2xl font-black text-green-600 dark:text-green-400">0</span>
+                </div>
+                <div class="p-4 bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-800 text-center shadow-sm">
+                    <span class="text-xs font-bold text-red-500 uppercase tracking-widest block mb-1">Turun (Decrease)</span>
+                    <span id="res-3-dec" class="text-2xl font-black text-red-600 dark:text-red-400">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button class="example-btn px-4 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors" data-x="100000" data-percent="20" data-calc="3">
+            Gaji 100rb naik 20%
+          </button>
+          <button class="example-btn px-4 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors" data-x="500000" data-percent="50" data-calc="3">
+            Diskon 50% dari 500rb
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="mt-12 bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-lg animate-on-scroll">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+            Riwayat Perhitungan
+        </h3>
+        <button id="clear-history" class="text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-red-200 dark:hover:border-red-800">Hapus Semua</button>
+      </div>
+      <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+        <p class="text-sm text-slate-400 italic text-center py-8">Belum ada riwayat perhitungan</p>
+      </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+  // Elements
+  const p1X = document.getElementById('p1-x');
+  const p1Y = document.getElementById('p1-y');
+  const res1 = document.getElementById('res-1');
+  
+  const p2X = document.getElementById('p2-x');
+  const p2Y = document.getElementById('p2-y');
+  const res2 = document.getElementById('res-2');
+  
+  const p3X = document.getElementById('p3-x');
+  const p3Percent = document.getElementById('p3-percent');
+  const res3Inc = document.getElementById('res-3-inc');
+  const res3Dec = document.getElementById('res-3-dec');
+  
+  const historyList = document.getElementById('history-list');
+  const clearHistoryBtn = document.getElementById('clear-history');
+  
+  // Helper
+  const formatNumber = (num) => {
+      // Hilangkan desimal .00 jika bulat
+      return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(num);
+  };
+
+  // State
+  let calculationHistory = JSON.parse(localStorage.getItem('percentageHistory') || '[]');
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    renderHistory();
+  });
+
+  // Calculator 1: What is X% of Y
   function calc1() {
-    const x = parseFloat((document.getElementById('p1-x') as HTMLInputElement).value) || 0;
-    const y = parseFloat((document.getElementById('p1-y') as HTMLInputElement).value) || 0;
-    document.getElementById('res-1')!.innerText = (x / 100 * y).toString();
+    const x = parseFloat(p1X.value);
+    const y = parseFloat(p1Y.value);
+    
+    if(!isNaN(x) && !isNaN(y)) {
+        const result = (x / 100 * y);
+        res1.innerText = formatNumber(result);
+        addToHistoryDebounced(`${x}% dari ${formatNumber(y)} = ${formatNumber(result)}`, '1', x, y);
+    } else {
+        res1.innerText = "0";
+    }
   }
   
+  // Calculator 2: X is what % of Y
   function calc2() {
-    const x = parseFloat((document.getElementById('p2-x') as HTMLInputElement).value) || 0;
-    const y = parseFloat((document.getElementById('p2-y') as HTMLInputElement).value) || 0;
-    document.getElementById('res-2')!.innerText = y ? `${((x / y) * 100).toFixed(2)}%` : '0%';
+    const x = parseFloat(p2X.value);
+    const y = parseFloat(p2Y.value);
+    
+    if(!isNaN(x) && !isNaN(y) && y !== 0) {
+        const result = (x / y) * 100;
+        res2.innerText = `${formatNumber(result)}%`;
+        addToHistoryDebounced(`${formatNumber(x)} adalah ${formatNumber(result)}% dari ${formatNumber(y)}`, '2', x, y);
+    } else {
+        res2.innerText = "0%";
+    }
   }
 
-  ['p1-x', 'p1-y'].forEach(id => document.getElementById(id)?.addEventListener('input', calc1));
-  ['p2-x', 'p2-y'].forEach(id => document.getElementById(id)?.addEventListener('input', calc2));
+  // Calculator 3: Percentage increase/decrease
+  function calc3() {
+    const x = parseFloat(p3X.value);
+    const percent = parseFloat(p3Percent.value);
+    
+    if(!isNaN(x) && !isNaN(percent)) {
+        const increase = x * (1 + percent / 100);
+        const decrease = x * (1 - percent / 100);
+        
+        res3Inc.innerText = formatNumber(increase);
+        res3Dec.innerText = formatNumber(decrease);
+        
+        addToHistoryDebounced(`${formatNumber(x)} ± ${percent}% = ${formatNumber(increase)} / ${formatNumber(decrease)}`, '3', x, percent);
+    } else {
+        res3Inc.innerText = "0";
+        res3Dec.innerText = "0";
+    }
+  }
+
+  // Debounce history to prevent spam while typing
+  let historyTimeout;
+  function addToHistoryDebounced(text, type, v1, v2) {
+      clearTimeout(historyTimeout);
+      historyTimeout = setTimeout(() => {
+          addToHistory(text, type, v1, v2);
+      }, 1500);
+  }
+
+  function addToHistory(calculation, type, v1, v2) {
+    // Prevent duplicates at top
+    if(calculationHistory.length > 0 && calculationHistory[0].calculation === calculation) return;
+
+    const historyItem = {
+      id: Date.now(),
+      calculation,
+      type, // 1, 2, or 3
+      values: [v1, v2], // Store raw values for restoration
+      date: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})
+    };
+    
+    calculationHistory.unshift(historyItem);
+    if (calculationHistory.length > 10) calculationHistory.pop();
+    
+    localStorage.setItem('percentageHistory', JSON.stringify(calculationHistory));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    if (calculationHistory.length === 0) {
+      historyList.innerHTML = '<p class="text-sm text-slate-400 italic text-center py-8">Belum ada riwayat</p>';
+      return;
+    }
+    
+    historyList.innerHTML = calculationHistory.map(item => `
+      <div class="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all cursor-pointer group shadow-sm" onclick="applyHistory(${item.type}, ${item.values[0]}, ${item.values[1]})">
+        <p class="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-indigo-500 transition-colors">${item.calculation}</p>
+        <span class="text-[10px] text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">${item.date}</span>
+      </div>
+    `).join('');
+  }
+
+  // Global function for onclick event in history items
+  window.applyHistory = function(type, v1, v2) {
+    if (type === 1) {
+        p1X.value = v1;
+        p1Y.value = v2;
+        calc1();
+        p1X.focus();
+    } else if (type === 2) {
+        p2X.value = v1;
+        p2Y.value = v2;
+        calc2();
+        p2X.focus();
+    } else if (type === 3) {
+        p3X.value = v1;
+        p3Percent.value = v2;
+        calc3();
+        p3X.focus();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  clearHistoryBtn.addEventListener('click', () => {
+    if(confirm('Hapus semua riwayat?')) {
+        calculationHistory = [];
+        localStorage.setItem('percentageHistory', JSON.stringify(calculationHistory));
+        renderHistory();
+    }
+  });
+
+  // Example buttons logic
+  document.querySelectorAll('.example-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const x = btn.dataset.x;
+      const y = btn.dataset.y || btn.dataset.percent; // Handle diff naming
+      const calcType = btn.dataset.calc;
+      
+      if (calcType === '1') {
+        p1X.value = x;
+        p1Y.value = y;
+        calc1();
+      } else if (calcType === '2') {
+        p2X.value = x;
+        p2Y.value = y;
+        calc2();
+      } else if (calcType === '3') {
+        p3X.value = x;
+        p3Percent.value = y; // percent stored in y for simplicity here
+        calc3();
+      }
+    });
+  });
+
+  // Real-time calculation listeners
+  [p1X, p1Y].forEach(el => el.addEventListener('input', calc1));
+  [p2X, p2Y].forEach(el => el.addEventListener('input', calc2));
+  [p3X, p3Percent].forEach(el => el.addEventListener('input', calc3));
+
 </script>
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
+</style>
