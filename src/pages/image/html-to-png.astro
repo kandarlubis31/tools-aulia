@@ -3,12 +3,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="HTML to PNG Converter">
-  <!-- Tambahkan Prism.js untuk Syntax Highlighting -->
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
   <link is:inline rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <div class="max-w-7xl mx-auto px-4 min-h-[85vh] py-8">
     
@@ -25,7 +24,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       
       <div class="lg:col-span-1 space-y-4 flex flex-col h-full animate-fade-in">
         
-        <!-- Konfigurasi -->
         <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
             <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -48,7 +46,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                     <input type="text" id="bg-text" value="#ffffff" class="flex-1 p-2 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-mono">
                 </div>
             </div>
-            <!-- TAMBAHAN: Preset Ukuran -->
             <div>
                 <label class="text-xs font-bold text-slate-500 uppercase">Preset Ukuran</label>
                 <div class="grid grid-cols-2 gap-2 mt-1">
@@ -60,10 +57,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             </div>
         </div>
 
-        <!-- Editor -->
         <div class="flex-1 bg-slate-900 rounded-2xl border border-slate-700 shadow-sm flex flex-col overflow-hidden">
             <div class="flex border-b border-slate-700">
-                <!-- TAMBAHAN: Tombol Copy & Role Aksesibilitas -->
                 <button role="tab" aria-selected="true" aria-controls="html-panel" class="tab-btn flex-1 py-2 text-sm font-bold text-white bg-slate-800 border-b-2 border-pink-500 flex items-center justify-center gap-2" data-target="html">
                     HTML
                     <svg class="copy-btn w-4 h-4 cursor-pointer hover:text-pink-400" data-target="html" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -74,7 +69,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 </button>
             </div>
             <div class="relative flex-1">
-                <!-- TAMBAHAN: class untuk Prism.js -->
                 <textarea id="html-input" class="editor-area w-full h-full p-4 bg-slate-900 text-pink-300 font-mono text-sm outline-none resize-none" spellcheck="false" role="tabpanel" id="html-panel">&lt;div class="card"&gt;
   &lt;h1&gt;Hello World!&lt;/h1&gt;
   &lt;p&gt;Bikin gambar dari code itu gampang banget.&lt;/p&gt;
@@ -117,10 +111,8 @@ p {
 
       <div class="lg:col-span-2 flex flex-col gap-4 animate-fade-in" style="animation-delay: 0.1s;">
         
-        <!-- Preview Area -->
         <div class="bg-slate-100 dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-700 p-8 flex items-center justify-center min-h-[500px] overflow-auto relative checkerboard">
             
-            <!-- TAMBAHAN: Loading Spinner untuk Preview -->
             <div id="preview-loader" class="absolute inset-0 bg-slate-100/50 dark:bg-slate-900/50 flex items-center justify-center rounded-3xl hidden z-10">
                 <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-300 border-t-rose-600"></div>
             </div>
@@ -131,7 +123,6 @@ p {
 
         </div>
 
-        <!-- Download Button -->
         <button id="download-btn" class="w-full py-4 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-2xl shadow-lg shadow-rose-500/25 transition-all active:scale-95 flex items-center justify-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download PNG
