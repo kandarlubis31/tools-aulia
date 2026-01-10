@@ -1,0 +1,597 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<script is:inline src="https://unpkg.com/cronstrue@latest/dist/cronstrue.min.js"></script>
+<script is:inline src="https://unpkg.com/luxon@latest/build/global/luxon.min.js"></script>
+
+<BaseLayout pageTitle="Cron Generator">
+  <div class="max-w-5xl mx-auto px-4 py-12">
+    
+    <header class="text-center mb-10">
+      <h1 class="text-4xl font-extrabold text-slate-900 dark:text-white mb-2">Cron Generator</h1>
+      <p class="text-slate-500">Bikin jadwal Cron Job tanpa pusing mikirin urutan bintang (*).</p>
+    </header>
+
+    <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 mb-8">
+      
+      <div class="mb-6 text-center min-h-[3rem] flex items-center justify-center">
+        <span id="human-result" class="text-lg md:text-xl font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-2 rounded-lg transition-all">
+          Every minute
+        </span>
+      </div>
+
+      <div class="relative mb-8">
+        <div class="flex gap-2 mb-2">
+          <input 
+            type="text" 
+            id="cron-input" 
+            value="* * * * *" 
+            class="flex-1 text-center text-3xl md:text-5xl font-mono py-4 bg-slate-50 dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-indigo-500 focus:ring-0 outline-none text-slate-800 dark:text-slate-200 tracking-widest transition-all"
+            spellcheck="false"
+          >
+          <button id="copy-btn" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors flex items-center justify-center" title="Copy to clipboard">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          </button>
+        </div>
+        <p id="error-msg" class="text-red-500 text-sm mt-2 text-center hidden font-bold"></p>
+      </div>
+
+      <div class="grid grid-cols-5 gap-1 text-center text-xs font-bold text-slate-400 uppercase tracking-tighter mb-8">
+        <div>Minute</div>
+        <div>Hour</div>
+        <div>Day (Month)</div>
+        <div>Month</div>
+        <div>Day (Week)</div>
+      </div>
+
+      <!-- Visual Builder -->
+      <div class="mb-8 border-t border-slate-200 dark:border-slate-700 pt-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">Visual Builder</h3>
+          <button id="toggle-builder" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Hide</button>
+        </div>
+        
+        <div id="visual-builder" class="space-y-4">
+          <div class="grid grid-cols-5 gap-2">
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Minute</label>
+              <select id="minute-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
+                <option value="*">Every minute</option>
+                <option value="0">At minute 0</option>
+                <option value="15">At minute 15</option>
+                <option value="30">At minute 30</option>
+                <option value="45">At minute 45</option>
+                <option value="*/5">Every 5 minutes</option>
+                <option value="*/10">Every 10 minutes</option>
+                <option value="*/15">Every 15 minutes</option>
+                <option value="custom">Custom</option>
+              </select>
+              <input type="text" id="minute-custom" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm hidden" placeholder="e.g. 0,15,30,45">
+            </div>
+            
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Hour</label>
+              <select id="hour-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
+                <option value="*">Every hour</option>
+                <option value="0">At midnight</option>
+                <option value="9">At 9 AM</option>
+                <option value="12">At noon</option>
+                <option value="17">At 5 PM</option>
+                <option value="*/2">Every 2 hours</option>
+                <option value="*/4">Every 4 hours</option>
+                <option value="*/6">Every 6 hours</option>
+                <option value="9-17">9 AM to 5 PM</option>
+                <option value="custom">Custom</option>
+              </select>
+              <input type="text" id="hour-custom" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm hidden" placeholder="e.g. 9,12,17">
+            </div>
+            
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Day (Month)</label>
+              <select id="day-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
+                <option value="*">Every day</option>
+                <option value="1">On the 1st</option>
+                <option value="15">On the 15th</option>
+                <option value="L">On the last day</option>
+                <option value="*/5">Every 5 days</option>
+                <option value="1,15">On the 1st and 15th</option>
+                <option value="custom">Custom</option>
+              </select>
+              <input type="text" id="day-custom" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm hidden" placeholder="e.g. 1,15,20">
+            </div>
+            
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Month</label>
+              <select id="month-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
+                <option value="*">Every month</option>
+                <option value="1">January</option>
+                <option value="4">April</option>
+                <option value="7">July</option>
+                <option value="10">October</option>
+                <option value="*/3">Every 3 months</option>
+                <option value="custom">Custom</option>
+              </select>
+              <input type="text" id="month-custom" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm hidden" placeholder="e.g. 1,4,7,10">
+            </div>
+            
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Day (Week)</label>
+              <select id="weekday-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
+                <option value="*">Every day</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+                <option value="1-5">Monday to Friday</option>
+                <option value="custom">Custom</option>
+              </select>
+              <input type="text" id="weekday-custom" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm hidden" placeholder="e.g. 1,3,5">
+            </div>
+          </div>
+          
+          <button id="apply-builder" class="w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors">Apply</button>
+        </div>
+      </div>
+
+      <!-- Presets -->
+      <div class="mb-8 border-t border-slate-200 dark:border-slate-700 pt-6">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Quick Presets</h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="* * * * *">Every Minute</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="*/5 * * * *">Every 5 Mins</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="0 * * * *">Hourly</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="0 0 * * *">Daily (Midnight)</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="0 0 * * 1">Weekly (Mon)</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="0 0 1 * *">Monthly</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="0 0 1 1 *">Yearly</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="0 9 * * 1-5">Weekdays 9AM</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="0 0 * * 6">Weekends</button>
+        </div>
+      </div>
+      
+      <!-- Special Characters -->
+      <div class="mb-8 border-t border-slate-200 dark:border-slate-700 pt-6">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Special Characters</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="@yearly">@yearly</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="@monthly">@monthly</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="@weekly">@weekly</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="@daily">@daily</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="@hourly">@hourly</button>
+          
+          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors border border-transparent hover:border-indigo-200" data-val="@reboot">@reboot</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Next Executions -->
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 mb-8">
+      <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Next Executions
+      </h3>
+      <div id="next-executions" class="space-y-2">
+        <p class="text-slate-600 dark:text-slate-400 text-sm">Calculating next execution times...</p>
+      </div>
+    </div>
+
+    <!-- Code Examples -->
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 mb-8">
+      <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        Code Examples
+      </h3>
+      
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Language</label>
+          <select id="language-select" class="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded px-2 py-1">
+            <option value="nodejs">Node.js</option>
+            <option value="python">Python</option>
+            <option value="php">PHP</option>
+            <option value="bash">Bash</option>
+            <option value="java">Java</option>
+            <option value="csharp">C#</option>
+          </select>
+        </div>
+        
+        <div class="relative">
+          <pre id="code-example" class="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm"></pre>
+          <button id="copy-code-btn" class="absolute top-2 right-2 p-1 bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors" title="Copy code">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cheatsheet -->
+    <div class="bg-indigo-50 dark:bg-slate-800/50 p-6 rounded-xl border border-indigo-100 dark:border-slate-700">
+      <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        Cheatsheet
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">*</span>
+          <span class="text-slate-600 dark:text-slate-400">Setiap nilai (any)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">,</span>
+          <span class="text-slate-600 dark:text-slate-400">Pemisah list (1,3,5)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">-</span>
+          <span class="text-slate-600 dark:text-slate-400">Rentang (1-5)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">/</span>
+          <span class="text-slate-600 dark:text-slate-400">Langkah / Step (*/5)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">L</span>
+          <span class="text-slate-600 dark:text-slate-400">Hari terakhir (Last)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">W</span>
+          <span class="text-slate-600 dark:text-slate-400">Weekday (1W = Senin pertama)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">#</span>
+          <span class="text-slate-600 dark:text-slate-400">N-th weekday (1#2 = Senin ke-2)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">@yearly</span>
+          <span class="text-slate-600 dark:text-slate-400">Setiap tahun (0 0 1 1 *)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">@monthly</span>
+          <span class="text-slate-600 dark:text-slate-400">Setiap bulan (0 0 1 * *)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">@weekly</span>
+          <span class="text-slate-600 dark:text-slate-400">Setiap minggu (0 0 * * 0)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">@daily</span>
+          <span class="text-slate-600 dark:text-slate-400">Setiap hari (0 0 * * *)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">@hourly</span>
+          <span class="text-slate-600 dark:text-slate-400">Setiap jam (0 * * * *)</span>
+        </div>
+        <div class="flex justify-between border-b border-indigo-200 dark:border-slate-600 pb-1">
+          <span class="font-mono bg-white dark:bg-slate-700 px-1 rounded">@reboot</span>
+          <span class="text-slate-600 dark:text-slate-400">Saat reboot</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-full transition-transform duration-300 z-50">
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <span id="toast-message">Copied to clipboard!</span>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
+    const cronInput = document.getElementById('cron-input');
+    const humanResult = document.getElementById('human-result');
+    const errorMsg = document.getElementById('error-msg');
+    const presetBtns = document.querySelectorAll('.preset-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const nextExecutions = document.getElementById('next-executions');
+    const languageSelect = document.getElementById('language-select');
+    const codeExample = document.getElementById('code-example');
+    const copyCodeBtn = document.getElementById('copy-code-btn');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    
+    // Visual Builder Elements
+    const toggleBuilder = document.getElementById('toggle-builder');
+    const visualBuilder = document.getElementById('visual-builder');
+    const minuteSelect = document.getElementById('minute-select');
+    const hourSelect = document.getElementById('hour-select');
+    const daySelect = document.getElementById('day-select');
+    const monthSelect = document.getElementById('month-select');
+    const weekdaySelect = document.getElementById('weekday-select');
+    const minuteCustom = document.getElementById('minute-custom');
+    const hourCustom = document.getElementById('hour-custom');
+    const dayCustom = document.getElementById('day-custom');
+    const monthCustom = document.getElementById('month-custom');
+    const weekdayCustom = document.getElementById('weekday-custom');
+    const applyBuilder = document.getElementById('apply-builder');
+
+    // Show Toast Notification
+    function showToast(message) {
+      toastMessage.textContent = message;
+      toast.style.transform = 'translateY(0)';
+      
+      setTimeout(() => {
+        toast.style.transform = 'translateY(150%)';
+      }, 3000);
+    }
+
+    // Toggle Visual Builder
+    toggleBuilder.addEventListener('click', () => {
+      if (visualBuilder.style.display === 'none') {
+        visualBuilder.style.display = 'block';
+        toggleBuilder.textContent = 'Hide';
+      } else {
+        visualBuilder.style.display = 'none';
+        toggleBuilder.textContent = 'Show';
+      }
+    });
+
+    // Handle Custom Input Fields
+    [minuteSelect, hourSelect, daySelect, monthSelect, weekdaySelect].forEach((select, index) => {
+      const customInputs = [minuteCustom, hourCustom, dayCustom, monthCustom, weekdayCustom];
+      
+      select.addEventListener('change', () => {
+        if (select.value === 'custom') {
+          customInputs[index].classList.remove('hidden');
+        } else {
+          customInputs[index].classList.add('hidden');
+        }
+      });
+    });
+
+    // Apply Visual Builder
+    applyBuilder.addEventListener('click', () => {
+      const minute = minuteSelect.value === 'custom' ? minuteCustom.value : minuteSelect.value;
+      const hour = hourSelect.value === 'custom' ? hourCustom.value : hourSelect.value;
+      const day = daySelect.value === 'custom' ? dayCustom.value : daySelect.value;
+      const month = monthSelect.value === 'custom' ? monthCustom.value : monthSelect.value;
+      const weekday = weekdaySelect.value === 'custom' ? weekdayCustom.value : weekdaySelect.value;
+      
+      cronInput.value = `${minute} ${hour} ${day} ${month} ${weekday}`;
+      translateCron();
+      updateNextExecutions();
+      updateCodeExample();
+      
+      // Visual feedback
+      applyBuilder.classList.add('ring-2', 'ring-indigo-400');
+      setTimeout(() => applyBuilder.classList.remove('ring-2', 'ring-indigo-400'), 200);
+    });
+
+    // Translate Cron to Human Readable
+    function translateCron() {
+      const val = cronInput.value;
+      
+      try {
+        // @ts-ignore (cronstrue global dari CDN)
+        const text = cronstrue.toString(val, { locale: "en" });
+        humanResult.innerText = text;
+        
+        cronInput.classList.remove('border-red-500', 'text-red-500');
+        cronInput.classList.add('border-slate-300', 'dark:border-slate-600');
+        errorMsg.classList.add('hidden');
+        
+        return true;
+      } catch (e) {
+        humanResult.innerText = "Invalid Expression";
+        
+        cronInput.classList.add('border-red-500', 'text-red-500');
+        cronInput.classList.remove('border-slate-300', 'dark:border-slate-600');
+        errorMsg.innerText = e;
+        errorMsg.classList.remove('hidden');
+        
+        return false;
+      }
+    }
+
+    // Calculate Next Executions
+    function updateNextExecutions() {
+      const val = cronInput.value;
+      
+      try {
+        // Parse cron expression
+        const parts = val.split(' ');
+        
+        // For simplicity, we'll use a basic calculation
+        // In a real implementation, you'd use a proper cron parser library
+        const now = luxon.DateTime.now();
+        const nextExecutions = [];
+        
+        // Calculate next 5 execution times
+        for (let i = 0; i < 5; i++) {
+          let next = now;
+          
+          // This is a simplified calculation
+          // In production, you'd use a proper cron parser
+          if (parts[0] !== '*' && parts[0].includes('/')) {
+            const step = parseInt(parts[0].split('/')[1]);
+            next = next.plus({ minutes: step - (now.minute % step) });
+          } else if (parts[0] !== '*') {
+            // Handle specific minutes
+            const minutes = parts[0].split(',').map(m => parseInt(m));
+            const nextMinute = minutes.find(m => m > now.minute) || minutes[0];
+            next = next.set({ minute: nextMinute });
+            if (nextMinute <= now.minute) {
+              next = next.plus({ hours: 1 });
+            }
+          }
+          
+          if (parts[1] !== '*' && parts[1].includes('/')) {
+            const step = parseInt(parts[1].split('/')[1]);
+            next = next.plus({ hours: step - (now.hour % step) });
+          } else if (parts[1] !== '*') {
+            // Handle specific hours
+            const hours = parts[1].split(',').map(h => parseInt(h));
+            const nextHour = hours.find(h => h > now.hour) || hours[0];
+            next = next.set({ hour: nextHour });
+            if (nextHour <= now.hour) {
+              next = next.plus({ days: 1 });
+            }
+          }
+          
+          // Add to results
+          nextExecutions.push(next.toFormat('yyyy-MM-dd HH:mm:ss'));
+          
+          // Move to next calculation
+          now = next.plus({ minutes: 1 });
+        }
+        
+        // Display results
+        nextExecutions.innerHTML = nextExecutions.map(time => 
+          `<div class="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-900 rounded">
+            <span class="text-slate-600 dark:text-slate-400 text-sm">${luxon.DateTime.fromFormat(time, 'yyyy-MM-dd HH:mm:ss').toRelative()}</span>
+            <span class="font-mono text-xs text-slate-500 dark:text-slate-500">${time}</span>
+          </div>`
+        ).join('');
+        
+        return true;
+      } catch (e) {
+        nextExecutions.innerHTML = `<p class="text-red-500 text-sm">Error calculating next executions: ${e}</p>`;
+        return false;
+      }
+    }
+
+    // Update Code Example
+    function updateCodeExample() {
+      const val = cronInput.value;
+      const language = languageSelect.value;
+      
+      let code = '';
+      
+      switch (language) {
+        case 'nodejs':
+          code = `const cron = require('node-cron');
+
+cron.schedule('${val}', () => {
+  console.log('Running a task at ${val}');
+});`;
+          break;
+          
+        case 'python':
+          code = `from croniter import croniter
+from datetime import datetime
+
+base_time = datetime.now()
+cron = croniter('${val}', base_time)
+
+# Get next execution time
+next_time = cron.get_next(datetime)
+print(f"Next execution: {next_time}")`;
+          break;
+          
+        case 'php':
+          code = `<?php
+// Add to crontab using:
+// crontab -e
+
+// ${val} /path/to/command.php`;
+          break;
+          
+        case 'bash':
+          code = `# Add to crontab using:
+# crontab -e
+
+# ${val} /path/to/script.sh`;
+          break;
+          
+        case 'java':
+          code = `import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ScheduledTasks {
+    
+    @Scheduled(cron = "${val}")
+    public void reportCurrentTime() {
+        System.out.println("Running task at " + new java.util.Date());
+    }
+}`;
+          break;
+          
+        case 'csharp':
+          code = `using Hangfire;
+
+// Create a recurring job
+RecurringJob.AddOrUpdate(
+    "my-job-id",
+    () => Console.WriteLine("Running job!"),
+    "${val}");`;
+          break;
+      }
+      
+      codeExample.textContent = code;
+    }
+
+    // Copy to Clipboard
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+        showToast('Failed to copy to clipboard');
+      });
+    }
+
+    // Event Listeners
+    cronInput.addEventListener('input', () => {
+      translateCron();
+      updateNextExecutions();
+      updateCodeExample();
+    });
+
+    presetBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        cronInput.value = btn.getAttribute('data-val');
+        translateCron();
+        updateNextExecutions();
+        updateCodeExample();
+        
+        // Visual feedback
+        btn.classList.add('ring-2', 'ring-indigo-400');
+        setTimeout(() => btn.classList.remove('ring-2', 'ring-indigo-400'), 200);
+      });
+    });
+
+    copyBtn.addEventListener('click', () => {
+      copyToClipboard(cronInput.value);
+    });
+
+    copyCodeBtn.addEventListener('click', () => {
+      copyToClipboard(codeExample.textContent);
+    });
+
+    languageSelect.addEventListener('change', updateCodeExample);
+
+    // Initialize
+    window.addEventListener('load', () => {
+      if(typeof cronstrue !== 'undefined') {
+        translateCron();
+        updateNextExecutions();
+        updateCodeExample();
+      } else {
+        // Retry simple check
+        setTimeout(() => {
+          translateCron();
+          updateNextExecutions();
+          updateCodeExample();
+        }, 500);
+      }
+    });
+  });
+</script>

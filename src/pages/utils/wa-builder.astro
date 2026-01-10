@@ -1,0 +1,768 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<BaseLayout pageTitle="WhatsApp Message Builder">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    
+    <header class="text-center mb-10 animate-fade-in">
+      <h1 class="text-3xl md:text-5xl font-extrabold mb-4 text-slate-900 dark:text-white">
+        WhatsApp <span class="text-emerald-500">Super Builder</span>
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+        Buat link WhatsApp dengan formatting teks lengkap, preview visual real-time, dan QR Code instan.
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      
+      <!-- Input Panel -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl animate-fade-in-up">
+          
+          <!-- Phone Input -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Nomor WhatsApp</label>
+              <div class="flex gap-1">
+                <button id="save-contact-btn" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 px-2 py-1 rounded transition-colors" title="Save Contact">
+                  💾
+                </button>
+                <button id="load-contacts-btn" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 px-2 py-1 rounded transition-colors" title="Load Contacts">
+                  📋
+                </button>
+              </div>
+            </div>
+            <div class="relative">
+               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span class="text-slate-400 font-bold">📞</span>
+               </div>
+               <input type="text" id="phone" placeholder="Contoh: 081234567890" class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white transition-all font-mono" />
+            </div>
+            <div class="flex justify-between items-center mt-1">
+              <p class="text-xs text-slate-400">Otomatis ubah 08xx jadi 628xx. Spasi & strip diabaikan.</p>
+              <p id="phone-status" class="text-xs text-slate-400"></p>
+            </div>
+          </div>
+
+          <!-- Saved Contacts Dropdown -->
+          <div id="contacts-container" class="mb-6 hidden">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Kontak Tersimpan</label>
+            <select id="saved-contacts" class="w-full p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white transition-all">
+              <option value="">-- Pilih Kontak --</option>
+            </select>
+          </div>
+
+          <!-- Message Input -->
+          <div class="mb-6">
+            <div class="flex justify-between items-end mb-2">
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Pesan</label>
+              
+              <div class="flex items-center gap-2">
+                <div class="flex gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-lg">
+                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-slate-600 font-bold text-slate-700 dark:text-slate-200" data-tag="*" title="Bold (Tebal)">B</button>
+                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-slate-600 italic text-slate-700 dark:text-slate-200" data-tag="_" title="Italic (Miring)">I</button>
+                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-slate-600 line-through text-slate-700 dark:text-slate-200" data-tag="~" title="Strikethrough (Coret)">S</button>
+                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-slate-600 font-mono text-xs text-slate-700 dark:text-slate-200" data-tag="```" title="Monospace">{'<>'}</button>
+                </div>
+                <button id="emoji-btn" class="w-8 h-8 flex items-center justify-center rounded bg-slate-100 dark:bg-slate-700 hover:bg-white dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200" title="Emoji">😊</button>
+              </div>
+            </div>
+
+            <div class="relative">
+              <textarea id="message" rows="6" class="w-full p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white transition-all resize-none font-sans" placeholder="Ketik pesan di sini..."></textarea>
+              <div class="absolute bottom-2 right-2 text-xs text-slate-400">
+                <span id="char-count">0</span> / 1000
+              </div>
+            </div>
+          </div>
+
+          <!-- Message Templates -->
+          <div class="mb-6">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Template Pesan</label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="halo">Salam</button>
+              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="terima kasih">Terima Kasih</button>
+              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="undangan">Undangan</button>
+              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="promosi">Promosi</button>
+              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="pengumuman">Pengumuman</button>
+              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="ucapan">Ucapan</button>
+            </div>
+          </div>
+
+          <!-- Result Link -->
+          <div class="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-100 dark:border-emerald-800 mb-6">
+            <label class="block text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-2">Link Hasil</label>
+            <div class="flex gap-2">
+               <input type="text" id="result-link" readonly class="flex-1 bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 text-sm rounded-lg px-3 py-2 outline-none" value="[https://wa.me/](https://wa.me/)..." />
+               <button id="copy-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2">
+                 <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                 Copy
+               </button>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="grid grid-cols-2 gap-3">
+            <a id="open-wa-btn" href="#" target="_blank" class="block text-center bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3 rounded-xl hover:scale-[1.02] transition-transform shadow-lg">
+              🚀 Buka WhatsApp
+            </a>
+            <button id="share-btn" class="block text-center bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl hover:scale-[1.02] transition-transform shadow-lg">
+              📤 Share Link
+            </button>
+          </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl animate-fade-in-up">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-slate-700 dark:text-slate-300">Riwayat Link</h3>
+            <button id="clear-history-btn" class="text-xs bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 px-2 py-1 rounded transition-colors">
+              Hapus Semua
+            </button>
+          </div>
+          <div id="history-container" class="space-y-2 max-h-60 overflow-y-auto">
+            <p class="text-slate-400 dark:text-slate-500 text-sm text-center py-4">Belum ada riwayat</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Panel -->
+      <div class="space-y-6 animate-fade-in-up" style="animation-delay: 0.1s;">
+        
+        <!-- WhatsApp Preview -->
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="font-bold text-slate-700 dark:text-slate-300">Preview Pesan</h3>
+            <div class="flex gap-1">
+              <button id="preview-light-btn" class="w-6 h-6 rounded-full bg-white border-2 border-slate-300" title="Light Theme"></button>
+              <button id="preview-dark-btn" class="w-6 h-6 rounded-full bg-slate-800 border-2 border-slate-600" title="Dark Theme"></button>
+            </div>
+          </div>
+          
+          <div class="mx-auto w-[280px] bg-slate-900 rounded-[2rem] p-2 shadow-2xl border-4 border-slate-800 relative overflow-hidden">
+            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-800 rounded-b-xl z-20"></div>
+            
+            <div id="phone-preview" class="bg-[#efe7dd] w-full h-[450px] rounded-[2rem] overflow-hidden relative flex flex-col">
+               
+               <div class="bg-[#008069] h-14 flex items-center px-4 pt-3 text-white shadow-sm z-10 shrink-0">
+                 <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                   <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                 </div>
+                 <div class="flex-1">
+                   <div class="text-sm font-bold" id="contact-name">Contact</div>
+                   <div class="text-[10px] opacity-80">Online</div>
+                 </div>
+               </div>
+
+               <div class="flex-1 p-3 overflow-y-auto relative" id="chat-bg">
+                 <div class="flex flex-col gap-2">
+                    <div class="self-end max-w-[85%] bg-[#d9fdd3] p-2 px-3 rounded-lg shadow-sm text-sm text-slate-900 break-words">
+                       <div id="preview-text" class="whitespace-pre-wrap">...</div>
+                       <div class="text-[10px] text-right text-slate-500 mt-1 flex justify-end items-center gap-1">
+                          <span id="preview-time">12:00</span>
+                          <svg class="w-3 h-3 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                       </div>
+                    </div>
+                 </div>
+               </div>
+
+               <div class="h-12 bg-[#f0f2f5] flex items-center px-2 gap-2 shrink-0">
+                 <div class="w-7 h-7 rounded-full bg-slate-300"></div>
+                 <div class="flex-1 h-8 bg-white rounded-full"></div>
+                 <div class="w-7 h-7 rounded-full bg-[#008069]"></div>
+               </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- QR Code Section -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-slate-700 dark:text-slate-300">QR Code</h3>
+            <div class="flex gap-2">
+              <select id="qr-size" class="text-xs bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded px-2 py-1">
+                <option value="128">Kecil</option>
+                <option value="160" selected>Sedang</option>
+                <option value="200">Besar</option>
+              </select>
+              <button id="download-qr-btn" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 px-2 py-1 rounded transition-colors" title="Download QR">
+                ⬇️
+              </button>
+            </div>
+          </div>
+          <div class="flex justify-center mb-4">
+             <div id="qrcode" class="p-3 bg-white rounded-lg border border-slate-200"></div>
+          </div>
+          <p class="text-xs text-slate-500 text-center">Scan untuk langsung chat tanpa simpan nomor.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emoji Picker Modal -->
+    <div id="emoji-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-xl p-4 max-w-md w-full max-h-96 overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-slate-700 dark:text-slate-300">Pilih Emoji</h3>
+          <button id="close-emoji-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div id="emoji-grid" class="grid grid-cols-8 gap-2">
+          <!-- Emojis will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-full transition-transform duration-300 z-50">
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <span id="toast-message">Success!</span>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script type="text/template" id="tpl-chat-bg">
+  <style>
+    #chat-bg {
+      background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
+      background-repeat: repeat;
+      background-size: 400px;
+      opacity: 0.9;
+    }
+    .dark #chat-bg {
+      filter: invert(1) opacity(0.8);
+    }
+    
+    /* Dark theme for WhatsApp preview */
+    .dark-theme {
+      background: #111b21 !important;
+    }
+    .dark-theme .bg-[#008069] {
+      background: #202c33 !important;
+    }
+    .dark-theme .bg-[#d9fdd3] {
+      background: #005c4b !important;
+      color: #e9edef !important;
+    }
+    .dark-theme .bg-[#f0f2f5] {
+      background: #0b141a !important;
+    }
+    .dark-theme .bg-white {
+      background: #2a3942 !important;
+    }
+    .dark-theme .text-slate-900 {
+      color: #e9edef !important;
+    }
+    .dark-theme .text-slate-500 {
+      color: #8696a0 !important;
+    }
+  </style>
+</script>
+
+<script is:inline>
+  // INJECT STYLES
+  const tplStyles = document.getElementById('tpl-chat-bg').innerHTML;
+  document.head.insertAdjacentHTML('beforeend', tplStyles);
+
+  // LOGIC
+  document.addEventListener('astro:page-load', () => {
+    
+    // Selectors
+    const phoneInput = document.getElementById('phone');
+    const msgInput = document.getElementById('message');
+    const resultLinkInput = document.getElementById('result-link');
+    const openWaBtn = document.getElementById('open-wa-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const shareBtn = document.getElementById('share-btn');
+    const previewText = document.getElementById('preview-text');
+    const previewTime = document.getElementById('preview-time');
+    const qrContainer = document.getElementById('qrcode');
+    const fmtBtns = document.querySelectorAll('.fmt-btn');
+    const emojiBtn = document.getElementById('emoji-btn');
+    const emojiModal = document.getElementById('emoji-modal');
+    const closeEmojiBtn = document.getElementById('close-emoji-btn');
+    const emojiGrid = document.getElementById('emoji-grid');
+    const charCount = document.getElementById('char-count');
+    const phoneStatus = document.getElementById('phone-status');
+    const contactName = document.getElementById('contact-name');
+    const historyContainer = document.getElementById('history-container');
+    const clearHistoryBtn = document.getElementById('clear-history-btn');
+    const saveContactBtn = document.getElementById('save-contact-btn');
+    const loadContactsBtn = document.getElementById('load-contacts-btn');
+    const contactsContainer = document.getElementById('contacts-container');
+    const savedContacts = document.getElementById('saved-contacts');
+    const templateBtns = document.querySelectorAll('.template-btn');
+    const qrSize = document.getElementById('qr-size');
+    const downloadQrBtn = document.getElementById('download-qr-btn');
+    const previewLightBtn = document.getElementById('preview-light-btn');
+    const previewDarkBtn = document.getElementById('preview-dark-btn');
+    const phonePreview = document.getElementById('phone-preview');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+
+    // State
+    let qrCodeObj = null;
+    let isDarkTheme = false;
+    let history = JSON.parse(localStorage.getItem('waHistory')) || [];
+    let contacts = JSON.parse(localStorage.getItem('waContacts')) || {};
+
+    // Message Templates
+    const messageTemplates = {
+      'halo': 'Halo, saya ingin bertanya tentang...',
+      'terima kasih': 'Terima kasih atas informasinya. Sangat membantu!',
+      'undangan': 'Halo, kami ingin mengundang Anda untuk menghadiri acara kami pada tanggal [tanggal] di [lokasi]. Mohon konfirmasi kehadiran Anda.',
+      'promosi': '🎉 PROMO SPESIAL! Dapatkan diskon hingga 50% untuk produk kami. Klik link berikut untuk info lebih lanjut: [link]',
+      'pengumuman': 'PENGUMUMAN:\n\nKepada seluruh pelanggan setia kami,\n\nKami ingin menginformasikan bahwa [isi pengumuman]. Terima kasih atas perhatian Anda.',
+      'ucapan': 'Selamat [acara]! Semoga [harapan]. Kami ucapkan terima kasih atas dukungan Anda selama ini.'
+    };
+
+    // Common Emojis
+    const commonEmojis = [
+      '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
+      '😘', '😗', '😙', '😚', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨',
+      '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕',
+      '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '✋', '🤚', '🖐',
+      '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
+      '🎉', '🎊', '🎈', '🎁', '🎂', '🎄', '🎃', '🎆', '🎇', '🧨', '✨', '🎋', '🎍', '🎎', '🎏', '🎐'
+    ];
+
+    // Initialize emoji grid
+    function initEmojiGrid() {
+      emojiGrid.innerHTML = '';
+      commonEmojis.forEach(emoji => {
+        const button = document.createElement('button');
+        button.className = 'text-2xl p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded';
+        button.textContent = emoji;
+        button.addEventListener('click', () => {
+          insertEmoji(emoji);
+          emojiModal.classList.add('hidden');
+        });
+        emojiGrid.appendChild(button);
+      });
+    }
+
+    // Insert emoji at cursor position
+    function insertEmoji(emoji) {
+      const start = msgInput.selectionStart;
+      const end = msgInput.selectionEnd;
+      const text = msgInput.value;
+      
+      msgInput.value = text.substring(0, start) + emoji + text.substring(end);
+      
+      // Update preview
+      generateLink();
+      
+      // Set cursor position
+      msgInput.focus();
+      msgInput.selectionStart = msgInput.selectionEnd = start + emoji.length;
+    }
+
+    // Show Toast Notification
+    function showToast(message, type = 'success') {
+      toastMessage.textContent = message;
+      toast.className = `fixed bottom-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg transform transition-transform duration-300 z-50`;
+      toast.style.transform = 'translateY(0)';
+      
+      setTimeout(() => {
+        toast.style.transform = 'translateY(150%)';
+      }, 3000);
+    }
+
+    // Toggle WhatsApp Preview Theme
+    function togglePreviewTheme(isDark) {
+      isDarkTheme = isDark;
+      if (isDark) {
+        phonePreview.classList.add('dark-theme');
+      } else {
+        phonePreview.classList.remove('dark-theme');
+      }
+    }
+
+    // Save to History
+    function saveToHistory(phone, message, link) {
+      const entry = {
+        phone,
+        message,
+        link,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Add to beginning of array
+      history.unshift(entry);
+      
+      // Keep only last 10 entries
+      if (history.length > 10) {
+        history = history.slice(0, 10);
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('waHistory', JSON.stringify(history));
+      
+      // Update UI
+      renderHistory();
+    }
+
+    // Render History
+    function renderHistory() {
+      if (history.length === 0) {
+        historyContainer.innerHTML = '<p class="text-slate-400 dark:text-slate-500 text-sm text-center py-4">Belum ada riwayat</p>';
+        return;
+      }
+      
+      historyContainer.innerHTML = history.map((entry, index) => {
+        const date = new Date(entry.timestamp);
+        const formattedDate = date.toLocaleDateString('id-ID', { 
+          day: 'numeric', 
+          month: 'short', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+        
+        return `
+          <div class="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg flex justify-between items-center">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">${entry.phone}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400 truncate">${entry.message || '(tanpa pesan)'}</p>
+            </div>
+            <div class="flex items-center gap-1 ml-2">
+              <span class="text-xs text-slate-400">${formattedDate}</span>
+              <button class="history-copy-btn text-xs bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 px-2 py-1 rounded" data-link="${entry.link}">Copy</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // Add event listeners to copy buttons
+      document.querySelectorAll('.history-copy-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const link = btn.getAttribute('data-link');
+          navigator.clipboard.writeText(link).then(() => {
+            showToast('Link berhasil disalin!');
+          });
+        });
+      });
+    }
+
+    // Save Contact
+    function saveContact() {
+      const phone = phoneInput.value.replace(/\D/g, '');
+      if (!phone) {
+        showToast('Nomor telepon tidak valid', 'error');
+        return;
+      }
+      
+      const name = prompt('Masukkan nama kontak:');
+      if (!name) return;
+      
+      // Fix phone number format
+      let formattedPhone = phone;
+      if (phone.startsWith('0')) {
+        formattedPhone = '62' + phone.substring(1);
+      }
+      
+      contacts[formattedPhone] = name;
+      localStorage.setItem('waContacts', JSON.stringify(contacts));
+      
+      showToast('Kontak berhasil disimpan!');
+      updateContactsDropdown();
+    }
+
+    // Update Contacts Dropdown
+    function updateContactsDropdown() {
+      const contactKeys = Object.keys(contacts);
+      
+      if (contactKeys.length === 0) {
+        contactsContainer.classList.add('hidden');
+        return;
+      }
+      
+      contactsContainer.classList.remove('hidden');
+      savedContacts.innerHTML = '<option value="">-- Pilih Kontak --</option>';
+      
+      contactKeys.forEach(phone => {
+        const option = document.createElement('option');
+        option.value = phone;
+        option.textContent = `${contacts[phone]} (${phone})`;
+        savedContacts.appendChild(option);
+      });
+    }
+
+    // Load Selected Contact
+    function loadContact() {
+      const selectedPhone = savedContacts.value;
+      if (!selectedPhone) return;
+      
+      phoneInput.value = selectedPhone;
+      generateLink();
+    }
+
+    // 1. Formatting Tools Logic
+    fmtBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tag = btn.dataset.tag;
+        const start = msgInput.selectionStart;
+        const end = msgInput.selectionEnd;
+        const text = msgInput.value;
+        
+        // Ambil text yg diblok user
+        const selectedText = text.substring(start, end);
+        
+        // Bungkus text
+        const replacement = tag + selectedText + tag;
+        
+        // Ganti value di textarea
+        msgInput.value = text.substring(0, start) + replacement + text.substring(end);
+        
+        // Update Preview langsung
+        generateLink();
+        
+        // Balikin fokus dan cursor
+        msgInput.focus();
+        msgInput.selectionStart = start + tag.length;
+        msgInput.selectionEnd = end + tag.length;
+      });
+    });
+
+    // 2. Parser WA Text ke HTML (Untuk Preview)
+    function parseWaFormat(text) {
+      if (!text) return '<span class="text-slate-400 italic">Preview pesan tampil di sini...</span>';
+      
+      // Escape HTML dulu biar aman dari XSS
+      let safeText = text
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;");
+
+      // Replace WA Formatting ke HTML tags
+      // Bold *text*
+      safeText = safeText.replace(/\*([^*]+)\*/g, '<b>$1</b>');
+      // Italic _text_
+      safeText = safeText.replace(/_([^_]+)_/g, '<i>$1</i>');
+      // Strikethrough ~text~
+      safeText = safeText.replace(/~([^~]+)~/g, '<strike>$1</strike>');
+      // Monospace ```text```
+      safeText = safeText.replace(/```([^`]+)```/g, '<code class="font-mono bg-black/10 px-1 rounded">$1</code>');
+      // Newlines
+      safeText = safeText.replace(/\n/g, '<br>');
+
+      return safeText;
+    }
+
+    // 3. Generator Utama
+    function generateLink() {
+      let phone = phoneInput.value.replace(/\D/g, ''); // Hapus non-digit
+      let msg = msgInput.value;
+
+      // Fix Phone Number (08 -> 628)
+      if (phone.startsWith('0')) {
+         phone = '62' + phone.substring(1);
+      }
+      
+      // Update phone status
+      if (phone.length >= 10) {
+        phoneStatus.textContent = '✓ Valid';
+        phoneStatus.className = 'text-xs text-green-500';
+        
+        // Update contact name if exists
+        if (contacts[phone]) {
+          contactName.textContent = contacts[phone];
+        } else {
+          contactName.textContent = phone;
+        }
+      } else if (phone.length > 0) {
+        phoneStatus.textContent = '⚠ Terlalu pendek';
+        phoneStatus.className = 'text-xs text-amber-500';
+        contactName.textContent = phone;
+      } else {
+        phoneStatus.textContent = '';
+        contactName.textContent = 'Contact';
+      }
+      
+      // Update character count
+      charCount.textContent = msg.length;
+      if (msg.length > 1000) {
+        charCount.className = 'text-xs text-red-500';
+      } else if (msg.length > 800) {
+        charCount.className = 'text-xs text-amber-500';
+      } else {
+        charCount.className = 'text-xs text-slate-400';
+      }
+      
+      // Encode URI
+      const encodedMsg = encodeURIComponent(msg);
+      const fullLink = `https://wa.me/${phone}?text=${encodedMsg}`;
+
+      // Update UI Inputs
+      resultLinkInput.value = fullLink;
+      openWaBtn.href = fullLink;
+
+      // Update Preview Visual
+      previewText.innerHTML = parseWaFormat(msg);
+      
+      // Update Jam Preview
+      const now = new Date();
+      previewTime.innerText = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+
+      // Update QR Code
+      updateQR(fullLink);
+      
+      // Save to history if phone is valid
+      if (phone.length >= 10) {
+        saveToHistory(phone, msg, fullLink);
+      }
+    }
+
+    function updateQR(text) {
+      // Clear previous
+      qrContainer.innerHTML = '';
+      
+      // Jika library qrcodejs belum load (karena internet lambat), skip dulu
+      // @ts-ignore
+      if (typeof QRCode === 'undefined') return;
+
+      const size = parseInt(qrSize.value);
+      
+      // @ts-ignore
+      qrCodeObj = new QRCode(qrContainer, {
+        text: text,
+        width: size,
+        height: size,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+      });
+    }
+
+    // 4. Copy to Clipboard
+    copyBtn.addEventListener('click', () => {
+       resultLinkInput.select();
+       resultLinkInput.setSelectionRange(0, 99999); // Mobile support
+       navigator.clipboard.writeText(resultLinkInput.value).then(() => {
+          showToast('Link berhasil disalin!');
+       });
+    });
+
+    // 5. Share Link
+    shareBtn.addEventListener('click', () => {
+      if (navigator.share) {
+        navigator.share({
+          title: 'WhatsApp Message',
+          text: 'Chat with me on WhatsApp',
+          url: resultLinkInput.value
+        }).then(() => {
+          showToast('Link berhasil dibagikan!');
+        }).catch(err => {
+          console.error('Error sharing:', err);
+        });
+      } else {
+        // Fallback: copy to clipboard
+        resultLinkInput.select();
+        resultLinkInput.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(resultLinkInput.value).then(() => {
+          showToast('Link berhasil disalin!');
+        });
+      }
+    });
+
+    // 6. Download QR Code
+    downloadQrBtn.addEventListener('click', () => {
+      const canvas = qrContainer.querySelector('canvas');
+      if (!canvas) {
+        showToast('QR Code belum tersedia', 'error');
+        return;
+      }
+      
+      const link = document.createElement('a');
+      link.download = `wa-qr-${Date.now()}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+      
+      showToast('QR Code berhasil diunduh!');
+    });
+
+    // 7. Template Buttons
+    templateBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const templateKey = btn.getAttribute('data-template');
+        if (messageTemplates[templateKey]) {
+          msgInput.value = messageTemplates[templateKey];
+          generateLink();
+          
+          // Visual feedback
+          btn.classList.add('ring-2', 'ring-emerald-400');
+          setTimeout(() => btn.classList.remove('ring-2', 'ring-emerald-400'), 500);
+        }
+      });
+    });
+
+    // 8. Event Listeners
+    phoneInput.addEventListener('input', generateLink);
+    msgInput.addEventListener('input', generateLink);
+    
+    emojiBtn.addEventListener('click', () => {
+      emojiModal.classList.remove('hidden');
+    });
+    
+    closeEmojiBtn.addEventListener('click', () => {
+      emojiModal.classList.add('hidden');
+    });
+    
+    emojiModal.addEventListener('click', (e) => {
+      if (e.target === emojiModal) {
+        emojiModal.classList.add('hidden');
+      }
+    });
+    
+    qrSize.addEventListener('change', () => {
+      generateLink();
+    });
+    
+    previewLightBtn.addEventListener('click', () => {
+      togglePreviewTheme(false);
+    });
+    
+    previewDarkBtn.addEventListener('click', () => {
+      togglePreviewTheme(true);
+    });
+    
+    saveContactBtn.addEventListener('click', saveContact);
+    loadContactsBtn.addEventListener('click', () => {
+      contactsContainer.classList.toggle('hidden');
+    });
+    
+    savedContacts.addEventListener('change', loadContact);
+    
+    clearHistoryBtn.addEventListener('click', () => {
+      if (confirm('Apakah Anda yakin ingin menghapus semua riwayat?')) {
+        history = [];
+        localStorage.setItem('waHistory', JSON.stringify(history));
+        renderHistory();
+        showToast('Riwayat berhasil dihapus!');
+      }
+    });
+
+    // Initial Setup
+    initEmojiGrid();
+    renderHistory();
+    updateContactsDropdown();
+    
+    // Initial Run (untuk setup preview default)
+    // Tunggu qrcodejs load
+    const checkLib = setInterval(() => {
+        // @ts-ignore
+        if (typeof QRCode !== 'undefined') {
+            generateLink();
+            clearInterval(checkLib);
+        }
+    }, 500);
+    
+    // Fallback kalau library gak load2, tetep jalankan logic text
+    setTimeout(() => generateLink(), 1000);
+  });
+</script>
