@@ -1,0 +1,356 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="HTML to PNG Converter">
+  <!-- Tambahkan Prism.js untuk Syntax Highlighting -->
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+  <link is:inline rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <div class="max-w-7xl mx-auto px-4 min-h-[85vh] py-8">
+    
+    <div class="text-center mb-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-600 tracking-tight">
+        HTML to Image
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        Ubah kode HTML & CSS menjadi gambar PNG berkualitas tinggi secara instan.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+      
+      <div class="lg:col-span-1 space-y-4 flex flex-col h-full animate-fade-in">
+        
+        <!-- Konfigurasi -->
+        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Konfigurasi
+            </h3>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase">Lebar (px)</label>
+                    <input type="number" id="width-input" value="600" class="w-full mt-1 p-2 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-bold">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase">Tinggi (min)</label>
+                    <input type="number" id="height-input" value="400" class="w-full mt-1 p-2 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-bold">
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="text-xs font-bold text-slate-500 uppercase">Background</label>
+                <div class="flex gap-2 mt-1">
+                    <input type="color" id="bg-color" value="#ffffff" class="h-10 w-12 rounded cursor-pointer border-0 p-0">
+                    <input type="text" id="bg-text" value="#ffffff" class="flex-1 p-2 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-mono">
+                </div>
+            </div>
+            <!-- TAMBAHAN: Preset Ukuran -->
+            <div>
+                <label class="text-xs font-bold text-slate-500 uppercase">Preset Ukuran</label>
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                    <button class="preset-btn text-xs p-2 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors" data-width="1080" data-height="1080">Instagram Post</button>
+                    <button class="preset-btn text-xs p-2 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors" data-width="1200" data-height="630">Facebook Post</button>
+                    <button class="preset-btn text-xs p-2 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors" data-width="1500" data-height="500">Twitter Header</button>
+                    <button class="preset-btn text-xs p-2 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors" data-width="1920" data-height="1080">Full HD</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Editor -->
+        <div class="flex-1 bg-slate-900 rounded-2xl border border-slate-700 shadow-sm flex flex-col overflow-hidden">
+            <div class="flex border-b border-slate-700">
+                <!-- TAMBAHAN: Tombol Copy & Role Aksesibilitas -->
+                <button role="tab" aria-selected="true" aria-controls="html-panel" class="tab-btn flex-1 py-2 text-sm font-bold text-white bg-slate-800 border-b-2 border-pink-500 flex items-center justify-center gap-2" data-target="html">
+                    HTML
+                    <svg class="copy-btn w-4 h-4 cursor-pointer hover:text-pink-400" data-target="html" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="css-panel" class="tab-btn flex-1 py-2 text-sm font-bold text-slate-400 hover:text-white flex items-center justify-center gap-2" data-target="css">
+                    CSS
+                    <svg class="copy-btn w-4 h-4 cursor-pointer hover:text-pink-400" data-target="css" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+            </div>
+            <div class="relative flex-1">
+                <!-- TAMBAHAN: class untuk Prism.js -->
+                <textarea id="html-input" class="editor-area w-full h-full p-4 bg-slate-900 text-pink-300 font-mono text-sm outline-none resize-none" spellcheck="false" role="tabpanel" id="html-panel">&lt;div class="card"&gt;
+  &lt;h1&gt;Hello World!&lt;/h1&gt;
+  &lt;p&gt;Bikin gambar dari code itu gampang banget.&lt;/p&gt;
+  &lt;div class="badge"&gt;HTML to PNG&lt;/div&gt;
+&lt;/div&gt;</textarea>
+                <textarea id="css-input" class="editor-area w-full h-full p-4 bg-slate-900 text-sky-300 font-mono text-sm outline-none resize-none hidden" spellcheck="false" role="tabpanel" id="css-panel">.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+.badge {
+  background: linear-gradient(135deg, #ec4899, #f43f5e);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 99px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+}</textarea>
+            </div>
+        </div>
+
+      </div>
+
+      <div class="lg:col-span-2 flex flex-col gap-4 animate-fade-in" style="animation-delay: 0.1s;">
+        
+        <!-- Preview Area -->
+        <div class="bg-slate-100 dark:bg-slate-900/50 rounded-3xl border border-slate-200 dark:border-slate-700 p-8 flex items-center justify-center min-h-[500px] overflow-auto relative checkerboard">
+            
+            <!-- TAMBAHAN: Loading Spinner untuk Preview -->
+            <div id="preview-loader" class="absolute inset-0 bg-slate-100/50 dark:bg-slate-900/50 flex items-center justify-center rounded-3xl hidden z-10">
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-300 border-t-rose-600"></div>
+            </div>
+
+            <div id="capture-wrapper" class="shadow-2xl transition-all duration-300 origin-center">
+                <div id="preview-area" class="w-full h-full overflow-hidden relative"></div>
+            </div>
+
+        </div>
+
+        <!-- Download Button -->
+        <button id="download-btn" class="w-full py-4 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-2xl shadow-lg shadow-rose-500/25 transition-all active:scale-95 flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download PNG
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  /* Style untuk Prism.js agar terlihat rapi di dalam textarea */
+  .editor-area {
+    tab-size: 2;
+  }
+  
+  /* Checkerboard pattern for transparency context */
+  .checkerboard {
+    background-image:
+      linear-gradient(45deg, #ccc 25%, transparent 25%),
+      linear-gradient(-45deg, #ccc 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #ccc 75%),
+      linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+  
+  html.dark .checkerboard {
+    background-image:
+      linear-gradient(45deg, #333 25%, transparent 25%),
+      linear-gradient(-45deg, #333 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #333 75%),
+      linear-gradient(-45deg, transparent 75%, #333 75%);
+  }
+</style>
+
+<script>
+  // Elements
+  const htmlInput = document.getElementById('html-input');
+  const cssInput = document.getElementById('css-input');
+  const widthInput = document.getElementById('width-input');
+  const heightInput = document.getElementById('height-input');
+  const bgColorInput = document.getElementById('bg-color');
+  const bgTextInput = document.getElementById('bg-text');
+  const previewArea = document.getElementById('preview-area');
+  const captureWrapper = document.getElementById('capture-wrapper');
+  const downloadBtn = document.getElementById('download-btn');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const editors = document.querySelectorAll('.editor-area');
+  const presetBtns = document.querySelectorAll('.preset-btn');
+  const copyBtns = document.querySelectorAll('.copy-btn');
+  const previewLoader = document.getElementById('preview-loader');
+
+  // State
+  let config = {
+      width: 600,
+      height: 400,
+      bg: '#ffffff'
+  };
+  
+  // Highlight code with Prism.js
+  function highlightCode(editor) {
+      // Simpan posisi cursor
+      const start = editor.selectionStart;
+      const end = editor.selectionEnd;
+
+      // Highlight
+      Prism.highlightElement(editor);
+
+      // Kembalikan posisi cursor
+      editor.setSelectionRange(start, end);
+  }
+
+  // Update Preview Function (Menggunakan Shadow DOM)
+  function updatePreview() {
+      // Tampilkan loader
+      previewLoader.classList.remove('hidden');
+
+      const html = htmlInput.value;
+      const css = cssInput.value;
+      
+      // Update Wrapper Size & Style
+      captureWrapper.style.width = `${config.width}px`;
+      captureWrapper.style.height = `${config.height}px`;
+      captureWrapper.style.backgroundColor = config.bg;
+
+      // Gunakan Shadow DOM untuk enkapsulasi yang sempurna
+      if (!previewArea.shadowRoot) {
+          previewArea.attachShadow({ mode: 'open' });
+      }
+      const shadowRoot = previewArea.shadowRoot;
+      
+      // Inject Content ke Shadow DOM
+      shadowRoot.innerHTML = `
+          <style>
+              ${css}
+          </style>
+          ${html}
+      `;
+      
+      // Sembunyikan loader setelah render selesai
+      setTimeout(() => {
+          previewLoader.classList.add('hidden');
+      }, 300); // Delay kecil untuk animasi
+  }
+
+  // Event Listeners
+  const inputs = [htmlInput, cssInput, widthInput, heightInput, bgTextInput];
+  
+  inputs.forEach(input => {
+      input.addEventListener('input', () => {
+          config.width = parseInt(widthInput.value) || 600;
+          config.height = parseInt(heightInput.value) || 400;
+          config.bg = bgTextInput.value;
+          
+          if(input === bgTextInput && /^#[0-9A-F]{6}$/i.test(bgTextInput.value)) {
+              bgColorInput.value = bgTextInput.value;
+          }
+          
+          updatePreview();
+          if (input === htmlInput || input === cssInput) {
+            highlightCode(input);
+          }
+      });
+  });
+
+  bgColorInput.addEventListener('input', (e) => {
+      bgTextInput.value = e.target.value;
+      config.bg = e.target.value;
+      updatePreview();
+  });
+
+  // Tab Switching
+  tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+          const target = btn.dataset.target;
+          
+          // Update ARIA attributes
+          tabBtns.forEach(b => {
+              b.setAttribute('aria-selected', 'false');
+              b.classList.remove('text-white', 'bg-slate-800', 'border-b-2', 'border-pink-500');
+              b.classList.add('text-slate-400');
+          });
+          btn.setAttribute('aria-selected', 'true');
+          btn.classList.add('text-white', 'bg-slate-800', 'border-b-2', 'border-pink-500');
+          btn.classList.remove('text-slate-400');
+
+          // Switch Editor
+          editors.forEach(ed => ed.classList.add('hidden'));
+          const activeEditor = document.getElementById(`${target}-input`);
+          activeEditor.classList.remove('hidden');
+          highlightCode(activeEditor); // Highlight saat tab aktif
+      });
+  });
+
+  // Preset Buttons
+  presetBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+          const width = btn.dataset.width;
+          const height = btn.dataset.height;
+          widthInput.value = width;
+          heightInput.value = height;
+          config.width = parseInt(width);
+          config.height = parseInt(height);
+          updatePreview();
+      });
+  });
+
+  // Copy to Clipboard
+  copyBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Mencegah event tab tertrigger
+          const target = btn.dataset.target;
+          const input = document.getElementById(`${target}-input`);
+          navigator.clipboard.writeText(input.value).then(() => {
+              if(window.showToast) window.showToast('Kode berhasil disalin!', 'success');
+          }).catch(err => {
+              console.error('Gagal menyalin: ', err);
+              if(window.showToast) window.showToast('Gagal menyalin kode.', 'error');
+          });
+      });
+  });
+
+  // Download Function
+  downloadBtn.addEventListener('click', async () => {
+      const originalText = downloadBtn.innerHTML;
+      downloadBtn.disabled = true;
+      downloadBtn.innerHTML = '<span class="animate-spin">⏳</span> Generating...';
+
+      try {
+          // @ts-ignore (html2canvas loaded via CDN)
+          const canvas = await html2canvas(captureWrapper, {
+              scale: 2, // Retina quality
+              useCORS: true,
+              backgroundColor: config.bg, // Ensure bg is captured
+              logging: false
+          });
+
+          const link = document.createElement('a');
+          link.download = `html-image-${Date.now()}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          
+          if(window.showToast) window.showToast('Gambar berhasil diunduh!', 'success');
+
+      } catch (error) {
+          console.error(error);
+          if(window.showToast) window.showToast('Gagal render gambar. Pastikan kode HTML/CSS valid.', 'error');
+      } finally {
+          downloadBtn.disabled = false;
+          downloadBtn.innerHTML = originalText;
+      }
+  });
+
+  // Init
+  document.addEventListener('DOMContentLoaded', () => {
+      updatePreview();
+      // Highlight initial code
+      highlightCode(htmlInput);
+  });
+</script>

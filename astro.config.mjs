@@ -1,37 +1,41 @@
 import { defineConfig } from 'astro/config';
-import tailwind from '@astrojs/tailwind';
+import tailwind from "@astrojs/tailwind";
 import vercel from '@astrojs/vercel/static';
 import AstroPWA from '@vite-pwa/astro';
 
 export default defineConfig({
+  output: 'static',
+  adapter: vercel({
+    webAnalytics: { enabled: true }
+  }),
   integrations: [
     tailwind(),
     AstroPWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'Aulia Tools',
-        short_name: 'Tools',
-        description: 'Kumpulan tools developer offline-ready.',
-        theme_color: '#0f172a',
-        background_color: '#0f172a',
+        name: 'Tools Pak Lubis',
+        short_name: 'PakLubis Tools',
+        description: 'Koleksi tools developer dan produktivitas lengkap.',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
         display: 'standalone',
+        orientation: 'portrait',
         scope: '/',
         start_url: '/',
-        orientation: 'portrait',
         icons: [
           {
-            src: '/pwa-192x192.png',
+            src: 'pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/pwa-512x512.png',
+            src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: '/pwa-512x512.png',
+            src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
@@ -39,15 +43,13 @@ export default defineConfig({
         ]
       },
       workbox: {
-        navigateFallback: '/',
-        globPatterns: ['**/*.{css,js,html,svg,png,ico,txt,json}']
+        navigateFallback: '/404',
+        globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}']
       },
       devOptions: {
         enabled: true,
-        navigateFallbackAllowlist: [/^\/$/],
-        type: 'module',
+        navigateFallbackAllowlist: [/^\/404$/],
       },
     })
   ],
-  adapter: vercel()
 });

@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import { pwaInfo } from 'virtual:pwa-info';
 
 interface Props {
   pageTitle: string;
@@ -33,8 +34,8 @@ if (isPdfTool) {
 <html lang="id" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{pageTitle} | Aulia Tools</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>{pageTitle} | PakLubis Tools</title>
   <meta name="description" content={description} />
   <meta name="generator" content={Astro.generator} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -51,28 +52,39 @@ if (isPdfTool) {
       const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       if (theme === 'dark' || (!theme && systemDark)) {
         document.documentElement.classList.add("dark");
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0f172a');
       } else {
         document.documentElement.classList.remove("dark");
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#ffffff');
       }
     };
     setDarkMode();
     document.addEventListener('astro:after-swap', setDarkMode);
   </script>
 
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+  <link rel="mask-icon" href="/favicon.svg" color="#0f172a" />
+  
   <script>
     import { registerSW } from 'virtual:pwa-register';
+    
     registerSW({
       immediate: true,
       onNeedRefresh() {
-        if(confirm('Update baru tersedia. Refresh sekarang?')) window.location.reload(); 
+        // Tampilkan tombol update custom atau confirm standar
+        if(confirm('Versi baru tersedia! Refresh sekarang untuk update?')) {
+          window.location.reload();
+        }
       },
-      onOfflineReady() { console.log('App siap offline.'); },
+      onOfflineReady() {
+        console.log('App siap digunakan offline.');
+        // Gunakan fungsi toast global jika sudah ada
+        if (window.showToast) window.showToast('Aplikasi siap digunakan Offline', 'success');
+      },
     });
   </script>
-  
-  <meta name="theme-color" content="#0f172a" />
-  <link rel="apple-touch-icon" href="/pwa-192x192.png" />
-  <link rel="mask-icon" href="/favicon.svg" color="#0f172a" />
 </head>
 
 <body class="antialiased bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
@@ -98,13 +110,13 @@ if (isPdfTool) {
         <a href="/" class={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isHome ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>Home</a>
         <a href="/pdf" class={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isPdfRoot || isPdfTool ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>PDF Tools</a>
         <div class="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
-        <button id="theme-toggle-desktop" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors focus:outline-none">
+        <button id="theme-toggle-desktop" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors focus:outline-none" aria-label="Toggle Theme">
           <svg id="sun-icon" class="hidden dark:block w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
           <svg id="moon-icon" class="block dark:hidden w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         </button>
       </nav>
 
-      <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-600 dark:text-slate-300 focus:outline-none z-50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+      <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-600 dark:text-slate-300 focus:outline-none z-50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Menu">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
       </button>
     </div>
@@ -115,7 +127,7 @@ if (isPdfTool) {
       <a href="https://paklubis.my.id" target="_blank" class="block p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-200 mobile-link">Portfolio</a>
       <div class="border-t border-slate-100 dark:border-slate-800 pt-2 mt-2 px-3 pb-2 flex items-center justify-between">
         <span class="text-sm text-slate-500 font-medium">Tema Tampilan</span>
-        <button id="theme-toggle-mobile" class="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-105 transition-transform">
+        <button id="theme-toggle-mobile" class="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-105 transition-transform" aria-label="Switch Theme">
           <span class="dark:hidden flex items-center gap-2 text-xs font-bold uppercase">Gelap 🌙</span>
           <span class="hidden dark:flex items-center gap-2 text-xs font-bold uppercase">Terang ☀️</span>
         </button>
@@ -137,12 +149,12 @@ if (isPdfTool) {
     <slot />
   </main>
 
-  <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-auto">
+  <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-auto pb-safe">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
       <p>&copy; {new Date().getFullYear()} <span class="font-bold text-slate-700 dark:text-slate-300">Aulia Iskandar Lubis</span>. Built with Astro & Tailwind.</p>
       <div class="flex gap-4">
-         <a href="https://github.com/kandarlubis31" target="_blank" class="hover:text-slate-800 dark:hover:text-white transition-colors">GitHub</a>
-         <a href="https://paklubis.my.id" target="_blank" class="hover:text-slate-800 dark:hover:text-white transition-colors">Website</a>
+         <a href="https://github.com/kandarlubis31" target="_blank" class="hover:text-slate-800 dark:hover:text-white transition-colors" aria-label="Github">GitHub</a>
+         <a href="https://paklubis.my.id" target="_blank" class="hover:text-slate-800 dark:hover:text-white transition-colors" aria-label="Website">Website</a>
       </div>
     </div>
   </footer>
@@ -159,41 +171,38 @@ if (isPdfTool) {
         error: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>',
         info: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
       };
-      toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-x-10 opacity-0 pointer-events-auto min-w-[300px] backdrop-blur-sm ${colors[type] || colors.info}`;
+      toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-x-10 opacity-0 pointer-events-auto min-w-[300px] max-w-[90vw] backdrop-blur-sm ${colors[type] || colors.info}`;
       toast.innerHTML = `${icons[type] || icons.info} <span class="font-bold text-sm">${message}</span>`;
       container.appendChild(toast);
       requestAnimationFrame(() => toast.classList.remove('translate-x-10', 'opacity-0'));
       setTimeout(() => { toast.classList.add('translate-x-10', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
     };
 
-    // --- 2. GLOBAL HANDLERS ---
+    // --- 2. GLOBAL HANDLERS (View Transitions Safe) ---
     document.addEventListener('astro:page-load', () => {
       
-      // --- LOGIC TOMBOL BACK DINAMIS (Client-Side Fix) ---
+      // LOGIC TOMBOL BACK DINAMIS
       const backBtn = document.getElementById('back-btn');
       const backBtnText = document.getElementById('back-btn-text');
       const urlParams = new URLSearchParams(window.location.search);
       const fromCat = urlParams.get('from_cat');
 
       if (backBtn && fromCat && fromCat !== 'popular' && fromCat !== 'all') {
-         // Update URL agar balik ke kategori yg benar
          backBtn.href = `/?cat=${fromCat}`;
-         
-         // Update Teks Label
          const catNames = {
-            'dev': 'Developer Tools',
-            'image': 'Image Tools',
-            'security': 'Security Tools',
-            'calc': 'Kalkulator',
-            'utils': 'Productivity',
-            'file': 'File Tools'
+           'dev': 'Developer Tools',
+           'image': 'Image Tools',
+           'security': 'Security Tools',
+           'calc': 'Kalkulator',
+           'utils': 'Productivity',
+           'file': 'File Tools'
          };
          if (backBtnText) {
-            backBtnText.innerText = `Kembali ke ${catNames[fromCat] || 'Kategori'}`;
+           backBtnText.innerText = `Kembali ke ${catNames[fromCat] || 'Kategori'}`;
          }
       }
 
-      // Offline Checker
+      // OFFLINE CHECKER
       const updateOnlineStatus = () => {
         const indicator = document.getElementById('offline-indicator');
         if (!navigator.onLine) {
@@ -210,7 +219,7 @@ if (isPdfTool) {
       window.addEventListener('offline', updateOnlineStatus);
       if(!navigator.onLine) document.getElementById('offline-indicator')?.classList.remove('hidden');
 
-      // Mobile Menu
+      // MOBILE MENU
       const menuBtn = document.getElementById('mobile-menu-btn');
       const mobileMenu = document.getElementById('mobile-menu');
       const mobileLinks = document.querySelectorAll('.mobile-link');
@@ -239,10 +248,16 @@ if (isPdfTool) {
         });
       }
 
-      // Theme Toggle
+      // THEME TOGGLE
       const handleThemeToggle = () => {
         const isDark = document.documentElement.classList.toggle("dark");
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        
+        // Update Meta Theme Color for PWA
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute('content', isDark ? '#0f172a' : '#ffffff');
+        }
       };
       
       const desktopToggle = document.getElementById('theme-toggle-desktop');
@@ -265,14 +280,20 @@ if (isPdfTool) {
 
 <style is:global>
   html { font-family: 'Inter', system-ui, sans-serif; }
+  /* Custom Scrollbar */
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
   ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   .dark ::-webkit-scrollbar-thumb { background: #334155; }
   .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  
+  /* Animations */
   .animate-fade-in-down { animation: fadeInDown 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
   @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
   .animate-slide-up { animation: slideUp 0.5s ease-out; }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  
+  /* Safe Area for Mobile PWA */
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 </style>
