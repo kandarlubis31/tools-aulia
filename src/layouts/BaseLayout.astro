@@ -69,7 +69,7 @@ if (isPdfTool) {
   <ClientRouter />
 
   <script is:inline>
-    // Set theme immediately
+    // Set theme immediately to avoid flash
     const setDarkMode = () => {
       const theme = localStorage.getItem('theme');
       const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -82,6 +82,7 @@ if (isPdfTool) {
       }
     };
     setDarkMode();
+    // Re-run on navigation
     document.addEventListener('astro:after-swap', setDarkMode);
   </script>
 
@@ -92,6 +93,7 @@ if (isPdfTool) {
   <script>
     import { registerSW } from 'virtual:pwa-register';
     
+    // Register SW only once
     registerSW({
       immediate: true,
       onNeedRefresh() {
@@ -115,8 +117,8 @@ if (isPdfTool) {
         `;
         document.body.appendChild(updateNotification);
         
-        document.getElementById('update-accept').addEventListener('click', () => window.location.reload());
-        document.getElementById('update-dismiss').addEventListener('click', () => updateNotification.remove());
+        document.getElementById('update-accept')?.addEventListener('click', () => window.location.reload());
+        document.getElementById('update-dismiss')?.addEventListener('click', () => updateNotification.remove());
       },
       onOfflineReady() {
         console.log('App siap digunakan offline.');
@@ -298,7 +300,7 @@ if (isPdfTool) {
       setTimeout(() => { toast.classList.add('translate-x-10', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
     };
 
-    // --- 2. GLOBAL EVENT HANDLERS ---
+    // --- 2. GLOBAL EVENT HANDLERS (Astro Page Load) ---
     document.addEventListener('astro:page-load', () => {
       
       // PWA: CUSTOM INSTALL LOGIC
@@ -306,15 +308,12 @@ if (isPdfTool) {
       const pwaConfirmBtn = document.getElementById('pwa-confirm-install');
       const pwaCancelBtn = document.getElementById('pwa-cancel-install');
 
-      // Fungsi Install (Global)
       window.installPWA = () => {
         if (!window.deferredPrompt) {
             window.showToast('Aplikasi mungkin sudah terinstall', 'success');
             return;
         }
-        // Tampilkan Modal Custom kita, BUKAN browser prompt langsung
         pwaModal?.classList.remove('hidden');
-        // Sedikit delay biar transisi opacity jalan halus
         setTimeout(() => {
             pwaModal?.classList.remove('opacity-0');
             pwaModal?.querySelector('div')?.classList.remove('scale-95');
@@ -322,10 +321,8 @@ if (isPdfTool) {
         }, 10);
       };
 
-      // Handle Tombol "Install Sekarang" di Modal Custom
       pwaConfirmBtn?.addEventListener('click', async () => {
         if (window.deferredPrompt) {
-            // Ini baru memanggil prompt asli browser
             window.deferredPrompt.prompt();
             const { outcome } = await window.deferredPrompt.userChoice;
             console.log(`User response: ${outcome}`);
@@ -334,7 +331,6 @@ if (isPdfTool) {
         closePwaModal();
       });
 
-      // Handle Cancel / Tutup Modal
       const closePwaModal = () => {
         pwaModal?.classList.add('opacity-0');
         pwaModal?.querySelector('div')?.classList.add('scale-95');
@@ -347,20 +343,14 @@ if (isPdfTool) {
         if(e.target === pwaModal) closePwaModal();
       });
 
-      // PWA: Install Prompt Listener
       window.addEventListener('beforeinstallprompt', (e) => {
-        // Cegah browser menampilkan banner default jelek
         e.preventDefault();
-        // Simpan event untuk dipakai nanti oleh tombol kita
         window.deferredPrompt = e;
-        // Munculkan tombol trigger di header/menu
         document.getElementById('install-pwa-btn')?.classList.remove('hidden');
         document.getElementById('install-pwa-mobile')?.classList.remove('hidden');
       });
 
-      // ... (Sisa logic Back Button, Offline Checker, Mobile Menu, Theme, Search sama seperti sebelumnya) ...
-      
-      // LOGIC BACK BTN
+      // BACK BUTTON LOGIC
       const backBtn = document.getElementById('back-btn');
       const backBtnText = document.getElementById('back-btn-text');
       const urlParams = new URLSearchParams(window.location.search);
@@ -388,11 +378,12 @@ if (isPdfTool) {
       window.addEventListener('offline', updateOnlineStatus);
       if(!navigator.onLine) document.getElementById('offline-indicator')?.classList.remove('hidden');
 
-      // MOBILE MENU & THEME (Standard Logic)
+      // MOBILE MENU & THEME
       const menuBtn = document.getElementById('mobile-menu-btn');
       const mobileMenu = document.getElementById('mobile-menu');
       const mobileLinks = document.querySelectorAll('.mobile-link');
       if (menuBtn && mobileMenu) {
+        // Clone to remove previous event listeners
         const newMenuBtn = menuBtn.cloneNode(true);
         menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
         newMenuBtn.addEventListener('click', (e) => {
@@ -409,17 +400,36 @@ if (isPdfTool) {
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark ? '#0f172a' : '#ffffff');
       };
-      document.getElementById('theme-toggle-desktop')?.addEventListener('click', handleThemeToggle);
-      document.getElementById('theme-toggle-mobile')?.addEventListener('click', handleThemeToggle);
+      
+      // Remove old listeners if any by cloning or simple reassign
+      const desktopToggle = document.getElementById('theme-toggle-desktop');
+      if(desktopToggle) {
+          const newToggle = desktopToggle.cloneNode(true);
+          desktopToggle.parentNode.replaceChild(newToggle, desktopToggle);
+          newToggle.addEventListener('click', handleThemeToggle);
+      }
+      const mobileToggle = document.getElementById('theme-toggle-mobile');
+      if(mobileToggle) {
+          const newToggle = mobileToggle.cloneNode(true);
+          mobileToggle.parentNode.replaceChild(newToggle, mobileToggle);
+          newToggle.addEventListener('click', handleThemeToggle);
+      }
 
       // SEARCH MODAL
       const searchBtn = document.getElementById('search-btn');
       const searchModal = document.getElementById('search-modal');
       const searchInput = document.getElementById('search-modal-input');
       const closeSearch = document.getElementById('close-search');
+      
       const openSearch = () => { searchModal?.classList.remove('hidden'); searchInput?.focus(); };
       const closeSearchModal = () => { searchModal?.classList.add('hidden'); if(searchInput) searchInput.value = ''; };
-      searchBtn?.addEventListener('click', openSearch);
+      
+      if(searchBtn) {
+          const newBtn = searchBtn.cloneNode(true);
+          searchBtn.parentNode.replaceChild(newBtn, searchBtn);
+          newBtn.addEventListener('click', openSearch);
+      }
+      
       closeSearch?.addEventListener('click', closeSearchModal);
       searchModal?.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
       document.addEventListener('keydown', (e) => {
@@ -430,6 +440,8 @@ if (isPdfTool) {
       // NAV LOADING
       const navLoad = document.getElementById('navigation-loading');
       const navBar = navLoad?.querySelector('div');
+      
+      // These events are fired by Astro View Transitions
       document.addEventListener('astro:after-preparation', () => { navLoad?.classList.remove('hidden'); if(navBar) navBar.style.width = '30%'; });
       document.addEventListener('astro:after-swap', () => { if(navBar) { navBar.style.width = '100%'; setTimeout(() => { navBar.style.width = '0%'; navLoad?.classList.add('hidden'); }, 300); }});
     });
@@ -439,10 +451,12 @@ if (isPdfTool) {
 
 <style is:global>
   html { font-family: 'Inter', system-ui, sans-serif; }
+  /* GLOBAL SCROLLBAR STYLES */
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
   .dark ::-webkit-scrollbar-thumb { background: #334155; }
+  
   .animate-fade-in-down { animation: fadeInDown 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
   @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
   .animate-slide-up { animation: slideUp 0.5s ease-out; }

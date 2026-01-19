@@ -1,404 +1,410 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
-// --- 1. DATA TOOLS (LOGIC TETAP SAMA, COLOR KITA STANDARKAN) ---
-// Kita ubah styling color biar gak 'rainbow' (warna-warni) tapi jadi Theme Brand (Rose/Merah)
-// Icon tetap beda-beda biar informatif.
+// --- 1. DATA TOOLS ---
 const pdfTools = [
   // MANIPULASI
   { 
     title: "Merge PDF", 
-    desc: "Gabungin beberapa PDF jadi satu file gampang banget.", 
+    desc: "Gabungin beberapa PDF jadi satu file.", 
     href: "/pdf/merge", 
-    // Kita pakai satu warna accent utama (Rose) biar clean
-    iconClass: "bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400",
+    color: "rose",
     icon: '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>' 
   },
   { 
     title: "Split PDF", 
-    desc: "Pisah PDF per halaman atau sesuai kebutuhan.", 
+    desc: "Pisah PDF per halaman/range.", 
     href: "/pdf/split", 
-    iconClass: "bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400",
+    color: "orange",
     icon: '<line x1="12" y1="3" x2="12" y2="21"/><path d="M8 8l-4 4 4 4"/><path d="M16 8l4 4-4 4"/>' 
   },
   { 
     title: "Compress PDF", 
-    desc: "Kecilin ukuran PDF biar nggak makan storage.", 
+    desc: "Kecilin ukuran file PDF.", 
     href: "/pdf/compress", 
-    iconClass: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
+    color: "emerald",
     icon: '<path d="M4 14l6 6 6-6"/><path d="M12 20v-9"/><path d="M20 10c0-4.418-3.582-8-8-8s-8 3.582-8 8"/>' 
   },
 
   // EDITING
   { 
     title: "Rotate PDF", 
-    desc: "Putar halaman dari portrait ke landscape.", 
+    desc: "Putar orientasi halaman.", 
     href: "/pdf/rotate", 
-    iconClass: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+    color: "blue",
     icon: '<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>' 
   },
   { 
     title: "Reorder Pages", 
-    desc: "Atur ulang urutan halaman sesuai selera.", 
+    desc: "Atur ulang urutan halaman.", 
     href: "/pdf/reorder", 
-    iconClass: "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400",
+    color: "indigo",
     icon: '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>' 
   },
   { 
     title: "Delete Pages", 
-    desc: "Buang halaman yang nggak penting.", 
+    desc: "Hapus halaman yang tidak perlu.", 
     href: "/pdf/delete", 
-    iconClass: "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400",
+    color: "rose",
     icon: '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>' 
   },
   { 
     title: "Extract Pages", 
-    desc: "Ambil halaman tertentu buat file baru.", 
+    desc: "Ambil halaman tertentu saja.", 
     href: "/pdf/extract", 
-    iconClass: "bg-teal-50 text-teal-600 dark:bg-teal-900/20 dark:text-teal-400",
+    color: "teal",
     icon: '<path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 22h2a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><path d="M14 22v-4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2Z"/>' 
   },
 
   // KONVERSI
   { 
     title: "PDF to JPG", 
-    desc: "Ubah halaman PDF jadi gambar JPG/PNG.", 
+    desc: "Ubah halaman PDF jadi gambar.", 
     href: "/pdf/to-jpg", 
-    iconClass: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
+    color: "yellow",
     icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>' 
   },
   { 
     title: "JPG to PDF", 
-    desc: "Kumpulin foto-foto jadi satu file PDF.", 
+    desc: "Kumpulin foto jadi satu PDF.", 
     href: "/pdf/jpg-to-pdf", 
-    iconClass: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
+    color: "yellow",
     icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>' 
   },
   { 
     title: "HTML to PDF", 
-    desc: "Ubah halaman web atau HTML jadi PDF.", 
+    desc: "Web page / HTML ke PDF.", 
     href: "/pdf/html-to-pdf", 
-    iconClass: "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
+    color: "purple",
     icon: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>' 
   },
   { 
     title: "PDF to PPT", 
-    desc: "Konversi PDF jadi slide PowerPoint.", 
+    desc: "PDF ke slide PowerPoint.", 
     href: "/pdf/to-ppt", 
-    iconClass: "bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400",
+    color: "orange",
     icon: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><rect x="8" y="13" width="8" height="4"/>' 
   },
 
   // SECURITY & UTILS
   { 
     title: "Sign PDF", 
-    desc: "Tanda tangani PDF langsung dari browser.", 
+    desc: "Tanda tangan digital.", 
     href: "/pdf/sign", 
-    iconClass: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
+    color: "emerald",
     icon: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>' 
   },
   { 
     title: "Watermark", 
-    desc: "Kasih watermark biar dokumen aman.", 
+    desc: "Kasih cap air/watermark.", 
     href: "/pdf/watermark", 
-    iconClass: "bg-cyan-50 text-cyan-600 dark:bg-cyan-900/20 dark:text-cyan-400",
+    color: "cyan",
     icon: '<path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M9 12l2 2l4 -4"/>' 
   },
   { 
     title: "Page Numbers", 
-    desc: "Tambahin nomor halaman otomatis.", 
+    desc: "Nomor halaman otomatis.", 
     href: "/pdf/page-numbers", 
-    iconClass: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+    color: "slate",
     icon: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>' 
   },
   { 
     title: "Edit Metadata", 
-    desc: "Ganti judul, author, atau info PDF.", 
+    desc: "Ubah info author/judul.", 
     href: "/pdf/metadata", 
-    iconClass: "bg-pink-50 text-pink-600 dark:bg-pink-900/20 dark:text-pink-400",
+    color: "pink",
     icon: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>' 
   },
   { 
     title: "Grayscale", 
-    desc: "Ubah jadi hitam putih hemat tinta.", 
+    desc: "Ubah ke hitam putih.", 
     href: "/pdf/grayscale", 
-    iconClass: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
+    color: "gray",
     icon: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>' 
   },
 ];
 
 const categories = [
-  { id: 'all', name: 'Semua Tools' },
+  { id: 'all', name: 'Semua' },
   { id: 'manipulasi', name: 'Manipulasi' },
   { id: 'editing', name: 'Editing' },
   { id: 'konversi', name: 'Konversi' },
   { id: 'security', name: 'Security' },
 ];
 
-const popularTools = ['merge', 'compress', 'split', 'to-jpg'];
+const popularTools = ['merge', 'compress', 'split', 'rotate'];
 
-// Fungsi Helper (Server Side)
-function getCategoryFromHref(href) {
-  if (href.includes('merge') || href.includes('split') || href.includes('compress')) return 'manipulasi';
-  if (href.includes('rotate') || href.includes('reorder') || href.includes('delete') || href.includes('extract')) return 'editing';
-  if (href.includes('to-') || href.includes('-to-') || href.includes('html-to-pdf')) return 'konversi';
-  if (href.includes('sign') || href.includes('watermark') || href.includes('page-numbers') || href.includes('metadata') || href.includes('grayscale')) return 'security';
-  return 'all';
-}
+const getColorClass = (color: string) => {
+  const map: Record<string, string> = {
+    rose: "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400",
+    orange: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
+    emerald: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
+    blue: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+    indigo: "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400",
+    teal: "bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400",
+    yellow: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400",
+    purple: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
+    cyan: "bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400",
+    slate: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+    pink: "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400",
+    gray: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
+  };
+  return map[color] || map.slate;
+};
 ---
 
 <BaseLayout pageTitle="PDF Mas Aul">
-   
-  {/* SECTION 1: HERO & SEARCH (Clean Design) */}
-  <div class="relative pt-20 pb-12 px-4 text-center overflow-hidden">
-    {/* Background Glow halus */}
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-gradient-to-b from-rose-50/80 to-transparent dark:from-rose-900/10 pointer-events-none -z-10 rounded-full blur-3xl"></div>
+  
+  <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+    <div class="absolute top-[-20%] left-[20%] w-[50%] h-[50%] bg-rose-500/10 rounded-full blur-[120px]"></div>
+    <div class="absolute bottom-[-20%] right-[10%] w-[40%] h-[40%] bg-orange-500/10 rounded-full blur-[100px]"></div>
+    <div class="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03] dark:opacity-[0.05]"></div>
+  </div>
 
-    <div class="animate-fade-in-up">
-      <div class="inline-flex items-center justify-center px-4 py-1.5 mb-6 bg-rose-50 dark:bg-rose-900/30 rounded-full border border-rose-100 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-sm font-medium">
-        ✨ 100% Gratis & Aman di Browser
-      </div>
-       
-      <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight">
-        PDF <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-orange-600">Mas Aul</span>
-      </h1>
-       
-      <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
-        Kumpulan tools PDF paling lengkap. File kamu aman dan nggak pernah diupload ke server manapun.
-      </p>
+  <div class="relative pt-16 pb-12 px-4 text-center animate-fade-in-down">
+    <div class="inline-flex items-center justify-center p-3 mb-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-rose-100 dark:border-rose-900/30 text-rose-500">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
+    </div>
+      
+    <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight leading-tight">
+      PDF <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-orange-500">Mas Aul</span>
+    </h1>
+      
+    <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+      Koleksi lengkap tools PDF untuk segala kebutuhan dokumenmu. <br>
+      <span class="font-bold text-slate-800 dark:text-slate-200">100% Client-Side</span>, file diproses di browser kamu sendiri.
+    </p>
+  </div>
 
-      {/* SEARCH BAR (Floating & Big) */}
-      <div class="max-w-xl mx-auto relative group z-10">
-        <div class="absolute -inset-1 bg-gradient-to-r from-rose-400 to-orange-400 rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-500"></div>
-        <div class="relative flex items-center bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
-           <div class="pl-4 text-slate-400">
-             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-           </div>
-           <input 
-             type="text" 
-             id="search-input" 
-             placeholder="Cari tools (misal: merge, compress)..." 
-             class="w-full py-4 px-4 bg-transparent outline-none text-slate-800 dark:text-white placeholder:text-slate-400 text-lg"
-           >
+  <div class="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/70 dark:bg-slate-950/70 border-b border-slate-200/50 dark:border-slate-800/50 transition-all duration-300 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row gap-4 items-center justify-between">
+      
+      <div class="hidden md:flex flex-1 min-w-0 w-full relative group">
+        <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-950 to-transparent z-10 pointer-events-none"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-950 to-transparent z-10 pointer-events-none"></div>
+
+        <div class="flex gap-2 overflow-x-auto py-2 px-6 custom-scrollbar scroll-smooth" id="desktop-filters">
+          {categories.map((category, index) => (
+            <button 
+              class={`pdf-category-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap border shrink-0
+              ${index === 0 
+                ? 'bg-rose-500 text-white border-transparent shadow-md' 
+                : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400'}`}
+              data-category={category.id}
+            >
+              {category.name}
+            </button>
+          ))}
         </div>
       </div>
+
+      <div class="md:hidden w-full relative">
+        <select id="pdf-mobile-filter" class="appearance-none w-full py-3 px-4 pr-10 rounded-xl bg-slate-100 dark:bg-slate-900 border-none text-slate-800 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-rose-500 transition-all">
+           {categories.map(cat => (
+              <option value={cat.id}>{cat.name}</option>
+           ))}
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+        </div>
+      </div>
+
+      <div class="relative w-full md:w-64 shrink-0 group">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-4 w-4 text-slate-400 group-focus-within:text-rose-500 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+        <input 
+          type="text" 
+          id="pdf-search-input" 
+          placeholder="Cari tools PDF..." 
+          class="w-full pl-9 pr-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800/50 border-transparent focus:bg-white dark:focus:bg-slate-900 border focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none text-sm transition-all text-slate-800 dark:text-white placeholder:text-slate-400"
+        />
+      </div>
+
     </div>
   </div>
 
-  {/* SECTION 2: CATEGORY & CONTENT */}
-  <div class="max-w-7xl mx-auto px-4 pb-24">
+  <div class="max-w-7xl mx-auto px-4 py-8 pb-32">
     
-    {/* Categories (Pill Style) */}
-    <div class="flex flex-wrap justify-center gap-2 mb-12">
-      {categories.map((category) => (
-        <button 
-          class={`category-btn px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${category.id === 'all' ? 'bg-rose-600 text-white border-rose-600 shadow-md shadow-rose-600/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-700 hover:text-rose-600'}`}
-          data-category={category.id}
-        >
-          {category.name}
-        </button>
-      ))}
-    </div>
-
-    {/* POPULAR TOOLS SECTION (Toggleable) */}
     <div class="mb-10">
-      <div class="flex items-center justify-between mb-4 px-1">
-        <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-          🔥 Paling Laku
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Sering Dipakai
         </h2>
-        <button id="toggle-popular" class="text-sm font-medium text-rose-600 dark:text-rose-400 hover:underline">
-          Sembunyiin
-        </button>
       </div>
       
-      <div id="popular-tools" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {pdfTools.filter(tool => popularTools.some(popular => tool.href.includes(popular))).map((tool) => (
-          <a href={tool.href} class="group bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 hover:border-rose-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-            <div class={`inline-flex p-2 rounded-lg mb-3 ${tool.iconClass} group-hover:scale-110 transition-transform`}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
+          <a href={tool.href} class="group bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 hover:border-rose-200 dark:hover:border-rose-800 hover:shadow-lg hover:shadow-rose-500/5 transition-all duration-300">
+            <div class="flex items-center gap-3">
+              <div class={`p-2 rounded-lg ${getColorClass(tool.color)} group-hover:scale-110 transition-transform`}>
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-800 dark:text-white text-sm group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">{tool.title}</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 truncate w-32">{tool.desc}</p>
+              </div>
             </div>
-            <h3 class="font-bold text-slate-800 dark:text-white text-sm mb-1 group-hover:text-rose-600 transition-colors">
-              {tool.title}
-            </h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
-              {tool.desc}
-            </p>
           </a>
         ))}
       </div>
     </div>
 
-    {/* ALL TOOLS GRID */}
-    <div class="flex items-center justify-between mb-6 px-1 border-t border-slate-100 dark:border-slate-800 pt-8">
+    <div class="flex items-center justify-between mb-6">
       <h2 class="text-xl font-bold text-slate-800 dark:text-white">Semua Tools</h2>
-      <span id="tool-count" class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-sm font-mono font-medium">
-        {pdfTools.length}
-      </span>
-    </div>
-    
-    <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {pdfTools.map((tool) => (
-        <a 
-          href={tool.href} 
-          class="tool-card group flex flex-col h-full bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 hover:border-rose-500/50 hover:shadow-xl hover:shadow-rose-500/5 hover:-translate-y-1 transition-all duration-300" 
-          data-title={tool.title.toLowerCase()} 
-          data-category={getCategoryFromHref(tool.href)}
-        >
-          <div class="flex items-start justify-between mb-5">
-            <div class={`p-3 rounded-2xl ${tool.iconClass} ring-1 ring-inset ring-black/5 dark:ring-white/10 group-hover:scale-110 transition-transform duration-300`}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
-            </div>
-            {/* Arrow Icon on Hover */}
-            <div class="text-slate-300 group-hover:text-rose-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </div>
-          </div>
-
-          <div>
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-rose-600 transition-colors">
-              {tool.title}
-            </h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-              {tool.desc}
-            </p>
-          </div>
-        </a>
-      ))}
+      <span id="pdf-tool-count" class="text-xs font-medium px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-slate-600 dark:text-slate-400">{pdfTools.length} tools</span>
     </div>
 
-    {/* NO RESULTS STATE */}
-    <div id="no-results" class="hidden flex-col items-center justify-center py-20 text-center">
-      <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 text-slate-400">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/></svg>
+    <div id="pdf-tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      {pdfTools.map((tool) => {
+        let cat = 'all';
+        if (tool.href.includes('merge') || tool.href.includes('split') || tool.href.includes('compress')) cat = 'manipulasi';
+        else if (tool.href.includes('rotate') || tool.href.includes('reorder') || tool.href.includes('delete') || tool.href.includes('extract')) cat = 'editing';
+        else if (tool.href.includes('to-') || tool.href.includes('-to-') || tool.href.includes('html-to-pdf')) cat = 'konversi';
+        else cat = 'security';
+
+        return (
+          <div class="pdf-tool-card h-full" data-title={tool.title.toLowerCase()} data-category={cat}>
+            <a href={tool.href} class="block h-full p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-rose-500 dark:hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/10 transition-all duration-300 group">
+              <div class="flex items-start gap-4">
+                <div class={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center ${getColorClass(tool.color)}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">{tool.title}</h3>
+                  <p class="text-sm text-slate-500 mt-1 leading-relaxed">{tool.desc}</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        )
+      })}
+    </div>
+
+    <div id="pdf-no-results" class="hidden flex-col items-center justify-center py-20 text-center animate-fade-in">
+       <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-slate-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+       </div>
+       <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Tidak ditemukan</h3>
+       <p class="text-slate-500 text-sm">Coba cari dengan kata kunci lain.</p>
+    </div>
+
+    <div class="mt-16 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 rounded-2xl p-6 border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-4">
+      <div class="p-3 bg-white dark:bg-slate-900 rounded-full shadow-sm text-emerald-500">
+         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       </div>
-      <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">Yah, toolsnya nggak ketemu</h3>
-      <p class="text-slate-500 dark:text-slate-400 mt-1">Coba cari pakai kata kunci lain ya.</p>
+      <div>
+         <h4 class="font-bold text-emerald-800 dark:text-emerald-400">Privasi Dijamin Aman</h4>
+         <p class="text-sm text-emerald-700 dark:text-emerald-500/80 mt-0.5">Semua proses dilakukan secara offline di browser. File kamu tidak pernah di-upload ke server manapun.</p>
+      </div>
     </div>
-  </div>
 
-  {/* FOOTER BADGE */}
-  <div class="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 py-8">
-     <div class="max-w-7xl mx-auto px-4 flex justify-center gap-8 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
-        <div class="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-           <svg class="text-emerald-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> 
-           Privasi Terjamin
-        </div>
-        <div class="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-           <svg class="text-blue-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></svg> 
-           File Tetap di Device
-        </div>
-     </div>
   </div>
 
 </BaseLayout>
 
-<script is:inline>
-  // --- SCRIPT LAMA KITA PAKAI LAGI (Karena Logikanya Sudah Benar) ---
+<script>
   document.addEventListener('astro:page-load', () => {
-    const searchInput = document.getElementById('search-input');
-    const categoryBtns = document.querySelectorAll('.category-btn');
-    const toolCards = document.querySelectorAll('.tool-card');
-    const toolsGrid = document.getElementById('tools-grid');
-    const noResults = document.getElementById('no-results');
-    const toolCount = document.getElementById('tool-count');
-    const togglePopular = document.getElementById('toggle-popular');
-    const popularTools = document.getElementById('popular-tools');
+    // KITA PAKAI ID BARU DI SINI
+    const searchInput = document.getElementById('pdf-search-input');
+    const categoryBtns = document.querySelectorAll('.pdf-category-btn');
+    const mobileFilter = document.getElementById('pdf-mobile-filter');
+    const toolCards = document.querySelectorAll('.pdf-tool-card');
+    const noResults = document.getElementById('pdf-no-results');
+    const toolCount = document.getElementById('pdf-tool-count');
 
-    if (!toolsGrid) return;
+    // Jika element tidak ada (mungkin karena navigasi ke halaman lain), stop script
+    if (!searchInput || !toolCards.length) return;
 
     let activeCategory = 'all';
     let searchTerm = '';
 
-    updateToolDisplay();
-
-    // 1. Logic Search
-    searchInput.addEventListener('input', (e) => {
-      searchTerm = e.target.value.toLowerCase();
-      updateToolDisplay();
-    });
-
-    // 2. Logic Kategori
-    categoryBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        // Reset Visual Tombol (Kita sesuaikan classnya dengan style baru)
-        categoryBtns.forEach(b => {
-          b.className = 'category-btn px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 border bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-700 hover:text-rose-600';
-        });
-        
-        // Visual Tombol Aktif
-        btn.className = 'category-btn px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 border bg-rose-600 text-white border-rose-600 shadow-md shadow-rose-600/20 transform scale-105';
-        
-        activeCategory = btn.getAttribute('data-category');
-        updateToolDisplay();
-      });
-    });
-
-    // 3. Logic Toggle Popular
-    togglePopular.addEventListener('click', () => {
-      if (popularTools.style.display === 'none') {
-        popularTools.style.display = 'grid';
-        togglePopular.textContent = 'Sembunyiin';
-      } else {
-        popularTools.style.display = 'none';
-        togglePopular.textContent = 'Tampilin';
-      }
-    });
-
-    // 4. Logic Inti Filter
-    function updateToolDisplay() {
-      let visibleCount = 0;
-      
+    function updateDisplay() {
+      let visible = 0;
       toolCards.forEach(card => {
-        const title = card.getAttribute('data-title');
-        const category = card.getAttribute('data-category');
+        const title = card.getAttribute('data-title') || '';
+        const cat = card.getAttribute('data-category') || 'all';
         
-        const matchesSearch = title.includes(searchTerm);
-        const matchesCategory = activeCategory === 'all' || category === activeCategory;
-        
-        if (matchesSearch && matchesCategory) {
-          card.style.display = ''; // Munculin
-          visibleCount++;
+        const matchSearch = title.includes(searchTerm);
+        const matchCat = activeCategory === 'all' || cat === activeCategory;
+
+        if (matchSearch && matchCat) {
+          card.classList.remove('hidden');
+          // Animasi fade in
+          if (!card.classList.contains('animate-fade-in-up')) {
+             card.classList.add('animate-fade-in-up');
+          }
+          visible++;
         } else {
-          card.style.display = 'none'; // Umpetin
+          card.classList.add('hidden');
+          card.classList.remove('animate-fade-in-up');
         }
       });
+
+      if(toolCount) toolCount.textContent = `${visible} tools`;
       
-      // Update angka counter
-      if(toolCount) toolCount.textContent = visibleCount;
-      
-      // Handle Kosong
-      if (visibleCount === 0) {
-        noResults.classList.remove('hidden');
-        noResults.style.display = 'flex';
-        toolsGrid.classList.add('hidden');
+      if (visible === 0) {
+          if(noResults) noResults.classList.remove('hidden');
+          if(noResults) noResults.style.display = 'flex';
       } else {
-        noResults.classList.add('hidden');
-        noResults.style.display = 'none';
-        toolsGrid.classList.remove('hidden');
+          if(noResults) noResults.classList.add('hidden');
       }
     }
+
+    searchInput.addEventListener('input', (e) => {
+      const target = e.target as HTMLInputElement;
+      searchTerm = target.value.toLowerCase();
+      updateDisplay();
+    });
+
+    categoryBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        categoryBtns.forEach(b => {
+             b.className = 'pdf-category-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap border shrink-0 bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400';
+        });
+        
+        btn.className = 'pdf-category-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap border shrink-0 bg-rose-500 text-white border-transparent shadow-md';
+        
+        activeCategory = btn.getAttribute('data-category') || 'all';
+        updateDisplay();
+      });
+    });
+
+    mobileFilter?.addEventListener('change', (e) => {
+        const target = e.target as HTMLSelectElement;
+        activeCategory = target.value;
+        updateDisplay();
+    });
+
+    // Jalankan sekali saat load agar status default benar
+    updateDisplay();
   });
 </script>
 
 <style>
-  /* Custom Scrollbar */
-  .custom-scrollbar::-webkit-scrollbar { height: 4px; }
-  .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
-  .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
+  .animate-fade-in-down { animation: fadeInDown 0.6s ease-out forwards; }
+  .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  
+  @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); scale: 0.95; } to { opacity: 1; transform: translateY(0); scale: 1; } }
 
-  @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 4px;
+    display: block;
   }
-  
-  .animate-fade-in-up {
-    animation: fade-in-up 0.6s ease-out;
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
   }
-  
-  .line-clamp-1 {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+  }
+  .custom-scrollbar {
+     scrollbar-width: thin;
+     scrollbar-color: #cbd5e1 transparent;
   }
 </style>
