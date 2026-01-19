@@ -2,22 +2,20 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolCard from '../components/ToolCard.astro';
 
-// --- 1. DATA KATEGORI TOOLS ---
-// Daftar kategori buat ngelompokin tools, biar gampang nyarinya.
+// --- 1. DATA KATEGORI (Tetap) ---
 const categories = [
-  { id: "popular", name: "🔥 Favorit Saya" },
-  { id: "all", name: "📚 Semua Tools" },
-  { id: "pdf", name: "📄 PDF Tools" },
-  { id: "image", name: "🖼️ Image Tools" },
-  { id: "dev", name: "💻 Developer" },
-  { id: "security", name: "🔒 Security" },
-  { id: "calc", name: "🧮 Calculators" },
-  { id: "utils", name: "⚡ Productivity" },
-  { id: "file", name: "📂 File Tools" }
+  { id: "popular", name: "🔥 Favorit" }, // Nama dipendekkan biar rapi di mobile
+  { id: "all", name: "📚 Semua" },
+  { id: "pdf", name: "📄 PDF" },
+  { id: "image", name: "🖼️ Image" },
+  { id: "dev", name: "💻 Dev" },
+  { id: "security", name: "🔒 Sec" },
+  { id: "calc", name: "🧮 Calc" },
+  { id: "utils", name: "⚡ Utils" },
+  { id: "file", name: "📂 File" }
 ];
 
-// --- 2. DATA SEMUA TOOLS ---
-// Ini daftar lengkap semua tools yang ada. Setiap tool punya info: kategori, deskripsi, link, dll.
+// --- 2. DATA TOOLS (Data Original Kamu) ---
 const allTools = [
   // --- IMAGE TOOLS ---
   { cat: "image", popular: true, title: "Studio Editor", desc: "Edit foto, filter, crop, & color grading ala Snapseed.", href: "/image/editor", color: "pink", icon: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>' },
@@ -88,105 +86,89 @@ const allTools = [
 
 <BaseLayout pageTitle="Dashboard">
   
-  <!-- Loading screen biar keren -->
   <div id="dashboard-loader" class="fixed inset-0 z-[100] bg-slate-50 dark:bg-slate-900 flex flex-col justify-center items-center transition-opacity duration-500">
     <div class="relative w-16 h-16 mb-4">
         <div class="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-800"></div>
-        <div class="absolute inset-0 rounded-full border-4 border-t-indigo-500 animate-spin"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-t-rose-500 animate-spin"></div>
     </div>
-    <p class="text-sm font-bold text-slate-500 animate-pulse">Memuat Tools...</p>
+    <p class="text-sm font-bold text-slate-500 animate-pulse">Menyiapkan Toolbox...</p>
   </div>
 
-  <!-- Hero section yang cakep -->
-  <section class="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12 md:py-20">
-    <div class="absolute inset-0 bg-[url('/grid.svg')] opacity-5 dark:opacity-10"></div>
-    <div class="relative max-w-7xl mx-auto px-4 text-center">
-      <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-cyan-500 rounded-2xl mb-6 shadow-lg shadow-indigo-500/25">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
+  <section class="relative pt-24 pb-16 overflow-hidden">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-gradient-to-b from-rose-50/50 to-transparent dark:from-rose-900/10 pointer-events-none -z-10 rounded-full blur-3xl"></div>
+    
+    <div class="relative max-w-4xl mx-auto px-4 text-center">
+      <div class="inline-flex items-center justify-center p-3 mb-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <div class="bg-gradient-to-br from-rose-500 to-orange-500 text-white p-2 rounded-lg">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
+        </div>
       </div>
       
-      <h1 class="text-4xl md:text-6xl font-extrabold mb-4 text-slate-900 dark:text-white tracking-tight">
-        My <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-cyan-500">Toolbox</span>
+      <h1 class="text-4xl md:text-6xl font-extrabold mb-6 text-slate-900 dark:text-white tracking-tight leading-tight">
+        My <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-orange-600">Toolbox</span>
       </h1>
       
-      <p class="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8">
-        Koleksi tools yang sering saya pakai sehari-hari. Semua berjalan di browser, data aman, dan tentu saja gratis.
+      <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
+        Koleksi tools web utility lengkap. Semuanya berjalan di browser (Client-Side), data kamu aman, dan 100% gratis.
       </p>
       
-      <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-        <button id="explore-btn" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1">
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button id="explore-btn" class="px-8 py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-full shadow-lg shadow-rose-600/20 hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1">
           Jelajahi Tools
         </button>
-        <button id="random-tool-btn" class="px-6 py-3 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 border border-indigo-200 dark:border-slate-700">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+        <button id="random-tool-btn" class="px-8 py-3.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-full shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-700 transition-all duration-200 transform hover:-translate-y-1 flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-rose-500"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
           Tool Acak
         </button>
-      </div>
-      
-      <div class="flex flex-wrap justify-center gap-8 text-sm">
-        <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <span>{allTools.length}+ Tools</span>
-        </div>
-        <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span>100% Aman</span>
-        </div>
-        <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <span>Gratis</span>
-        </div>
       </div>
     </div>
   </section>
 
-  <!-- Section buat tools yang sering dipake -->
-  <section class="max-w-7xl mx-auto px-4 mb-8">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 border border-slate-200 dark:border-slate-700">
-      <div class="flex items-center justify-between mb-4">
+  <section class="max-w-7xl mx-auto px-4 mb-10">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+      <div class="flex items-center justify-between mb-6 border-b border-slate-100 dark:border-slate-700 pb-4">
         <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          Sering Digunakan
+          <span class="flex h-2 w-2 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+          </span>
+          Terakhir Digunakan
         </h2>
-        <button id="clear-recent" class="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+        <button id="clear-recent" class="text-xs font-medium text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
           Hapus Riwayat
         </button>
       </div>
       
       <div id="recent-tools" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        <div class="col-span-full flex flex-col items-center justify-center py-12 text-slate-400 dark:text-slate-500">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-4 opacity-50"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          <p class="font-medium">Belum ada tools yang digunakan</p>
+        <div class="col-span-full flex flex-col items-center justify-center py-8 text-slate-400 dark:text-slate-500 opacity-60">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <p class="text-sm">Belum ada history</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Filter dan search yang nempel di atas -->
-  <div class="sticky top-16 z-40 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md py-4 border-b border-slate-200 dark:border-slate-800 mb-8 transition-all">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row gap-4 items-center">
+  <div class="sticky top-0 z-40 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl border-y border-slate-200 dark:border-slate-800 py-4 mb-10 transition-all shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row gap-4 items-center justify-between">
       
-       <!-- Filter kategori di desktop -->
-       <div class="hidden md:block flex-1 min-w-0 w-full">
-          <div class="flex gap-2 overflow-x-auto py-2 px-1 custom-scrollbar" id="desktop-filters">
+       <div class="hidden md:block flex-1 min-w-0 w-full overflow-hidden">
+          <div class="flex gap-2 overflow-x-auto pb-1 custom-scrollbar" id="desktop-filters">
               {categories.map((cat, index) => (
                  <button 
-                    class={`filter-btn flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all whitespace-nowrap shadow-sm border border-transparent 
+                    class={`filter-btn flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all whitespace-nowrap border
                     ${index === 0 
-                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold scale-105 shadow-md active' 
-                        : 'font-medium text-slate-500 hover:bg-white hover:border-slate-200 dark:hover:bg-slate-800 dark:hover:border-slate-700'}`} 
+                        ? 'bg-rose-600 text-white border-rose-600 shadow-md shadow-rose-600/20 font-bold active' 
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-700'}`} 
                     data-filter={cat.id}
                  >
                     {cat.name}
                  </button>
               ))}
-              <div class="w-4 shrink-0"></div> 
           </div>
        </div>
 
-       <!-- Filter kategori di mobile (dropdown) -->
        <div class="md:hidden w-full relative">
-          <select id="mobile-filter" class="appearance-none cursor-pointer w-full p-3 pr-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold outline-none shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 transition-all">
+          <select id="mobile-filter" class="appearance-none cursor-pointer w-full p-3 pr-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white font-semibold outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all">
               {categories.map(cat => (
                  <option value={cat.id}>{cat.name}</option>
               ))}
@@ -196,11 +178,12 @@ const allTools = [
           </div>
        </div>
 
-       <!-- Search bar -->
-       <div class="relative w-full md:w-64 shrink-0">
-          <input type="text" id="search-input" placeholder="Cari tools..." class="w-full pl-10 pr-4 py-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-all shadow-sm" />
-          <svg class="absolute left-3 top-2.5 w-4 h-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <button id="clear-search" class="hidden absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+       <div class="relative w-full md:w-72 shrink-0 group">
+          <input type="text" id="search-input" placeholder="Cari (tekan Ctrl + K)..." class="w-full pl-11 pr-4 py-2.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none text-sm transition-all shadow-sm text-slate-800 dark:text-white" />
+          <div class="absolute left-4 top-2.5 text-slate-400 group-focus-within:text-rose-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+          <button id="clear-search" class="hidden absolute right-3 top-2.5 text-slate-400 hover:text-rose-500 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
        </div>
@@ -208,22 +191,22 @@ const allTools = [
     </div>
   </div>
 
-  <!-- Grid buat nampilin tools -->
   <div class="max-w-7xl mx-auto px-4 pb-32">
-    <div class="flex justify-between items-center mb-6">
-      <h2 id="results-count" class="text-lg font-bold text-slate-800 dark:text-white">Menampilkan {allTools.filter(t => t.popular).length} tools</h2>
+    <div class="flex justify-between items-center mb-6 px-1">
+      <h2 id="results-count" class="text-lg font-bold text-slate-800 dark:text-white">
+        Menampilkan {allTools.filter(t => t.popular).length} tools
+      </h2>
       <div class="flex items-center gap-2">
-        <span class="text-sm text-slate-500 dark:text-slate-400">Urutkan:</span>
-        <select id="sort-select" class="text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <option value="popular">Populer</option>
-          <option value="name">Nama</option>
-          <option value="recent">Terbaru</option>
+        <span class="text-sm text-slate-500 dark:text-slate-400 hidden sm:inline">Urutkan:</span>
+        <select id="sort-select" class="text-sm bg-transparent border-none font-semibold text-rose-600 dark:text-rose-400 focus:ring-0 cursor-pointer">
+          <option value="popular">🔥 Populer</option>
+          <option value="name">🔤 Nama</option>
+          <option value="recent">✨ Terbaru</option>
         </select>
       </div>
     </div>
     
     <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-       
        {allTools.map((tool) => (
           <div 
             class="tool-item hidden h-full transition-all duration-300" 
@@ -233,6 +216,7 @@ const allTools = [
             data-name={tool.title}
             data-recent="0"
           >
+             {/* Note: Props ToolCard diteruskan apa adanya */}
              <ToolCard 
                 title={tool.title}
                 desc={tool.desc}
@@ -242,34 +226,30 @@ const allTools = [
              />
           </div>
        ))}
-
     </div>
 
-    <!-- State kalo ga ada hasil pencarian -->
-    <div id="empty-state" class="hidden text-center py-20 animate-fade-in">
-       <div class="text-6xl mb-4">
-         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto text-slate-300"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+    <div id="empty-state" class="hidden flex-col items-center justify-center py-24 animate-fade-in">
+       <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-300 dark:text-slate-600">
+         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M8 11h6"/></svg>
        </div>
-       <p class="text-slate-400 text-lg font-medium">Tidak ada tools yang cocok dengan pencarian kamu.</p>
-       <p class="text-slate-500 text-sm mt-2 mb-4">Coba kata kunci lain atau reset filter ya!</p>
-       <button id="reset-search" class="mt-4 px-6 py-2 bg-indigo-100 text-indigo-600 rounded-full font-bold hover:bg-indigo-200 transition-colors">Reset Filter</button>
+       <h3 class="text-xl font-bold text-slate-800 dark:text-white">Tidak ada tools yang cocok</h3>
+       <p class="text-slate-500 mt-2 mb-6">Coba kata kunci lain atau reset filter.</p>
+       <button id="reset-search" class="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full font-bold hover:shadow-lg transition-all transform hover:-translate-y-1">
+         Reset Filter
+       </button>
     </div>
     
-    <!-- Section buat request tools -->
-    <div class="mt-16 text-center">
-      <div class="inline-block p-6 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-md shadow-sm">
-        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Butuh tools lainnya?</h3>
-        <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">
-          Kalau ada request atau ada bug, langsung hubungi saya aja ya!
-        </p>
-        <div class="flex justify-center gap-3">
-          <a href="https://github.com/kandarlubis31" target="_blank" class="p-2 bg-slate-200 dark:bg-slate-700 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-          </a>
-          <a href="https://paklubis.my.id" target="_blank" class="p-2 bg-slate-200 dark:bg-slate-700 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          </a>
-        </div>
+    <div class="mt-20 border-t border-slate-200 dark:border-slate-800 pt-10 text-center">
+      <p class="text-slate-500 dark:text-slate-400 mb-4">Butuh tools custom? Atau nemu bug?</p>
+      <div class="flex justify-center gap-4">
+        <a href="https://github.com/kandarlubis31" target="_blank" class="text-slate-400 hover:text-rose-600 transition-colors">
+          <span class="sr-only">GitHub</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+        </a>
+        <a href="https://paklubis.my.id" target="_blank" class="text-slate-400 hover:text-rose-600 transition-colors">
+          <span class="sr-only">Website</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </a>
       </div>
     </div>
   </div>
@@ -277,6 +257,7 @@ const allTools = [
 </BaseLayout>
 
 <script>
+  // LOGIC TETAP SAMA, HANYA UPDATE CLASS NAME AGAR SESUAI TEMA BARU (ROSE)
   document.addEventListener('astro:page-load', () => {
       
       const dashboardLoader = document.getElementById('dashboard-loader');
@@ -301,40 +282,34 @@ const allTools = [
       let currentSearch = '';
       let currentSort = 'popular';
 
-      // Ambil data tools yang baru dipake dari localStorage
       function getRecentTools() {
         const recent = localStorage.getItem('recentTools');
         return recent ? JSON.parse(recent) : [];
       }
 
-      // Simpen tool yang baru dipake
       function saveToRecent(toolHref) {
         let recent = getRecentTools();
-        // Kalo udah ada, hapus dulu
         recent = recent.filter(t => t.href !== toolHref);
-        // Tambahin di awal
         const tool = Array.from(tools).find(t => t.querySelector('a')?.href === toolHref);
         if (tool) {
           // @ts-ignore
           const title = tool.dataset.name;
           recent.unshift({ href: toolHref, title, timestamp: Date.now() });
-          // Simpen cuma 6 terakhir
           recent = recent.slice(0, 6);
           localStorage.setItem('recentTools', JSON.stringify(recent));
           updateRecentTools();
         }
       }
 
-      // Update tampilan tools yang sering dipake
       function updateRecentTools() {
         const recent = getRecentTools();
         if(!recentTools) return;
 
         if (recent.length === 0) {
           recentTools.innerHTML = `
-            <div class="col-span-full flex flex-col items-center justify-center py-12 text-slate-400 dark:text-slate-500">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-4 opacity-50"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              <p class="font-medium">Belum ada tools yang digunakan</p>
+            <div class="col-span-full flex flex-col items-center justify-center py-8 text-slate-400 dark:text-slate-500 opacity-60">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <p class="text-sm">Belum ada history</p>
             </div>
           `;
           return;
@@ -344,39 +319,35 @@ const allTools = [
           const toolData = Array.from(tools).find(t => t.querySelector('a')?.href === tool.href);
           if (!toolData) return '';
           
-          const card = toolData.querySelector('a'); // ToolCard is an anchor
+          const card = toolData.querySelector('a'); 
+          // Extract icon logic
           // @ts-ignore
           const color = card.querySelector('div').className.match(/bg-(\w+)-100/)?.[1] || 'blue';
           // @ts-ignore
           const icon = card.querySelector('svg')?.innerHTML || '';
           
+          // Style Updated for Recent Items
           return `
-            <a href="${tool.href}" class="group flex flex-col items-center p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+            <a href="${tool.href}" class="group flex flex-col items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-700/30 hover:bg-slate-100 dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all">
               <div class="w-10 h-10 bg-${color}-100 dark:bg-${color}-900/30 text-${color}-600 dark:text-${color}-400 rounded-lg flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
               </div>
-              <span class="text-xs text-slate-600 dark:text-slate-300 text-center truncate w-full font-medium">${tool.title}</span>
+              <span class="text-xs text-slate-600 dark:text-slate-300 text-center truncate w-full font-medium group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">${tool.title}</span>
             </a>
           `;
         }).join('');
       }
 
-      // Update link href pada setiap tool agar membawa parameter kategori saat diklik
       const updateLinkParams = (activeCat) => {
          const cat = activeCat === 'popular' ? '' : activeCat;
          tools.forEach(tool => {
             const link = tool.querySelector('a');
             if(link) {
                const url = new URL(link.href, window.location.origin);
-               if(cat) {
-                  url.searchParams.set('from_cat', cat);
-               } else {
-                  url.searchParams.delete('from_cat');
-               }
+               if(cat) url.searchParams.set('from_cat', cat);
+               else url.searchParams.delete('from_cat');
                link.href = url.toString();
-               
-               // Add click event to track usage
-               link.removeEventListener('click', handleToolClick); // Prevent duplicate listeners
+               link.removeEventListener('click', handleToolClick);
                link.addEventListener('click', handleToolClick);
             }
          });
@@ -385,23 +356,19 @@ const allTools = [
       function handleToolClick(e) {
          // @ts-ignore
          const href = e.currentTarget.href;
-         // Clean params for saving
          const url = new URL(href);
          const cleanHref = url.pathname;
          saveToRecent(cleanHref);
       }
 
-      // Urutin tools
       function sortTools(sortBy) {
         const toolsArray = Array.from(tools);
-        
         switch(sortBy) {
           case 'name':
             // @ts-ignore
             toolsArray.sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
             break;
           case 'recent':
-            // Simple logic: prioritize popular for now, or could use real usage data
             // @ts-ignore
             toolsArray.sort((a, b) => b.dataset.popular.localeCompare(a.dataset.popular)); 
             break;
@@ -417,7 +384,6 @@ const allTools = [
             break;
         }
         
-        // Re-append in sorted order
         const container = document.getElementById('tools-grid');
         if(container) {
             container.innerHTML = '';
@@ -453,17 +419,15 @@ const allTools = [
             }
         });
 
-        // Update results count
         if(resultsCount) resultsCount.textContent = `Menampilkan ${visibleCount} tools`;
 
         if (visibleCount === 0) {
             emptyState?.classList.remove('hidden');
+            emptyState?.classList.add('flex'); // Add flex for centering
         } else {
             emptyState?.classList.add('hidden');
+            emptyState?.classList.remove('flex');
         }
-        
-        // Apply current sort (visual only)
-        // sortTools(currentSort); // Optional: re-sort on filter
       }
 
       function setActiveFilter(filterId) {
@@ -477,9 +441,11 @@ const allTools = [
         filterBtns.forEach(btn => {
             // @ts-ignore
             if(btn.dataset.filter === filterId) {
-                btn.className = "filter-btn active flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md scale-105 border border-transparent transition-all whitespace-nowrap";
+                // ACTIVE STATE (Updated to Rose Theme)
+                btn.className = "filter-btn active flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-rose-600 text-white shadow-md shadow-rose-600/20 scale-105 border border-rose-600 transition-all whitespace-nowrap";
             } else {
-                btn.className = "filter-btn flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-slate-500 hover:bg-white hover:border-slate-200 dark:hover:bg-slate-800 dark:hover:border-slate-700 transition-all whitespace-nowrap border border-transparent";
+                // INACTIVE STATE
+                btn.className = "filter-btn flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-700 transition-all whitespace-nowrap";
             }
         });
 
@@ -489,7 +455,7 @@ const allTools = [
         updateLinkParams(filterId);
       }
 
-      // Event Listeners
+      // --- EVENTS ---
       filterBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             // @ts-ignore
@@ -506,7 +472,6 @@ const allTools = [
         // @ts-ignore
         currentSearch = e.target.value.toLowerCase();
         
-        // Show/hide clear button
         if (currentSearch.length > 0) {
           clearSearchBtn?.classList.remove('hidden');
         } else {
@@ -536,14 +501,13 @@ const allTools = [
       resetSearchBtn?.addEventListener('click', () => {
         if(searchInput) (searchInput as HTMLInputElement).value = '';
         currentSearch = '';
+        clearSearchBtn?.classList.add('hidden');
         setActiveFilter('popular');
       });
 
       clearRecentBtn?.addEventListener('click', () => {
         localStorage.removeItem('recentTools');
         updateRecentTools();
-        // @ts-ignore
-        if(window.showToast) window.showToast('Riwayat tools dihapus', 'success');
       });
 
       exploreBtn?.addEventListener('click', () => {
@@ -551,6 +515,8 @@ const allTools = [
       });
 
       randomToolBtn?.addEventListener('click', () => {
+        // Only select from currently visible tools if filtered, or all if preferred
+        // Let's use allTools to be safe
         const randomIndex = Math.floor(Math.random() * tools.length);
         const randomTool = tools[randomIndex];
         const link = randomTool.querySelector('a');
@@ -559,7 +525,6 @@ const allTools = [
         }
       });
 
-      // Keyboard shortcuts
       document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
           e.preventDefault();
@@ -574,20 +539,12 @@ const allTools = [
         }
       });
 
-      // INIT LOGIC
-      // 1. Update recently used tools
+      // INIT
       updateRecentTools();
-      
-      // 2. Sort Default
       sortTools('popular');
-
-      // 3. Jalankan filter sesuai URL
       setActiveFilter(currentFilter);
-      
-      // 4. Update link params
       updateLinkParams(currentFilter);
       
-      // 5. Hapus Loader (Fade Out) dengan delay minim
       if (dashboardLoader) {
          setTimeout(() => {
              dashboardLoader.classList.add('opacity-0', 'pointer-events-none');
@@ -603,21 +560,9 @@ const allTools = [
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* Custom Scrollbar Cantik untuk Tabs */
-  .custom-scrollbar::-webkit-scrollbar {
-    height: 6px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 20px;
-  }
-  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #334155;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #94a3b8;
-  }
+  .custom-scrollbar::-webkit-scrollbar { height: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 20px; }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #334155; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #cbd5e1; }
 </style>
