@@ -23,12 +23,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </div>
       <h3 class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2">Upload PDF</h3>
       <p class="text-slate-500 text-sm mb-4">Seret file ke sini atau klik untuk memilih</p>
+      <p class="text-xs text-slate-400">Maksimal ukuran file: 15MB</p>
       <input type="file" id="file-input" accept="application/pdf" class="hidden" />
     </div>
 
     <div id="loading" class="hidden flex-col items-center justify-center py-20">
       <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-red-600 mb-4"></div>
       <p class="text-slate-600 dark:text-slate-300 font-semibold animate-pulse">Memuat halaman...</p>
+      <p id="loading-progress" class="text-xs text-slate-500 mt-2">0%</p>
     </div>
 
     <div id="editor-area" class="hidden pb-20">
@@ -36,35 +38,51 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <div class="flex flex-col">
               <span id="selected-count" class="text-sm font-bold text-red-400 bg-red-400/10 px-3 py-1 rounded-lg border border-red-400/20 w-fit">0 Akan Dihapus</span>
               <p id="error-msg" class="text-[10px] text-red-400 mt-1 hidden">*Minimal sisakan 1 halaman</p>
+              <p id="file-info" class="text-xs text-slate-400 mt-1 hidden"></p>
             </div>
             <div class="flex gap-2">
+              <button id="select-all-btn" class="text-sm px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">Pilih Semua</button>
+              <button id="deselect-all-btn" class="text-sm px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">Hapus Pilihan</button>
               <button id="cancel-btn" class="text-sm px-4 py-2 hover:bg-white/10 rounded-lg transition-colors">Batal</button>
               <button id="delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg shadow-red-600/30 transition-all active:scale-95 flex items-center gap-2 border border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
                 Hapus & Simpan PDF
               </button>
             </div>
         </div>
-        <div id="pages-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"></div>
+        <div id="pages-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 relative"></div>
+        <div id="load-more-container" class="hidden text-center mt-8">
+          <button id="load-more-btn" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium py-2 px-4 rounded-lg transition-colors">
+            Muat Lebih Banyak
+          </button>
+        </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
-  import { PDFDocument } from 'pdf-lib';
-
   const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const fileInput = document.getElementById('file-input');
   const loading = document.getElementById('loading');
   const editorArea = document.getElementById('editor-area');
   const pagesGrid = document.getElementById('pages-grid');
-  const deleteBtn = document.getElementById('delete-btn') as HTMLButtonElement;
+  const deleteBtn = document.getElementById('delete-btn');
   const cancelBtn = document.getElementById('cancel-btn');
   const selectedCountSpan = document.getElementById('selected-count');
   const errorMsg = document.getElementById('error-msg');
+  const loadingProgress = document.getElementById('loading-progress');
+  const fileInfo = document.getElementById('file-info');
+  const selectAllBtn = document.getElementById('select-all-btn');
+  const deselectAllBtn = document.getElementById('deselect-all-btn');
+  const loadMoreBtn = document.getElementById('load-more-btn');
+  const loadMoreContainer = document.getElementById('load-more-container');
 
   let currentFile = null;
   let pagesToDelete = new Set(); 
   let totalPages = 0;
+  let loadedPages = 0;
+  let pdfDocument = null;
+  let batchSize = 10; // Jumlah halaman yang dimuat per batch
+  let isLoadingMore = false;
 
   // --- Drag & Drop Handlers ---
   dropZone?.addEventListener('dragover', (e) => {
@@ -93,7 +111,56 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
   });
 
+  // --- Event listeners untuk tombol ---
+  selectAllBtn?.addEventListener('click', () => {
+    if (!pdfDocument) return;
+    
+    // Hanya pilih halaman yang sudah dimuat
+    for (let i = 0; i < Math.min(loadedPages, totalPages); i++) {
+      if (!pagesToDelete.has(i)) {
+        pagesToDelete.add(i);
+        const wrapper = document.querySelector(`[data-page-index="${i}"]`);
+        if (wrapper) {
+          wrapper.classList.add('is-selected');
+          const card = wrapper.querySelector('div');
+          const overlay = wrapper.querySelector('.del-overlay');
+          card.classList.add('border-red-500', 'scale-95');
+          overlay.classList.replace('hidden', 'flex');
+        }
+      }
+    }
+    updateUI();
+  });
+
+  deselectAllBtn?.addEventListener('click', () => {
+    // Hapus semua pilihan
+    pagesToDelete.forEach(index => {
+      const wrapper = document.querySelector(`[data-page-index="${index}"]`);
+      if (wrapper) {
+        wrapper.classList.remove('is-selected');
+        const card = wrapper.querySelector('div');
+        const overlay = wrapper.querySelector('.del-overlay');
+        card.classList.remove('border-red-500', 'scale-95');
+        overlay.classList.replace('flex', 'hidden');
+      }
+    });
+    pagesToDelete.clear();
+    updateUI();
+  });
+
+  loadMoreBtn?.addEventListener('click', () => {
+    if (isLoadingMore || !pdfDocument) return;
+    loadMorePages();
+  });
+
   function handleFile(file) {
+    // Batasi ukuran file (15MB)
+    const maxSize = 15 * 1024 * 1024; // 15MB
+    if (file.size > maxSize) {
+      alert('File terlalu besar. Maksimal ukuran file adalah 15MB.');
+      return;
+    }
+    
     currentFile = file;
     renderThumbnails(file);
   }
@@ -107,56 +174,140 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     editorArea.classList.add('hidden');
     pagesGrid.innerHTML = '';
     pagesToDelete.clear();
+    loadedPages = 0;
+    isLoadingMore = false;
+    
+    // Tampilkan info file
+    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+    fileInfo.textContent = `${file.name} (${fileSize}MB)`;
+    fileInfo.classList.remove('hidden');
     updateUI();
 
     try {
       const arrayBuffer = await file.arrayBuffer();
       // @ts-ignore
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      totalPages = pdf.numPages;
-
-      for (let i = 1; i <= totalPages; i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 0.4 }); // Skala lebih kecil untuk thumbnail biar enteng
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        canvas.className = "w-full h-auto pointer-events-none bg-white";
-
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
-
-        const wrapper = document.createElement('div');
-        wrapper.className = "relative group cursor-pointer transition-all animate-on-scroll";
-        wrapper.onclick = () => toggleDelete(i - 1, wrapper);
-
-        const imgContainer = document.createElement('div');
-        imgContainer.className = "relative bg-white dark:bg-slate-700 rounded-xl overflow-hidden border-4 border-transparent shadow-sm group-hover:shadow-xl transition-all duration-300";
-        
-        const badge = document.createElement('span');
-        badge.className = "absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-1 rounded z-10 shadow-sm";
-        badge.innerText = `${i}`;
-        
-        const deleteOverlay = document.createElement('div');
-        deleteOverlay.className = "absolute inset-0 bg-red-600/40 hidden items-center justify-center z-20 del-overlay backdrop-blur-[2px] transition-all";
-        deleteOverlay.innerHTML = `<div class="bg-red-600 text-white p-2 rounded-full shadow-2xl scale-0 group-[.is-selected]:scale-100 transition-transform"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>`;
-
-        imgContainer.appendChild(badge);
-        imgContainer.appendChild(canvas);
-        imgContainer.appendChild(deleteOverlay);
-        wrapper.appendChild(imgContainer);
-        pagesGrid.appendChild(wrapper);
-      }
-
+      pdfDocument = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      totalPages = pdfDocument.numPages;
+      
+      // Reset UI
+      pagesGrid.innerHTML = '';
+      
+      // Muat batch pertama
+      await loadMorePages();
+      
+      // Tampilkan editor area
       loading.classList.add('hidden');
       loading.classList.remove('flex');
       editorArea.classList.remove('hidden');
+      
+      // Setup Intersection Observer untuk lazy loading
+      setupIntersectionObserver();
+      
     } catch (err) {
       console.error(err);
-      alert("Gagal memuat PDF. File mungkin rusak.");
+      alert("Gagal memuat PDF. File mungkin rusak atau tidak didukung.");
       resetUI();
     }
+  }
+
+  async function loadMorePages() {
+    if (!pdfDocument || isLoadingMore) return;
+    
+    isLoadingMore = true;
+    const startIndex = loadedPages;
+    const endIndex = Math.min(startIndex + batchSize, totalPages);
+    
+    // Update progress
+    const progress = Math.round((endIndex / totalPages) * 100);
+    if (loadingProgress) loadingProgress.textContent = `${progress}%`;
+    
+    // Render halaman dalam batch untuk performa lebih baik
+    const renderPromises = [];
+    for (let i = startIndex; i < endIndex; i++) {
+      renderPromises.push(renderPageThumbnail(pdfDocument, i));
+    }
+    
+    await Promise.all(renderPromises);
+    loadedPages = endIndex;
+    
+    // Sembunyikan tombol load more jika semua halaman sudah dimuat
+    if (loadedPages >= totalPages) {
+      if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
+    } else {
+      if (loadMoreContainer) loadMoreContainer.classList.remove('hidden');
+    }
+    
+    isLoadingMore = false;
+    updateUI();
+  }
+
+  async function renderPageThumbnail(pdfDoc, pageIndex) {
+    try {
+      const page = await pdfDoc.getPage(pageIndex + 1);
+      const viewport = page.getViewport({ scale: 0.4 });
+      
+      // Gunakan canvas yang lebih kecil untuk performa
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      canvas.className = "w-full h-auto pointer-events-none bg-white";
+
+      // Render dengan requestAnimationFrame untuk performa lebih baik
+      await new Promise(resolve => {
+        requestAnimationFrame(async () => {
+          await page.render({ canvasContext: context, viewport }).promise;
+          resolve();
+        });
+      });
+
+      const wrapper = document.createElement('div');
+      wrapper.className = "relative group cursor-pointer transition-all animate-on-scroll";
+      wrapper.setAttribute('data-page-index', pageIndex);
+      wrapper.onclick = () => toggleDelete(pageIndex, wrapper);
+
+      const imgContainer = document.createElement('div');
+      imgContainer.className = "relative bg-white dark:bg-slate-700 rounded-xl overflow-hidden border-4 border-transparent shadow-sm group-hover:shadow-xl transition-all duration-300";
+      
+      const badge = document.createElement('span');
+      badge.className = "absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-1 rounded z-10 shadow-sm";
+      badge.innerText = `${pageIndex + 1}`;
+      
+      const deleteOverlay = document.createElement('div');
+      deleteOverlay.className = "absolute inset-0 bg-red-600/40 hidden items-center justify-center z-20 del-overlay backdrop-blur-[2px] transition-all";
+      deleteOverlay.innerHTML = `<div class="bg-red-600 text-white p-2 rounded-full shadow-2xl scale-0 group-[.is-selected]:scale-100 transition-transform"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>`;
+
+      imgContainer.appendChild(badge);
+      imgContainer.appendChild(canvas);
+      imgContainer.appendChild(deleteOverlay);
+      wrapper.appendChild(imgContainer);
+      pagesGrid.appendChild(wrapper);
+    } catch (error) {
+      console.error(`Error rendering page ${pageIndex}:`, error);
+    }
+  }
+
+  function setupIntersectionObserver() {
+    const options = {
+      root: null,
+      rootMargin: '50px', // Mulai loading 50px sebelum elemen terlihat
+      threshold: 0.1
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Halaman sudah terlihat, tidak perlu melakukan apa-apa
+          // karena kita sudah menggunakan batch loading
+        }
+      });
+    }, options);
+    
+    // Observe semua halaman yang sudah dimuat
+    document.querySelectorAll('[data-page-index]').forEach(page => {
+      observer.observe(page);
+    });
   }
 
   function toggleDelete(index, wrapper) {
@@ -195,10 +346,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   function resetUI() {
     currentFile = null;
     pagesToDelete.clear();
+    pdfDocument = null;
+    loadedPages = 0;
     dropZone?.classList.remove('hidden');
     editorArea?.classList.add('hidden');
     loading?.classList.add('hidden');
     if(fileInput) fileInput.value = '';
+    if(fileInfo) {
+      fileInfo.classList.add('hidden');
+      fileInfo.textContent = '';
+    }
+    if(loadingProgress) loadingProgress.textContent = '0%';
+    if(loadMoreContainer) loadMoreContainer.classList.add('hidden');
   }
 
   cancelBtn?.addEventListener('click', resetUI);
@@ -211,13 +370,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     deleteBtn.disabled = true;
 
     try {
+      // Import pdf-lib secara dinamis untuk mengurangi ukuran bundle awal
+      const { PDFDocument } = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
+      
       const arrayBuffer = await currentFile.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       
       // Penting: Sort descending biar indeksnya nggak berantakan pas dihapus
-      const indicesToDelete = Array.from(pagesToDelete).sort((a, b) => (b as number) - (a as number));
+      const indicesToDelete = Array.from(pagesToDelete).sort((a, b) => b - a);
       for (const idx of indicesToDelete) {
-        pdfDoc.removePage(idx as number);
+        pdfDoc.removePage(idx);
       }
 
       const pdfBytes = await pdfDoc.save();
@@ -244,6 +406,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       alert("Gagal menyimpan PDF.");
     } finally {
       deleteBtn.innerHTML = originalText;
+      deleteBtn.disabled = false;
+    }
+  });
+
+  // Cleanup resources saat halaman ditutup
+  window.addEventListener('beforeunload', () => {
+    if (pdfDocument) {
+      pdfDocument.destroy();
+      pdfDocument = null;
     }
   });
 </script>
@@ -257,5 +428,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Optimasi rendering untuk gambar */
+  .page-thumbnail {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+  }
+  
+  /* Mencegah layout shift saat loading */
+  #pages-grid {
+    min-height: 200px;
   }
 </style>
