@@ -14,11 +14,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <p class="text-slate-600 dark:text-slate-400">Klik pada halaman yang ingin Anda <strong class="text-red-500">HAPUS</strong>.</p>
     </div>
 
-    <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-slate-300 dark:border-slate-600 rounded-3xl p-12 cursor-pointer hover:border-red-500 hover:bg-red-50 dark:hover:bg-slate-800/50 transition-all group text-center animate-on-scroll">
+    <div 
+      id="drop-zone" 
+      class="max-w-2xl mx-auto border-3 border-dashed border-slate-300 dark:border-slate-600 rounded-3xl p-12 cursor-pointer hover:border-red-500 hover:bg-red-50 dark:hover:bg-slate-800/50 transition-all group text-center animate-on-scroll"
+    >
       <div class="w-20 h-20 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
       </div>
       <h3 class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2">Upload PDF</h3>
+      <p class="text-slate-500 text-sm mb-4">Seret file ke sini atau klik untuk memilih</p>
       <input type="file" id="file-input" accept="application/pdf" class="hidden" />
     </div>
 
@@ -26,14 +30,21 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-red-600 mb-4"></div>
       <p class="text-slate-600 dark:text-slate-300 font-semibold animate-pulse">Memuat halaman...</p>
     </div>
+
     <div id="editor-area" class="hidden pb-20">
         <div class="sticky top-20 z-40 mx-auto max-w-4xl bg-slate-900/90 dark:bg-slate-800/90 backdrop-blur-md text-white p-4 rounded-xl shadow-2xl mb-8 flex flex-wrap gap-4 items-center justify-between border border-slate-700/50 ring-1 ring-white/10">
-            <span id="selected-count" class="text-sm font-bold text-red-400 bg-red-400/10 px-3 py-1 rounded-lg border border-red-400/20">0 Akan Dihapus</span>
-            <button id="delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg shadow-red-600/30 transition-all active:scale-95 flex items-center gap-2 border border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
-              Hapus & Simpan PDF
-            </button>
+            <div class="flex flex-col">
+              <span id="selected-count" class="text-sm font-bold text-red-400 bg-red-400/10 px-3 py-1 rounded-lg border border-red-400/20 w-fit">0 Akan Dihapus</span>
+              <p id="error-msg" class="text-[10px] text-red-400 mt-1 hidden">*Minimal sisakan 1 halaman</p>
+            </div>
+            <div class="flex gap-2">
+              <button id="cancel-btn" class="text-sm px-4 py-2 hover:bg-white/10 rounded-lg transition-colors">Batal</button>
+              <button id="delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg shadow-red-600/30 transition-all active:scale-95 flex items-center gap-2 border border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                Hapus & Simpan PDF
+              </button>
+            </div>
         </div>
-        <div id="pages-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"></div>
+        <div id="pages-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"></div>
     </div>
   </div>
 </BaseLayout>
@@ -42,28 +53,54 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   import { PDFDocument } from 'pdf-lib';
 
   const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input');
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
   const loading = document.getElementById('loading');
   const editorArea = document.getElementById('editor-area');
   const pagesGrid = document.getElementById('pages-grid');
-  const deleteBtn = document.getElementById('delete-btn');
+  const deleteBtn = document.getElementById('delete-btn') as HTMLButtonElement;
+  const cancelBtn = document.getElementById('cancel-btn');
   const selectedCountSpan = document.getElementById('selected-count');
+  const errorMsg = document.getElementById('error-msg');
 
   let currentFile = null;
   let pagesToDelete = new Set(); 
   let totalPages = 0;
 
-  dropZone?.addEventListener('click', () => fileInput.click());
+  // --- Drag & Drop Handlers ---
+  dropZone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-red-500', 'bg-red-50', 'dark:bg-slate-800');
+  });
 
-  fileInput?.addEventListener('change', async (e) => {
-    if (fileInput.files && fileInput.files[0]) {
-      currentFile = fileInput.files[0];
-      await renderThumbnails(currentFile);
+  dropZone?.addEventListener('dragleave', () => {
+    dropZone.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-slate-800');
+  });
+
+  dropZone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-slate-800');
+    const files = e.dataTransfer?.files;
+    if (files && files[0]?.type === 'application/pdf') {
+      handleFile(files[0]);
     }
   });
 
+  dropZone?.addEventListener('click', () => fileInput.click());
+
+  fileInput?.addEventListener('change', () => {
+    if (fileInput.files && fileInput.files[0]) {
+      handleFile(fileInput.files[0]);
+    }
+  });
+
+  function handleFile(file) {
+    currentFile = file;
+    renderThumbnails(file);
+  }
+
   async function renderThumbnails(file) {
-    if(!dropZone) return;
+    if(!dropZone || !loading || !editorArea || !pagesGrid) return;
+    
     dropZone.classList.add('hidden');
     loading.classList.remove('hidden');
     loading.classList.add('flex');
@@ -75,38 +112,35 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     try {
       const arrayBuffer = await file.arrayBuffer();
       // @ts-ignore
-      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       totalPages = pdf.numPages;
-
-      loading.classList.add('hidden');
-      loading.classList.remove('flex');
-      editorArea.classList.remove('hidden');
 
       for (let i = 1; i <= totalPages; i++) {
         const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 0.8 });
+        const viewport = page.getViewport({ scale: 0.4 }); // Skala lebih kecil untuk thumbnail biar enteng
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
+        
         canvas.height = viewport.height;
         canvas.width = viewport.width;
-        canvas.className = "w-full h-auto pointer-events-none bg-white opacity-100 transition-opacity duration-300";
+        canvas.className = "w-full h-auto pointer-events-none bg-white";
 
         await page.render({ canvasContext: context, viewport: viewport }).promise;
 
         const wrapper = document.createElement('div');
-        wrapper.className = "relative group cursor-pointer transition-all";
+        wrapper.className = "relative group cursor-pointer transition-all animate-on-scroll";
         wrapper.onclick = () => toggleDelete(i - 1, wrapper);
 
         const imgContainer = document.createElement('div');
-        imgContainer.className = "relative bg-slate-200 dark:bg-slate-700 rounded-lg overflow-hidden border-4 border-transparent shadow-md transition-all";
+        imgContainer.className = "relative bg-white dark:bg-slate-700 rounded-xl overflow-hidden border-4 border-transparent shadow-sm group-hover:shadow-xl transition-all duration-300";
         
         const badge = document.createElement('span');
         badge.className = "absolute top-2 left-2 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-1 rounded z-10 shadow-sm";
         badge.innerText = `${i}`;
         
         const deleteOverlay = document.createElement('div');
-        deleteOverlay.className = "absolute inset-0 bg-red-900/60 hidden items-center justify-center z-20 del-overlay backdrop-blur-sm";
-        deleteOverlay.innerHTML = `<div class="bg-red-600 text-white p-3 rounded-full shadow-lg"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>`;
+        deleteOverlay.className = "absolute inset-0 bg-red-600/40 hidden items-center justify-center z-20 del-overlay backdrop-blur-[2px] transition-all";
+        deleteOverlay.innerHTML = `<div class="bg-red-600 text-white p-2 rounded-full shadow-2xl scale-0 group-[.is-selected]:scale-100 transition-transform"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>`;
 
         imgContainer.appendChild(badge);
         imgContainer.appendChild(canvas);
@@ -114,9 +148,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         wrapper.appendChild(imgContainer);
         pagesGrid.appendChild(wrapper);
       }
+
+      loading.classList.add('hidden');
+      loading.classList.remove('flex');
+      editorArea.classList.remove('hidden');
     } catch (err) {
       console.error(err);
-      window.showToast("Gagal memuat PDF. File mungkin rusak.", "error");
+      alert("Gagal memuat PDF. File mungkin rusak.");
+      resetUI();
     }
   }
 
@@ -126,56 +165,97 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     
     if (pagesToDelete.has(index)) {
       pagesToDelete.delete(index);
-      card.classList.remove('border-red-500');
-      card.classList.add('border-transparent');
-      overlay.classList.remove('flex');
-      overlay.classList.add('hidden');
+      wrapper.classList.remove('is-selected');
+      card.classList.remove('border-red-500', 'scale-95');
+      overlay.classList.replace('flex', 'hidden');
     } else {
       pagesToDelete.add(index);
-      card.classList.remove('border-transparent');
-      card.classList.add('border-red-500');
-      overlay.classList.remove('hidden');
-      overlay.classList.add('flex');
+      wrapper.classList.add('is-selected');
+      card.classList.add('border-red-500', 'scale-95');
+      overlay.classList.replace('hidden', 'flex');
     }
     updateUI();
   }
 
   function updateUI() {
     if(selectedCountSpan) selectedCountSpan.innerText = `${pagesToDelete.size} Akan Dihapus`;
-    if(deleteBtn) deleteBtn.disabled = pagesToDelete.size === 0 || pagesToDelete.size === totalPages;
+    
+    const isAllSelected = pagesToDelete.size === totalPages;
+    const isNoneSelected = pagesToDelete.size === 0;
+
+    if(deleteBtn) {
+      deleteBtn.disabled = isNoneSelected || isAllSelected;
+    }
+
+    if(errorMsg) {
+      isAllSelected ? errorMsg.classList.remove('hidden') : errorMsg.classList.add('hidden');
+    }
   }
+
+  function resetUI() {
+    currentFile = null;
+    pagesToDelete.clear();
+    dropZone?.classList.remove('hidden');
+    editorArea?.classList.add('hidden');
+    loading?.classList.add('hidden');
+    if(fileInput) fileInput.value = '';
+  }
+
+  cancelBtn?.addEventListener('click', resetUI);
 
   deleteBtn?.addEventListener('click', async () => {
     if (!currentFile || pagesToDelete.size === 0) return;
 
     const originalText = deleteBtn.innerHTML;
-    deleteBtn.innerHTML = "Menghapus...";
+    deleteBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memproses...`;
     deleteBtn.disabled = true;
 
     try {
       const arrayBuffer = await currentFile.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       
-      const indicesToDelete = Array.from(pagesToDelete).sort((a, b) => b - a);
+      // Penting: Sort descending biar indeksnya nggak berantakan pas dihapus
+      const indicesToDelete = Array.from(pagesToDelete).sort((a, b) => (b as number) - (a as number));
       for (const idx of indicesToDelete) {
-        pdfDoc.removePage(idx);
+        pdfDoc.removePage(idx as number);
       }
 
       const pdfBytes = await pdfDoc.save();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = url;
       link.download = `cleaned-${currentFile.name}`;
+      document.body.appendChild(link);
       link.click();
+      
+      // Cleanup memori
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
 
-      window.showToast("Halaman berhasil dihapus!", "success");
+      alert("Halaman berhasil dihapus!");
+      resetUI();
 
     } catch (err) {
       console.error(err);
-      window.showToast("Gagal menyimpan PDF.", "error");
+      alert("Gagal menyimpan PDF.");
     } finally {
       deleteBtn.innerHTML = originalText;
-      deleteBtn.disabled = false;
     }
   });
 </script>
+
+<style>
+  /* Animasi dikit biar cakep */
+  .animate-on-scroll {
+    animation: fadeInUp 0.5s ease forwards;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
