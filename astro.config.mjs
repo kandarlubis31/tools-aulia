@@ -4,7 +4,7 @@ import vercel from '@astrojs/vercel';
 import AstroPWA from '@vite-pwa/astro';
 
 export default defineConfig({
-  output: 'hybrid',
+  output: "static",
   adapter: vercel({
     webAnalytics: { enabled: true }
   }),
