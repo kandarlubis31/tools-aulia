@@ -30,7 +30,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        navigateFallback: '/404',
+        navigateFallback: '/404.html',
         globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
         runtimeCaching: [
           {
@@ -38,13 +38,8 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: {
               cacheName: 'cdnjs-cache',
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24 * 365 
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] }
             }
           },
           {
@@ -52,13 +47,8 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: {
               cacheName: 'jsdelivr-cache',
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24 * 365
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] }
             }
           },
           {
@@ -66,20 +56,15 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: {
               cacheName: 'unpkg-cache',
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24 * 365
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] }
             }
           }
         ]
       },
       devOptions: {
         enabled: true,
-        navigateFallbackAllowlist: [/^\/404$/],
+        navigateFallbackAllowlist: [/^\/404\.html$/],
       },
     })
   ],
