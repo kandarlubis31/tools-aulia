@@ -10,7 +10,7 @@ export default defineConfig({
     tailwind(),
     AstroPWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.svg', 'grid.svg', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
         name: 'Tools Pak Lubis',
         short_name: 'PakLubis Tools',
@@ -30,6 +30,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
         globIgnores: ["**/404.html", "**/404/index.html"],
+        cleanUrls: true,
+        navigateFallback: '/',
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/cdnjs\.cloudflare\.com\/.*/i,
