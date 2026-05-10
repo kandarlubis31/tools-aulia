@@ -29,6 +29,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
+        globIgnores: ["**/404.html", "**/404/index.html"],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/cdnjs\.cloudflare\.com\/.*/i,
