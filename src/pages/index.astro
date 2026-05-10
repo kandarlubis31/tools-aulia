@@ -259,16 +259,15 @@ const allTools = [
 
         recentSection.classList.remove('hidden');
         recentToolsContainer.innerHTML = recent.map(item => {
-            const toolEl = Array.from(tools).find(t => t.querySelector('a')?.getAttribute('href')?.split('?')[0] === item.href);
-            let color = 'indigo';
-            let icon = '';
+            let color = item.color || 'indigo';
+            let icon = item.icon || '';
             
-            if(toolEl) {
-                // Get Color & Icon safely from data attributes
-                color = toolEl.getAttribute('data-color') || 'indigo';
-                
-                // Get icon from data attribute
-                icon = toolEl.getAttribute('data-icon') || '';
+            if (!icon) {
+                const toolEl = Array.from(tools).find(t => t.querySelector('a')?.getAttribute('href')?.split('?')[0] === item.href);
+                if(toolEl) {
+                    color = toolEl.getAttribute('data-color') || 'indigo';
+                    icon = toolEl.getAttribute('data-icon') || '';
+                }
             }
 
             return `
@@ -282,10 +281,10 @@ const allTools = [
         }).join('');
       }
 
-      function saveToRecent(href, title) {
+      function saveToRecent(href, title, color, icon) {
          let recent = getRecentTools();
          recent = recent.filter(t => t.href !== href);
-         recent.unshift({ href, title });
+         recent.unshift({ href, title, color, icon });
          recent = recent.slice(0, 6);
          localStorage.setItem('recentTools', JSON.stringify(recent));
          updateRecentDisplay();
@@ -294,10 +293,12 @@ const allTools = [
       tools.forEach(tool => {
          const link = tool.querySelector('a');
          if(link) {
-            link.addEventListener('click', (e) => {
+            link.addEventListener('click', () => {
                 const href = link.getAttribute('href')?.split('?')[0]; 
-                const title = tool.dataset.name;
-                if(href && title) saveToRecent(href, title);
+                const title = tool.getAttribute('data-name');
+                const color = tool.getAttribute('data-color');
+                const icon = tool.getAttribute('data-icon');
+                if(href && title) saveToRecent(href, title, color, icon);
             });
          }
       });
@@ -326,16 +327,16 @@ const allTools = [
 
         if(currentSort === 'name') {
             toolsArray.sort((a, b) => {
-                const nameA = a.dataset.name || '';
-                const nameB = b.dataset.name || '';
+                const nameA = a.getAttribute('data-name') || '';
+                const nameB = b.getAttribute('data-name') || '';
                 return nameA.localeCompare(nameB);
             });
         } else {
              toolsArray.sort((a, b) => {
-                 const aPop = a.dataset.popular === 'true' ? 1 : 0;
-                 const bPop = b.dataset.popular === 'true' ? 1 : 0;
-                 const nameA = a.dataset.name || '';
-                 const nameB = b.dataset.name || '';
+                 const aPop = a.getAttribute('data-popular') === 'true' ? 1 : 0;
+                 const bPop = b.getAttribute('data-popular') === 'true' ? 1 : 0;
+                 const nameA = a.getAttribute('data-name') || '';
+                 const nameB = b.getAttribute('data-name') || '';
                  return bPop - aPop || nameA.localeCompare(nameB);
              });
         }
@@ -346,9 +347,9 @@ const allTools = [
         }
 
         toolsArray.forEach((tool, index) => {
-            const cat = tool.dataset.cat;
-            const isPopular = tool.dataset.popular === 'true'; 
-            const title = tool.dataset.title || '';
+            const cat = tool.getAttribute('data-cat');
+            const isPopular = tool.getAttribute('data-popular') === 'true'; 
+            const title = tool.getAttribute('data-title') || '';
             
             let matchFilter = 
                 currentFilter === 'all' || 
@@ -375,8 +376,8 @@ const allTools = [
         if(resultsCountTitle) {
             if(currentSearch) resultsCountTitle.textContent = `Hasil: ${visibleCount} tools`;
             else {
-                const catName = Array.from(filterBtns).find(b => b.getAttribute('data-filter') === currentFilter)?.textContent?.trim() || 'Tools';
-                resultsCountTitle.textContent = catName;
+                const activeBtn = Array.from(filterBtns).find(b => b.getAttribute('data-filter') === currentFilter);
+                resultsCountTitle.textContent = activeBtn ? activeBtn.textContent.trim() : 'Tools';
             }
         }
 
@@ -397,7 +398,7 @@ const allTools = [
         window.history.replaceState({}, '', newUrl);
 
         filterBtns.forEach(btn => {
-            if(btn.dataset.filter === filterId) {
+            if(btn.getAttribute('data-filter') === filterId) {
                 btn.className = "filter-btn px-5 py-1.5 rounded-full text-sm font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md transform scale-105 border-transparent transition-all whitespace-nowrap shrink-0";
             } else {
                 btn.className = "filter-btn px-5 py-1.5 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border-transparent transition-all whitespace-nowrap shrink-0";

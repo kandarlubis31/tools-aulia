@@ -3,8 +3,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="PDF to Markdown Converter">
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
   <div class="max-w-5xl mx-auto px-4 py-12 min-h-[85vh]">
     
     <div class="text-center mb-10">
@@ -17,18 +15,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         PDF to Markdown
       </h1>
       <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-lg">
-        Ekstrak teks dari PDF dan ubah menjadi format Markdown secara instan.
+        Ekstrak teks dari PDF secara Background Process (Tanpa Lag).
       </p>
     </div>
 
     <div class="grid grid-cols-1 gap-8">
-      
-      <div id="drop-zone" class="bg-white dark:bg-slate-800 p-10 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-center hover:border-orange-500 dark:hover:border-orange-400 transition-all cursor-pointer group relative">
+      <div id="drop-zone" class="bg-white dark:bg-slate-800 p-10 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-center hover:border-orange-500 transition-all cursor-pointer group relative">
         <input type="file" id="file-input" accept="application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
         <div class="pointer-events-none">
           <span class="text-5xl mb-4 block">📄</span>
           <h3 class="text-xl font-bold text-slate-700 dark:text-slate-200">Pilih atau Tarik File PDF</h3>
-          <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">Data diproses lokal, privasi 100% aman.</p>
+          <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">Data diproses lokal di Web Worker.</p>
         </div>
       </div>
 
@@ -38,8 +35,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <span>📝</span> Hasil Markdown
           </h2>
           <div class="flex gap-2">
-            <button id="copy-btn" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg hover:bg-slate-200 transition-all tracking-wide">📋 COPY</button>
-            <button id="download-btn" class="px-4 py-2 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 tracking-wide">📥 DOWNLOAD .MD</button>
+            <button id="copy-btn" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg hover:bg-slate-200 transition-all">📋 COPY</button>
+            <button id="download-btn" class="px-4 py-2 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20">📥 DOWNLOAD .MD</button>
           </div>
         </div>
         
@@ -47,13 +44,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <textarea id="output-text" class="w-full h-[500px] p-6 bg-transparent text-orange-100 font-mono text-sm leading-relaxed outline-none resize-none" spellcheck="false"></textarea>
         </div>
       </div>
-
     </div>
 
     <div id="loader" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center">
       <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl text-center max-w-xs w-full mx-4">
         <div class="w-12 h-12 border-4 border-slate-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
-        <p id="progress-text" class="font-bold text-slate-700 dark:text-slate-200">Membaca PDF...</p>
+        <p id="progress-text" class="font-bold text-slate-700 dark:text-slate-200">Menyiapkan Worker...</p>
       </div>
     </div>
 
@@ -61,7 +57,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script is:inline>
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('astro:page-load', () => {
     const fileInput = document.getElementById('file-input');
     const dropZone = document.getElementById('drop-zone');
     const resultContainer = document.getElementById('result-container');
@@ -71,65 +67,48 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const copyBtn = document.getElementById('copy-btn');
     const downloadBtn = document.getElementById('download-btn');
 
-    // Konfigurasi PDF.js Worker via CDN
-    const pdfjsLib = window['pdfjs-dist/build/pdf'];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-    // 1. Handle File Selection
     fileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
-      if (file && file.type === 'application/pdf') {
-        processPDF(file);
-      }
-    });
+      if (!file || file.type !== 'application/pdf') return;
 
-    // 2. Core Logic: Extract Text & Format to MD
-    async function processPDF(file) {
       loader.classList.remove('hidden');
       resultContainer.classList.add('hidden');
+      progressText.innerText = 'Mengirim data ke Worker...';
+
+      // Baca file sebagai ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+
+      // Panggil Web Worker
+      const worker = new Worker('/workers/pdf-to-md-worker.js');
       
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        let fullMarkdown = `# ${file.name.replace('.pdf', '')}\n\n`;
-
-        for (let i = 1; i <= pdf.numPages; i++) {
-          progressText.innerText = `Memproses Halaman ${i} dari ${pdf.numPages}...`;
-          
-          const page = await pdf.getPage(i);
-          const textContent = await page.getTextContent();
-          
-          let lastY;
-          let pageText = '';
-          
-          // Parsing teks halaman
-          textContent.items.forEach(item => {
-            // Deteksi baris baru berdasarkan koordinat Y
-            if (lastY !== item.transform[5] && lastY !== undefined) {
-              pageText += '\n';
-            }
-            pageText += item.str;
-            lastY = item.transform[5];
-          });
-
-          fullMarkdown += `## Halaman ${i}\n\n${pageText}\n\n---\n\n`;
-        }
-
-        outputText.value = fullMarkdown;
-        resultContainer.classList.remove('hidden');
-        dropZone.classList.add('hidden');
+      // Terima respon dari worker
+      worker.onmessage = function(event) {
+        const data = event.data;
         
-        if (window.showToast) window.showToast('Berhasil dikonversi!');
-      } catch (err) {
-        console.error(err);
-        alert('Gagal memproses file PDF.');
-      } finally {
-        loader.classList.add('hidden');
-        fileInput.value = ''; // Reset input
-      }
-    }
+        if (data.type === 'progress') {
+            progressText.innerText = `Memproses Halaman ${data.current} dari ${data.total}...`;
+        } 
+        else if (data.type === 'done') {
+            outputText.value = data.result;
+            resultContainer.classList.remove('hidden');
+            dropZone.classList.add('hidden');
+            loader.classList.add('hidden');
+            worker.terminate(); // Matikan worker setelah selesai
+            if (window.showToast) window.showToast('Berhasil dikonversi!');
+        } 
+        else if (data.type === 'error') {
+            console.error(data.error);
+            if (window.showToast) window.showToast('Gagal memproses file.', 'error');
+            loader.classList.add('hidden');
+            worker.terminate();
+        }
+      };
 
-    // 3. Copy & Download Actions
+      // Kirim data ke worker
+      worker.postMessage({ fileData: arrayBuffer, fileName: file.name });
+      fileInput.value = ''; 
+    });
+
     copyBtn.addEventListener('click', () => {
       outputText.select();
       document.execCommand('copy');
@@ -141,25 +120,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `pdf-to-markdown-${Date.now()}.md`;
+      link.download = `pdf-to-md-${Date.now()}.md`;
       link.click();
       URL.revokeObjectURL(url);
     });
 
-    // Drag & Drop Styling
-    ['dragover', 'dragenter'].forEach(evt => {
-      dropZone.addEventListener(evt, () => dropZone.classList.add('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10'));
-    });
-    ['dragleave', 'dragend', 'drop'].forEach(evt => {
-      dropZone.addEventListener(evt, () => dropZone.classList.remove('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10'));
-    });
+    ['dragover', 'dragenter'].forEach(evt => dropZone.addEventListener(evt, () => dropZone.classList.add('border-orange-500', 'bg-orange-50')));
+    ['dragleave', 'dragend', 'drop'].forEach(evt => dropZone.addEventListener(evt, () => dropZone.classList.remove('border-orange-500', 'bg-orange-50')));
   });
 </script>
 
 <style>
-  @keyframes fade-in {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   .animate-fade-in { animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 </style>
