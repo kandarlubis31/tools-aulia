@@ -30,7 +30,6 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
         globIgnores: ["**/404.html", "**/404/index.html"],
-        cleanUrls: true,
         navigateFallback: '/',
         runtimeCaching: [
           {
