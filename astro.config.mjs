@@ -5,9 +5,7 @@ import AstroPWA from '@vite-pwa/astro';
 
 export default defineConfig({
   output: "static",
-  adapter: vercel({
-    webAnalytics: { enabled: true }
-  }),
+  adapter: vercel(),
   integrations: [
     tailwind(),
     AstroPWA({
@@ -30,7 +28,6 @@ export default defineConfig({
         ]
       },
       workbox: {
-        navigateFallback: '/404.html',
         globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
         runtimeCaching: [
           {
@@ -63,8 +60,7 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true,
-        navigateFallbackAllowlist: [/^\/404\.html$/],
+        enabled: true
       },
     })
   ],
