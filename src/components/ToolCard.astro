@@ -10,39 +10,32 @@ interface Props {
 
 const { title, desc, href, icon, color, isSoon = false } = Astro.props;
 
-// 1. Mapping Warna (Aman & Terbaca)
 const themeMap: Record<string, { border: string; iconBg: string; iconText: string; titleHover: string }> = {
   blue:    { border: "hover:border-blue-500",    iconBg: "bg-blue-100 dark:bg-blue-900/40",    iconText: "text-blue-600 dark:text-blue-400",    titleHover: "group-hover:text-blue-600" },
   emerald: { border: "hover:border-emerald-500", iconBg: "bg-emerald-100 dark:bg-emerald-900/40", iconText: "text-emerald-600 dark:text-emerald-400", titleHover: "group-hover:text-emerald-600" },
-  amber:   { border: "hover:border-amber-500",   iconBg: "bg-amber-100 dark:bg-amber-900/40",   iconText: "text-amber-600 dark:text-amber-400",   titleHover: "group-hover:text-amber-600" },
-  fuchsia: { border: "hover:border-fuchsia-500", iconBg: "bg-fuchsia-100 dark:bg-fuchsia-900/40", iconText: "text-fuchsia-600 dark:text-fuchsia-400", titleHover: "group-hover:text-fuchsia-600" },
   rose:    { border: "hover:border-rose-500",    iconBg: "bg-rose-100 dark:bg-rose-900/40",    iconText: "text-rose-600 dark:text-rose-400",    titleHover: "group-hover:text-rose-600" },
+  sky:     { border: "hover:border-sky-500",     iconBg: "bg-sky-100 dark:bg-sky-900/40",     iconText: "text-sky-600 dark:text-sky-400",     titleHover: "group-hover:text-sky-600" },
   indigo:  { border: "hover:border-indigo-500",  iconBg: "bg-indigo-100 dark:bg-indigo-900/40",  iconText: "text-indigo-600 dark:text-indigo-400",  titleHover: "group-hover:text-indigo-600" },
-  cyan:    { border: "hover:border-cyan-500",    iconBg: "bg-cyan-100 dark:bg-cyan-900/40",    iconText: "text-cyan-600 dark:text-cyan-400",    titleHover: "group-hover:text-cyan-600" },
-  orange:  { border: "hover:border-orange-500",  iconBg: "bg-orange-100 dark:bg-orange-900/40",  iconText: "text-orange-600 dark:text-orange-400",  titleHover: "group-hover:text-orange-600" },
-  teal:    { border: "hover:border-teal-500",    iconBg: "bg-teal-100 dark:bg-teal-900/40",    iconText: "text-teal-600 dark:text-teal-400",    titleHover: "group-hover:text-teal-600" },
-  lime:    { border: "hover:border-lime-500",    iconBg: "bg-lime-100 dark:bg-lime-900/40",    iconText: "text-lime-600 dark:text-lime-400",    titleHover: "group-hover:text-lime-600" },
+  amber:   { border: "hover:border-amber-500",   iconBg: "bg-amber-100 dark:bg-amber-900/40",   iconText: "text-amber-600 dark:text-amber-400",   titleHover: "group-hover:text-amber-600" },
   violet:  { border: "hover:border-violet-500",  iconBg: "bg-violet-100 dark:bg-violet-900/40",  iconText: "text-violet-600 dark:text-violet-400",  titleHover: "group-hover:text-violet-600" },
   pink:    { border: "hover:border-pink-500",    iconBg: "bg-pink-100 dark:bg-pink-900/40",    iconText: "text-pink-600 dark:text-pink-400",    titleHover: "group-hover:text-pink-600" },
-  purple:  { border: "hover:border-purple-500",  iconBg: "bg-purple-100 dark:bg-purple-900/40",  iconText: "text-purple-600 dark:text-purple-400",  titleHover: "group-hover:text-purple-600" },
-  sky:     { border: "hover:border-sky-500",     iconBg: "bg-sky-100 dark:bg-sky-900/40",     iconText: "text-sky-600 dark:text-sky-400",     titleHover: "group-hover:text-sky-600" },
-  gray:    { border: "hover:border-slate-400",   iconBg: "bg-slate-100 dark:bg-slate-700",     iconText: "text-slate-500 dark:text-slate-400", titleHover: "group-hover:text-slate-600" }
+  teal:    { border: "hover:border-teal-500",    iconBg: "bg-teal-100 dark:bg-teal-900/40",    iconText: "text-teal-600 dark:text-teal-400",    titleHover: "group-hover:text-teal-600" },
+  orange:  { border: "hover:border-orange-500",  iconBg: "bg-orange-100 dark:bg-orange-900/40",  iconText: "text-orange-600 dark:text-orange-400",  titleHover: "group-hover:text-orange-600" },
+  cyan:    { border: "hover:border-cyan-500",    iconBg: "bg-cyan-100 dark:bg-cyan-900/40",    iconText: "text-cyan-600 dark:text-cyan-400",    titleHover: "group-hover:text-cyan-600" },
+  lime:    { border: "hover:border-lime-500",    iconBg: "bg-lime-100 dark:bg-lime-900/40",    iconText: "text-lime-600 dark:text-lime-400",    titleHover: "group-hover:text-lime-600" },
+  yellow:  { border: "hover:border-yellow-500",  iconBg: "bg-yellow-100 dark:bg-yellow-900/40",  iconText: "text-yellow-600 dark:text-yellow-400",  titleHover: "group-hover:text-yellow-600" },
 };
 
-// Fallback ke 'blue' jika warna tidak ditemukan
 const theme = themeMap[color] || themeMap.blue;
 
-// 2. Logic Style Container
 const containerClasses = isSoon
   ? "opacity-60 cursor-not-allowed hover:border-slate-200 dark:hover:border-slate-700"
   : `hover:shadow-xl hover:-translate-y-1 ${theme.border}`;
 
-// 3. Logic Style Icon
 const iconClasses = isSoon
   ? "bg-slate-100 dark:bg-slate-700 text-slate-400"
   : `${theme.iconBg} ${theme.iconText} group-hover:scale-110 group-hover:rotate-3`;
 
-// 4. Logic Style Title
 const titleClasses = isSoon
   ? "text-slate-600 dark:text-slate-300"
   : `text-slate-800 dark:text-slate-100 ${theme.titleHover}`;

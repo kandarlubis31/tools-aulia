@@ -1,6 +1,5 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-// import { pwaInfo } from 'virtual:pwa-info'; 
 
 interface Props {
   pageTitle: string;
@@ -18,7 +17,6 @@ const {
   noIndex = false
 } = Astro.props;
 
-// Logic Path Default
 const pathname = Astro.url.pathname;
 const currentPath = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname;
 
@@ -69,7 +67,6 @@ if (isPdfTool) {
   <ClientRouter />
 
   <script is:inline>
-    // Set theme immediately to avoid flash
     const setDarkMode = () => {
       const theme = localStorage.getItem('theme');
       const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -82,7 +79,6 @@ if (isPdfTool) {
       }
     };
     setDarkMode();
-    // Re-run on navigation
     document.addEventListener('astro:after-swap', setDarkMode);
   </script>
 
@@ -93,7 +89,6 @@ if (isPdfTool) {
   <script>
     import { registerSW } from 'virtual:pwa-register';
     
-    // Register SW only once
     registerSW({
       immediate: true,
       onNeedRefresh() {
@@ -130,11 +125,9 @@ if (isPdfTool) {
 <body class="antialiased bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
   
   <div id="toast-container" class="fixed top-24 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
-
   <div id="offline-indicator" class="hidden fixed bottom-0 left-0 w-full bg-rose-600 text-white text-center py-2 text-sm font-bold z-[100] shadow-lg animate-slide-up">
-      ⚠️ Koneksi terputus. Anda sedang offline.
+    ⚠️ Koneksi terputus. Anda sedang offline.
   </div>
-
   <div id="navigation-loading" class="fixed top-0 left-0 w-full h-1 bg-slate-200 dark:bg-slate-800 z-[100] overflow-hidden hidden">
     <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 w-0 transform origin-left transition-all duration-300"></div>
   </div>
@@ -180,23 +173,23 @@ if (isPdfTool) {
         <a href="/" class={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isHome ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400'}`}>Home</a>
         <a href="/pdf" class={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isPdfRoot || isPdfTool ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400'}`}>PDF Tools</a>
         
-        <button id="search-btn" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors">
+        <button id="search-btn" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors" aria-label="Search tools">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         </button>
         
         <div class="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
         
-        <button id="theme-toggle-desktop" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors">
+        <button id="theme-toggle-desktop" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors" aria-label="Toggle theme">
           <svg id="sun-icon" class="hidden dark:block w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
           <svg id="moon-icon" class="block dark:hidden w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         </button>
         
-        <button id="install-pwa-btn" class="hidden p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sky-500 dark:text-sky-400 transition-colors" onclick="installPWA()">
+        <button id="install-pwa-btn" class="hidden p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sky-500 dark:text-sky-400 transition-colors" aria-label="Install app">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </button>
       </nav>
 
-      <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-600 dark:text-slate-300">
+      <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-600 dark:text-slate-300" aria-label="Toggle menu">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
       </button>
     </div>
@@ -217,7 +210,7 @@ if (isPdfTool) {
           </button>
         </div>
         
-        <button id="install-pwa-mobile" class="hidden w-full p-2 rounded-lg bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 font-bold text-sm transition-colors flex items-center justify-center gap-2" onclick="installPWA()">
+        <button id="install-pwa-mobile" class="hidden w-full p-2 rounded-lg bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 font-bold text-sm transition-colors flex items-center justify-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Install App
         </button>
@@ -230,7 +223,7 @@ if (isPdfTool) {
       <div class="p-4 border-b border-slate-200 dark:border-slate-700">
         <div class="relative">
           <input type="text" id="search-modal-input" placeholder="Cari tools..." class="w-full pl-10 pr-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200" autocomplete="off">
-          <button id="close-search" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+          <button id="close-search" class="absolute inset-y-0 right-0 pr-3 flex items-center" aria-label="Close search">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
@@ -266,8 +259,8 @@ if (isPdfTool) {
             Koleksi tools developer sederhana yang berjalan sepenuhnya di browser (Client-Side). Aman, cepat, dan tanpa upload data ke server.
           </p>
           <div class="flex gap-4">
-            <a href="https://github.com/kandarlubis31" target="_blank" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Github</a>
-            <a href="https://paklubis.my.id" target="_blank" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Website</a>
+            <a href="https://github.com/kandarlubis31" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Github</a>
+            <a href="https://paklubis.my.id" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Website</a>
           </div>
         </div>
         <div>
@@ -287,7 +280,6 @@ if (isPdfTool) {
   </footer>
 
   <script is:inline>
-    // --- 1. TOAST SYSTEM ---
     window.showToast = (message, type = 'success') => {
       const container = document.getElementById('toast-container');
       if (!container) return;
@@ -300,10 +292,7 @@ if (isPdfTool) {
       setTimeout(() => { toast.classList.add('translate-x-10', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
     };
 
-    // --- 2. GLOBAL EVENT HANDLERS (Astro Page Load) ---
     document.addEventListener('astro:page-load', () => {
-      
-      // PWA: CUSTOM INSTALL LOGIC
       const pwaModal = document.getElementById('pwa-custom-modal');
       const pwaConfirmBtn = document.getElementById('pwa-confirm-install');
       const pwaCancelBtn = document.getElementById('pwa-cancel-install');
@@ -350,7 +339,6 @@ if (isPdfTool) {
         document.getElementById('install-pwa-mobile')?.classList.remove('hidden');
       });
 
-      // BACK BUTTON LOGIC
       const backBtn = document.getElementById('back-btn');
       const backBtnText = document.getElementById('back-btn-text');
       const urlParams = new URLSearchParams(window.location.search);
@@ -361,7 +349,6 @@ if (isPdfTool) {
          if (backBtnText) backBtnText.innerText = `Kembali ke ${catNames[fromCat] || 'Kategori'}`;
       }
 
-      // OFFLINE CHECKER
       const updateOnlineStatus = () => {
         const indicator = document.getElementById('offline-indicator');
         if (!navigator.onLine) {
@@ -378,21 +365,27 @@ if (isPdfTool) {
       window.addEventListener('offline', updateOnlineStatus);
       if(!navigator.onLine) document.getElementById('offline-indicator')?.classList.remove('hidden');
 
-      // MOBILE MENU & THEME
       const menuBtn = document.getElementById('mobile-menu-btn');
       const mobileMenu = document.getElementById('mobile-menu');
       const mobileLinks = document.querySelectorAll('.mobile-link');
       if (menuBtn && mobileMenu) {
-        // Clone to remove previous event listeners
         const newMenuBtn = menuBtn.cloneNode(true);
-        menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
+        menuBtn.parentNode?.replaceChild(newMenuBtn, menuBtn);
         newMenuBtn.addEventListener('click', (e) => {
-          e.stopPropagation(); mobileMenu.classList.toggle('hidden'); mobileMenu.classList.toggle('flex');
+          e.stopPropagation();
+          mobileMenu.classList.toggle('hidden');
+          mobileMenu.classList.toggle('flex');
         });
         document.addEventListener('click', (e) => {
-           if (!newMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) { mobileMenu.classList.add('hidden'); mobileMenu.classList.remove('flex'); }
+           if (!newMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+             mobileMenu.classList.add('hidden');
+             mobileMenu.classList.remove('flex');
+           }
         });
-        mobileLinks.forEach(link => link.addEventListener('click', () => { mobileMenu.classList.add('hidden'); mobileMenu.classList.remove('flex'); }));
+        mobileLinks.forEach(link => link.addEventListener('click', () => {
+          mobileMenu.classList.add('hidden');
+          mobileMenu.classList.remove('flex');
+        }));
       }
       
       const handleThemeToggle = () => {
@@ -401,49 +394,68 @@ if (isPdfTool) {
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark ? '#0f172a' : '#ffffff');
       };
       
-      // Remove old listeners if any by cloning or simple reassign
       const desktopToggle = document.getElementById('theme-toggle-desktop');
       if(desktopToggle) {
           const newToggle = desktopToggle.cloneNode(true);
-          desktopToggle.parentNode.replaceChild(newToggle, desktopToggle);
+          desktopToggle.parentNode?.replaceChild(newToggle, desktopToggle);
           newToggle.addEventListener('click', handleThemeToggle);
       }
+      
       const mobileToggle = document.getElementById('theme-toggle-mobile');
       if(mobileToggle) {
           const newToggle = mobileToggle.cloneNode(true);
-          mobileToggle.parentNode.replaceChild(newToggle, mobileToggle);
+          mobileToggle.parentNode?.replaceChild(newToggle, mobileToggle);
           newToggle.addEventListener('click', handleThemeToggle);
       }
 
-      // SEARCH MODAL
       const searchBtn = document.getElementById('search-btn');
       const searchModal = document.getElementById('search-modal');
       const searchInput = document.getElementById('search-modal-input');
       const closeSearch = document.getElementById('close-search');
       
-      const openSearch = () => { searchModal?.classList.remove('hidden'); searchInput?.focus(); };
-      const closeSearchModal = () => { searchModal?.classList.add('hidden'); if(searchInput) searchInput.value = ''; };
+      const openSearch = () => {
+        searchModal?.classList.remove('hidden');
+        searchInput?.focus();
+      };
+      const closeSearchModal = () => {
+        searchModal?.classList.add('hidden');
+        if(searchInput) searchInput.value = '';
+      };
       
       if(searchBtn) {
           const newBtn = searchBtn.cloneNode(true);
-          searchBtn.parentNode.replaceChild(newBtn, searchBtn);
+          searchBtn.parentNode?.replaceChild(newBtn, searchBtn);
           newBtn.addEventListener('click', openSearch);
       }
       
       closeSearch?.addEventListener('click', closeSearchModal);
-      searchModal?.addEventListener('click', (e) => { if (e.target === searchModal) closeSearchModal(); });
+      searchModal?.addEventListener('click', (e) => {
+        if (e.target === searchModal) closeSearchModal();
+      });
       document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          openSearch();
+        }
         if (e.key === 'Escape') closeSearchModal();
       });
 
-      // NAV LOADING
       const navLoad = document.getElementById('navigation-loading');
       const navBar = navLoad?.querySelector('div');
       
-      // These events are fired by Astro View Transitions
-      document.addEventListener('astro:after-preparation', () => { navLoad?.classList.remove('hidden'); if(navBar) navBar.style.width = '30%'; });
-      document.addEventListener('astro:after-swap', () => { if(navBar) { navBar.style.width = '100%'; setTimeout(() => { navBar.style.width = '0%'; navLoad?.classList.add('hidden'); }, 300); }});
+      document.addEventListener('astro:after-preparation', () => {
+        navLoad?.classList.remove('hidden');
+        if(navBar) navBar.style.width = '30%';
+      });
+      document.addEventListener('astro:after-swap', () => {
+        if(navBar) {
+          navBar.style.width = '100%';
+          setTimeout(() => {
+            navBar.style.width = '0%';
+            navLoad?.classList.add('hidden');
+          }, 300);
+        }
+      });
     });
   </script>
 </body>
@@ -451,15 +463,28 @@ if (isPdfTool) {
 
 <style is:global>
   html { font-family: 'Inter', system-ui, sans-serif; }
-  /* GLOBAL SCROLLBAR STYLES */
+  
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
   .dark ::-webkit-scrollbar-thumb { background: #334155; }
   
   .animate-fade-in-down { animation: fadeInDown 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-  @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
   .animate-slide-up { animation: slideUp 0.5s ease-out; }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  
+  @keyframes fadeInDown { 
+    from { opacity: 0; transform: translateY(-10px); } 
+    to { opacity: 1; transform: translateY(0); } 
+  }
+  @keyframes fadeInUp { 
+    from { opacity: 0; transform: translateY(20px); scale: 0.95; } 
+    to { opacity: 1; transform: translateY(0); scale: 1; } 
+  }
+  @keyframes slideUp { 
+    from { transform: translateY(100%); } 
+    to { transform: translateY(0); } 
+  }
+  
   .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 </style>
