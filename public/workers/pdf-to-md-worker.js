@@ -1,6 +1,6 @@
-// Load library secara lokal di dalam worker
-importScripts('/lib/pdf.min.js');
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/lib/pdf.worker.min.js';
+// Gunakan CDN agar otomatis di-cache oleh PWA
+importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 self.onmessage = async function(e) {
   try {
@@ -9,7 +9,6 @@ self.onmessage = async function(e) {
     let fullMarkdown = `# ${fileName.replace('.pdf', '')}\n\n`;
 
     for (let i = 1; i <= pdf.numPages; i++) {
-      // Kirim progress ke UI
       self.postMessage({ type: 'progress', current: i, total: pdf.numPages });
       
       const page = await pdf.getPage(i);
@@ -27,7 +26,6 @@ self.onmessage = async function(e) {
       fullMarkdown += `## Halaman ${i}\n\n${pageText}\n\n---\n\n`;
     }
 
-    // Kirim hasil akhir ke UI
     self.postMessage({ type: 'done', result: fullMarkdown });
   } catch (err) {
     self.postMessage({ type: 'error', error: err.message });
