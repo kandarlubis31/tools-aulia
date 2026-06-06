@@ -18,35 +18,35 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
           
           <div class="flex flex-wrap p-1 bg-slate-100 dark:bg-slate-700 rounded-xl mb-8 gap-1">
-            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-600 shadow-sm text-lime-600 dark:text-lime-400 transition-all" data-cat="length">Panjang</button>
-            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="weight">Berat</button>
-            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="temp">Suhu</button>
-            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="volume">Volume</button>
-            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="area">Area</button>
-            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="speed">Kecepatan</button>
-            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="time">Waktu</button>
-            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="data">Data</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-600 shadow-sm text-lime-600 dark:text-lime-400 transition-all" data-cat="length" data-i18n="tab.length">Panjang</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="weight" data-i18n="tab.weight">Berat</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="temp" data-i18n="tab.temperature">Suhu</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="volume" data-i18n="tab.volume">Volume</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="area" data-i18n="tab.area">Area</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="speed" data-i18n="tab.speed">Kecepatan</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="time" data-i18n="label.time">Waktu</button>
+            <button class="tab-btn flex-1 py-2 px-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-all" data-cat="data" data-i18n="tab.data_storage">Data</button>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
               
             <div class="space-y-2">
-              <label class="text-xs font-bold text-slate-500 uppercase">Dari</label>
+              <label class="text-xs font-bold text-slate-500 uppercase" data-i18n="label.from">Dari</label>
               <input type="number" id="input-val" value="1" class="w-full p-4 text-xl font-bold bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-lime-500 focus:ring-2 focus:ring-lime-200 dark:focus:ring-lime-900 transition-all" />
               <select id="select-from" class="w-full p-2 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none focus:border-lime-500"></select>
             </div>
 
             <div class="flex flex-col items-center justify-center gap-4">
-              <button id="swap-btn" class="p-3 bg-lime-100 dark:bg-lime-900/30 rounded-full text-lime-600 hover:bg-lime-200 dark:hover:bg-lime-900/50 transition-colors shadow-sm hover:shadow-md" title="Tukar Satuan (Ctrl+S)">
+              <button id="swap-btn" class="p-3 bg-lime-100 dark:bg-lime-900/30 rounded-full text-lime-600 hover:bg-lime-200 dark:hover:bg-lime-900/50 transition-colors shadow-sm hover:shadow-md" title="Tukar Satuan (Ctrl+S)" data-i18n-attr="title" data-i18n="btn.swap_units">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
               </button>
-              <button id="reverse-btn" class="text-xs text-slate-500 hover:text-lime-600 dark:text-slate-400 dark:hover:text-lime-400 transition-colors" title="Balik Nilai (Ctrl+R)">
+              <button id="reverse-btn" class="text-xs text-slate-500 hover:text-lime-600 dark:text-slate-400 dark:hover:text-lime-400 transition-colors" title="Balik Nilai (Ctrl+R)" data-i18n-attr="title" data-i18n="btn.reverse_conversion">
                 Konversi Terbalik
               </button>
             </div>
 
             <div class="space-y-2">
-              <label class="text-xs font-bold text-slate-500 uppercase">Ke</label>
+              <label class="text-xs font-bold text-slate-500 uppercase" data-i18n="label.to">Ke</label>
               <div class="relative">
                 <input type="number" id="output-val" readonly class="w-full p-4 text-xl font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-500 cursor-not-allowed" />
                 <button id="copy-btn" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-lime-600 dark:hover:text-lime-400 transition-colors" title="Salin Hasil (Ctrl+C)">
@@ -58,18 +58,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
 
           <div id="formula-container" class="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl hidden border border-slate-100 dark:border-slate-700">
-            <p class="text-xs font-bold text-slate-500 uppercase mb-2">Rumus:</p>
+            <p class="text-xs font-bold text-slate-500 uppercase mb-2" data-i18n="text.formula">Rumus:</p>
             <p id="formula-text" class="text-sm text-slate-700 dark:text-slate-300 font-mono break-all"></p>
           </div>
 
           <div id="comparison-container" class="mt-6 hidden">
-            <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Perbandingan Cepat:</p>
+            <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2" data-i18n="text.quick_comparison">Perbandingan Cepat:</p>
             <div id="comparison-table" class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
               <table class="w-full text-sm">
                 <thead class="bg-slate-50 dark:bg-slate-900">
                   <tr>
-                    <th class="text-left py-2 px-3 font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">Satuan</th>
-                    <th class="text-right py-2 px-3 font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">Nilai</th>
+                    <th class="text-left py-2 px-3 font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700" data-i18n="label.unit_name">Satuan</th>
+                    <th class="text-right py-2 px-3 font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700" data-i18n="label.unit_value">Nilai</th>
                   </tr>
                 </thead>
                 <tbody id="comparison-tbody" class="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700"></tbody>
@@ -82,8 +82,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="space-y-6">
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">Favorit</h3>
-            <button id="add-favorite-btn" class="p-1.5 rounded-lg bg-lime-50 text-lime-600 hover:bg-lime-100 dark:bg-lime-900/30 dark:text-lime-400 dark:hover:bg-lime-900/50 transition-colors" title="Tambah ke Favorit (Ctrl+F)">
+            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300" data-i18n="text.favorite_quotes">Favorit</h3>
+            <button id="add-favorite-btn" class="p-1.5 rounded-lg bg-lime-50 text-lime-600 hover:bg-lime-100 dark:bg-lime-900/30 dark:text-lime-400 dark:hover:bg-lime-900/50 transition-colors" title="Tambah ke Favorit (Ctrl+F)" data-i18n-attr="title" data-i18n="btn.favorite">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </button>
           </div>
@@ -94,16 +94,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">Riwayat</h3>
-            <button id="clear-history-btn" class="text-xs font-medium text-slate-500 hover:text-red-500 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700">Hapus Semua</button>
+            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300" data-i18n="common.history">Riwayat</h3>
+            <button id="clear-history-btn" class="text-xs font-medium text-slate-500 hover:text-red-500 transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700" data-i18n="common.clear_all">Hapus Semua</button>
           </div>
           <div id="history-container" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
-            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada riwayat</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4" data-i18n="text.no_history">Belum ada riwayat</p>
           </div>
         </div>
 
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
-          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4">Konversi Umum</h3>
+          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4" data-i18n="text.common_conversions">Konversi Umum</h3>
           <div id="common-conversions" class="space-y-2">
             </div>
         </div>
@@ -267,7 +267,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const comparisonTbody = document.getElementById('comparison-tbody');
 
   // Initialize
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('astro:page-load', () => {
     populateSelects();
     renderHistory();
     renderFavorites();
@@ -473,7 +473,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           selectFrom.value = item.from.unit;
           selectTo.value = item.to.unit;
           convert();
-          window.showToast('Riwayat diterapkan!', 'success');
+          window.showToast(window._tToast ? window._tToast('Riwayat diterapkan!') : 'Riwayat diterapkan!', 'success');
         }
       });
     });
@@ -490,7 +490,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     );
     
     if (exists) {
-      window.showToast('Sudah ada di favorit!', 'info');
+      window.showToast(window._tToast ? window._tToast('Sudah ada di favorit!') : 'Sudah ada di favorit!', 'info');
       return;
     }
     
@@ -506,14 +506,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     favorites.push(favoriteItem);
     localStorage.setItem('conversionFavorites', JSON.stringify(favorites));
     renderFavorites();
-    window.showToast('Ditambahkan ke favorit!', 'success');
+    window.showToast(window._tToast ? window._tToast('Ditambahkan ke favorit!') : 'Ditambahkan ke favorit!', 'success');
   }
 
   function renderFavorites() {
     const currentFavorites = favorites.filter(item => item.category === currentCat);
     
     if (currentFavorites.length === 0) {
-      favoritesContainer.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Tidak ada favorit kategori ini</p>';
+      favoritesContainer.innerHTML = '            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4" data-i18n="text.no_fav_category">Tidak ada favorit kategori ini</p>';
       return;
     }
     
@@ -539,7 +539,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           selectFrom.value = fav.from;
           selectTo.value = fav.to;
           convert();
-          window.showToast('Favorit diterapkan!', 'success');
+          window.showToast(window._tToast ? window._tToast('Favorit diterapkan!') : 'Favorit diterapkan!', 'success');
         }
       });
     });
@@ -551,7 +551,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         favorites = favorites.filter(f => f.id !== id);
         localStorage.setItem('conversionFavorites', JSON.stringify(favorites));
         renderFavorites();
-        window.showToast('Dihapus dari favorit', 'success');
+        window.showToast(window._tToast ? window._tToast('Dihapus dari favorit') : 'Dihapus dari favorit', 'success');
       });
     });
   }
@@ -574,7 +574,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         selectFrom.value = item.dataset.from;
         selectTo.value = item.dataset.to;
         convert();
-        window.showToast('Konversi umum diterapkan!', 'success');
+        window.showToast(window._tToast ? window._tToast('Konversi umum diterapkan!') : 'Konversi umum diterapkan!', 'success');
       });
     });
   }
@@ -612,7 +612,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     selectFrom.value = selectTo.value;
     selectTo.value = temp;
     convert();
-    window.showToast('Satuan ditukar', 'success');
+    window.showToast(window._tToast ? window._tToast('Satuan ditukar') : 'Satuan ditukar', 'success');
   });
 
   reverseBtn.addEventListener('click', () => {
@@ -625,12 +625,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     selectTo.value = tempUnit;
     
     convert();
-    window.showToast('Nilai dibalik', 'success');
+    window.showToast(window._tToast ? window._tToast('Nilai dibalik') : 'Nilai dibalik', 'success');
   });
 
   copyBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(outputVal.value);
-    window.showToast('Hasil disalin!', 'success');
+    window.showToast(window._tToast ? window._tToast('Hasil disalin!') : 'Hasil disalin!', 'success');
   });
 
   addFavoriteBtn.addEventListener('click', addToFavorites);
@@ -639,7 +639,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     conversionHistory = [];
     localStorage.setItem('conversionHistory', JSON.stringify(conversionHistory));
     renderHistory();
-    window.showToast('Riwayat dihapus', 'success');
+    window.showToast(window._tToast ? window._tToast('Riwayat dihapus') : 'Riwayat dihapus', 'success');
   });
 
   // Shortcuts

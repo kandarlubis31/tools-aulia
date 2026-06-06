@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="Code to Image Converter">
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" async></script>
 
   <script type="text/template" id="tpl-card">
 <style>
@@ -194,9 +194,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                <option value="tpl-button">Modern Button</option>
                <option value="tpl-social">Social Post</option>
             </select>
-            <button id="copy-btn" class="text-xs bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 rounded-lg transition-colors">
-              📋 Copy
-            </button>
+            <button id="copy-btn" class="text-xs bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 rounded-lg transition-colors" data-i18n="btn.copy">📋 Copy</button>
           </div>
         </div>
         
@@ -227,9 +225,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 </select>
             </div>
             <div class="flex items-end gap-2">
-                <button id="clear-btn" class="flex-1 py-1.5 text-xs font-bold text-slate-500 hover:text-red-500 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                    Clear
-                </button>
+                <button id="clear-btn" class="flex-1 py-1.5 text-xs font-bold text-slate-500 hover:text-red-500 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-i18n="btn.clear">Clear</button>
             </div>
         </div>
       </div>
@@ -240,9 +236,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <span>👁️</span> Live Preview
           </h2>
           <div class="flex items-center gap-2">
-            <button id="refresh-btn" class="text-xs text-white/90 bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition-colors">
-              Run / Refresh
-            </button>
+            <button id="refresh-btn" class="text-xs text-white/90 bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition-colors" data-i18n="btn.run_refresh">Run / Refresh</button>
             <button id="fullscreen-btn" class="text-xs text-white/90 bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition-colors">
               ⛶
             </button>
@@ -260,7 +254,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <div class="flex gap-3">
                 <button id="download-btn" disabled class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Download Image
+                    <span data-i18n="btn.download_image">Download Image</span>
                 </button>
                 <button id="share-btn" class="px-6 py-3 bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 font-bold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 border border-indigo-200 dark:border-indigo-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
@@ -304,7 +298,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </style>
 
 <script is:inline>
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('astro:page-load', () => {
     // Elements
     const codeInput = document.getElementById('code-input');
     const widthInput = document.getElementById('width-input');
@@ -396,13 +390,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (!iframe) return;
 
       const originalBtnText = downloadBtn.innerHTML;
-      downloadBtn.innerText = "⏳ Rendering...";
+      downloadBtn.innerText = window._tToast ? window._tToast("⏳ Rendering...") : "⏳ Rendering...";
       downloadBtn.setAttribute('disabled', 'true');
 
       const body = iframe.contentWindow.document.body;
 
       if (typeof html2canvas === 'undefined') {
-          showToast('Library not ready. Refreshing...', 'error');
+          // Poll until library loads
+          setTimeout(generateAndDownload, 100);
           return;
       }
 
@@ -430,10 +425,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
           downloadBtn.innerHTML = originalBtnText;
           downloadBtn.removeAttribute('disabled');
-          showToast('Gambar berhasil disimpan!');
+          showToast(window._tToast ? window._tToast('Gambar berhasil disimpan!') : 'Gambar berhasil disimpan!');
       }).catch(err => {
           console.error(err);
-          showToast('Gagal render gambar.', 'error');
+          showToast(window._tToast ? window._tToast('Gagal render gambar.') : 'Gagal render gambar.', 'error');
           downloadBtn.innerHTML = originalBtnText;
           downloadBtn.removeAttribute('disabled');
       });
@@ -469,7 +464,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     copyBtn.addEventListener('click', () => {
         codeInput.select();
         document.execCommand('copy');
-        showToast('Kode berhasil disalin!');
+        showToast(window._tToast ? window._tToast('Kode berhasil disalin!') : 'Kode berhasil disalin!');
     });
 
     // Share API
@@ -478,7 +473,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         if (!iframe) return;
         
         const originalBtnText = shareBtn.innerHTML;
-        shareBtn.innerText = "⏳";
+        shareBtn.innerText = window._tToast ? window._tToast("⏳") : "⏳";
         shareBtn.disabled = true;
 
         try {
@@ -490,9 +485,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 const file = new File([blob], "share.png", { type: "image/png" });
                 if (navigator.share && navigator.canShare({ files: [file] })) {
                     await navigator.share({ files: [file], title: "Code Image" });
-                    showToast('Berhasil dibagikan!');
+                    showToast(window._tToast ? window._tToast('Berhasil dibagikan!') : 'Berhasil dibagikan!');
                 } else {
-                    showToast('Browser tidak support share.', 'error');
+                    showToast(window._tToast ? window._tToast('Browser tidak support share.') : 'Browser tidak support share.', 'error');
                 }
                 shareBtn.innerHTML = originalBtnText;
                 shareBtn.disabled = false;

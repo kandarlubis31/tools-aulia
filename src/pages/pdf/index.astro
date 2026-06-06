@@ -125,11 +125,11 @@ const pdfTools = [
 ];
 
 const categories = [
-  { id: 'all', name: 'Semua' },
-  { id: 'manipulasi', name: 'Manipulasi' },
-  { id: 'editing', name: 'Editing' },
-  { id: 'konversi', name: 'Konversi' },
-  { id: 'security', name: 'Security' },
+  { id: 'all', name: 'Semua', nameKey: 'pdf.all' },
+  { id: 'manipulasi', name: 'Manipulasi', nameKey: 'pdf.manipulation' },
+  { id: 'editing', name: 'Editing', nameKey: 'pdf.editing' },
+  { id: 'konversi', name: 'Konversi', nameKey: 'pdf.conversion' },
+  { id: 'security', name: 'Security', nameKey: 'pdf.security' },
 ];
 
 const popularTools = ['merge', 'compress', 'split', 'rotate'];
@@ -191,6 +191,7 @@ const getColorClass = (color: string) => {
                 ? 'bg-rose-500 text-white border-transparent shadow-md' 
                 : 'bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400'}`}
               data-category={category.id}
+              data-i18n={category.nameKey}
             >
               {category.name}
             </button>
@@ -201,7 +202,7 @@ const getColorClass = (color: string) => {
       <div class="md:hidden w-full relative">
         <select id="pdf-mobile-filter" class="appearance-none w-full py-3 px-4 pr-10 rounded-xl bg-slate-100 dark:bg-slate-900 border-none text-slate-800 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-rose-500 transition-all">
            {categories.map(cat => (
-              <option value={cat.id}>{cat.name}</option>
+              <option value={cat.id} data-i18n={cat.nameKey}>{cat.name}</option>
            ))}
         </select>
         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
@@ -230,7 +231,7 @@ const getColorClass = (color: string) => {
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Sering Dipakai
+          <span data-i18n="pdf.frequently_used">Sering Dipakai</span>
         </h2>
       </div>
       
@@ -252,8 +253,8 @@ const getColorClass = (color: string) => {
     </div>
 
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-bold text-slate-800 dark:text-white">Semua Tools</h2>
-      <span id="pdf-tool-count" class="text-xs font-medium px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-slate-600 dark:text-slate-400">{pdfTools.length} tools</span>
+      <h2 class="text-xl font-bold text-slate-800 dark:text-white" data-i18n="pdf.all_tools">Semua Tools</h2>
+      <span id="pdf-tool-count" class="text-xs font-medium px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-slate-600 dark:text-slate-400">{pdfTools.length} <span data-i18n="pdf.tools_count">tools</span></span>
     </div>
 
     <div id="pdf-tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -286,8 +287,8 @@ const getColorClass = (color: string) => {
        <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-slate-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
        </div>
-       <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2">Tidak ditemukan</h3>
-       <p class="text-slate-500 text-sm">Coba cari dengan kata kunci lain.</p>
+       <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2" data-i18n="pdf.not_found">Tidak ditemukan</h3>
+       <p class="text-slate-500 text-sm" data-i18n="pdf.try_another">Coba cari dengan kata kunci lain.</p>
     </div>
 
     <div class="mt-16 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 rounded-2xl p-6 border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-4">
@@ -295,8 +296,8 @@ const getColorClass = (color: string) => {
          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       </div>
       <div>
-         <h4 class="font-bold text-emerald-800 dark:text-emerald-400">Privasi Dijamin Aman</h4>
-         <p class="text-sm text-emerald-700 dark:text-emerald-500/80 mt-0.5">Semua proses dilakukan secara offline di browser. File kamu tidak pernah di-upload ke server manapun.</p>
+         <h4 class="font-bold text-emerald-800 dark:text-emerald-400" data-i18n="pdf.privacy_title">Privasi Dijamin Aman</h4>
+         <p class="text-sm text-emerald-700 dark:text-emerald-500/80 mt-0.5" data-i18n="pdf.privacy_desc">Semua proses dilakukan secara offline di browser. File kamu tidak pernah di-upload ke server manapun.</p>
       </div>
     </div>
 

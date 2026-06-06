@@ -6,10 +6,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   <div class="max-w-4xl mx-auto px-4 min-h-[85vh] flex flex-col justify-center items-center py-10">
     
     <div class="text-center mb-8 animate-on-scroll">
-      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600 tracking-tight">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600 tracking-tight" data-i18n="header.jokes">
         Pusat Humor
       </h1>
-      <p class="text-slate-600 dark:text-slate-400 text-lg max-w-lg mx-auto">
+      <p class="text-slate-600 dark:text-slate-400 text-lg max-w-lg mx-auto" data-i18n="header.jokes_desc">
         Koleksi jokes receh, programming, dan tebak-tebakan. Lengkap dengan fitur translate!
       </p>
     </div>
@@ -18,13 +18,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         
         <div class="relative w-full md:w-2/3">
             <select id="category-select" class="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-cyan-500 appearance-none cursor-pointer shadow-sm transition-all hover:border-cyan-400">
-                <option value="Any">🎲 Campur Aduk (Semua)</option>
-                <option value="Programming">💻 Programming (Anak IT)</option>
-                <option value="Misc">🌍 Umum (Receh)</option>
-                <option value="Pun">🤡 Plesetan (Pun)</option>
-                <option value="Spooky">👻 Horor Lucu</option>
-                <option value="Christmas">🎄 Edisi Natal</option>
-                <option value="Indonesia">🇮🇩 Indonesia (Lokal)</option>
+                <option value="Any" data-i18n="joke.all">🎲 Campur Aduk (Semua)</option>
+                <option value="Programming" data-i18n="joke.programming">💻 Programming (Anak IT)</option>
+                <option value="Misc" data-i18n="joke.misc">🌍 Umum (Receh)</option>
+                <option value="Pun" data-i18n="joke.pun">🤡 Plesetan (Pun)</option>
+                <option value="Spooky" data-i18n="joke.spooky">👻 Horor Lucu</option>
+                <option value="Christmas" data-i18n="joke.christmas">🎄 Edisi Natal</option>
+                <option value="Indonesia" data-i18n="joke.indonesia">🇮🇩 Indonesia (Lokal)</option>
             </select>
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
                 <svg class="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
@@ -32,7 +32,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
 
         <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm w-full md:w-auto justify-center">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider pl-2">Mode:</span>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider pl-2" data-i18n="label.mode">Mode:</span>
             <button id="mode-toggle" class="relative inline-flex h-8 w-32 items-center rounded-lg transition-colors duration-300 focus:outline-none bg-slate-200 dark:bg-slate-700">
                 <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out translate-x-1"></span>
                 <span class="absolute left-0 w-1/2 text-[10px] font-bold text-center text-slate-600 dark:text-slate-300 z-10 pointer-events-none">OFFLINE</span>
@@ -90,36 +90,35 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </div>
     </div>
 
-    <div class="mt-10 flex flex-col items-center gap-4">
-        <button id="generate-btn" class="group relative inline-flex items-center justify-center gap-3 px-10 py-4 font-bold text-white transition-all duration-200 bg-slate-900 dark:bg-white dark:text-slate-900 text-lg rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-xl shadow-cyan-500/20">
-            <span>Joke Baru</span>
+    <div class="mt-10 flex flex-col items-center gap-4">            <button id="generate-btn" class="group relative inline-flex items-center justify-center gap-3 px-10 py-4 font-bold text-white transition-all duration-200 bg-slate-900 dark:bg-white dark:text-slate-900 text-lg rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-xl shadow-cyan-500/20">
+            <span data-i18n="btn.new_joke">Joke Baru</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-12 transition-transform duration-500"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M15.5 8.5v.01"/><path d="M9 14a6 6 0 0 0 6 0"/></svg>
         </button>
         <div class="flex items-center gap-4">
-            <p class="text-xs text-center text-slate-400">Tekan <kbd class="font-sans px-1 border rounded bg-slate-100 dark:bg-slate-800">Spasi</kbd> untuk acak</p>
-            <button id="settings-btn" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors underline decoration-dotted">Pengaturan</button>
+            <p class="text-xs text-center text-slate-400" data-i18n="msg.press_space">Tekan Spasi untuk acak</p>
+            <button id="settings-btn" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors underline decoration-dotted" data-i18n="btn.settings">Pengaturan</button>
         </div>
     </div>
 
     <div class="mt-16 grid grid-cols-3 gap-4 w-full max-w-2xl text-center">
         <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
             <div id="total-view" class="text-2xl font-black text-slate-800 dark:text-white">0</div>
-            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1">Jokes Dibaca</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1" data-i18n="stat.jokes_read">Jokes Dibaca</div>
         </div>
         <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
             <div id="fav-cat" class="text-lg font-bold text-cyan-500 truncate px-2">-</div>
-            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1">Top Kategori</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1" data-i18n="stat.top_category">Top Kategori</div>
         </div>
         <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
             <div id="daily-streak" class="text-2xl font-black text-slate-800 dark:text-white">0</div>
-            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1">Streak Tawa</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1" data-i18n="stat.laugh_streak">Streak Tawa</div>
         </div>
     </div>
 
     <div id="settings-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity animate-fade-in">
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-100 transition-transform">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Pengaturan</h3>
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white" data-i18n="modal.settings_title">Pengaturan</h3>
                 <button id="close-settings" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
@@ -127,7 +126,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             
             <div class="space-y-6">
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Target Translate</label>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.target_translate">Target Translate</label>
                     <select id="target-lang" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-cyan-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
                         <option value="id" selected>🇮🇩 Indonesia</option>
                         <option value="es">🇪🇸 Spanish</option>
@@ -139,36 +138,35 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Auto-refresh (detik)</label>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.auto_refresh">Auto-refresh (detik)</label>
                     <input type="number" id="auto-refresh" min="0" max="60" value="0" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-cyan-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
-                    <p class="text-[10px] text-slate-400 mt-1">Isi 0 untuk mematikan.</p>
+                    <p class="text-[10px] text-slate-400 mt-1" data-i18n="msg.fill_zero_disable">Isi 0 untuk mematikan.</p>
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Ukuran Font</label>
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.font_size">Ukuran Font</label>
                     <select id="text-size" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-cyan-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
-                        <option value="text-xl">Kecil</option>
-                        <option value="text-2xl" selected>Sedang</option>
-                        <option value="text-3xl">Besar</option>
-                        <option value="text-4xl">Raksasa</option>
+                        <option value="text-xl" data-i18n="size.small">Kecil</option>
+                        <option value="text-2xl" selected data-i18n="size.medium">Sedang</option>
+                        <option value="text-3xl" data-i18n="size.large">Besar</option>
+                        <option value="text-4xl" data-i18n="size.giant">Raksasa</option>
                     </select>
                 </div>
             </div>
             
             <div class="mt-8">
-                <button id="save-settings" class="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-cyan-500/30">Simpan Perubahan</button>
+                <button id="save-settings" class="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-cyan-500/30" data-i18n="btn.save_changes">Simpan Perubahan</button>
             </div>
         </div>
     </div>
 
     <div id="favorites-section" class="hidden mt-16 w-full max-w-2xl animate-fade-in-up">
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <div class="flex justify-between items-center mb-4">                    <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-red-500"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                    Koleksi Favorit
+                    <span data-i18n="title.favorites">Koleksi Favorit</span>
                 </h3>
-                <button id="clear-favorites" class="text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-colors">Hapus Semua</button>
+                <button id="clear-favorites" class="text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-colors" data-i18n="btn.clear_all">Hapus Semua</button>
             </div>
             <div id="favorites-list" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-2">
                 </div>
@@ -265,17 +263,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   function updateNetworkStatus() {
     if (navigator.onLine) {
       networkStatus.className = 'fixed top-24 right-4 px-4 py-2 rounded-lg text-sm font-bold z-50 transition-all duration-300 bg-green-500 text-white shadow-lg border border-white/20';
-      networkText.textContent = 'Koneksi Stabil';
+      networkText.textContent = window._tToast ? window._tToast('Koneksi Stabil') : 'Koneksi Stabil';
       setTimeout(() => networkStatus.classList.add('hidden'), 3000);
     } else {
       networkStatus.className = 'fixed top-24 right-4 px-4 py-2 rounded-lg text-sm font-bold z-50 transition-all duration-300 bg-red-500 text-white shadow-lg border border-white/20';
-      networkText.textContent = 'Koneksi Terputus';
+      networkText.textContent = window._tToast ? window._tToast('Koneksi Terputus') : 'Koneksi Terputus';
       networkStatus.classList.remove('hidden');
       if (isOnline) {
         isOnline = false;
         localStorage.setItem('jokeMode', 'offline');
         updateModeUI();
-        window.showToast('Mode otomatis beralih ke offline', 'warning');
+        window.showToast(window._tToast ? window._tToast('Mode otomatis beralih ke offline') : 'Mode otomatis beralih ke offline', 'warning');
       }
     }
   }
@@ -343,7 +341,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       generateBtn.disabled = true;
       generateBtn.classList.add('opacity-75');
       // Save content if needed, but we hardcode the reset
-      generateBtn.innerHTML = '<span class="animate-spin">⏳</span>';
+      generateBtn.innerHTML = '<span class="animate-spin">...</span>';
 
       const category = categorySelect.value;
       let jokeData = null;
@@ -355,7 +353,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           // Fallback logic
           if (!jokeData) {
               jokeData = getLocalJoke(category);
-              if (isOnline) window.showToast('Koneksi lambat, mengambil dari lokal.', 'info');
+              if (isOnline) window.showToast(window._tToast ? window._tToast('Koneksi lambat, mengambil dari lokal.') : 'Koneksi lambat, mengambil dari lokal.', 'info');
           }
       } catch (e) {
           jokeData = getLocalJoke(category);
@@ -446,11 +444,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           isTranslated = false;
           translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
           translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
-          window.showToast('Kembali ke bahasa asli', 'info');
+          window.showToast(window._tToast ? window._tToast('Kembali ke bahasa asli') : 'Kembali ke bahasa asli', 'info');
       } else {
           // TRANSLATE LOGIC
           if (!isOnline && !navigator.onLine) {
-              window.showToast('Fitur translate butuh internet!', 'error');
+              window.showToast(window._tToast ? window._tToast('Fitur translate butuh internet!') : 'Fitur translate butuh internet!', 'error');
               return;
           }
 
@@ -491,12 +489,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                   
                   translateBtn.classList.remove('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
                   translateBtn.classList.add('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
-                  window.showToast('Berhasil diterjemahkan', 'success');
+                  window.showToast(window._tToast ? window._tToast('Berhasil diterjemahkan') : 'Berhasil diterjemahkan', 'success');
               } else {
                   throw new Error('Limit API');
               }
           } catch (e) {
-              window.showToast('Gagal translate. Coba lagi.', 'error');
+              window.showToast(window._tToast ? window._tToast('Gagal translate. Coba lagi.') : 'Gagal translate. Coba lagi.', 'error');
           } finally {
               translateBtn.innerHTML = originalIcon;
               translateBtn.disabled = false;
@@ -537,10 +535,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           if(jokeToSave.type === 'single') return fav.joke !== jokeToSave.joke;
           return fav.setup !== jokeToSave.setup;
       });
-      window.showToast('Dihapus dari favorit', 'info');
+      window.showToast(window._tToast ? window._tToast('Dihapus dari favorit') : 'Dihapus dari favorit', 'info');
     } else {
       favorites.push({...jokeToSave, id: Date.now()});
-      window.showToast('Ditambahkan ke favorit', 'success');
+      window.showToast(window._tToast ? window._tToast('Ditambahkan ke favorit') : 'Ditambahkan ke favorit', 'success');
     }
     
     localStorage.setItem('favoriteJokes', JSON.stringify(favorites));
@@ -623,7 +621,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           text = `${currentJoke.setup}\n\n> ${currentJoke.delivery}`;
       }
       navigator.clipboard.writeText(text);
-      window.showToast('Joke disalin!', 'success');
+      window.showToast(window._tToast ? window._tToast('Joke disalin!') : 'Joke disalin!', 'success');
   });
 
   shareBtn.addEventListener('click', async () => {
@@ -647,12 +645,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           } catch (err) {
               if (err.name !== 'AbortError') {
                   navigator.clipboard.writeText(fullMessage);
-                  window.showToast('Link & Joke disalin!', 'success');
+                  window.showToast(window._tToast ? window._tToast('Link & Joke disalin!') : 'Link & Joke disalin!', 'success');
               }
           }
       } else {
           navigator.clipboard.writeText(fullMessage);
-          window.showToast('Link & Joke disalin!', 'success');
+          window.showToast(window._tToast ? window._tToast('Link & Joke disalin!') : 'Link & Joke disalin!', 'success');
       }
   });
 
@@ -674,16 +672,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       localStorage.setItem('jokeSettings', JSON.stringify(settings));
       applySettings();
       settingsModal.classList.add('hidden');
-      window.showToast('Pengaturan disimpan!', 'success');
+      window.showToast(window._tToast ? window._tToast('Pengaturan disimpan!') : 'Pengaturan disimpan!', 'success');
   });
 
   clearFavoritesBtn.addEventListener('click', () => {
-    if (confirm('Hapus semua joke favorit?')) {
+    if (confirm(window._tToast ? window._tToast('Hapus semua joke favorit?') : 'Hapus semua joke favorit?')) {
       favorites = [];
       localStorage.setItem('favoriteJokes', JSON.stringify(favorites));
       updateFavoriteButton();
       renderFavorites();
-      window.showToast('Semua favorit dihapus', 'info');
+      window.showToast(window._tToast ? window._tToast('Semua favorit dihapus') : 'Semua favorit dihapus', 'info');
     }
   });
 
@@ -702,7 +700,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   window.addEventListener('online', updateNetworkStatus);
   window.addEventListener('offline', updateNetworkStatus);
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('astro:page-load', () => {
       updateModeUI();
       updateStatsDisplay();
       renderFavorites();

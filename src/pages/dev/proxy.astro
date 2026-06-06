@@ -26,7 +26,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
 
           <button id="send-btn" class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl transition shadow-lg flex justify-center items-center gap-2">
-            <span id="btn-text">Kirim Request</span>
+            <span id="btn-text" data-i18n="btn.send_request">Kirim Request</span>
             <div id="loader" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </button>
 
@@ -36,7 +36,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button id="copy-res" class="p-2 bg-slate-700 hover:bg-slate-600 rounded text-xs text-white transition-colors">Copy</button>
             </div>
-            <pre id="response-body" class="whitespace-pre-wrap break-all min-h-[200px] max-h-[500px] overflow-y-auto custom-scrollbar text-emerald-400">Menunggu request...</pre>
+            <pre id="response-body" class="whitespace-pre-wrap break-all min-h-[200px] max-h-[500px] overflow-y-auto custom-scrollbar text-emerald-400" data-i18n="text.waiting_request">Menunggu request...</pre>
         </div>
       </div>
 
@@ -45,22 +45,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4">Status</h3>
           <div class="space-y-3">
             <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-              <span class="text-slate-500">Status Code</span>
+              <span class="text-slate-500" data-i18n="label.status_code">Status Code</span>
               <span id="status-code" class="font-mono font-bold text-slate-700 dark:text-slate-200">-</span>
             </div>
             <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-              <span class="text-slate-500">Latency</span>
+              <span class="text-slate-500" data-i18n="label.latency">Latency</span>
               <span id="latency" class="font-mono font-bold text-slate-700 dark:text-slate-200">-</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-500">Size</span>
+              <span class="text-slate-500" data-i18n="label.size">Size</span>
               <span id="size" class="font-mono font-bold text-slate-700 dark:text-slate-200">-</span>
             </div>
           </div>
         </div>
 
         <div class="bg-blue-50 dark:bg-blue-900/20 p-5 rounded-xl border border-blue-100 dark:border-blue-800">
-            <h4 class="text-sm font-bold text-blue-700 dark:text-blue-300 mb-2">Cara Pakai di Code:</h4>
+            <h4 class="text-sm font-bold text-blue-700 dark:text-blue-300 mb-2" data-i18n="text.how_to_use">Cara Pakai di Code:</h4>
             <code class="block bg-white dark:bg-slate-900 p-3 rounded-lg text-xs text-slate-600 dark:text-slate-300 break-all border border-slate-200 dark:border-slate-700">
                 const res = await fetch('/api/proxy?url=' + targetUrl);
             </code>
@@ -94,15 +94,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   sendBtn.addEventListener('click', async () => {
     const url = targetUrlInput.value;
     if(!url) {
-        alert('Masukkan URL target!');
+        alert(window._tToast ? window._tToast('Masukkan URL target!') : 'Masukkan URL target!');
         return;
     }
 
     sendBtn.disabled = true;
     sendBtn.classList.add('opacity-70', 'cursor-not-allowed');
-    btnText.innerText = 'Memuat...';
+    btnText.innerText = window._tToast ? window._tToast('Memuat...') : 'Memuat...';
     loader.classList.remove('hidden');
-    responseBody.innerText = 'Mengambil data...';
+    responseBody.innerText = window._tToast ? window._tToast('Mengambil data...') : 'Mengambil data...';
     responseBody.className = 'whitespace-pre-wrap break-all min-h-[200px] max-h-[500px] overflow-y-auto custom-scrollbar text-slate-400';
 
     const startTime = performance.now();
@@ -137,11 +137,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     } catch (error) {
         responseBody.innerText = 'Error: ' + error.message;
-        statusCode.innerText = 'ERR';
+        statusCode.innerText = window._tToast ? window._tToast('ERR') : 'ERR';
     } finally {
         sendBtn.disabled = false;
         sendBtn.classList.remove('opacity-70', 'cursor-not-allowed');
-        btnText.innerText = 'Kirim Request';
+        btnText.innerText = window.i18n?.t ? window.i18n.t('btn.send_request', 'Kirim Request') : 'Kirim Request';
         loader.classList.add('hidden');
     }
   });
@@ -149,7 +149,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   copyRes.addEventListener('click', () => {
     navigator.clipboard.writeText(responseBody.innerText);
     const originalText = copyRes.innerText;
-    copyRes.innerText = 'Disalin!';
+    copyRes.innerText = window._tToast ? window._tToast('Disalin!') : 'Disalin!';
     setTimeout(() => copyRes.innerText = originalText, 2000);
   });
 </script>

@@ -26,42 +26,52 @@ const isPdfTool = currentPath.startsWith('/pdf/');
 
 let showBackBtn = !isHome;
 let backLink = '/';
+let backI18nKey = 'back.dashboard';
 let backLabel = 'Kembali ke Dashboard';
 
 if (isPdfTool) {
   backLink = '/pdf';
+  backI18nKey = 'back.pdf_tools';
   backLabel = 'Kembali ke PDF Tools';
 } else if (isPdfRoot) {
   backLink = '/';
+  backI18nKey = 'back.dashboard';
   backLabel = 'Kembali ke Dashboard';
 }
 ---
 
 <!doctype html>
-<html lang="id" class="scroll-smooth">
+<html lang="id" class="scroll-smooth transition-colors duration-500 ease-in-out">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>{pageTitle} | PakLubis Tools</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
+  <title>{pageTitle} | ToolsAulia</title>
+  <meta name="original-title" content={pageTitle} />
   <meta name="description" content={description} />
   <meta name="generator" content={Astro.generator} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   
   <link rel="canonical" href={canonicalUrl || Astro.url.href} />
-  <meta property="og:title" content={`${pageTitle} | PakLubis Tools`} />
+  <meta property="og:title" content={`${pageTitle} | ToolsAulia`} />
   <meta property="og:description" content={description} />
   <meta property="og:image" content={new URL(ogImage, Astro.url.origin).href} />
   <meta property="og:url" content={Astro.url.href} />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="id_ID" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content={`${pageTitle} | PakLubis Tools`} />
+  <meta name="twitter:title" content={`${pageTitle} | ToolsAulia`} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={new URL(ogImage, Astro.url.origin).href} />
   {noIndex && <meta name="robots" content="noindex, nofollow" />}
   
+  <!-- Performance: Preconnect to critical origins -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  
+  <!-- Performance: Preload critical fonts -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <ClientRouter />
@@ -72,61 +82,66 @@ if (isPdfTool) {
       const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       if (theme === 'dark' || (!theme && systemDark)) {
         document.documentElement.classList.add("dark");
-        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0f172a');
+        var metaTC = document.querySelector('meta[name="theme-color"]'); if (metaTC) metaTC.setAttribute('content', '#0f172a');
       } else {
         document.documentElement.classList.remove("dark");
-        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#ffffff');
+        var metaTC = document.querySelector('meta[name="theme-color"]'); if (metaTC) metaTC.setAttribute('content', '#ffffff');
       }
     };
     setDarkMode();
     document.addEventListener('astro:after-swap', setDarkMode);
   </script>
 
+  <!-- PWA & Theme -->
   <link rel="manifest" href="/manifest.webmanifest" />
   <meta name="theme-color" content="#ffffff" />
   <link rel="apple-touch-icon" href="/pwa-192x192.png" />
   
-  <script>
-    import { registerSW } from 'virtual:pwa-register';
-    
-    registerSW({
-      immediate: true,
-      onNeedRefresh() {
-        const updateNotification = document.createElement('div');
-        updateNotification.id = 'update-notification';
-        updateNotification.className = 'fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-slate-800 dark:bg-slate-700 text-white p-4 rounded-lg shadow-lg z-[100] flex items-center justify-between animate-slide-up';
-        updateNotification.innerHTML = `
-          <div class="flex items-center gap-3">
-            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-            </svg>
-            <div>
-              <p class="font-medium">Update Tersedia!</p>
-              <p class="text-xs text-slate-300">Versi baru siap diinstall.</p>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <button id="update-dismiss" class="px-3 py-1 text-xs bg-slate-600 hover:bg-slate-500 rounded transition-colors">Nanti</button>
-            <button id="update-accept" class="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-500 rounded transition-colors">Update</button>
-          </div>
-        `;
-        document.body.appendChild(updateNotification);
-        
-        document.getElementById('update-accept')?.addEventListener('click', () => window.location.reload());
-        document.getElementById('update-dismiss')?.addEventListener('click', () => updateNotification.remove());
-      },
-      onOfflineReady() {
-        console.log('App siap digunakan offline.');
-      },
-    });
+  <!-- Performance: Defer non-critical PWA registration -->
+  <script type="module" id="pwa-register-module">
+    // Defer PWA registration to not block main thread
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        import('virtual:pwa-register').then(({ registerSW }) => {
+          registerSW({
+            immediate: true,
+            onNeedRefresh() {
+              const updateNotification = document.createElement('div');
+              updateNotification.id = 'update-notification';
+              updateNotification.className = 'fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-slate-800 dark:bg-slate-700 text-white p-4 rounded-lg shadow-lg z-[100] flex items-center justify-between animate-slide-up';
+              updateNotification.innerHTML = `
+                <div class="flex items-center gap-3">
+                  <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                  </svg>
+                  <div>
+                    <p class="font-medium" data-i18n="update.title">Update Tersedia!</p>
+                    <p class="text-xs text-slate-300" data-i18n="update.desc">Versi baru siap diinstall.</p>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <button id="update-dismiss" class="px-3 py-1 text-xs bg-slate-600 hover:bg-slate-500 rounded transition-colors" data-i18n="update.later">Nanti</button>
+                  <button id="update-accept" class="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-500 rounded transition-colors" data-i18n="update.update">Update</button>
+                </div>
+              `;
+              document.body.appendChild(updateNotification);
+              
+              document.getElementById('update-accept')?.addEventListener('click', () => window.location.reload());
+              document.getElementById('update-dismiss')?.addEventListener('click', () => updateNotification.remove());
+            },
+            onOfflineReady() {
+              console.log('App siap digunakan offline.');
+            },
+          });
+        }).catch(() => {});
+      });
+    }
   </script>
-</head>
-
-<body class="antialiased bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+</head>  <body class="antialiased bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-500 ease-in-out min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
   
   <div id="toast-container" class="fixed top-24 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
   <div id="offline-indicator" class="hidden fixed bottom-0 left-0 w-full bg-rose-600 text-white text-center py-2 text-sm font-bold z-[100] shadow-lg animate-slide-up">
-    ⚠️ Koneksi terputus. Anda sedang offline.
+    <span data-i18n="offline.msg">⚠️ Koneksi terputus. Anda sedang offline.</span>
   </div>
   <div id="navigation-loading" class="fixed top-0 left-0 w-full h-1 bg-slate-200 dark:bg-slate-800 z-[100] overflow-hidden hidden">
     <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 w-0 transform origin-left transition-all duration-300"></div>
@@ -141,16 +156,16 @@ if (isPdfTool) {
         </div>
         
         <div class="p-6 text-center">
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Install ToolsAulia</h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2" data-i18n="pwa.install_title">Install ToolsAulia</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mb-6" data-i18n="pwa.install_desc">
                 Akses semua tools secara <strong>offline</strong>, lebih cepat, dan masuk langsung dari layar utama HP kamu.
             </p>
             
             <div class="space-y-3">
-                <button id="pwa-confirm-install" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all transform hover:scale-[1.02]">
+                <button id="pwa-confirm-install" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all transform hover:scale-[1.02]" data-i18n="pwa.install_now">
                     Install Sekarang
                 </button>
-                <button id="pwa-cancel-install" class="w-full py-3 px-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium rounded-xl transition-colors">
+                <button id="pwa-cancel-install" class="w-full py-3 px-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium rounded-xl transition-colors" data-i18n="pwa.later">
                     Nanti Saja
                 </button>
             </div>
@@ -158,10 +173,10 @@ if (isPdfTool) {
     </div>
   </div>
 
-  <header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md transition-all duration-300">
+  <header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md transition-all duration-300 hover:shadow-md hover:shadow-sky-500/5">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <a href="/" class="group flex items-center gap-2.5 font-bold text-xl tracking-tight z-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-md p-1">
-        <div class="relative w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-500 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/20 group-hover:rotate-12 transition-transform duration-300">
+      <a href="/" class="group flex items-center gap-2.5 font-bold text-xl tracking-tight z-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-md p-1 transition-all duration-300 hover:scale-105">
+        <div class="relative w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-500 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/20 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
         </div>
         <span class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300">
@@ -170,49 +185,60 @@ if (isPdfTool) {
       </a>
       
       <nav class="hidden md:flex items-center gap-1">
-        <a href="/" class={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isHome ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400'}`}>Home</a>
-        <a href="/pdf" class={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isPdfRoot || isPdfTool ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400'}`}>PDF Tools</a>
+        <a href="/" class={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isHome ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400'}`} data-i18n="nav.home">Home</a>
+        <a href="/pdf" class={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isPdfRoot || isPdfTool ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400'}`} data-i18n="nav.pdf_tools">PDF Tools</a>
         
-        <button id="search-btn" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors" aria-label="Search tools">
+        <button id="search-btn" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all duration-300 hover:scale-110 hover:text-sky-500" aria-label="Search tools" data-i18n-attr="aria-label" data-i18n="nav.search_aria">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         </button>
         
         <div class="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
         
-        <button id="theme-toggle-desktop" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors" aria-label="Toggle theme">
-          <svg id="sun-icon" class="hidden dark:block w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-          <svg id="moon-icon" class="block dark:hidden w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        <button id="theme-toggle-desktop" class="relative p-2 rounded-full hover:bg-gradient-to-br hover:from-amber-100 hover:to-orange-100 dark:hover:bg-gradient-to-br dark:hover:from-slate-700 dark:hover:to-slate-600 text-slate-500 dark:text-slate-400 transition-all duration-300 hover:scale-110 group" aria-label="Toggle theme" data-i18n-attr="aria-label" data-i18n="nav.theme_aria">
+          <span class="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 opacity-0 group-hover:opacity-20 dark:group-hover:opacity-30 transition-opacity duration-300"></span>
+          <svg id="sun-icon" class="hidden dark:block w-5 h-5 relative z-10 transition-transform duration-300 group-hover:rotate-45 group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          <svg id="moon-icon" class="block dark:hidden w-5 h-5 relative z-10 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         </button>
         
-        <button id="install-pwa-btn" class="hidden p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sky-500 dark:text-sky-400 transition-colors" aria-label="Install app">
+        <button id="lang-toggle-desktop" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all duration-300 hover:scale-110 hover:text-emerald-500 hover:rotate-12" aria-label="Toggle language">
+          <span id="lang-label-desktop" class="uppercase">ID</span>
+        </button>
+        
+        <button id="install-pwa-btn" class="hidden p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sky-500 dark:text-sky-400 transition-all duration-300 hover:scale-110 hover:text-emerald-500" aria-label="Install app" data-i18n-attr="aria-label" data-i18n="nav.install_aria">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </button>
       </nav>
 
-      <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-600 dark:text-slate-300" aria-label="Toggle menu">
+      <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-600 dark:text-slate-300 transition-all duration-300 hover:scale-110 hover:text-sky-500" aria-label="Toggle menu">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
       </button>
     </div>
 
     <div id="mobile-menu" class="hidden absolute top-16 left-0 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-xl md:hidden flex-col p-2 gap-1 transition-all z-40 origin-top animate-fade-in-down">
       <div class="p-3">
-        <input type="text" id="mobile-search" placeholder="Cari tools..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200">
-      </div>
-      <a href="/" class="block p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-200 mobile-link">Dashboard</a>
-      <a href="/pdf" class="block p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-200 mobile-link">PDF Tools</a>
+        <input type="text" id="mobile-search" placeholder="Cari tools..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:scale-105 text-slate-800 dark:text-slate-200 transition-all duration-300" data-i18n-attr="placeholder" data-i18n="search.mobile_placeholder">
+      </div>        <a href="/" class="block p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-200 mobile-link" data-i18n="nav.mobile_dashboard">Dashboard</a>        <a href="/pdf" class="block p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-200 mobile-link" data-i18n="nav.mobile_pdf">PDF Tools</a>
       
       <div class="border-t border-slate-100 dark:border-slate-800 pt-2 mt-2 px-3 pb-2">
         <div class="flex items-center justify-between mb-3">
           <span class="text-sm text-slate-500 font-medium">Tema</span>
-          <button id="theme-toggle-mobile" class="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-105 transition-transform">
-            <span class="dark:hidden flex items-center gap-2 text-xs font-bold uppercase">Gelap 🌙</span>
-            <span class="hidden dark:flex items-center gap-2 text-xs font-bold uppercase">Terang ☀️</span>
+          <button id="lang-toggle-mobile" class="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-110 hover:rotate-12 transition-all duration-300 text-xs font-bold uppercase">
+            <span id="lang-label-mobile">ID</span>
+          </button>
+          <button id="theme-toggle-mobile" class="relative p-2 rounded-full bg-gradient-to-br from-amber-100 to-orange-50 dark:from-slate-700 dark:to-slate-600 text-slate-600 dark:text-slate-300 hover:scale-110 transition-all duration-300 group">
+            <span class="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></span>
+            <span class="dark:hidden relative z-10 flex items-center gap-2 text-xs font-bold uppercase" data-i18n="nav.mobile_theme_dark">Gelap 🌙</span>
+            <span class="hidden dark:flex relative z-10 items-center gap-2 text-xs font-bold uppercase" data-i18n="nav.mobile_theme_light">Terang ☀️</span>
           </button>
         </div>
         
-        <button id="install-pwa-mobile" class="hidden w-full p-2 rounded-lg bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 font-bold text-sm transition-colors flex items-center justify-center gap-2">
+        <button id="install-pwa-mobile" class="hidden w-full p-2 rounded-lg bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 font-bold text-sm transition-all duration-300 hover:scale-105 hover:bg-sky-100 dark:hover:bg-sky-900/40 flex items-center justify-center gap-2" data-i18n="nav.mobile_install">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Install App
+        </button>
+        <button id="cache-clear-mobile" class="w-full p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm transition-all duration-300 hover:scale-105 hover:text-rose-500 flex items-center justify-center gap-2 mt-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          <span data-i18n="nav.clear_cache">Bersihkan Cache</span>
         </button>
       </div>
     </div>
@@ -222,15 +248,15 @@ if (isPdfTool) {
     <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-2xl animate-fade-in-down">
       <div class="p-4 border-b border-slate-200 dark:border-slate-700">
         <div class="relative">
-          <input type="text" id="search-modal-input" placeholder="Cari tools..." class="w-full pl-10 pr-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200" autocomplete="off">
-          <button id="close-search" class="absolute inset-y-0 right-0 pr-3 flex items-center" aria-label="Close search">
+          <input type="text" id="search-modal-input" placeholder="Cari tools..." class="w-full pl-10 pr-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:scale-[1.02] text-slate-800 dark:text-slate-200 transition-all duration-300" autocomplete="off" data-i18n-attr="placeholder" data-i18n="search.placeholder">
+          <button id="close-search" class="absolute inset-y-0 right-0 pr-3 flex items-center" aria-label="Close search" data-i18n-attr="aria-label" data-i18n="search.close_aria">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
       </div>
       <div id="search-results" class="max-h-96 overflow-y-auto p-4">
         <div class="text-center py-8 text-slate-500 dark:text-slate-400">
-          <p>Ketik untuk mencari tools</p>
+          <p data-i18n="search.empty">Ketik untuk mencari tools</p>
         </div>
       </div>
     </div>
@@ -243,50 +269,73 @@ if (isPdfTool) {
           <div class="bg-slate-200 dark:bg-slate-800 p-1 rounded-md group-hover:bg-sky-100 dark:group-hover:bg-sky-900/30 group-hover:text-sky-600 transition-colors">
              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
           </div>
-          <span id="back-btn-text">{backLabel}</span>
+          <span id="back-btn-text" data-i18n={backI18nKey}>{backLabel}</span>
         </a>
       </div>
     )}
     <slot />
   </main>
 
-  <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-auto pb-safe">
+  <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-auto pb-safe transition-all duration-500">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <div>
-          <h3 class="font-bold text-slate-800 dark:text-slate-200 mb-4">Tentang ToolsAulia</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 max-w-sm">
+          <h3 class="font-bold text-slate-800 dark:text-slate-200 mb-4" data-i18n="footer.about_title">Tentang ToolsAulia</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 max-w-sm" data-i18n="footer.about_desc">
             Koleksi tools developer sederhana yang berjalan sepenuhnya di browser (Client-Side). Aman, cepat, dan tanpa upload data ke server.
           </p>
           <div class="flex gap-4">
-            <a href="https://github.com/kandarlubis31" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Github</a>
-            <a href="https://paklubis.my.id" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Website</a>
+            <a href="https://github.com/kandarlubis31" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all duration-300 hover:scale-110 hover:-translate-y-0.5" data-i18n="footer.github">Github</a>
+            <a href="https://paklubis.my.id" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all duration-300 hover:scale-110 hover:-translate-y-0.5" data-i18n="footer.website">Website</a>
           </div>
         </div>
         <div>
-          <h3 class="font-bold text-slate-800 dark:text-slate-200 mb-4">Kategori Tools</h3>
+          <h3 class="font-bold text-slate-800 dark:text-slate-200 mb-4" data-i18n="footer.categories">Kategori Tools</h3>
           <ul class="space-y-2 text-sm">
-            <li><a href="/pdf" class="text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">PDF Tools</a></li>
-            <li><a href="/image" class="text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Image Tools</a></li>
-            <li><a href="/dev" class="text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">Developer Tools</a></li>
+            <li><a href="/pdf" class="text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors" data-i18n="footer.pdf_tools">PDF Tools</a></li>
+            <li><a href="/image" class="text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors" data-i18n="footer.image_tools">Image Tools</a></li>
+            <li><a href="/dev" class="text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors" data-i18n="footer.dev_tools">Developer Tools</a></li>
           </ul>
         </div>
       </div>
       <div class="border-t border-slate-200 dark:border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
         <p>&copy; {new Date().getFullYear()} <span class="font-bold text-slate-700 dark:text-slate-300">Aulia Iskandar Lubis</span>.</p>
-        <div class="flex items-center gap-4"><span class="text-xs">Made in Indonesia</span></div>
+        <div class="flex items-center gap-4">
+        <button id="cache-clear-btn" class="text-xs flex items-center gap-1 text-slate-500 hover:text-rose-500 transition-all duration-300 hover:scale-105 hover:-translate-y-0.5" title="Clear cache & reload">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:rotate-12"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          <span data-i18n="nav.clear_cache">Bersihkan Cache</span>
+        </button>
+      </div>
       </div>
     </div>
   </footer>
 
+  <!-- Performance: Load i18n phrases async to not block rendering -->
+  <script src="/i18n-phrases.js" defer></script>
+  
   <script is:inline>
+    // Translation helper - handles case where phrases not yet loaded
+    window._tToast = (msg) => {
+      const lang = (typeof window !== 'undefined' && localStorage.getItem('lang')) || 'id';
+      if (lang === 'id') return msg;
+      // Check if phrases loaded, if not return original
+      if (!window._i18nPhrases) return msg;
+      // exact match
+      if (window._i18nPhrases[msg]) return window._i18nPhrases[msg];
+      // fallback: replace known phrases inside the message
+      let result = msg;
+      for (const [id, en] of Object.entries(window._i18nPhrases)) {
+        if (result.includes(id)) result = result.split(id).join(en);
+      }
+      return result;
+    };
     window.showToast = (message, type = 'success') => {
       const container = document.getElementById('toast-container');
       if (!container) return;
       const toast = document.createElement('div');
-      const colors = { success: 'bg-emerald-500 text-white', error: 'bg-rose-500 text-white' };
+      const colors = { success: 'bg-emerald-500 text-white', error: 'bg-rose-500 text-white', info: 'bg-blue-500 text-white', warning: 'bg-amber-500 text-white' };
       toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-x-10 opacity-0 min-w-[300px] backdrop-blur-sm ${colors[type] || colors.success}`;
-      toast.innerHTML = `<span class="font-bold text-sm">${message}</span>`;
+      toast.innerHTML = `<span class="font-bold text-sm">${window._tToast(message)}</span>`;
       container.appendChild(toast);
       requestAnimationFrame(() => toast.classList.remove('translate-x-10', 'opacity-0'));
       setTimeout(() => { toast.classList.add('translate-x-10', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
@@ -302,15 +351,15 @@ if (isPdfTool) {
             window.showToast('Aplikasi mungkin sudah terinstall', 'success');
             return;
         }
-        pwaModal?.classList.remove('hidden');
+        if (pwaModal) pwaModal.classList.remove('hidden');
         setTimeout(() => {
-            pwaModal?.classList.remove('opacity-0');
-            pwaModal?.querySelector('div')?.classList.remove('scale-95');
-            pwaModal?.querySelector('div')?.classList.add('scale-100');
+            if (pwaModal) pwaModal.classList.remove('opacity-0');
+            var pwaDiv = pwaModal && pwaModal.querySelector('div'); if (pwaDiv) pwaDiv.classList.remove('scale-95');
+            var pwaDiv = pwaModal && pwaModal.querySelector('div'); if (pwaDiv) pwaDiv.classList.add('scale-100');
         }, 10);
       };
 
-      pwaConfirmBtn?.addEventListener('click', async () => {
+      if (pwaConfirmBtn) pwaConfirmBtn.addEventListener('click', async () => {
         if (window.deferredPrompt) {
             window.deferredPrompt.prompt();
             const { outcome } = await window.deferredPrompt.userChoice;
@@ -321,22 +370,22 @@ if (isPdfTool) {
       });
 
       const closePwaModal = () => {
-        pwaModal?.classList.add('opacity-0');
-        pwaModal?.querySelector('div')?.classList.add('scale-95');
-        pwaModal?.querySelector('div')?.classList.remove('scale-100');
-        setTimeout(() => pwaModal?.classList.add('hidden'), 300);
+        if (pwaModal) pwaModal.classList.add('opacity-0');
+        var pwaDiv2 = pwaModal && pwaModal.querySelector('div'); if (pwaDiv2) pwaDiv2.classList.add('scale-95');
+        var pwaDiv2 = pwaModal && pwaModal.querySelector('div'); if (pwaDiv2) pwaDiv2.classList.remove('scale-100');
+        setTimeout(function() { if (pwaModal) pwaModal.classList.add('hidden'); }, 300);
       };
 
-      pwaCancelBtn?.addEventListener('click', closePwaModal);
-      pwaModal?.addEventListener('click', (e) => {
+      if (pwaCancelBtn) pwaCancelBtn.addEventListener('click', closePwaModal);
+      if (pwaModal) pwaModal.addEventListener('click', (e) => {
         if(e.target === pwaModal) closePwaModal();
       });
 
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         window.deferredPrompt = e;
-        document.getElementById('install-pwa-btn')?.classList.remove('hidden');
-        document.getElementById('install-pwa-mobile')?.classList.remove('hidden');
+        var installBtn = document.getElementById('install-pwa-btn'); if (installBtn) installBtn.classList.remove('hidden');
+        var installMobile = document.getElementById('install-pwa-mobile'); if (installMobile) installMobile.classList.remove('hidden');
       });
 
       const backBtn = document.getElementById('back-btn');
@@ -345,67 +394,80 @@ if (isPdfTool) {
       const fromCat = urlParams.get('from_cat');
       if (backBtn && fromCat && fromCat !== 'popular' && fromCat !== 'all') {
          backBtn.href = `/?cat=${fromCat}`;
-         const catNames = {'dev': 'Developer', 'image': 'Image', 'calc': 'Kalkulator', 'file': 'File'};
-         if (backBtnText) backBtnText.innerText = `Kembali ke ${catNames[fromCat] || 'Kategori'}`;
+         const catNames = {'dev': 'Developer', 'image': 'Image', 'calc': 'Kalkulator', 'file': 'File'};           if (backBtnText) {
+           const i18n = window['i18n'];
+           if (i18n && i18n.t) {
+             backBtnText.textContent = i18n.t('back.category_' + fromCat, `Kembali ke ${catNames[fromCat] || 'Kategori'}`);
+           } else {
+             backBtnText.innerText = `Kembali ke ${catNames[fromCat] || 'Kategori'}`;
+           }
+         }
       }
 
       const updateOnlineStatus = () => {
         const indicator = document.getElementById('offline-indicator');
         if (!navigator.onLine) {
-            indicator?.classList.remove('hidden');
+            if (indicator) indicator.classList.remove('hidden');
             window.showToast('Koneksi terputus.', 'error');
         } else {
-            if(!indicator?.classList.contains('hidden')) {
-                indicator?.classList.add('hidden');
+            if(!(indicator && indicator.classList.contains('hidden'))) {
+                if (indicator) indicator.classList.add('hidden');
                 window.showToast('Kembali Online!', 'success');
             }
         }
       };
       window.addEventListener('online', updateOnlineStatus);
       window.addEventListener('offline', updateOnlineStatus);
-      if(!navigator.onLine) document.getElementById('offline-indicator')?.classList.remove('hidden');
+      if(!navigator.onLine) { var offlineInd = document.getElementById('offline-indicator'); if (offlineInd) offlineInd.classList.remove('hidden'); }
 
       const menuBtn = document.getElementById('mobile-menu-btn');
       const mobileMenu = document.getElementById('mobile-menu');
       const mobileLinks = document.querySelectorAll('.mobile-link');
-      if (menuBtn && mobileMenu) {
-        const newMenuBtn = menuBtn.cloneNode(true);
-        menuBtn.parentNode?.replaceChild(newMenuBtn, menuBtn);
-        newMenuBtn.addEventListener('click', (e) => {
+      if (menuBtn && mobileMenu && !menuBtn.dataset.hasListener) {
+        menuBtn.dataset.hasListener = 'true';
+        menuBtn.addEventListener('click', function(e) {
           e.stopPropagation();
           mobileMenu.classList.toggle('hidden');
           mobileMenu.classList.toggle('flex');
         });
-        document.addEventListener('click', (e) => {
-           if (!newMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
-             mobileMenu.classList.add('hidden');
-             mobileMenu.classList.remove('flex');
-           }
+        if (!window._menuDocHandler) {
+          window._menuDocHandler = function(e) {
+            var mb = document.getElementById('mobile-menu');
+            var btn = document.getElementById('mobile-menu-btn');
+            if (mb && btn && !btn.contains(e.target) && !mb.contains(e.target)) {
+              mb.classList.add('hidden');
+              mb.classList.remove('flex');
+            }
+          };
+          document.addEventListener('click', window._menuDocHandler);
+        }
+        mobileLinks.forEach(function(link) {
+          if (!link.dataset.hasCloseListener) {
+            link.dataset.hasCloseListener = 'true';
+            link.addEventListener('click', function() {
+              mobileMenu.classList.add('hidden');
+              mobileMenu.classList.remove('flex');
+            });
+          }
         });
-        mobileLinks.forEach(link => link.addEventListener('click', () => {
-          mobileMenu.classList.add('hidden');
-          mobileMenu.classList.remove('flex');
-        }));
       }
       
       const handleThemeToggle = () => {
         const isDark = document.documentElement.classList.toggle("dark");
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark ? '#0f172a' : '#ffffff');
+        var metaTC2 = document.querySelector('meta[name="theme-color"]'); if (metaTC2) metaTC2.setAttribute('content', isDark ? '#0f172a' : '#ffffff');
       };
       
       const desktopToggle = document.getElementById('theme-toggle-desktop');
-      if(desktopToggle) {
-          const newToggle = desktopToggle.cloneNode(true);
-          desktopToggle.parentNode?.replaceChild(newToggle, desktopToggle);
-          newToggle.addEventListener('click', handleThemeToggle);
+      if(desktopToggle && !desktopToggle.dataset.hasListener) {
+          desktopToggle.dataset.hasListener = 'true';
+          desktopToggle.addEventListener('click', handleThemeToggle);
       }
       
       const mobileToggle = document.getElementById('theme-toggle-mobile');
-      if(mobileToggle) {
-          const newToggle = mobileToggle.cloneNode(true);
-          mobileToggle.parentNode?.replaceChild(newToggle, mobileToggle);
-          newToggle.addEventListener('click', handleThemeToggle);
+      if(mobileToggle && !mobileToggle.dataset.hasListener) {
+          mobileToggle.dataset.hasListener = 'true';
+          mobileToggle.addEventListener('click', handleThemeToggle);
       }
 
       const searchBtn = document.getElementById('search-btn');
@@ -414,22 +476,21 @@ if (isPdfTool) {
       const closeSearch = document.getElementById('close-search');
       
       const openSearch = () => {
-        searchModal?.classList.remove('hidden');
-        searchInput?.focus();
+        if (searchModal) searchModal.classList.remove('hidden');
+        if (searchInput) searchInput.focus();
       };
       const closeSearchModal = () => {
-        searchModal?.classList.add('hidden');
+        if (searchModal) searchModal.classList.add('hidden');
         if(searchInput) searchInput.value = '';
       };
       
-      if(searchBtn) {
-          const newBtn = searchBtn.cloneNode(true);
-          searchBtn.parentNode?.replaceChild(newBtn, searchBtn);
-          newBtn.addEventListener('click', openSearch);
+      if(searchBtn && !searchBtn.dataset.hasListener) {
+          searchBtn.dataset.hasListener = 'true';
+          searchBtn.addEventListener('click', openSearch);
       }
       
-      closeSearch?.addEventListener('click', closeSearchModal);
-      searchModal?.addEventListener('click', (e) => {
+      if (closeSearch) closeSearch.addEventListener('click', closeSearchModal);
+      if (searchModal) searchModal.addEventListener('click', (e) => {
         if (e.target === searchModal) closeSearchModal();
       });
       document.addEventListener('keydown', (e) => {
@@ -440,11 +501,152 @@ if (isPdfTool) {
         if (e.key === 'Escape') closeSearchModal();
       });
 
+      // Cache clear handlers
+      var cacheClearHandler = function() {
+        var confirmMsg = (window.i18n && window.i18n.t) ? window.i18n.t('confirm.clear_cache', 'Bersihkan cache dan reload halaman?') : 'Bersihkan cache dan reload halaman?';
+        if (!confirm(confirmMsg)) return;
+        // Clear localStorage
+        try { localStorage.clear(); } catch(e) {}
+        // Unregister service workers + clear caches, then reload
+        var promises = [];
+        if (navigator.serviceWorker) {
+          promises.push(navigator.serviceWorker.getRegistrations().then(function(regs) {
+            return Promise.all(regs.map(function(r) { return r.unregister(); }));
+          }).catch(function() {}));
+        }
+        if (window.caches) {
+          promises.push(caches.keys().then(function(names) {
+            return Promise.all(names.map(function(n) { return caches.delete(n); }));
+          }).catch(function() {}));
+        }
+        Promise.all(promises).then(function() {
+          window.location.reload();
+        }).catch(function() {
+          window.location.reload();
+        });
+      };
+      var cacheClearBtn = document.getElementById('cache-clear-btn');
+      if (cacheClearBtn && !cacheClearBtn.dataset.hasListener) {
+        cacheClearBtn.dataset.hasListener = 'true';
+        cacheClearBtn.addEventListener('click', cacheClearHandler);
+      }
+      var cacheClearMobile = document.getElementById('cache-clear-mobile');
+      if (cacheClearMobile && !cacheClearMobile.dataset.hasListener) {
+        cacheClearMobile.dataset.hasListener = 'true';
+        cacheClearMobile.addEventListener('click', cacheClearHandler);
+      }
+
+      const toolsList = [
+        { name: 'PDF Merger', url: '/pdf/merge', category: 'PDF', descKey: 'header.merge_desc', descFallback: 'Gabungkan banyak file PDF menjadi satu' },
+        { name: 'PDF Splitter', url: '/pdf/split', category: 'PDF', descKey: 'header.split_desc', descFallback: 'Pisah file PDF menjadi beberapa bagian' },
+        { name: 'PDF Delete Pages', url: '/pdf/delete', category: 'PDF', descKey: 'header.delete_desc', descFallback: 'Hapus halaman dari PDF' },
+        { name: 'PDF Extract Pages', url: '/pdf/extract', category: 'PDF', descKey: 'header.extract_desc', descFallback: 'Ekstrak halaman tertentu dari PDF' },
+        { name: 'PDF Rotate', url: '/pdf/rotate', category: 'PDF', descKey: 'header.rotate_desc', descFallback: 'Putar halaman PDF' },
+        { name: 'PDF Grayscale', url: '/pdf/grayscale', category: 'PDF', descKey: 'header.grayscale_desc', descFallback: 'Ubah PDF menjadi grayscale' },
+        { name: 'PDF Compress', url: '/pdf/compress', category: 'PDF', descKey: 'header.compress_desc', descFallback: 'Kompres ukuran file PDF' },
+        { name: 'PDF to JPG', url: '/pdf/to-jpg', category: 'PDF', descKey: 'tool.pdf_to_jpg_desc', descFallback: 'Konversi PDF ke gambar JPG' },
+        { name: 'JPG to PDF', url: '/pdf/jpg-to-pdf', category: 'PDF', descKey: 'header.jpg_to_pdf_desc', descFallback: 'Konversi gambar JPG ke PDF' },
+        { name: 'HTML to PDF', url: '/pdf/html-to-pdf', category: 'PDF', descKey: 'header.html_to_pdf_desc', descFallback: 'Konversi HTML ke PDF' },
+        { name: 'PDF to PPT', url: '/pdf/to-ppt', category: 'PDF', descKey: 'header.to_ppt_desc', descFallback: 'Konversi PDF ke PowerPoint' },
+        { name: 'PDF Sign', url: '/pdf/sign', category: 'PDF', descKey: 'header.sign_desc', descFallback: 'Tanda tangan file PDF' },
+        { name: 'PDF Watermark', url: '/pdf/watermark', category: 'PDF', descKey: 'header.watermark_desc', descFallback: 'Tambah watermark ke PDF' },
+        { name: 'PDF Metadata', url: '/pdf/metadata', category: 'PDF', descKey: 'header.metadata_desc', descFallback: 'Lihat dan edit metadata PDF' },
+        { name: 'PDF Page Numbers', url: '/pdf/page-numbers', category: 'PDF', descKey: 'header.page_numbers_desc', descFallback: 'Tambah nomor halaman PDF' },
+        { name: 'PDF Reorder', url: '/pdf/reorder', category: 'PDF', descKey: 'header.reorder_desc', descFallback: 'Atur ulang halaman PDF' },
+        { name: 'Image Compressor', url: '/image/compressor', category: 'Image', descKey: 'header.image_compressor_desc', descFallback: 'Kompres gambar tanpa upload' },
+        { name: 'Image Converter', url: '/image/converter', category: 'Image', descKey: 'header.converter_desc', descFallback: 'Konversi format gambar' },
+        { name: 'Image Editor', url: '/image/editor', category: 'Image', descKey: 'header.editor_desc', descFallback: 'Edit gambar sederhana' },
+        { name: 'HTML to Image', url: '/image/html-to-img', category: 'Image', descKey: 'header.html_to_img_desc', descFallback: 'Konversi HTML ke gambar' },
+        { name: 'Color Tools', url: '/image/color', category: 'Image', descKey: 'header.color_desc', descFallback: 'Picker dan konversi warna' },
+        { name: 'Age Calculator', url: '/calc/age', category: 'Calc', descKey: 'header.age_desc', descFallback: 'Hitung umur detail' },
+        { name: 'BMI Calculator', url: '/calc/bmi', category: 'Calc', descKey: 'header.bmi_desc', descFallback: 'Hitung indeks massa tubuh' },
+        { name: 'Case Converter', url: '/calc/case', category: 'Calc', descKey: 'header.case_desc', descFallback: 'Ubah huruf besar/kecil' },
+        { name: 'Currency Converter', url: '/calc/currency', category: 'Calc', descKey: 'header.currency_desc', descFallback: 'Konversi mata uang' },
+        { name: 'Number Converter', url: '/calc/number', category: 'Calc', descKey: 'header.number_desc', descFallback: 'Konversi angka' },
+        { name: 'Percentage Calculator', url: '/calc/percentage', category: 'Calc', descKey: 'header.percentage_desc', descFallback: 'Kalkulator persentase' },
+        { name: 'Unit Converter', url: '/calc/unit', category: 'Calc', descKey: 'header.unit_desc', descFallback: 'Konversi satuan' },
+        { name: 'Base64 Converter', url: '/dev/base64', category: 'Dev', descKey: 'header.base64_desc', descFallback: 'Encode/decode Base64' },
+        { name: 'Cron Generator', url: '/dev/cron', category: 'Dev', descKey: 'header.cron_desc', descFallback: 'Generator ekspresi cron' },
+        { name: 'CSS Shadow Generator', url: '/dev/css-shadow', category: 'Dev', descKey: 'header.css_shadow_desc', descFallback: 'Generator box-shadow CSS' },
+        { name: 'Diff Checker', url: '/dev/diff', category: 'Dev', descKey: 'header.diff_desc', descFallback: 'Bandingkan teks' },
+        { name: 'JSON Formatter', url: '/dev/json', category: 'Dev', descKey: 'header.json_desc', descFallback: 'Format dan validasi JSON' },
+        { name: 'Markdown Editor', url: '/dev/markdown', category: 'Dev', descKey: 'header.markdown_desc', descFallback: 'Editor markdown live' },
+        { name: 'My IP & Network', url: '/dev/my-ip', category: 'Dev', descKey: 'header.my_ip_desc', descFallback: 'Cek IP dan info jaringan' },
+        { name: 'Proxy Tester', url: '/dev/proxy', category: 'Dev', descKey: 'header.proxy_desc', descFallback: 'Tes proxy' },
+        { name: 'Timestamp Converter', url: '/dev/timestamp', category: 'Dev', descKey: 'header.timestamp_desc', descFallback: 'Konversi timestamp' },
+        { name: 'URL Tools', url: '/dev/url', category: 'Dev', descKey: 'header.url_desc', descFallback: 'Encode/decode URL' },
+        { name: 'CSV to JSON', url: '/file/csv-json', category: 'File', descKey: 'header.csv_json_desc', descFallback: 'Konversi CSV ke JSON' },
+        { name: 'PDF to Markdown', url: '/file/pdf-to-md', category: 'File', descKey: 'header.pdf_to_md_desc', descFallback: 'Ekstrak teks PDF ke Markdown' },
+        { name: 'Hash Generator', url: '/security/hash', category: 'Security', descKey: 'header.hash_desc', descFallback: 'Generate hash MD5/SHA' },
+        { name: 'Password Generator', url: '/security/password', category: 'Security', descKey: 'header.password_desc', descFallback: 'Generator password kuat' },
+        { name: 'UUID Generator', url: '/security/uuid', category: 'Security', descKey: 'header.uuid_desc', descFallback: 'Generate UUID' },
+        { name: 'Brainstorm', url: '/utils/brainstorm', category: 'Utils', descKey: 'header.brainstorm_desc', descFallback: 'Generator ide dan fakta' },
+        { name: 'Jokes', url: '/utils/jokes', category: 'Utils', descKey: 'header.jokes_desc', descFallback: 'Kumpulan lelucon' },
+        { name: 'Lorem Ipsum', url: '/utils/lorem', category: 'Utils', descKey: 'header.lorem_desc', descFallback: 'Generator teks dummy' },
+        { name: 'Motivation', url: '/utils/motivation', category: 'Utils', descKey: 'header.motivation_desc', descFallback: 'Kutipan motivasi' },
+        { name: 'Pomodoro Timer', url: '/utils/pomodoro', category: 'Utils', descKey: 'header.pomodoro_desc', descFallback: 'Timer produktivitas' },
+        { name: 'QR Code Generator', url: '/utils/qr', category: 'Utils', descKey: 'header.qr_desc', descFallback: 'Buat QR Code' },
+        { name: 'Stopwatch', url: '/utils/stopwatch', category: 'Utils', descKey: 'header.stopwatch_desc', descFallback: 'Stopwatch sederhana' },
+        { name: 'Todo List', url: '/utils/todo', category: 'Utils', descKey: 'header.todo_desc', descFallback: 'Aplikasi todo list' },
+        { name: 'WA Link Builder', url: '/utils/wa-builder', category: 'Utils', descKey: 'header.wa_builder_desc', descFallback: 'Buat link WhatsApp' },
+        { name: 'Word Counter', url: '/utils/word-counter', category: 'Utils', descKey: 'header.word_counter_desc', descFallback: 'Hitung kata dan karakter' },
+      ];
+      
+      const searchInputEl = document.getElementById('search-modal-input');
+      const searchResultsEl = document.getElementById('search-results');
+      
+      if (searchInputEl && searchResultsEl && !searchInputEl.dataset.hasListener) {
+        searchInputEl.dataset.hasListener = 'true';
+        
+        var searchDebounceTimer;
+        searchInputEl.addEventListener('input', function(e) {
+          clearTimeout(searchDebounceTimer);
+          searchDebounceTimer = setTimeout(() => {
+            const query = e.target.value.toLowerCase().trim();
+            if (!query) {
+              searchResultsEl.innerHTML = '<div class="text-center py-8 text-slate-500 dark:text-slate-400"><p data-i18n="search.empty">Ketik untuk mencari tools</p></div>';
+              if (window.i18n && window.i18n.translateNode) window.i18n.translateNode(searchResultsEl);
+              return;
+            }
+
+            const filtered = toolsList.filter(t => {
+              const enDesc = (window.i18n && window.i18n.t) ? window.i18n.t(t.descKey, '') : '';
+              return t.name.toLowerCase().includes(query) ||
+                     t.descFallback.toLowerCase().includes(query) ||
+                     t.category.toLowerCase().includes(query) ||
+                     enDesc.toLowerCase().includes(query);
+            });
+
+            if (filtered.length === 0) {
+              searchResultsEl.innerHTML = '<div class="text-center py-8 text-slate-500 dark:text-slate-400"><p data-i18n="search.no_results">Tidak ada hasil untuk</p><p class="font-bold mt-1">"' + query + '"</p></div>';
+              if (window.i18n && window.i18n.translateNode) window.i18n.translateNode(searchResultsEl);
+              return;
+            }
+
+            searchResultsEl.innerHTML = filtered.map(t => {
+              const descText = (window.i18n && window.i18n.t) ? window.i18n.t(t.descKey, t.descFallback) : t.descFallback;
+              return `
+              <a href="${t.url}" class="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group">
+                <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 group-hover:text-sky-500 group-hover:bg-sky-50 dark:group-hover:bg-sky-900/20 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l7.81-9.24a1 1 0 0 1 1.54 0l7.81 9.24A1 1 0 0 1 20 14h-7v7h-2v-7z"/></svg>
+                </div>
+                <div>
+                  <p class="font-bold text-slate-800 dark:text-slate-200 group-hover:text-sky-600 dark:group-hover:text-sky-400">${t.name}</p>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">${descText}</p>
+                </div>
+                <span class="ml-auto text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">${t.category}</span>
+              </a>
+            `;
+            }).join('');
+          }, 150);
+        });
+      }
+
       const navLoad = document.getElementById('navigation-loading');
-      const navBar = navLoad?.querySelector('div');
+      var navBar = navLoad && navLoad.querySelector('div');
       
       document.addEventListener('astro:after-preparation', () => {
-        navLoad?.classList.remove('hidden');
+        if (navLoad) navLoad.classList.remove('hidden');
         if(navBar) navBar.style.width = '30%';
       });
       document.addEventListener('astro:after-swap', () => {
@@ -452,10 +654,316 @@ if (isPdfTool) {
           navBar.style.width = '100%';
           setTimeout(() => {
             navBar.style.width = '0%';
-            navLoad?.classList.add('hidden');
+            if (navLoad) navLoad.classList.add('hidden');
           }, 300);
         }
       });
+    });
+  </script>
+
+  <script>
+    import { translations, getLang, setLang, t } from '../i18n/translations';
+    window.i18n = { getLang, setLang, translations, t };
+
+    // Auto-generate dictionary from translations.ts for all unique tool headings/descriptions
+    const dynamicPhrases = Object.values(translations).reduce((acc: Record<string, string>, item: any) => {
+      if (item && item.id && item.en && item.id !== item.en) {
+        acc[item.id] = item.en;
+      }
+      return acc;
+    }, {});
+
+    const commonPhrases = {
+      'atau klik untuk pilih file (bisa banyak sekaligus)': 'or click to select files (multiple allowed)',
+      'Aplikasi siap digunakan offline.': 'App ready for offline use.',
+      'Hapus Riwayat': 'Clear History',
+      'Merge Mode': 'Merge Mode',
+      'Upload PDF Besar': 'Upload Large PDF',
+      'Klik atau tarik file ke sini': 'Click or drag file here',
+      'Tingkat Kompresi': 'Compression Level',
+      'Ekstrem (Burik)': 'Extreme (Blurred)',
+      'Kualitas Asli': 'Original Quality',
+      'Metode ini akan mengubah teks menjadi gambar (Rasterize) untuk mengurangi ukuran file secara drastis. Teks mungkin tidak bisa diseleksi lagi.': 'This method will convert text to image (Rasterize) to drastically reduce file size. Text may no longer be selectable.',
+      'Mulai Kompresi': 'Start Compression',
+      'Memproses halaman': 'Processing page',
+      'Selesai! File sedang didownload.': 'Done! File is being downloaded.',
+      'Gagal mengompresi PDF.': 'Failed to compress PDF.',
+      'Mohon upload file PDF!': 'Please upload a PDF file!',
+      'Upload Gambar': 'Upload Image',
+      'Pengaturan Kompresi': 'Compression Settings',
+      'Hemat': 'Save',
+      'Download Hasil': 'Download Result',
+      'Preview Hasil': 'Result Preview',
+      'Gambar berhasil diunduh!': 'Image downloaded successfully!',
+      'Ketik di sini...': 'Type here...',
+      'Hasil...': 'Result...',
+      'Ketik teks biasa...': 'Type plain text...',
+      'Tempel kode Base64...': 'Paste Base64 code...',
+      'Hasil disalin!': 'Result copied!',
+      'Metrik (kg/cm)': 'Metric (kg/cm)',
+      'Imperial (lbs/ft)': 'Imperial (lbs/ft)',
+      'Tinggi Badan': 'Height',
+      'Berat Badan': 'Weight',
+      'Jenis Kelamin': 'Gender',
+      'Pria': 'Male',
+      'Wanita': 'Female',
+      'Hitung BMI Sekarang': 'Calculate BMI Now',
+      'Skor BMI Anda': 'Your BMI Score',
+      'Berat Ideal': 'Ideal Weight',
+      'Saran Kesehatan': 'Health Advice',
+      'Klasifikasi BMI': 'BMI Classification',
+      'Kurus': 'Underweight',
+      'Gemuk': 'Overweight',
+      'Obesitas I': 'Obesity I',
+      'Obesitas II': 'Obesity II',
+      'Obesitas III': 'Obesity III',
+      'Belum ada riwayat perhitungan.': 'No calculation history yet.',
+      'Masukkan data yang valid!': 'Please enter valid data!',
+      'Disimpan ke riwayat!': 'Saved to history!',
+      'Hasil disalin ke clipboard!': 'Result copied to clipboard!',
+      'Tipe QR Code': 'QR Code Type',
+      'Teks/URL': 'Text/URL',
+      'Telepon': 'Phone',
+      'Isi Konten': 'Content',
+      'Nama Jaringan (SSID)': 'Network Name (SSID)',
+      'Enkripsi': 'Encryption',
+      'Tanpa Kata Sandi': 'No Password',
+      'Alamat Email': 'Email Address',
+      'Nomor Telepon': 'Phone Number',
+      'Nama Depan': 'First Name',
+      'Nama Belakang': 'Last Name',
+      'Lintang (Latitude)': 'Latitude',
+      'Bujur (Longitude)': 'Longitude',
+      'Query (Opsional)': 'Query (Optional)',
+      'Judul Acara': 'Event Title',
+      'Tanggal Mulai': 'Start Date',
+      'Tanggal Selesai': 'End Date',
+      'Kustomisasi': 'Customization',
+      'Warna QR': 'QR Color',
+      'Warna Background': 'Background Color',
+      'Tingkat Koreksi Error': 'Error Correction Level',
+      'Rendah (7%)': 'Low (7%)',
+      'Sedang (15%)': 'Medium (15%)',
+      'Tinggi (25%)': 'High (25%)',
+      'Tertinggi (30%)': 'Highest (30%)',
+      'Preview Live': 'Live Preview',
+      'Salin ke Clipboard': 'Copy to Clipboard',
+      'Belum ada riwayat': 'No history yet',
+      'Browser Anda tidak mendukung fitur berbagi': 'Your browser does not support sharing',
+      'Form berhasil direset!': 'Form reset successfully!',
+      'Riwayat dihapus!': 'History deleted!',
+      'QR Code dari riwayat diunduh!': 'QR Code from history downloaded!',
+      'Panjang Karakter': 'Character Length',
+      'Karakter':'Characters',
+      'Waktu Baca':'Reading Time',
+      'Simpan PDF':'Save PDF',
+      'Huruf Besar (A-Z)': 'Uppercase (A-Z)',
+      'Huruf Kecil (a-z)': 'Lowercase (a-z)',
+      'Angka (0-9)': 'Numbers (0-9)',
+      'Simbol (!@#$)': 'Symbols (!@#$)',
+      'Generate Password Baru': 'Generate New Password',
+      'Upload CSV': 'Upload CSV',
+      'Gagal konversi. Pastikan format CSV benar.': 'Conversion failed. Make sure the CSV format is correct.',
+      'Preview file akan muncul di sini': 'File preview will appear here',
+      'File berhasil ditambahkan': 'Files added successfully',
+      'File diurutkan berdasarkan nama': 'Files sorted by name',
+      'Form direset': 'Form reset',
+      'Gagal menggabungkan PDF. Pastikan file tidak dipassword atau corrupt.': 'Failed to merge PDF. Make sure the file is not password protected or corrupt.',
+      'Ketik atau tempel teks di sini...': 'Type or paste text here...',
+      'Ketik pesan di sini...': 'Type message here...',
+      'Ketik teks yang ingin di-hash...': 'Type text to hash...',
+      'Hasil akan muncul di sini...': 'Result will appear here...',
+      'Hasil konversi akan muncul di sini...': 'Conversion result will appear here...',
+      'Apa yang ingin dikerjakan?': 'What do you want to do?',
+      'Cari tools PDF...': 'Search PDF tools...',
+      'Contoh: 081234567890': 'Example: 081234567890',
+      'Deskripsi acara': 'Event description',
+      'Dipisahkan koma': 'Comma separated',
+      'Jl. Contoh No. 123, Jakarta': 'Jl. Example No. 123, Jakarta',
+      'Manajer': 'Manager',
+      'Meeting Tim': 'Team Meeting',
+      'Nama WiFi': 'WiFi Name',
+      'Perusahaan': 'Company',
+      'Ruang Meeting 1': 'Meeting Room 1',
+      'Hasil Password': 'Password Result',
+      'Isi pesan SMS': 'SMS message content',
+      'Isi pesan email': 'Email message content',
+      'Kata sandi WiFi': 'WiFi password',
+      'Nilai Awal': 'Initial Value',
+      'Subjek email': 'Email subject',
+      'Kontak Tersimpan': 'Saved Contacts',
+      'Nomor WhatsApp': 'WhatsApp Number',
+      'Penulis (Author)': 'Author',
+      'Ketajaman': 'Sharpness',
+      'Satuan': 'Unit',
+      'Teks Watermark': 'Watermark Text',
+      'Auto-refresh (detik)': 'Auto-refresh (seconds)',
+      'Kapan kamu lahir?': 'When were you born?',
+      'Subjek (Subject)': 'Subject',
+      'Judul (Title)': 'Title',
+      'Bahasa Terjemahan': 'Translation Language',
+      'Kata Kunci (Keywords)': 'Keywords',
+      'Link Hasil': 'Result Link',
+      'Target Translate': 'Target Translation',
+      'Template Pesan': 'Message Template',
+      'Ukuran Font': 'Font Size',
+      'Ukuran Teks': 'Text Size',
+      'Jumlah Uang': 'Amount of Money',
+      'Lagi cek...': 'Checking...',
+      'Lagi cari...': 'Searching...',
+      'Lagi detek...': 'Detecting...',
+      'Pilih atau Tarik File PDF': 'Select or Drag PDF File',
+      'Pilih atau Tarik File PNG ke sini': 'Select or Drag PNG File Here',
+      'Coba cari dengan kata kunci lain.': 'Try searching with different keywords.',
+      'Belum ada tugas. Yuk mulai produktif!': 'No tasks yet. Let\'s be productive!',
+      'Data diproses 100% lokal di browser — tidak ada upload ke server.': 'Data processed 100% locally in browser — no upload to server.',
+      'Konversi Unix Timestamp ke format tanggal manusia atau sebaliknya.': 'Convert Unix Timestamp to human-readable date or vice versa.',
+      'Tambahkan penomoran halaman otomatis (1 dari N) ke PDF.': 'Add automatic page numbering (1 of N) to PDF.',
+      'Rekomendasi: 150% - 200% untuk teks yang jelas.': 'Recommendation: 150% - 200% for clear text.',
+      'Ambil warna dari pixel mana saja di monitor Anda.': 'Pick colors from any pixel on your monitor.',
+      'Ubah format gambar instan tanpa upload ke server.': 'Convert image format instantly without uploading to server.',
+      'Buka foto untuk mulai mengedit': 'Open a photo to start editing',
+      'Upload gambar untuk mulai picking': 'Upload an image to start picking',
+      'Seret file ke sini atau klik untuk memilih': 'Drag files here or click to select',
+      'Drag halaman untuk menukar posisi': 'Drag pages to swap positions',
+      'Klik pada halaman yang ingin Anda': 'Click on the pages you want to',
+      'Isi 0 untuk mematikan auto-refresh.': 'Enter 0 to disable auto-refresh.',
+      'Jatuh pada hari...': 'Falls on...',
+      'Kamu lahir di hari ini.': 'You were born on this day.',
+      'Tidak ada konversi umum': 'No common conversions',
+      'Belum ada quote favorit': 'No favorite quotes yet',
+      'Tidak ada favorit kategori ini': 'No favorites in this category',
+      'Cari Lagi': 'Search Again',
+      'untuk acak': 'to shuffle',
+      'Semua Tools': 'All Tools',
+      'Pilih Semua': 'Select All',
+      'Tersesat?': 'Lost?',
+      'Halaman yang kamu cari sepertinya sudah dipindahkan atau tidak ada di server kami.': 'The page you are looking for seems to have been moved or doesn\'t exist on our server.',
+      'Kembali ke Dashboard': 'Back to Dashboard',
+      'Hitung Umur': 'Calculate Age',
+      'Simpan Hasil': 'Save Result',
+      'Tahun': 'Years',
+      'Bulan': 'Months',
+      'Hari': 'Days',
+      'Ulang Tahun Berikutnya': 'Next Birthday',
+      'Hari Lagi': 'Days Left',
+      'Hari Kelahiran': 'Birth Day',
+      'Statistik Kehidupan': 'Life Statistics',
+      'Total Bulan': 'Total Months',
+      'Total Minggu': 'Total Weeks',
+      'Total Hari': 'Total Days',
+      'Total Jam': 'Total Hours',
+      'Perbandingan Unik': 'Unique Comparisons',
+      'Hmm, ada yang salah dengan tanggal yang kamu pilih': 'Hmm, something is wrong with the date you selected',
+      'Tugas Tersisa': 'Tasks Remaining',
+      'Provider': 'Provider',
+      'Organisasi': 'Organization',
+      'Negara': 'Country',
+      'Kota': 'City',
+      'Zona Waktu': 'Timezone',
+      'Koordinat': 'Coordinates',
+      'Browser & OS': 'Browser & OS',
+      'Resolusi': 'Resolution',
+      'Baterai': 'Battery',
+      'IP Lokal (WebRTC)': 'Local IP (WebRTC)',
+      'Proxy / VPN': 'Proxy / VPN',
+      'DNS Server': 'DNS Server',
+      'User Agent': 'User Agent',
+      'Download': 'Download',
+      'Upload': 'Upload',
+      'Ping': 'Ping',
+      'Mulai Test': 'Start Test',
+      'Catatan: Ping adalah latensi asli, kecepatan adalah simulasi.': 'Note: Ping is real latency, speed is simulated.',
+      'Riwayat Perhitungan': 'Calculation History',
+    };
+    const allPhrases = { ...dynamicPhrases, ...commonPhrases };
+
+    const skipTags = ['SCRIPT','STYLE','NOSCRIPT','SVG','CODE','PRE','TEXTAREA','INPUT','SELECT'];
+
+    function walkAndTranslate(node, lang) {
+      if (!node) return;
+      if (lang !== 'en') return;
+      const walk = (n) => {
+        if (n.nodeType === Node.TEXT_NODE) {
+          const original = n.textContent || '';
+          let modified = original;
+          for (const [idText, enText] of Object.entries(allPhrases)) {
+            if (modified === idText) { modified = enText; break; }
+            if (idText.length <= 10) {
+              const regex = new RegExp('(^|\\s)(' + idText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?=\\s|$|[.,;:!?])', 'g');
+              modified = modified.replace(regex, '$1' + enText);
+            } else {
+              modified = modified.split(idText).join(enText);
+            }
+          }
+          if (modified !== original) n.textContent = modified;
+        } else if (n.nodeType === Node.ELEMENT_NODE) {
+          const el = n;
+          if (skipTags.includes(el.tagName)) return;
+          for (const attr of ['placeholder','aria-label','title']) {
+            const val = el.getAttribute(attr);
+            if (val && allPhrases[val]) {
+              el.setAttribute(attr, allPhrases[val]);
+            }
+          }
+          Array.from(el.childNodes).forEach(walk);
+        }
+      };
+      walk(node);
+    }
+
+    function processI18n() {
+      const lang = getLang();
+      document.documentElement.lang = lang;
+
+      // --- Translate Page Title ---
+      const originalTitle = document.querySelector('meta[name="original-title"]')?.getAttribute('content') || '';
+      if (originalTitle) {
+        const translatedTitle = lang === 'en' ? (allPhrases[originalTitle] || originalTitle) : originalTitle;
+        document.title = `${translatedTitle} | PakLubis Tools`;
+      }
+
+      const desktopLabel = document.getElementById('lang-label-desktop');
+      const mobileLabel = document.getElementById('lang-label-mobile');
+      if (desktopLabel) desktopLabel.textContent = lang.toUpperCase();
+      if (mobileLabel) mobileLabel.textContent = lang.toUpperCase();
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (!key) return;
+        const attr = el.getAttribute('data-i18n-attr');
+        const entry = translations[key];
+        if (!entry) return;
+        const text = entry[lang];
+        if (attr) {
+          if (attr === 'textContent') el.textContent = text;
+          else el.setAttribute(attr, text);
+        } else {
+          el.textContent = text;
+        }
+      });
+
+      walkAndTranslate(document.body, lang);
+    }
+
+    function translateNode(node) {
+      walkAndTranslate(node, getLang());
+    }
+
+    window.i18n.translateNode = translateNode;
+
+    document.addEventListener('astro:page-load', processI18n);
+    processI18n();
+
+    function toggleLang() {
+      const newLang = getLang() === 'id' ? 'en' : 'id';
+      setLang(newLang);
+      window.location.reload();
+    }
+
+    document.addEventListener('astro:page-load', () => {
+      document.getElementById('lang-toggle-desktop')?.addEventListener('click', toggleLang);
+      document.getElementById('lang-toggle-mobile')?.addEventListener('click', toggleLang);
     });
   </script>
 </body>

@@ -5,22 +5,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="CSV to JSON Converter">
   <div class="max-w-6xl mx-auto px-4 min-h-[80vh] flex flex-col">
     <div class="text-center mb-8 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500" data-i18n="header.csv_json">
         CSV to JSON
       </h1>
-      <p class="text-slate-600 dark:text-slate-400">
+      <p class="text-slate-600 dark:text-slate-400" data-i18n="header.csv_json_desc">
         Konversi data CSV (Excel) menjadi format JSON untuk developer.
       </p>
     </div>
 
     <div class="flex justify-between items-center mb-4 animate-fade-in">
-        <label class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 px-4 py-2 rounded-lg text-sm font-bold cursor-pointer transition">
+        <label class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 px-4 py-2 rounded-lg text-sm font-bold cursor-pointer transition" data-i18n="btn.upload_csv">
             📂 Upload CSV
             <input type="file" id="file-csv" accept=".csv" class="hidden" />
         </label>
         
         <div class="flex gap-2">
-            <button id="convert-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition active:scale-95 flex items-center gap-2">
+            <button id="convert-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition active:scale-95 flex items-center gap-2" data-i18n="btn.convert">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
                 Convert
             </button>
@@ -30,18 +30,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 mb-12 animate-fade-in h-[500px]">
         
         <div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl shadow border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-b border-slate-200 dark:border-slate-700 font-bold text-slate-500 text-xs uppercase">
+            <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-b border-slate-200 dark:border-slate-700 font-bold text-slate-500 text-xs uppercase" data-i18n="label.csv_input">
                 CSV Input
             </div>
-            <textarea id="input-csv" class="flex-1 w-full p-4 font-mono text-sm bg-transparent outline-none resize-none dark:text-slate-200 whitespace-pre" placeholder="id,name,age&#10;1,John Doe,25&#10;2,Jane Smith,30"></textarea>
+            <textarea id="input-csv" class="flex-1 w-full p-4 font-mono text-sm bg-transparent outline-none resize-none dark:text-slate-200 whitespace-pre" placeholder="id,name,age&#10;1,John Doe,25&#10;2,Jane Smith,30" data-i18n-attr="placeholder" data-i18n="ph.csv_input"></textarea>
         </div>
 
         <div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl shadow border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                <span class="font-bold text-slate-500 text-xs uppercase">JSON Output</span>
-                <button id="copy-btn" class="text-xs font-bold text-blue-500 hover:text-blue-600">Copy JSON</button>
+                <span class="font-bold text-slate-500 text-xs uppercase" data-i18n="label.json_output">JSON Output</span>
+                <button id="copy-btn" class="text-xs font-bold text-blue-500 hover:text-blue-600" data-i18n="btn.copy_json">Copy JSON</button>
             </div>
-            <textarea id="output-json" readonly class="flex-1 w-full p-4 font-mono text-sm bg-transparent outline-none resize-none dark:text-slate-200" placeholder="Result will appear here..."></textarea>
+            <textarea id="output-json" readonly class="flex-1 w-full p-4 font-mono text-sm bg-transparent outline-none resize-none dark:text-slate-200" placeholder="Result will appear here..." data-i18n-attr="placeholder" data-i18n="ph.json_output"></textarea>
         </div>
 
     </div>
@@ -89,7 +89,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         const json = csvToJson(csv);
         output.value = json;
     } catch (e) {
-        alert("Gagal konversi. Pastikan format CSV benar.");
+        alert(window._tToast ? window._tToast("Gagal konversi. Pastikan format CSV benar.") : "Gagal konversi. Pastikan format CSV benar.");
     }
   });
 
@@ -107,6 +107,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   copyBtn?.addEventListener('click', () => {
     if (!output.value) return;
     navigator.clipboard.writeText(output.value);
-    window.showToast("JSON disalin!", "success");
+    window.showToast(window._tToast ? window._tToast('JSON disalin!') : 'JSON disalin!', "success");
   });
 </script>

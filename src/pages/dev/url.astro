@@ -8,14 +8,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-500">
         URL Encoder / Decoder
       </h1>
-      <p class="text-slate-600 dark:text-slate-400">
+      <p class="text-slate-600 dark:text-slate-400" data-i18n="header.url_desc">
         Encode URL agar aman digunakan atau Decode URL yang berantakan (%20).
       </p>
     </div>
 
     <div class="bg-white dark:bg-slate-800 p-1 rounded-xl inline-flex mb-8 border border-slate-200 dark:border-slate-700 animate-fade-in mx-auto relative left-1/2 -translate-x-1/2">
-       <button id="mode-encode" class="px-6 py-2 rounded-lg text-sm font-bold bg-teal-500 text-white shadow-md transition-all">Encoder</button>
-       <button id="mode-decode" class="px-6 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-all">Decoder</button>
+       <button id="mode-encode" class="px-6 py-2 rounded-lg text-sm font-bold bg-teal-500 text-white shadow-md transition-all" data-i18n="btn.encoder">Encoder</button>
+       <button id="mode-decode" class="px-6 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-all" data-i18n="btn.decoder">Decoder</button>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
@@ -61,7 +61,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             output.value = decodeURIComponent(val.replace(/\+/g, '%20'));
         }
     } catch (e) {
-        output.value = "Error: Invalid URL format";
+        output.value = window._tToast ? window._tToast('Error: Invalid URL format') : 'Error: Invalid URL format';
     }
   }
 
@@ -89,6 +89,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   copyBtn.addEventListener('click', () => {
     if(!output.value) return;
     navigator.clipboard.writeText(output.value);
-    window.showToast("URL disalin!", "success");
+    window.showToast(window._tToast ? window._tToast('URL disalin!') : 'URL disalin!', "success");
   });
 </script>

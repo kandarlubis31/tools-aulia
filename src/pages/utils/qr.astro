@@ -20,38 +20,38 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="lg:col-span-2 space-y-6">
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
           <div class="mb-4">
-            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tipe QR Code</label>
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.qr_type">Tipe QR Code</label>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <button class="qr-type-btn active" data-type="text">Teks/URL</button>
-              <button class="qr-type-btn" data-type="wifi">WiFi</button>
-              <button class="qr-type-btn" data-type="email">Email</button>
-              <button class="qr-type-btn" data-type="sms">SMS</button>
-              <button class="qr-type-btn" data-type="phone">Telepon</button>
-              <button class="qr-type-btn" data-type="vcard">Kontak</button>
-              <button class="qr-type-btn" data-type="location">Lokasi</button>
-              <button class="qr-type-btn" data-type="event">Acara</button>
+              <button class="qr-type-btn active" data-type="text" data-i18n="label.text_url">Teks/URL</button>
+              <button class="qr-type-btn" data-type="wifi" data-i18n="label.wifi">WiFi</button>
+              <button class="qr-type-btn" data-type="email" data-i18n="label.email">Email</button>
+              <button class="qr-type-btn" data-type="sms" data-i18n="label.sms">SMS</button>
+              <button class="qr-type-btn" data-type="phone" data-i18n="label.phone">Telepon</button>
+              <button class="qr-type-btn" data-type="vcard" data-i18n="label.contact">Kontak</button>
+              <button class="qr-type-btn" data-type="location" data-i18n="label.location">Lokasi</button>
+              <button class="qr-type-btn" data-type="event" data-i18n="label.event">Acara</button>
             </div>
           </div>
           
           <div id="qr-input-fields">
             <div id="text-input" class="qr-input-container">
-              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Isi Konten</label>
-              <textarea id="qr-text" placeholder="https://example.com atau teks apa pun" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.content">Isi Konten</label>
+              <textarea id="qr-text" placeholder="https://example.com atau teks apa pun" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none" data-i18n-attr="placeholder" data-i18n="ph.qr_content"></textarea>
             </div>
             
             <div id="wifi-input" class="qr-input-container hidden">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Nama Jaringan (SSID)</label>
-                  <input type="text" id="wifi-ssid" placeholder="Nama WiFi" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.wifi_name">Nama Jaringan (SSID)</label>
+                  <input type="text" id="wifi-ssid" placeholder="Nama WiFi" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.wifi_name" />
                 </div>
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Kata Sandi</label>
-                  <input type="text" id="wifi-password" placeholder="Kata sandi WiFi" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.password">Kata Sandi</label>
+                  <input type="text" id="wifi-password" placeholder="Kata sandi WiFi" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.wifi_password" />
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Enkripsi</label>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.encryption">Enkripsi</label>
                 <select id="wifi-encryption" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all">
                   <option value="WPA">WPA/WPA2</option>
                   <option value="WEP">WEP</option>
@@ -62,131 +62,131 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             
             <div id="email-input" class="qr-input-container hidden">
               <div class="mb-4">
-                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Alamat Email</label>
-                <input type="email" id="email-address" placeholder="email@example.com" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.email_address">Alamat Email</label>
+                <input type="email" id="email-address" placeholder="email@example.com" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.email" />
               </div>
               <div class="mb-4">
-                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Subjek</label>
-                <input type="text" id="email-subject" placeholder="Subjek email" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.email_subject">Subjek</label>
+                <input type="text" id="email-subject" placeholder="Subjek email" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.email_subject" />
               </div>
               <div>
-                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Pesan</label>
-                <textarea id="email-message" placeholder="Isi pesan email" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.email_message">Pesan</label>
+                <textarea id="email-message" placeholder="Isi pesan email" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none" data-i18n-attr="placeholder" data-i18n="ph.email_content"></textarea>
               </div>
             </div>
             
             <div id="sms-input" class="qr-input-container hidden">
               <div class="mb-4">
-                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Nomor Telepon</label>
-                <input type="tel" id="sms-number" placeholder="+628123456789" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.phone_number">Nomor Telepon</label>
+                <input type="tel" id="sms-number" placeholder="+628123456789" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.sms_number" />
               </div>
               <div>
-                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Pesan</label>
-                <textarea id="sms-message" placeholder="Isi pesan SMS" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.sms_message">Pesan</label>
+                <textarea id="sms-message" placeholder="Isi pesan SMS" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none" data-i18n-attr="placeholder" data-i18n="ph.sms_content"></textarea>
               </div>
             </div>
             
             <div id="phone-input" class="qr-input-container hidden">
-              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Nomor Telepon</label>
-              <input type="tel" id="phone-number" placeholder="+628123456789" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.phone_number">Nomor Telepon</label>
+              <input type="tel" id="phone-number" placeholder="+628123456789" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.phone_number" />
             </div>
             
             <div id="vcard-input" class="qr-input-container hidden">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Nama Depan</label>
-                  <input type="text" id="vcard-firstname" placeholder="John" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.first_name">Nama Depan</label>
+                  <input type="text" id="vcard-firstname" placeholder="John" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.first_name" />
                 </div>
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Nama Belakang</label>
-                  <input type="text" id="vcard-lastname" placeholder="Doe" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
-                </div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Organisasi</label>
-                  <input type="text" id="vcard-org" placeholder="Perusahaan" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
-                </div>
-                <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Judul</label>
-                  <input type="text" id="vcard-title" placeholder="Manajer" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.last_name">Nama Belakang</label>
+                  <input type="text" id="vcard-lastname" placeholder="Doe" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.last_name" />
                 </div>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Telepon</label>
-                  <input type="tel" id="vcard-phone" placeholder="+628123456789" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.organization">Organisasi</label>
+                  <input type="text" id="vcard-org" placeholder="Perusahaan" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.company" />
                 </div>
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Email</label>
-                  <input type="email" id="vcard-email" placeholder="email@example.com" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.title">Judul</label>
+                  <input type="text" id="vcard-title" placeholder="Manajer" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.manager" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.phone">Telepon</label>
+                  <input type="tel" id="vcard-phone" placeholder="+628123456789" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.phone_number" />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.email">Email</label>
+                  <input type="email" id="vcard-email" placeholder="email@example.com" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.email" />
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Alamat</label>
-                <input type="text" id="vcard-address" placeholder="Jl. Contoh No. 123, Jakarta" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.address">Alamat</label>
+                <input type="text" id="vcard-address" placeholder="Jl. Contoh No. 123, Jakarta" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.address_example" />
               </div>
             </div>
             
             <div id="location-input" class="qr-input-container hidden">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Lintang (Latitude)</label>
-                  <input type="text" id="location-lat" placeholder="-6.2088" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.latitude">Lintang (Latitude)</label>
+                  <input type="text" id="location-lat" placeholder="-6.2088" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.latitude" />
                 </div>
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Bujur (Longitude)</label>
-                  <input type="text" id="location-lng" placeholder="106.8456" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.longitude">Bujur (Longitude)</label>
+                  <input type="text" id="location-lng" placeholder="106.8456" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.longitude" />
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Query (Opsional)</label>
-                <input type="text" id="location-query" placeholder="Monas, Jakarta" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.query">Query (Opsional)</label>
+                <input type="text" id="location-query" placeholder="Monas, Jakarta" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.query" />
               </div>
             </div>
             
             <div id="event-input" class="qr-input-container hidden">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Judul Acara</label>
-                  <input type="text" id="event-title" placeholder="Meeting Tim" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.event_title">Judul Acara</label>
+                  <input type="text" id="event-title" placeholder="Meeting Tim" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.meeting" />
                 </div>
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Lokasi</label>
-                  <input type="text" id="event-location" placeholder="Ruang Meeting 1" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.location">Lokasi</label>
+                  <input type="text" id="event-location" placeholder="Ruang Meeting 1" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" data-i18n-attr="placeholder" data-i18n="ph.room" />
                 </div>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tanggal Mulai</label>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.start_date">Tanggal Mulai</label>
                   <input type="datetime-local" id="event-start" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
                 </div>
                 <div>
-                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tanggal Selesai</label>
+                  <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.end_date">Tanggal Selesai</label>
                   <input type="datetime-local" id="event-end" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all" />
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Deskripsi</label>
-                <textarea id="event-description" placeholder="Deskripsi acara" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.description">Deskripsi</label>
+                <textarea id="event-description" placeholder="Deskripsi acara" rows="3" class="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-indigo-500 outline-none transition-all resize-none" data-i18n-attr="placeholder" data-i18n="ph.event_desc"></textarea>
               </div>
             </div>
           </div>
         </div>
         
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
-          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4">Kustomisasi</h3>
+          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4" data-i18n="label.customization">Kustomisasi</h3>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Warna QR</label>
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.qr_color">Warna QR</label>
               <div class="flex items-center gap-2">
                 <input type="color" id="qr-color" value="#000000" class="w-full h-10 rounded cursor-pointer border border-slate-300 dark:border-slate-600" />
                 <input type="text" id="qr-color-hex" value="#000000" class="w-24 p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-sm focus:border-indigo-500 outline-none font-mono" />
               </div>
             </div>
             <div>
-              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Warna Background</label>
+              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.bg_color">Warna Background</label>
               <div class="flex items-center gap-2">
                 <input type="color" id="bg-color" value="#ffffff" class="w-full h-10 rounded cursor-pointer border border-slate-300 dark:border-slate-600" />
                 <input type="text" id="bg-color-hex" value="#ffffff" class="w-24 p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-sm focus:border-indigo-500 outline-none font-mono" />
@@ -195,7 +195,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
           
           <div class="mt-6">
-            <label class="flex justify-between text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+            <label class="flex justify-between text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.qr_size">
               <span>Ukuran</span>
               <span id="size-val">250px</span>
             </label>
@@ -203,12 +203,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
           
           <div class="mt-6">
-            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tingkat Koreksi Error</label>
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.error_correction">Tingkat Koreksi Error</label>
             <div class="grid grid-cols-4 gap-2">
-              <button class="error-level-btn" data-level="L">Rendah (7%)</button>
-              <button class="error-level-btn active" data-level="M">Sedang (15%)</button>
-              <button class="error-level-btn" data-level="Q">Tinggi (25%)</button>
-              <button class="error-level-btn" data-level="H">Tertinggi (30%)</button>
+              <button class="error-level-btn" data-level="L" data-i18n="label.low">Rendah (7%)</button>
+              <button class="error-level-btn active" data-level="M" data-i18n="label.medium">Sedang (15%)</button>
+              <button class="error-level-btn" data-level="Q" data-i18n="label.high">Tinggi (25%)</button>
+              <button class="error-level-btn" data-level="H" data-i18n="label.highest">Tertinggi (30%)</button>
             </div>
           </div>
         </div>
@@ -216,54 +216,54 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       
       <div class="space-y-6">
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
-          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4">Preview</h3>
+          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4" data-i18n="label.preview">Preview</h3>
           <div class="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 p-6 rounded-xl">
             <div class="bg-white p-4 rounded-xl shadow-lg transition-transform hover:scale-105 duration-300">
               <canvas id="qr-code"></canvas>
             </div>
-            <p class="mt-4 text-sm text-slate-500 font-medium">Preview Live</p>
+            <p class="mt-4 text-sm text-slate-500 font-medium" data-i18n="text.preview_live">Preview Live</p>
           </div>
         </div>
         
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
-          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4">Aksi</h3>
+          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4" data-i18n="label.actions">Aksi</h3>
           
           <div class="space-y-3">
             <div class="grid grid-cols-2 gap-3">
               <button id="download-png-btn" class="action-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                PNG
+                <span data-i18n="btn.png">PNG</span>
               </button>
               <button id="download-jpg-btn" class="action-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                JPG
+                <span data-i18n="btn.jpg">JPG</span>
               </button>
             </div>
             
             <button id="copy-btn" class="action-btn w-full">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              Salin ke Clipboard
+              <span data-i18n="btn.copy_clipboard">Salin ke Clipboard</span>
             </button>
             
             <button id="share-btn" class="action-btn w-full">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-              Bagikan
+              <span data-i18n="btn.share">Bagikan</span>
             </button>
             
             <button id="reset-btn" class="action-btn w-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-              Reset
+              <span data-i18n="btn.reset">Reset</span>
             </button>
           </div>
         </div>
         
         <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">Riwayat</h3>
-            <button id="clear-history-btn" class="text-xs text-slate-500 hover:text-red-500 transition-colors font-medium">Hapus Semua</button>
+            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300" data-i18n="label.history">Riwayat</h3>
+            <button id="clear-history-btn" class="text-xs text-slate-500 hover:text-red-500 transition-colors font-medium" data-i18n="btn.clear_all">Hapus Semua</button>
           </div>
           <div id="history-container" class="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada riwayat</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4" data-i18n="text.no_history">Belum ada riwayat</p>
           </div>
         </div>
       </div>
@@ -341,7 +341,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const historyContainer = document.getElementById('history-container');
   
   // QR Code instance
-  // @ts-ignore
   let qr = new QRious({
     element: canvas,
     value: 'https://paklubis.my.id',
@@ -358,7 +357,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let qrHistory = JSON.parse(localStorage.getItem('qrHistory') || '[]');
   
   // Initialize
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('astro:page-load', () => {
     renderHistory();
     updateQR();
   });
@@ -371,7 +370,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       btn.classList.add('active');
       
       // Show/hide input containers
-      // @ts-ignore
       const type = btn.dataset.type;
       currentQRType = type;
       
@@ -400,30 +398,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   
   // Color Sync
   qrColor.addEventListener('input', (e) => {
-    // @ts-ignore
     qrColorHex.value = e.target.value;
     updateQR();
   });
   
   qrColorHex.addEventListener('input', (e) => {
-    // @ts-ignore
     if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
-      // @ts-ignore
       qrColor.value = e.target.value;
       updateQR();
     }
   });
   
   bgColor.addEventListener('input', (e) => {
-    // @ts-ignore
     bgColorHex.value = e.target.value;
     updateQR();
   });
   
   bgColorHex.addEventListener('input', (e) => {
-    // @ts-ignore
     if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
-      // @ts-ignore
       bgColor.value = e.target.value;
       updateQR();
     }
@@ -431,7 +423,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   
   // Size Slider
   qrSize.addEventListener('input', (e) => {
-    // @ts-ignore
     sizeVal.innerText = `${e.target.value}px`;
     updateQR();
   });
@@ -448,58 +439,41 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Generate QR value based on type
     switch (currentQRType) {
       case 'text':
-        // @ts-ignore
         qrValue = document.getElementById('qr-text').value || 'https://paklubis.my.id';
         break;
         
       case 'wifi':
-        // @ts-ignore
         const ssid = document.getElementById('wifi-ssid').value || 'NetworkName';
-        // @ts-ignore
         const password = document.getElementById('wifi-password').value || '';
-        // @ts-ignore
         const encryption = document.getElementById('wifi-encryption').value || 'WPA';
         qrValue = `WIFI:T:${encryption};S:${ssid};P:${password};;`;
         break;
         
       case 'email':
-        // @ts-ignore
         const email = document.getElementById('email-address').value || 'email@example.com';
-        // @ts-ignore
         const subject = document.getElementById('email-subject').value || '';
-        // @ts-ignore
         const message = document.getElementById('email-message').value || '';
         qrValue = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
         break;
         
       case 'sms':
-        // @ts-ignore
         const number = document.getElementById('sms-number').value || '';
-        // @ts-ignore
         const smsMessage = document.getElementById('sms-message').value || '';
         qrValue = `sms:${number}?body=${encodeURIComponent(smsMessage)}`;
         break;
         
       case 'phone':
-        // @ts-ignore
         const phoneNumber = document.getElementById('phone-number').value || '';
         qrValue = `tel:${phoneNumber}`;
         break;
         
       case 'vcard':
-        // @ts-ignore
         const firstName = document.getElementById('vcard-firstname').value || '';
-        // @ts-ignore
         const lastName = document.getElementById('vcard-lastname').value || '';
-        // @ts-ignore
         const org = document.getElementById('vcard-org').value || '';
-        // @ts-ignore
         const title = document.getElementById('vcard-title').value || '';
-        // @ts-ignore
         const vcardPhone = document.getElementById('vcard-phone').value || '';
-        // @ts-ignore
         const vcardEmail = document.getElementById('vcard-email').value || '';
-        // @ts-ignore
         const address = document.getElementById('vcard-address').value || '';
         
         qrValue = `BEGIN:VCARD
@@ -514,11 +488,8 @@ END:VCARD`;
         break;
         
       case 'location':
-        // @ts-ignore
         const lat = document.getElementById('location-lat').value || '';
-        // @ts-ignore
         const lng = document.getElementById('location-lng').value || '';
-        // @ts-ignore
         const query = document.getElementById('location-query').value || '';
         
         if (lat && lng) {
@@ -529,15 +500,10 @@ END:VCARD`;
         break;
         
       case 'event':
-        // @ts-ignore
         const eventTitle = document.getElementById('event-title').value || '';
-        // @ts-ignore
         const eventLocation = document.getElementById('event-location').value || '';
-        // @ts-ignore
         const eventStart = document.getElementById('event-start').value || '';
-        // @ts-ignore
         const eventEnd = document.getElementById('event-end').value || '';
-        // @ts-ignore
         const eventDescription = document.getElementById('event-description').value || '';
         
         // Format dates for iCal
@@ -558,17 +524,13 @@ END:VEVENT`;
     }
     
     // Get active error level
-    // @ts-ignore
     const activeErrorLevel = document.querySelector('.error-level-btn.active').dataset.level;
     
     // Update QR
     qr.set({
       value: qrValue,
-      // @ts-ignore
       foreground: qrColor.value,
-      // @ts-ignore
       background: bgColor.value,
-      // @ts-ignore
       size: parseInt(qrSize.value),
       level: activeErrorLevel
     });
@@ -578,14 +540,13 @@ END:VEVENT`;
   downloadPngBtn.addEventListener('click', () => {
     const link = document.createElement('a');
     link.download = 'qrcode.png';
-    // @ts-ignore
     link.href = canvas.toDataURL();
     link.click();
     
     // Add to history
     addToHistory('PNG');
     
-    window.showToast('QR Code diunduh sebagai PNG!', 'success');
+    window.showToast(window._tToast ? window._tToast('QR Code diunduh sebagai PNG!') : 'QR Code diunduh sebagai PNG!', 'success');
   });
   
   // Download JPG
@@ -593,9 +554,7 @@ END:VEVENT`;
     // Create a temporary canvas with white background
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
-    // @ts-ignore
     tempCanvas.width = canvas.width;
-    // @ts-ignore
     tempCanvas.height = canvas.height;
     
     // Fill white background
@@ -603,7 +562,6 @@ END:VEVENT`;
     tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
     
     // Draw the QR code on top
-    // @ts-ignore
     tempCtx.drawImage(canvas, 0, 0);
     
     // Download as JPG
@@ -615,34 +573,28 @@ END:VEVENT`;
     // Add to history
     addToHistory('JPG');
     
-    window.showToast('QR Code diunduh sebagai JPG!', 'success');
+    window.showToast(window._tToast ? window._tToast('QR Code diunduh sebagai JPG!') : 'QR Code diunduh sebagai JPG!', 'success');
   });
   
   // Copy to Clipboard
   copyBtn.addEventListener('click', async () => {
     try {
-      // @ts-ignore
       canvas.toBlob(async (blob) => {
-        // @ts-ignore
         const item = new ClipboardItem({ 'image/png': blob });
         await navigator.clipboard.write([item]);
-        window.showToast('QR Code disalin ke clipboard!', 'success');
+        window.showToast(window._tToast ? window._tToast('QR Code disalin ke clipboard!') : 'QR Code disalin ke clipboard!', 'success');
       });
     } catch (err) {
-      window.showToast('Gagal menyalin ke clipboard', 'error');
+      window.showToast(window._tToast ? window._tToast('Gagal menyalin ke clipboard') : 'Gagal menyalin ke clipboard', 'error');
     }
   });
   
   // Share
   shareBtn.addEventListener('click', async () => {
-    // @ts-ignore
     if (navigator.share) {
       try {
-        // @ts-ignore
         canvas.toBlob(async (blob) => {
-          // @ts-ignore
           const file = new File([blob], 'qrcode.png', { type: 'image/png' });
-          // @ts-ignore
           await navigator.share({
             title: 'QR Code',
             text: 'Lihat QR Code yang saya buat',
@@ -650,10 +602,10 @@ END:VEVENT`;
           });
         });
       } catch (err) {
-        window.showToast('Gagal membagikan QR Code', 'error');
+        window.showToast(window._tToast ? window._tToast('Gagal membagikan QR Code') : 'Gagal membagikan QR Code', 'error');
       }
     } else {
-      window.showToast('Browser Anda tidak mendukung fitur berbagi', 'error');
+      window.showToast(window._tToast ? window._tToast('Browser Anda tidak mendukung fitur berbagi') : 'Browser Anda tidak mendukung fitur berbagi', 'error');
     }
   });
   
@@ -661,26 +613,21 @@ END:VEVENT`;
   resetBtn.addEventListener('click', () => {
     // Reset all inputs
     document.querySelectorAll('input, textarea, select').forEach(el => {
-      // @ts-ignore
       if (el.type === 'color') {
-        if (el.id === 'qr-color') { // @ts-ignore 
+        if (el.id === 'qr-color') {
             el.value = '#000000'; 
         }
-        if (el.id === 'bg-color') { // @ts-ignore
+        if (el.id === 'bg-color') {
             el.value = '#ffffff'; 
         }
       } else if (el.id === 'qr-size') {
-        // @ts-ignore
         el.value = '250';
-        sizeVal.innerText = '250px';
+        sizeVal.innerText = window._tToast ? window._tToast('250px') : '250px';
       } else if (el.id === 'qr-color-hex') {
-        // @ts-ignore
         el.value = '#000000';
       } else if (el.id === 'bg-color-hex') {
-        // @ts-ignore
         el.value = '#ffffff';
       } else {
-        // @ts-ignore
         el.value = '';
       }
     });
@@ -688,7 +635,6 @@ END:VEVENT`;
     // Reset QR type
     qrTypeButtons.forEach(btn => {
       btn.classList.remove('active');
-      // @ts-ignore
       if (btn.dataset.type === 'text') {
         btn.classList.add('active');
       }
@@ -697,7 +643,6 @@ END:VEVENT`;
     // Reset error level
     errorLevelButtons.forEach(btn => {
       btn.classList.remove('active');
-      // @ts-ignore
       if (btn.dataset.level === 'M') {
         btn.classList.add('active');
       }
@@ -715,7 +660,7 @@ END:VEVENT`;
     // Update QR
     updateQR();
     
-    window.showToast('Form berhasil direset!', 'success');
+    window.showToast(window._tToast ? window._tToast('Form berhasil direset!') : 'Form berhasil direset!', 'success');
   });
   
   // Clear History
@@ -723,7 +668,7 @@ END:VEVENT`;
     qrHistory = [];
     localStorage.setItem('qrHistory', JSON.stringify(qrHistory));
     renderHistory();
-    window.showToast('Riwayat dihapus!', 'success');
+    window.showToast(window._tToast ? window._tToast('Riwayat dihapus!') : 'Riwayat dihapus!', 'success');
   });
   
   // Add to History
@@ -734,7 +679,6 @@ END:VEVENT`;
       type: currentQRType,
       format: format,
       date: now.toLocaleString('id-ID'),
-      // @ts-ignore
       dataUrl: canvas.toDataURL()
     };
     
@@ -775,16 +719,14 @@ END:VEVENT`;
     document.querySelectorAll('.history-item button').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        // @ts-ignore
         const id = parseInt(btn.closest('.history-item').dataset.id);
-        // @ts-ignore
         const item = qrHistory.find(h => h.id === id);
         if (item) {
           const link = document.createElement('a');
           link.download = `qrcode-${item.type}-${item.id}.${item.format.toLowerCase()}`;
           link.href = item.dataUrl;
           link.click();
-          window.showToast('QR Code dari riwayat diunduh!', 'success');
+          window.showToast(window._tToast ? window._tToast('QR Code dari riwayat diunduh!') : 'QR Code dari riwayat diunduh!', 'success');
         }
       });
     });
@@ -794,7 +736,6 @@ END:VEVENT`;
   function debounce(func, wait) {
     let timeout;
     return function(...args) {
-      // @ts-ignore
       const context = this;
       clearTimeout(timeout);
       timeout = setTimeout(() => func.apply(context, args), wait);

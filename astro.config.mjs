@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'grid.svg', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'Tools Pak Lubis',
-        short_name: 'PakLubis Tools',
+        name: 'ToolsAulia',
+        short_name: 'ToolsAulia',
         description: 'Koleksi tools developer dan produktivitas lengkap.',
         theme_color: '#ffffff',
         background_color: '#ffffff',

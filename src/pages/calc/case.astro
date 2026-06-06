@@ -8,7 +8,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-pink-500">
         Case Converter
       </h1>
-      <p class="text-slate-600 dark:text-slate-400">
+      <p class="text-slate-600 dark:text-slate-400" data-i18n="header.case_desc">
         Ubah format huruf teks Anda dengan satu klik.
       </p>
     </div>
@@ -25,16 +25,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     <div class="flex flex-col h-96 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in">
        <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-          <span class="text-xs font-bold text-slate-500 uppercase">Text Editor</span>
+          <span class="text-xs font-bold text-slate-500 uppercase" data-i18n="text.case_editor">Text Editor</span>
           <div class="flex gap-2">
              <button id="copy-btn" class="text-xs font-bold text-fuchsia-600 hover:text-fuchsia-700">Copy</button>
              <button id="clear-btn" class="text-xs font-bold text-red-500 hover:text-red-600 ml-2">Clear</button>
           </div>
        </div>
-       <textarea id="text-input" class="flex-1 w-full p-6 font-sans text-lg bg-transparent text-slate-800 dark:text-slate-200 outline-none resize-none" placeholder="Ketik atau tempel teks di sini..."></textarea>
+       <textarea id="text-input" class="flex-1 w-full p-6 font-sans text-lg bg-transparent text-slate-800 dark:text-slate-200 outline-none resize-none" placeholder="Ketik atau tempel teks di sini..." data-i18n-attr="placeholder" data-i18n="ph.type_or_paste"></textarea>
        
        <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500">
-          <span id="char-count">0 karakter</span> | <span id="word-count">0 kata</span>
+          <span id="char-count">0 <span data-i18n="text.characters">karakter</span></span> | <span id="word-count">0 <span data-i18n="text.words">kata</span></span>
        </div>
     </div>
 
@@ -51,8 +51,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   function updateCounts() {
     const val = input.value;
-    charCount.innerText = `${val.length} karakter`;
-    wordCount.innerText = `${val.trim().split(/\s+/).filter(w => w).length} kata`;
+    const charNum = charCount.querySelector('span') || charCount;
+    const wordNum = wordCount.querySelector('span') || wordCount;
+    if (charNum && charNum !== charCount) {
+      charCount.childNodes[0].textContent = val.length + ' ';
+    } else {
+      charCount.innerText = val.length + ' karakter';
+    }
+    const wordCountVal = val.trim().split(/\s+/).filter(w => w).length;
+    if (wordNum && wordNum !== wordCount) {
+      wordCount.childNodes[0].textContent = wordCountVal + ' ';
+    } else {
+      wordCount.innerText = wordCountVal + ' kata';
+    }
   }
 
   function convert(type) {
@@ -98,7 +109,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   
   copyBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(input.value);
-    window.showToast("Teks disalin!", "success");
+    window.showToast(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!', "success");
   });
 
   clearBtn.addEventListener('click', () => {

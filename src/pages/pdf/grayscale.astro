@@ -3,9 +3,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="Grayscale PDF (Photocopy Effect) with Preview">
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script is:inline>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" async></script>
+  <script is:inline async>
+    (function waitForPdfjs() {
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+      } else {
+        setTimeout(waitForPdfjs, 50);
+      }
+    })();
   </script>
   <script type="module" src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
@@ -135,7 +141,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // --- FUNGSI PREVIEW ---
   async function loadAndPreviewFirstPage(file) {
       const arrayBuffer = await file.arrayBuffer();
-      // @ts-ignore
       pdfDocSource = await pdfjsLib.getDocument(arrayBuffer).promise;
       const page = await pdfDocSource.getPage(1);
       
@@ -228,7 +233,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         });
       }
 
-      statusText.innerText = "Menyusun file PDF akhir...";
+      statusText.innerText = window._tToast ? window._tToast("Menyusun file PDF akhir...") : "Menyusun file PDF akhir...";
       const pdfBytes = await newPdf.save();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const link = document.createElement('a');
@@ -236,15 +241,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.download = `grayscale-${currentFile.name}`;
       link.click();
 
-      window.showToast("Berhasil! PDF Hitam Putih siap.", "success");
+      window.showToast(window._tToast ? window._tToast("Berhasil! PDF Hitam Putih siap.") : "Berhasil! PDF Hitam Putih siap.", "success");
 
     } catch (err) {
       console.error(err);
-      window.showToast("Gagal memproses PDF. Coba file yang lebih kecil.", "error");
+      window.showToast(window._tToast ? window._tToast("Gagal memproses PDF. Coba file yang lebih kecil.") : "Gagal memproses PDF. Coba file yang lebih kecil.", "error");
     } finally {
       convertBtn.disabled = false;
       convertBtn.classList.remove('opacity-50');
-      statusText.innerText = "Selesai!";
+      statusText.innerText = window._tToast ? window._tToast("Selesai!") : "Selesai!";
       setTimeout(() => {
           progressContainer.classList.add('hidden');
           progressBar.style.width = '0%';

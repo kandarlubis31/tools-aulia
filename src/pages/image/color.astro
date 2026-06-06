@@ -198,13 +198,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let currentImage = null;
 
   // --- 1. EYEDROPPER API ---
-  // @ts-ignore
   if (window.EyeDropper) {
     eyeDropperSection.classList.remove('hidden');
     
     btnEyeDropper.addEventListener('click', async () => {
         try {
-            // @ts-ignore
             const eyeDropper = new EyeDropper();
             const result = await eyeDropper.open();
             updateColor(result.sRGBHex);
@@ -497,11 +495,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // Copy Buttons
   document.querySelectorAll('.copy-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        // @ts-ignore
         const targetId = e.currentTarget.dataset.target;
         const target = document.getElementById(targetId) as HTMLInputElement;
         navigator.clipboard.writeText(target.value);
-        window.showToast("Copied!", "success");
+        window.showToast(window._tToast ? window._tToast("Copied!") : "Copied!", "success");
     });
   });
 </script>

@@ -3,9 +3,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="Delete PDF Pages">
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script is:inline>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" async></script>
+  <script is:inline async>
+    (function waitForPdfjs() {
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+      } else {
+        setTimeout(waitForPdfjs, 50);
+      }
+    })();
   </script>
 
   <div class="max-w-6xl mx-auto px-4 min-h-[60vh]">
@@ -157,7 +163,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Batasi ukuran file (15MB)
     const maxSize = 15 * 1024 * 1024; // 15MB
     if (file.size > maxSize) {
-      alert('File terlalu besar. Maksimal ukuran file adalah 15MB.');
+      alert(window._tToast ? window._tToast('File terlalu besar. Maksimal ukuran file adalah 15MB.') : 'File terlalu besar. Maksimal ukuran file adalah 15MB.');
       return;
     }
     
@@ -185,7 +191,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     try {
       const arrayBuffer = await file.arrayBuffer();
-      // @ts-ignore
       pdfDocument = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       totalPages = pdfDocument.numPages;
       
@@ -205,7 +210,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       
     } catch (err) {
       console.error(err);
-      alert("Gagal memuat PDF. File mungkin rusak atau tidak didukung.");
+      alert(window._tToast ? window._tToast("Gagal memuat PDF. File mungkin rusak atau tidak didukung.") : "Gagal memuat PDF. File mungkin rusak atau tidak didukung.");
       resetUI();
     }
   }
@@ -356,7 +361,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       fileInfo.classList.add('hidden');
       fileInfo.textContent = '';
     }
-    if(loadingProgress) loadingProgress.textContent = '0%';
+    if(loadingProgress) loadingProgress.textContent = window._tToast ? window._tToast('0%') : '0%';
     if(loadMoreContainer) loadMoreContainer.classList.add('hidden');
   }
 
@@ -398,12 +403,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         URL.revokeObjectURL(url);
       }, 100);
 
-      alert("Halaman berhasil dihapus!");
+      alert(window._tToast ? window._tToast("Halaman berhasil dihapus!") : "Halaman berhasil dihapus!");
       resetUI();
 
     } catch (err) {
       console.error(err);
-      alert("Gagal menyimpan PDF.");
+      alert(window._tToast ? window._tToast("Gagal menyimpan PDF.") : "Gagal menyimpan PDF.");
     } finally {
       deleteBtn.innerHTML = originalText;
       deleteBtn.disabled = false;

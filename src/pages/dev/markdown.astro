@@ -16,8 +16,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
 
     <div class="flex justify-end gap-2 mb-4 animate-fade-in">
-       <button id="copy-html" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-sm font-bold rounded-lg transition">Copy HTML</button>
-       <button id="copy-md" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-lg transition">Copy Markdown</button>
+       <button id="copy-html" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-sm font-bold rounded-lg transition" data-i18n="btn.copy_html">Copy HTML</button>
+       <button id="copy-md" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-lg transition" data-i18n="btn.copy_md">Copy Markdown</button>
     </div>
 
     <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-4 pb-12 animate-fade-in h-[600px]">
@@ -38,7 +38,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const btnCopyMd = document.getElementById('copy-md');
 
   // Default Content
-  const defaultText = `# Selamat Datang!
+  const defaultText = `# " + (window._t ? window._t("Selamat Datang!") : "Selamat Datang!");
 
 Ini adalah **Markdown Editor** sederhana. 
 Kamu bisa menulis:
@@ -53,7 +53,6 @@ Coba ketik sesuatu di sebelah kiri...`;
 
   function render() {
     const text = editor.value;
-    // @ts-ignore
     preview.innerHTML = marked.parse(text);
   }
 
@@ -65,11 +64,11 @@ Coba ketik sesuatu di sebelah kiri...`;
 
   btnCopyMd.addEventListener('click', () => {
     navigator.clipboard.writeText(editor.value);
-    window.showToast('Markdown disalin!', 'success');
+    window.showToast(window._tToast ? window._tToast('Markdown disalin!') : 'Markdown disalin!', 'success');
   });
 
   btnCopyHtml.addEventListener('click', () => {
     navigator.clipboard.writeText(preview.innerHTML);
-    window.showToast('HTML Code disalin!', 'success');
+    window.showToast(window._tToast ? window._tToast('HTML Code disalin!') : 'HTML Code disalin!', 'success');
   });
 </script>

@@ -3,9 +3,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="PDF to PowerPoint">
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script is:inline>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" async></script>
+  <script is:inline async>
+    (function waitForPdfjs() {
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+      } else {
+        setTimeout(waitForPdfjs, 50);
+      }
+    })();
   </script>
   <script is:inline src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 
@@ -62,12 +68,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   async function convertToPPT(file) {
     try {
       const arrayBuffer = await file.arrayBuffer();
-      // @ts-ignore
       const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
       const totalPages = pdf.numPages;
       
       // Init PptxGenJS
-      // @ts-ignore
       const pptx = new PptxGenJS();
       pptx.layout = 'LAYOUT_16x9'; // Default layout
 
@@ -97,19 +101,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         slide.background = { data: imgData };
       }
 
-      statusText.innerText = "Membuat file PowerPoint...";
+      statusText.innerText = window._tToast ? window._tToast("Membuat file PowerPoint...") : "Membuat file PowerPoint...";
       
       // Save
       await pptx.writeFile({ fileName: `converted-${file.name}.pptx` });
       
-      statusText.innerText = "Selesai! File terunduh.";
-      window.showToast("Berhasil konversi ke PowerPoint!", "success");
+      statusText.innerText = window._tToast ? window._tToast("Selesai! File terunduh.") : "Selesai! File terunduh.";
+      window.showToast(window._tToast ? window._tToast("Berhasil konversi ke PowerPoint!") : "Berhasil konversi ke PowerPoint!", "success");
 
     } catch (err) {
       console.error(err);
-      statusText.innerText = "Gagal memproses file.";
+      statusText.innerText = window._tToast ? window._tToast("Gagal memproses file.") : "Gagal memproses file.";
       statusText.classList.add("text-red-500");
-      window.showToast("Gagal konversi.", "error");
+      window.showToast(window._tToast ? window._tToast("Gagal konversi.") : "Gagal konversi.", "error");
     }
   }
 </script>

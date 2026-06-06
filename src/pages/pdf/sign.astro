@@ -3,9 +3,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="Sign PDF (Pro)">
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script is:inline>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" async></script>
+  <script is:inline async>
+    (function waitForPdfjs() {
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+      } else {
+        setTimeout(waitForPdfjs, 50);
+      }
+    })();
   </script>
   <script type="module" src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
@@ -289,7 +295,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       sigOverlay.classList.remove('hidden');
       sigOverlay.style.top = '50%';
       sigOverlay.style.left = '50%';
-      window.showToast("Tanda tangan ditambahkan. Geser untuk mengatur posisi.", "info");
+      window.showToast(window._tToast ? window._tToast("Tanda tangan ditambahkan. Geser untuk mengatur posisi.") : "Tanda tangan ditambahkan. Geser untuk mengatur posisi.", "info");
   }
 
   removeSigBtn.addEventListener('click', (e) => {
@@ -370,11 +376,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   savePdfBtn.addEventListener('click', async () => {
       if (!currentFile) return;
       if (sigOverlay.classList.contains('hidden')) {
-          return window.showToast("Belum ada tanda tangan yang ditempel!", "error");
+          return window.showToast(window._tToast ? window._tToast("Belum ada tanda tangan yang ditempel!") : "Belum ada tanda tangan yang ditempel!", "error");
       }
 
       const originalText = savePdfBtn.innerHTML;
-      savePdfBtn.innerText = "Memproses...";
+      savePdfBtn.innerText = window._tToast ? window._tToast("Memproses...") : "Memproses...";
       savePdfBtn.disabled = true;
 
       try {
@@ -423,11 +429,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           link.download = `signed-${currentFile.name}`;
           link.click();
           
-          window.showToast("Berhasil! Dokumen ditandatangani.", "success");
+          window.showToast(window._tToast ? window._tToast("Berhasil! Dokumen ditandatangani.") : "Berhasil! Dokumen ditandatangani.", "success");
 
       } catch (err) {
           console.error(err);
-          window.showToast("Gagal menyimpan PDF.", "error");
+          window.showToast(window._tToast ? window._tToast("Gagal menyimpan PDF.") : "Gagal menyimpan PDF.", "error");
       } finally {
           savePdfBtn.innerHTML = originalText;
           savePdfBtn.disabled = false;

@@ -42,9 +42,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <p id="result-info" class="text-xs text-slate-400 mt-0.5"></p>
           </div>
           <div class="flex gap-2 flex-wrap">
-            <button id="convert-another-btn" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-all">🔄 KONVERSI LAGI</button>
-            <button id="copy-btn" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-all">📋 COPY</button>
-            <button id="download-btn" class="px-4 py-2 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20">📥 DOWNLOAD .MD</button>
+            <button id="convert-another-btn" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-all" data-i18n="btn.convert_another">🔄 KONVERSI LAGI</button>
+            <button id="copy-btn" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-all" data-i18n="btn.copy">📋 COPY</button>
+            <button id="download-btn" class="px-4 py-2 bg-orange-500 text-white text-xs font-bold rounded-lg hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20" data-i18n="btn.download_md">📥 DOWNLOAD .MD</button>
           </div>
         </div>
         
@@ -93,7 +93,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     async function processFile(file) {
       if (!file || file.type !== 'application/pdf') {
-        if (window.showToast) window.showToast('File harus berformat PDF.', 'error');
+        if (window.showToast) window.showToast(window._tToast ? window._tToast('File harus berformat PDF.') : 'File harus berformat PDF.', 'error');
         return;
       }
 
@@ -106,14 +106,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       currentFileName = file.name;
       loader.classList.remove('hidden');
       resultContainer.classList.add('hidden');
-      progressText.innerText = 'Memuat PDF...';
+      progressText.innerText = window._tToast ? window._tToast('Memuat PDF...') : 'Memuat PDF...';
       progressBar.style.width = '5%';
 
       let arrayBuffer;
       try {
         arrayBuffer = await file.arrayBuffer();
       } catch (err) {
-        if (window.showToast) window.showToast('Gagal membaca file.', 'error');
+        if (window.showToast) window.showToast(window._tToast ? window._tToast('Gagal membaca file.') : 'Gagal membaca file.', 'error');
         loader.classList.add('hidden');
         return;
       }
@@ -143,11 +143,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           progressBar.style.width = '100%';
           worker.terminate();
           currentWorker = null;
-          if (window.showToast) window.showToast('Berhasil dikonversi!');
+          if (window.showToast) window.showToast(window._tToast ? window._tToast('Berhasil dikonversi!') : 'Berhasil dikonversi!');
         }
         else if (data.type === 'error') {
           console.error('Worker error:', data.error);
-          if (window.showToast) window.showToast('Gagal memproses PDF. Coba file lain.', 'error');
+          if (window.showToast) window.showToast(window._tToast ? window._tToast('Gagal memproses PDF. Coba file lain.') : 'Gagal memproses PDF. Coba file lain.', 'error');
           loader.classList.add('hidden');
           progressBar.style.width = '0%';
           worker.terminate();
@@ -157,13 +157,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       worker.onerror = function(err) {
         console.error('Worker crashed:', err);
-        if (window.showToast) window.showToast('Worker error. Coba refresh halaman.', 'error');
+        if (window.showToast) window.showToast(window._tToast ? window._tToast('Worker error. Coba refresh halaman.') : 'Worker error. Coba refresh halaman.', 'error');
         loader.classList.add('hidden');
         worker.terminate();
         currentWorker = null;
       };
 
-      progressText.innerText = 'Mengirim data ke Worker...';
+      progressText.innerText = window._tToast ? window._tToast('Mengirim data ke Worker...') : 'Mengirim data ke Worker...';
       progressBar.style.width = '10%';
       worker.postMessage({ fileData: arrayBuffer, fileName: file.name }, [arrayBuffer]);
       fileInput.value = '';
@@ -194,11 +194,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     copyBtn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(outputText.value);
-        if (window.showToast) window.showToast('Teks disalin!');
+        if (window.showToast) window.showToast(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!');
       } catch {
         outputText.select();
         document.execCommand('copy');
-        if (window.showToast) window.showToast('Teks disalin!');
+        if (window.showToast) window.showToast(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!');
       }
     });
 
