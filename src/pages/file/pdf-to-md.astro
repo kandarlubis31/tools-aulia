@@ -146,7 +146,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           if (window.showToast) window.showToast(window._tToast ? window._tToast('Berhasil dikonversi!') : 'Berhasil dikonversi!');
         }
         else if (data.type === 'error') {
-          console.error('Worker error:', data.error);
+          // console.error('Worker error:', data.error);
           if (window.showToast) window.showToast(window._tToast ? window._tToast('Gagal memproses PDF. Coba file lain.') : 'Gagal memproses PDF. Coba file lain.', 'error');
           loader.classList.add('hidden');
           progressBar.style.width = '0%';
@@ -156,7 +156,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       };
 
       worker.onerror = function(err) {
-        console.error('Worker crashed:', err);
+        // console.error('Worker crashed:', err);
         if (window.showToast) window.showToast(window._tToast ? window._tToast('Worker error. Coba refresh halaman.') : 'Worker error. Coba refresh halaman.', 'error');
         loader.classList.add('hidden');
         worker.terminate();

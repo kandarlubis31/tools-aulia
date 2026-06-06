@@ -17,7 +17,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <div class="w-full max-w-2xl flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
         
         <div class="relative w-full md:w-1/2">
-            <select id="category-select" class="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-violet-500 appearance-none cursor-pointer shadow-sm">
+            <label for="category-select" class="block text-xs font-bold text-slate-500 uppercase mb-1">Kategori</label>
+             <select id="category-select" class="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-violet-500 appearance-none cursor-pointer shadow-sm">
                 <option value="random" data-i18n="cat.random">Campur Aduk</option>
                 <option value="coding" data-i18n="cat.coding">Coding & Tech</option>
                 <option value="wisdom" data-i18n="cat.wisdom">Life & Wisdom</option>
@@ -101,7 +102,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <div class="space-y-6">
                 <div>
                     <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.translation_lang">Bahasa Terjemahan</label>
-                    <select id="target-lang" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-violet-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                    <label for="target-lang" class="block text-xs font-bold text-slate-500 uppercase mb-1">Bahasa</label>
+                     <select id="target-lang" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-violet-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
                         <option value="id" selected>🇮🇩 Indonesia</option>
                         <option value="es">🇪🇸 Spanish</option>
                         <option value="fr">🇫🇷 French</option>
@@ -119,7 +121,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 
                 <div>
                     <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.text_size">Ukuran Teks</label>
-                    <select id="text-size" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-violet-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                    <label for="text-size" class="block text-xs font-bold text-slate-500 uppercase mb-1">Ukuran</label>
+                     <select id="text-size" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-violet-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
                         <option value="text-xl" data-i18n="size.small">Kecil</option>
                         <option value="text-2xl" selected data-i18n="size.medium">Sedang</option>
                         <option value="text-3xl" data-i18n="size.large">Besar</option>
@@ -272,7 +275,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           }
 
       } catch (e) {
-          console.error("Critical Error:", e);
+          // console.error("Critical Error:", e);
           quoteData = getLocalQuote(category);
       }
 
@@ -316,7 +319,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           }
 
       } catch (error) {
-          console.error("Fetch Error:", error);
+          // console.error("Fetch Error:", error);
           return null;
       }
   }

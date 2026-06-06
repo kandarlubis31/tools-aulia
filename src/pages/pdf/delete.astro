@@ -209,7 +209,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       setupIntersectionObserver();
       
     } catch (err) {
-      console.error(err);
+      // console.error(err);
       alert(window._tToast ? window._tToast("Gagal memuat PDF. File mungkin rusak atau tidak didukung.") : "Gagal memuat PDF. File mungkin rusak atau tidak didukung.");
       resetUI();
     }
@@ -289,7 +289,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       wrapper.appendChild(imgContainer);
       pagesGrid.appendChild(wrapper);
     } catch (error) {
-      console.error(`Error rendering page ${pageIndex}:`, error);
+      // console.error(`Error rendering page ${pageIndex}:`, error);
     }
   }
 
@@ -407,7 +407,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       resetUI();
 
     } catch (err) {
-      console.error(err);
+      // console.error(err);
       alert(window._tToast ? window._tToast("Gagal menyimpan PDF.") : "Gagal menyimpan PDF.");
     } finally {
       deleteBtn.innerHTML = originalText;

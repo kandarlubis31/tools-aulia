@@ -57,6 +57,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div class="space-y-2">
               <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Minute</label>
+              <label for="minute-select" class="sr-only">Minute</label>
               <select id="minute-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
                 <option value="*">Every minute</option>
                 <option value="0">At index 0</option>
@@ -70,6 +71,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             
             <div class="space-y-2">
               <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Hour</label>
+              <label for="hour-select" class="sr-only">Hour</label>
               <select id="hour-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
                 <option value="*">Every hour</option>
                 <option value="0">Midnight (00)</option>
@@ -84,6 +86,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             
             <div class="space-y-2">
               <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Day (Month)</label>
+              <label for="day-select" class="sr-only">Day</label>
               <select id="day-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
                 <option value="*">Every day</option>
                 <option value="1">1st of month</option>
@@ -96,6 +99,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             
             <div class="space-y-2">
               <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Month</label>
+              <label for="month-select" class="sr-only">Month</label>
               <select id="month-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
                 <option value="*">Every month</option>
                 <option value="1">January</option>
@@ -109,6 +113,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             
             <div class="space-y-2">
               <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Weekday</label>
+              <label for="weekday-select" class="sr-only">Weekday</label>
               <select id="weekday-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
                 <option value="*">Every day</option>
                 <option value="1-5">Mon-Fri</option>
@@ -151,6 +156,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">          <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4" data-i18n="text.implementation_code">Implementation Code</h3>
       <div class="mb-4">
+        <label for="language-select" class="sr-only">Language</label>
         <select id="language-select" class="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 mb-2">
           <option value="nodejs">Node.js (node-cron)</option>
           <option value="python">Python (crontab)</option>
@@ -261,7 +267,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         ).join('');
 
       } catch (e) {
-        console.error(e);
+        // console.error(e);
       }
     }
 

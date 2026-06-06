@@ -130,7 +130,7 @@ if (isPdfTool) {
               document.getElementById('update-dismiss')?.addEventListener('click', () => updateNotification.remove());
             },
             onOfflineReady() {
-              console.log('App siap digunakan offline.');
+              // Silent - ready for offline use
             },
           });
         }).catch(() => {});
@@ -363,7 +363,7 @@ if (isPdfTool) {
         if (window.deferredPrompt) {
             window.deferredPrompt.prompt();
             const { outcome } = await window.deferredPrompt.userChoice;
-            console.log(`User response: ${outcome}`);
+            // Silent - user choice recorded
             window.deferredPrompt = null;
         }
         closePwaModal();

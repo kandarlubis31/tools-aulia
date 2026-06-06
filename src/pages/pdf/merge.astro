@@ -116,7 +116,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.merge_mode">Merge Mode</label>
+                <label for="merge-mode" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.merge_mode">Merge Mode</label>
                 <select id="merge-mode" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
                   <option value="sequential" data-i18n="common.sequential">Sequential (Gabung Berurutan)</option>
                   <option value="interleave" data-i18n="common.interleave">Interleave (Selang-seling)</option>
@@ -336,7 +336,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         
         previewList.appendChild(previewItem);
       } catch (error) {
-        console.error('Error generating preview:', error);
+        // console.error('Error generating preview:', error);
       }
     }
   }
@@ -515,7 +515,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }, 1000);
       
     } catch (error) {
-      console.error('Error merging PDF:', error);
+      // console.error('Error merging PDF:', error);
       window.showToast(window._tToast('Gagal menggabungkan PDF. Pastikan file tidak dipassword atau corrupt.'), 'error');
       fileListContainer.classList.remove('hidden');
       progressContainer.classList.add('hidden');

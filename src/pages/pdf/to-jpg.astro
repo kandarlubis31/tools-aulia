@@ -98,7 +98,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         card.className = "bg-slate-50 dark:bg-slate-700 p-3 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm flex flex-col gap-3";
         card.innerHTML = `
           <div class="relative overflow-hidden rounded-lg border border-slate-200">
-            <img src="${imgUrl}" class="w-full h-auto" />
+            <img src="${imgUrl}" class="w-full h-auto" alt="Converted PDF page" />
             <span class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded"><span data-i18n="text.page_x">Halaman</span> ${i}</span>
           </div>
           <a href="${imgUrl}" download="page-${i}.jpg" class="w-full bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-2 rounded-lg text-center transition-colors" data-i18n="btn.download_jpg">
@@ -109,7 +109,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
 
     } catch (err) {
-      console.error(err);
+      // console.error(err);
       alert(window._tToast ? window._tToast("Gagal memproses PDF. File mungkin rusak atau terpassword.") : "Gagal memproses PDF. File mungkin rusak atau terpassword.");
       loadingDiv.classList.add('hidden');
       dropZone.classList.remove('hidden');

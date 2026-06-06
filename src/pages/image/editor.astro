@@ -42,7 +42,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
 
         <div id="image-container" class="hidden relative w-full h-full flex items-center justify-center">
-          <img id="preview-img" class="max-w-full max-h-full object-contain transition-all duration-100" />
+          <img id="preview-img" class="max-w-full max-h-full object-contain transition-all duration-100" alt="Edited image preview" />
           <div id="zoom-controls" class="absolute bottom-4 right-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur rounded-lg shadow-lg flex items-center p-1">
             <button id="zoom-out" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
@@ -60,10 +60,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div id="compare-container" class="hidden absolute inset-0 overflow-hidden">
           <div id="compare-slider" class="absolute inset-0">
             <div id="compare-before" class="absolute inset-0 flex items-center justify-center">
-              <img id="original-img" class="max-w-full max-h-full object-contain" />
+              <img id="original-img" class="max-w-full max-h-full object-contain" alt="Original image" />
             </div>
             <div id="compare-after" class="absolute inset-0 flex items-center justify-center" style="clip-path: inset(0 0 0 50%);">
-              <img id="edited-img" class="max-w-full max-h-full object-contain" />
+              <img id="edited-img" class="max-w-full max-h-full object-contain" alt="Edited image" />
             </div>
             <div id="compare-handle" class="absolute top-0 bottom-0 w-1 bg-white shadow-lg cursor-ew-resize" style="left: 50%;">
               <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-1 shadow-lg">

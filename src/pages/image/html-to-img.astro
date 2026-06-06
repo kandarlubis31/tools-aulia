@@ -187,7 +187,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <span>📝</span> Editor Code
           </h2>
           <div class="flex items-center gap-2">
-            <select id="template-select" class="text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-2 py-1 text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <label for="template-select" class="sr-only">Template</label>
+             <select id="template-select" class="text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-2 py-1 text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                <option value="">📂 Pilih Template...</option>
                <option value="tpl-card">Business Card</option>
                <option value="tpl-quote">Quote Card</option>
@@ -218,7 +219,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             </div>
             <div>
                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Format</label>
-                <select id="format-select" class="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-800 dark:text-slate-200 text-xs font-bold">
+                <label for="format-select" class="sr-only">Format Output</label>
+                 <select id="format-select" class="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-800 dark:text-slate-200 text-xs font-bold">
                     <option value="png">PNG</option>
                     <option value="jpeg">JPEG</option>
                     <option value="webp">WebP</option>
@@ -427,7 +429,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           downloadBtn.removeAttribute('disabled');
           showToast(window._tToast ? window._tToast('Gambar berhasil disimpan!') : 'Gambar berhasil disimpan!');
       }).catch(err => {
-          console.error(err);
+          // console.error(err);
           showToast(window._tToast ? window._tToast('Gagal render gambar.') : 'Gagal render gambar.', 'error');
           downloadBtn.innerHTML = originalBtnText;
           downloadBtn.removeAttribute('disabled');
