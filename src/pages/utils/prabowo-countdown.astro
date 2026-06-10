@@ -25,13 +25,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     <!-- === PRABOWO MASCOT === -->
     <div class="w-full max-w-2xl mb-4 sm:mb-6">
-      <div id="mascot-container" role="button" tabindex="0" class="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl border-2 border-red-200 dark:border-red-900/50 shadow-xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-red-500/20 hover:border-red-400 dark:hover:border-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/50">
+      <div id="mascot-container" role="button" tabindex="0" class="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl border-2 border-red-200 dark:border-red-900/50 shadow-xl cursor-pointer group transition-all duration-300 hover:shadow-red-500/20 hover:border-red-400 dark:hover:border-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/50">
         
         <!-- Mascot body with animation -->
-        <div class="flex items-center gap-3 sm:gap-4 md:gap-6 p-3 sm:p-4 md:p-6 lg:p-8">
-          <div class="relative shrink-0">
-            <!-- Animated Prabowo GIF Face -->
-            <div id="mascot" class="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-950 dark:to-red-900 rounded-xl sm:rounded-2xl flex items-center justify-center select-none transition-transform duration-300 group-hover:scale-110 relative overflow-hidden shadow-inner">
+        <div class="flex items-start gap-2 sm:gap-4 md:gap-6 p-3 sm:p-4 md:p-6 lg:p-8 pb-1">
+          <div class="flex flex-col items-center shrink-0">
+            <!-- Animated Prabowo GIF Face (BIGGER) -->
+            <div id="mascot" class="w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-950 dark:to-red-900 rounded-xl sm:rounded-2xl flex items-center justify-center select-none transition-transform duration-300 group-hover:scale-110 relative overflow-hidden shadow-inner">
               <!-- GIF Face -->
               <img id="mascot-face" class="relative z-10 w-full h-full object-cover rounded-xl sm:rounded-2xl transition-all duration-300" src="https://media.giphy.com/media/Y39pGbofrbvN9TzcDC/giphy.gif" alt="Prabowo Joget" loading="lazy" onerror="this.onerror=null;this.style.display='none';document.getElementById('mascot-face-fallback').classList.remove('opacity-0','pointer-events-none');document.getElementById('mascot-face-fallback').classList.add('opacity-100','z-10')" />
               <!-- Fallback emoji (shown if GIF fails) -->
@@ -50,12 +50,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               </div>
             </div>
             
-            <!-- Speech bubble -->
-            <div id="speech-wrapper" class="absolute -bottom-2 left-1/2 -translate-x-1/2 z-20">
-              <div id="speech-bubble" class="whitespace-nowrap px-4 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs md:text-sm font-black rounded-full shadow-lg animate-float-y shadow-red-500/30">
+            <!-- Speech bubble (BELOW face, tail points UP) -->
+            <div id="speech-wrapper" class="flex flex-col items-center -mt-0.5 z-20 animate-float-y">
+              <div class="w-2.5 h-2.5 bg-red-500 rotate-45 mb-[-5px]"></div>
+              <div id="speech-bubble" class="px-3 sm:px-4 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-[10px] sm:text-xs md:text-sm font-black rounded-full shadow-lg shadow-red-500/30 max-w-[60vw] sm:max-w-none text-center leading-tight animate-bubble-enter">
                 <span id="speech-text">Oke Gas!</span>
               </div>
-              <div class="w-3 h-3 bg-red-500 -mt-1 mx-auto rotate-45"></div>
             </div>
           </div>
 
@@ -341,15 +341,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   </div>
 
-  <!-- ===== HIDDEN IFRAME SOUNDS (cached, invisible) ===== -->
-  <div aria-hidden="true" style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none;opacity:0;">
-    <!-- Backsound: auto-plays on page visit (volume 45%) -->
-    <iframe id="backsound-iframe" width="1" height="1" src="https://www.myinstants.com/instant/bapak-mulyono-jokowi-88785/embed/" frameborder="0" scrolling="no" loading="lazy"></iframe>
-    <!-- Rotating click sounds -->
-    <iframe id="sound-iframe-0" width="1" height="1" src="https://www.myinstants.com/instant/hidup-jokowi-83844/embed/" frameborder="0" scrolling="no" loading="lazy"></iframe>
-    <iframe id="sound-iframe-1" width="1" height="1" src="https://www.myinstants.com/instant/jokowi-saya-akan-lawan-23091/embed/" frameborder="0" scrolling="no" loading="lazy"></iframe>
-    <iframe id="sound-iframe-2" width="1" height="1" src="https://www.myinstants.com/instant/jokowi-kaget-2947/embed/" frameborder="0" scrolling="no" loading="lazy"></iframe>
-  </div>
+
 
 </BaseLayout>
 
@@ -504,15 +496,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let currentFactIndex = 0;
   let factRotationTimer = null;
 
-  // === MYINSTANTS SOUND URLs (direct mp3, guessed from embed slugs) ===
-  const SOUND_URLS = [
-    'https://www.myinstants.com/media/sounds/hidup-jokowi.mp3',
-    'https://www.myinstants.com/media/sounds/jokowi-saya-akan-lawan.mp3',
-    'https://www.myinstants.com/media/sounds/jokowi-kaget.mp3',
+  // === LOCAL AUDIO FILES (downloaded from myinstants, stored in /public/sounds/) ===
+  const SOUND_FILES = [
+    '/sounds/hidup-jokowi.mp3',
+    '/sounds/jokowi-saya-akan-lawan.mp3',
+    '/sounds/jokowi-kaget.mp3',
   ];
-  const BACKSOUND_URL = 'https://www.myinstants.com/media/sounds/bapak-mulyono-jokowi.mp3';
+  const BACKSOUND_FILE = '/sounds/bapak-mulyono-jokowi.mp3';
 
-  // === MYINSTANTS SOUND SYSTEM ===
   let soundQueueIndex = 0;
   let soundAudios = [];
   let backsoundAudio = null;
@@ -522,13 +513,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let resumeSafetyTimer = null;
 
   function preloadAudios() {
-    soundAudios = SOUND_URLS.map(url => {
+    soundAudios = SOUND_FILES.map(url => {
       const a = new Audio(url);
       a.preload = 'auto';
       a.volume = 1.0;
       return a;
     });
-    backsoundAudio = new Audio(BACKSOUND_URL);
+    backsoundAudio = new Audio(BACKSOUND_FILE);
     backsoundAudio.preload = 'auto';
     backsoundAudio.loop = true;
     backsoundAudio.volume = 0.45;
@@ -539,24 +530,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (!audio) return;
     soundQueueIndex = (soundQueueIndex + 1) % soundAudios.length;
 
-    // Clear previous click audio's onended handler to prevent stale resume
     if (currentClickAudio) {
       currentClickAudio.onended = null;
       currentClickAudio.pause();
     }
-    // Clear stale safety timer
     if (resumeSafetyTimer) { clearTimeout(resumeSafetyTimer); resumeSafetyTimer = null; }
     currentClickAudio = audio;
 
     audio.currentTime = 0;
-    // Pause backsound temporarily while click sound plays
     const wasPlayingBacksound = backsoundAudio && !backsoundMuted && backsoundStarted && !backsoundAudio.paused;
-    if (wasPlayingBacksound) {
-      backsoundAudio.pause();
-    }
+    if (wasPlayingBacksound) backsoundAudio.pause();
     audio.play().catch(() => {});
 
-    // Resume backsound precisely when click sound ends
     audio.onended = () => {
       if (resumeSafetyTimer) { clearTimeout(resumeSafetyTimer); resumeSafetyTimer = null; }
       if (backsoundAudio && !backsoundMuted && backsoundStarted && wasPlayingBacksound) {
@@ -565,7 +550,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (currentClickAudio === audio) currentClickAudio = null;
     };
 
-    // Safety fallback: if audio.play() silently fails, onended never fires
     resumeSafetyTimer = setTimeout(() => {
       if (backsoundAudio && !backsoundMuted && backsoundStarted && wasPlayingBacksound) {
         backsoundAudio.play().catch(() => {});
@@ -1007,13 +991,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const containerEl = document.getElementById('mascot-container');
 
     if (speechEl) {
-      speechEl.style.transform = 'scale(0.5)';
+      speechEl.style.transform = 'scale(0.4)';
       speechEl.style.opacity = '0';
       setTimeout(() => {
         speechEl.textContent = item.text;
-        speechEl.style.transform = 'scale(1)';
-        speechEl.style.opacity = '1';
-      }, 150);
+        requestAnimationFrame(() => {
+          speechEl.style.transform = 'scale(1)';
+          speechEl.style.opacity = '1';
+        });
+      }, 120);
     }
     
     // Set face GIF based on catchphrase mood
@@ -1030,8 +1016,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     if (bubbleEl) {
       bubbleEl.classList.remove('animate-pop');
+      // Remove animationend listener from previous pop
+      const oldHandler = bubbleEl._popEndHandler;
+      if (oldHandler) { bubbleEl.removeEventListener('animationend', oldHandler); }
       void bubbleEl.offsetWidth;
       bubbleEl.classList.add('animate-pop');
+      // After pop animation finishes, remove class so float animation resumes
+      const handler = () => {
+        bubbleEl.classList.remove('animate-pop');
+        bubbleEl._popEndHandler = null;
+      };
+      bubbleEl._popEndHandler = handler;
+      bubbleEl.addEventListener('animationend', handler, { once: true });
     }
 
     clickCount++;
@@ -1052,11 +1048,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       updateRageVisuals();
 
-      // Play rotating sound from myinstants iframes
-      playNextSound();
       // Init backsound on first interaction
       if (!backsoundStarted) initBacksound();
-      // Also play Web Audio rage sound as layer if high rage
+      // Play myinstants click sound + Web Audio effect
+      playNextSound();
       if (rageLevel >= 3) {
         playRageSound(rageLevel);
       } else {
@@ -1340,9 +1335,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   document.addEventListener('astro:page-load', () => {
-    // Preload myinstants audio on page load
+    // Preload audio files for instant playback
     preloadAudios();
-    // Attempt auto-play backsound on page entry (best effort, requires user gesture)
+    // Attempt auto-play backsound (requires user gesture)
     initBacksound();
 
     updateCountdown();
@@ -1493,7 +1488,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Stop all audio
     soundAudios.forEach(a => { a.pause(); a.currentTime = 0; });
     if (backsoundAudio) { backsoundAudio.pause(); backsoundAudio.currentTime = 0; }
-    // Stop active click audio & safety timer
     if (currentClickAudio) { currentClickAudio.pause(); currentClickAudio.currentTime = 0; currentClickAudio.onended = null; currentClickAudio = null; }
     if (resumeSafetyTimer) { clearTimeout(resumeSafetyTimer); resumeSafetyTimer = null; }
   });
@@ -1547,14 +1541,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     50% { transform: translateY(-6px); }
   }
 
+  .animate-bubble-enter {
+    animation: bubbleEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  @keyframes bubbleEnter {
+    0% { opacity: 0; transform: scale(0.3) translateY(12px); }
+    60% { transform: scale(1.08) translateY(-2px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
   @keyframes floatFlag {
     0%, 100% { transform: rotate(12deg) translateY(0); }
     50% { transform: rotate(12deg) translateY(-8px); }
   }
 
   @keyframes pop {
-    0% { transform: scale(0.5); opacity: 0; }
-    50% { transform: scale(1.15); }
+    0% { transform: scale(0.3); opacity: 0; }
+    40% { transform: scale(1.12); opacity: 1; }
+    65% { transform: scale(0.95); }
+    85% { transform: scale(1.02); }
     100% { transform: scale(1); opacity: 1; }
   }
 
@@ -1591,7 +1597,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   #speech-text {
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease-out;
+  }
+
+  #speech-bubble {
+    transition: background 0.4s ease, box-shadow 0.3s ease;
+  }
+
+  #speech-wrapper {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  #speech-bubble {
+    transition: background 0.4s ease, box-shadow 0.3s ease;
   }
 
   #mascot-face {
