@@ -70,9 +70,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             </p>
             
             <!-- Click hint -->
-            <div class="flex items-center gap-2 mt-2">
-              <span class="text-[10px] text-slate-400 dark:text-slate-500 animate-pulse" data-i18n="prabowo.click_hint">Klik buat denger katanya!</span>
-              <span id="click-count" class="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded-full border border-red-200 dark:border-red-800">x0</span>
+            <div class="flex items-center gap-2 mt-2 flex-wrap">
+              <span class="flex items-center gap-1">
+                <kbd class="inline-flex items-center justify-center px-1.5 py-0.5 text-[9px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded border border-slate-300 dark:border-slate-600 shadow-sm">Space</kbd>
+                <span class="text-[10px] text-slate-400 dark:text-slate-500 animate-pulse" data-i18n="prabowo.click_hint">atau klik</span>
+              </span>
+              <span id="click-count" class="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded-full border border-red-200 dark:border-red-800 transition-all duration-300">x0</span>
+              <button id="mute-backsound-btn" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border border-slate-200 dark:border-slate-600 transition-all font-bold" title="Mute backsound">🔊</button>
             </div>
           </div>
         </div>
@@ -109,6 +113,36 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </div>
     </div>
 
+    <!-- Sisa Masa Jabatan - Prominent Display -->
+    <div class="w-full max-w-2xl mb-6 animate-on-scroll">
+      <div class="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 p-[2px] rounded-2xl shadow-lg shadow-red-500/20">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 sm:gap-3">
+              <span class="text-2xl sm:text-3xl">⏳</span>
+              <div>
+                <p class="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider" data-i18n="prabowo.term_remaining_label">Sisa Masa Jabatan</p>
+                <p class="text-lg sm:text-xl md:text-2xl font-black text-red-600 dark:text-red-400">
+                  <span id="remaining-days-big" class="tabular-nums">0000</span>
+                  <span class="text-sm md:text-base text-red-400 dark:text-red-500 ml-1">hari</span>
+                </p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider" data-i18n="prabowo.term_passed_label">Terlewati</p>
+              <p class="text-lg sm:text-xl font-black text-amber-500 dark:text-amber-400">
+                <span id="remaining-pct-big" class="tabular-nums">0.00</span><span class="text-sm ml-0.5">%</span>
+              </p>
+            </div>
+          </div>
+          <!-- Mini progress bar -->
+          <div class="mt-3 w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div id="mini-progress-bar" class="h-full rounded-full transition-all duration-1000 ease-linear" style="width: 0%; background: linear-gradient(to right, #ef4444, #f97316);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Countdown Card -->
     <div class="w-full max-w-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 sm:p-6 md:p-8 lg:p-12 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden">
       
@@ -125,8 +159,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </div>
 
       <div class="relative z-10 text-center mt-3 sm:mt-4">
-        <p class="text-[10px] sm:text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider" data-i18n="prabowo.remaining_label">
-          ⏳ Sisa masa jabatan
+        <p class="text-[10px] sm:text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
+          ⏳ <span data-i18n="prabowo.remaining_detail_label">Detail Hitung Mundur</span>
         </p>
         
         <!-- Timer Grid -->
@@ -232,13 +266,29 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <!-- Invisible confetti container -->
     <div id="confetti-container" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
-    <!-- Fun Facts -->
+    <!-- Fun Facts - with auto-rotate -->
     <div class="w-full max-w-2xl mt-4 sm:mt-6">
-      <div class="bg-gradient-to-r from-red-50 to-white dark:from-red-950/30 dark:to-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-red-100 dark:border-red-900/30 relative overflow-hidden">
-        <div class="absolute -top-4 -right-4 text-3xl opacity-10">🇮🇩</div>
-        <p id="fun-fact" class="text-[11px] sm:text-sm text-slate-600 dark:text-slate-400 text-center leading-relaxed" data-i18n="prabowo.fun_fact">
-          🇮🇩 Facts: Sembari menunggu 2029, kita bisa main tebak-tebakan: "Harga sembako naik berapa hari ini?"
+      <div class="bg-gradient-to-r from-red-50 to-white dark:from-red-950/30 dark:to-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-red-100 dark:border-red-900/30 relative overflow-hidden group cursor-pointer hover:shadow-md transition-all duration-300" id="fun-fact-card">
+        <div class="absolute -top-4 -right-4 text-3xl opacity-10 transition-all duration-300 group-hover:opacity-20 group-hover:scale-110">🇮🇩</div>
+        <div class="flex items-center gap-2 mb-1">
+          <span id="fun-fact-icon" class="text-sm transition-all duration-300">💡</span>
+          <span class="text-[9px] font-bold text-red-500 dark:text-red-400 uppercase tracking-wider" data-i18n="prabowo.fact_title">Fun Fact</span>
+          <span id="fun-fact-counter" class="ml-auto text-[9px] text-slate-400">1/5</span>
+        </div>
+        <p id="fun-fact" class="text-[11px] sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed transition-opacity duration-300">
+          🇮🇩 Sembari menunggu 2029, kita bisa main tebak-tebakan: "Harga sembako naik berapa hari ini?"
         </p>
+        <div class="flex items-center gap-1 mt-2">
+          <button id="prev-fact" class="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition-all text-xs" title="Sebelumnya">◀</button>
+          <div class="flex-1 flex gap-1 justify-center">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-300 dark:bg-red-700 fact-dot fact-dot-0"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 fact-dot fact-dot-1"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 fact-dot fact-dot-2"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 fact-dot fact-dot-3"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 fact-dot fact-dot-4"></span>
+          </div>
+          <button id="next-fact" class="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition-all text-xs" title="Selanjutnya">▶</button>
+        </div>
       </div>
     </div>
 
@@ -290,6 +340,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
 
   </div>
+
+  <!-- ===== HIDDEN IFRAME SOUNDS (cached, invisible) ===== -->
+  <div aria-hidden="true" style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none;opacity:0;">
+    <!-- Backsound: auto-plays on page visit (volume 45%) -->
+    <iframe id="backsound-iframe" width="1" height="1" src="https://www.myinstants.com/instant/bapak-mulyono-jokowi-88785/embed/" frameborder="0" scrolling="no" loading="lazy"></iframe>
+    <!-- Rotating click sounds -->
+    <iframe id="sound-iframe-0" width="1" height="1" src="https://www.myinstants.com/instant/hidup-jokowi-83844/embed/" frameborder="0" scrolling="no" loading="lazy"></iframe>
+    <iframe id="sound-iframe-1" width="1" height="1" src="https://www.myinstants.com/instant/jokowi-saya-akan-lawan-23091/embed/" frameborder="0" scrolling="no" loading="lazy"></iframe>
+    <iframe id="sound-iframe-2" width="1" height="1" src="https://www.myinstants.com/instant/jokowi-kaget-2947/embed/" frameborder="0" scrolling="no" loading="lazy"></iframe>
+  </div>
+
 </BaseLayout>
 
 <script>
@@ -432,7 +493,109 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let idleBoredTimer = null;
   let isBored = false;
 
-  // === PRABOWO "GAS!" SOUND ENGINE ===
+  // Fun facts rotation
+  const funFacts = [
+    { text: "🇮🇩 Sembari menunggu 2029, kita bisa main tebak-tebakan: \"Harga sembako naik berapa hari ini?\"", icon: "💡" },
+    { text: "📊 Dalam 5 tahun, rata-rata ada 12 kebijakan kontroversial. Tahun ini aja udah berapa?", icon: "📊" },
+    { text: "🗳️ Indonesia adalah salah satu negara dengan pemilu serentak terbesar di dunia. Tapi hasilnya... ya gitulah.", icon: "🗳️" },
+    { text: "🍜 Indomie adalah makanan resmi rakyat Indonesia saat dompet tipis. Terbukti secara ilmiah oleh mahasiswa kos.", icon: "🍜" },
+    { text: "🚗 Macet Jakarta bisa bikin kamu habis 10% umur produktif. Untung dah ada ojol.", icon: "🚗" },
+  ];
+  let currentFactIndex = 0;
+  let factRotationTimer = null;
+
+  // === MYINSTANTS SOUND URLs (direct mp3, guessed from embed slugs) ===
+  const SOUND_URLS = [
+    'https://www.myinstants.com/media/sounds/hidup-jokowi.mp3',
+    'https://www.myinstants.com/media/sounds/jokowi-saya-akan-lawan.mp3',
+    'https://www.myinstants.com/media/sounds/jokowi-kaget.mp3',
+  ];
+  const BACKSOUND_URL = 'https://www.myinstants.com/media/sounds/bapak-mulyono-jokowi.mp3';
+
+  // === MYINSTANTS SOUND SYSTEM ===
+  let soundQueueIndex = 0;
+  let soundAudios = [];
+  let backsoundAudio = null;
+  let backsoundStarted = false;
+  let backsoundMuted = localStorage.getItem('prabowoBacksoundMuted') === 'true';
+  let currentClickAudio = null;
+  let resumeSafetyTimer = null;
+
+  function preloadAudios() {
+    soundAudios = SOUND_URLS.map(url => {
+      const a = new Audio(url);
+      a.preload = 'auto';
+      a.volume = 1.0;
+      return a;
+    });
+    backsoundAudio = new Audio(BACKSOUND_URL);
+    backsoundAudio.preload = 'auto';
+    backsoundAudio.loop = true;
+    backsoundAudio.volume = 0.45;
+  }
+
+  function playNextSound() {
+    const audio = soundAudios[soundQueueIndex];
+    if (!audio) return;
+    soundQueueIndex = (soundQueueIndex + 1) % soundAudios.length;
+
+    // Clear previous click audio's onended handler to prevent stale resume
+    if (currentClickAudio) {
+      currentClickAudio.onended = null;
+      currentClickAudio.pause();
+    }
+    // Clear stale safety timer
+    if (resumeSafetyTimer) { clearTimeout(resumeSafetyTimer); resumeSafetyTimer = null; }
+    currentClickAudio = audio;
+
+    audio.currentTime = 0;
+    // Pause backsound temporarily while click sound plays
+    const wasPlayingBacksound = backsoundAudio && !backsoundMuted && backsoundStarted && !backsoundAudio.paused;
+    if (wasPlayingBacksound) {
+      backsoundAudio.pause();
+    }
+    audio.play().catch(() => {});
+
+    // Resume backsound precisely when click sound ends
+    audio.onended = () => {
+      if (resumeSafetyTimer) { clearTimeout(resumeSafetyTimer); resumeSafetyTimer = null; }
+      if (backsoundAudio && !backsoundMuted && backsoundStarted && wasPlayingBacksound) {
+        backsoundAudio.play().catch(() => {});
+      }
+      if (currentClickAudio === audio) currentClickAudio = null;
+    };
+
+    // Safety fallback: if audio.play() silently fails, onended never fires
+    resumeSafetyTimer = setTimeout(() => {
+      if (backsoundAudio && !backsoundMuted && backsoundStarted && wasPlayingBacksound) {
+        backsoundAudio.play().catch(() => {});
+      }
+      if (currentClickAudio === audio) currentClickAudio = null;
+      resumeSafetyTimer = null;
+    }, 8000);
+  }
+
+  function initBacksound() {
+    if (backsoundStarted) return;
+    backsoundStarted = true;
+    if (backsoundAudio && !backsoundMuted) {
+      backsoundAudio.play().catch(() => {});
+    }
+  }
+
+  function toggleBacksoundMute() {
+    backsoundMuted = !backsoundMuted;
+    localStorage.setItem('prabowoBacksoundMuted', backsoundMuted);
+    const btn = document.getElementById('mute-backsound-btn');
+    if (backsoundMuted) {
+      if (backsoundAudio) backsoundAudio.pause();
+      if (btn) { btn.textContent = '🔇'; btn.title = 'Unmute backsound'; }
+    } else {
+      if (backsoundAudio && backsoundStarted) backsoundAudio.play().catch(() => {});
+      if (btn) { btn.textContent = '🔊'; btn.title = 'Mute backsound'; }
+    }
+  }
+
   function initAudio() {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -889,6 +1052,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       updateRageVisuals();
 
+      // Play rotating sound from myinstants iframes
+      playNextSound();
+      // Init backsound on first interaction
+      if (!backsoundStarted) initBacksound();
+      // Also play Web Audio rage sound as layer if high rage
       if (rageLevel >= 3) {
         playRageSound(rageLevel);
       } else {
@@ -930,6 +1098,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   function startFireParticles() {
     if (fireInterval) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
     fireInterval = setInterval(() => { spawnFireParticle(); }, 150);
   }
 
@@ -1124,6 +1293,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       document.getElementById('progress-label').textContent = '100%';
       document.getElementById('percent-done').textContent = '100%';
       document.getElementById('live-badge').textContent = '🎉 SUDAH SAMPAI!';
+      const remainingEl = document.getElementById('remaining-days-big');
+      if (remainingEl) remainingEl.textContent = '0000';
+      const pctEl = document.getElementById('remaining-pct-big');
+      if (pctEl) pctEl.textContent = '100.00';
+      const miniBar = document.getElementById('mini-progress-bar');
+      if (miniBar) miniBar.style.width = '100%';
       return;
     }
 
@@ -1144,6 +1319,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     document.getElementById('progress-bar').style.width = `${percentDisplay}%`;
     document.getElementById('progress-label').textContent = `${percentDisplay.toFixed(4)}%`;
     document.getElementById('percent-done').textContent = `${percentDisplay.toFixed(2)}%`;
+
+    // Update prominent "Sisa Masa Jabatan" display
+    const remainingDaysEl = document.getElementById('remaining-days-big');
+    if (remainingDaysEl) remainingDaysEl.textContent = String(days);
+    const remainingPctEl = document.getElementById('remaining-pct-big');
+    if (remainingPctEl) remainingPctEl.textContent = percentDisplay.toFixed(2);
+    const miniProgressBar = document.getElementById('mini-progress-bar');
+    if (miniProgressBar) miniProgressBar.style.width = `${percentDisplay}%`;
     
     const bbmNaik = Math.max(1, Math.floor(percentDone * 0.15 + Math.sin(percentDone * 20) * 0.5 + 1));
     const utangValue = Math.floor(percentDone * 85 + 7800);
@@ -1157,6 +1340,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   document.addEventListener('astro:page-load', () => {
+    // Preload myinstants audio on page load
+    preloadAudios();
+    // Attempt auto-play backsound on page entry (best effort, requires user gesture)
+    initBacksound();
+
     updateCountdown();
     setInterval(updateCountdown, 1000);
     
@@ -1203,6 +1391,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
     });
 
+    document.getElementById('mute-backsound-btn')?.addEventListener('click', toggleBacksoundMute);
+    // Init mute button icon from stored state
+    const muteBtn = document.getElementById('mute-backsound-btn');
+    if (muteBtn) {
+      muteBtn.textContent = backsoundMuted ? '🔇' : '🔊';
+      muteBtn.title = backsoundMuted ? 'Unmute backsound' : 'Mute backsound';
+    }
+
     document.getElementById('share-btn')?.addEventListener('click', async () => {
       const remainingDays = document.getElementById('days')?.textContent || '??';
       const shareText = `🇮🇩 Sisa ${remainingDays} hari lagi menuju Presiden Indonesia baru! Siapa yang paling siap? Yuk kita tunggu 2029 bareng-bareng 😂\n\nCek countdown-nya di sini: ${window.location.href}`;
@@ -1221,6 +1417,85 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         window.showToast?.('Link disalin! Share ke teman-teman', 'success');
       }
     });
+
+    // === GLOBAL SPACE KEY SHORTCUT for mascot click (bound once only) ===
+    if (!window.__prabowoGlobalKeysBound) {
+      window.__prabowoGlobalKeysBound = true;
+      document.addEventListener('keydown', (e) => {
+        const tag = document.activeElement?.tagName?.toLowerCase();
+        const isInput = tag === 'input' || tag === 'textarea' || tag === 'select' || document.activeElement?.isContentEditable;
+        if (e.code === 'Space' && !isInput && !e.ctrlKey && !e.metaKey && !e.altKey && !e.target.closest('#mascot-container')) {
+          e.preventDefault();
+          showCatchphrase(true);
+          const container = document.getElementById('mascot-container');
+          if (container) {
+            container.style.boxShadow = '0 0 40px rgba(239,68,68,0.5)';
+            setTimeout(() => { container.style.boxShadow = ''; }, 300);
+          }
+        }
+        if (e.code === 'ArrowRight' && !isInput) {
+          e.preventDefault();
+          navigateFact(1);
+        }
+        if (e.code === 'ArrowLeft' && !isInput) {
+          e.preventDefault();
+          navigateFact(-1);
+        }
+      });
+    }
+
+    // === FUN FACTS INIT (clean up stale timers) ===
+    function navigateFact(direction) {
+      currentFactIndex = (currentFactIndex + direction + funFacts.length) % funFacts.length;
+      renderFact();
+    }
+    function renderFact() {
+      const fact = funFacts[currentFactIndex];
+      const factEl = document.getElementById('fun-fact');
+      const iconEl = document.getElementById('fun-fact-icon');
+      const counterEl = document.getElementById('fun-fact-counter');
+      if (factEl) {
+        factEl.style.opacity = '0';
+        setTimeout(() => {
+          factEl.textContent = fact.text;
+          factEl.style.opacity = '1';
+        }, 200);
+      }
+      if (iconEl) iconEl.textContent = fact.icon;
+      if (counterEl) counterEl.textContent = `${currentFactIndex + 1}/${funFacts.length}`;
+      document.querySelectorAll('.fact-dot').forEach((dot, i) => {
+        dot.className = `w-1.5 h-1.5 rounded-full fact-dot fact-dot-${i} ${i === currentFactIndex ? 'bg-red-400 dark:bg-red-500' : 'bg-slate-300 dark:bg-slate-600'}`;
+      });
+    }
+    if (factRotationTimer) clearInterval(factRotationTimer);
+    function startFactRotation() {
+      if (factRotationTimer) clearInterval(factRotationTimer);
+      factRotationTimer = setInterval(() => {
+        currentFactIndex = (currentFactIndex + 1) % funFacts.length;
+        renderFact();
+      }, 8000);
+    }
+    document.getElementById('prev-fact')?.addEventListener('click', () => navigateFact(-1));
+    document.getElementById('next-fact')?.addEventListener('click', () => navigateFact(1));
+    renderFact();
+    startFactRotation();
+
+  });
+  
+  // Cleanup on page navigation
+  document.addEventListener('astro:before-swap', () => {
+    if (factRotationTimer) { clearInterval(factRotationTimer); factRotationTimer = null; }
+    if (fireInterval) { clearInterval(fireInterval); fireInterval = null; }
+    if (mascotTimer) { clearTimeout(mascotTimer); mascotTimer = null; }
+    if (idleBlinkTimer) { clearTimeout(idleBlinkTimer); idleBlinkTimer = null; }
+    if (idleBoredTimer) { clearTimeout(idleBoredTimer); idleBoredTimer = null; }
+    if (rageDecayTimer) { clearTimeout(rageDecayTimer); rageDecayTimer = null; }
+    // Stop all audio
+    soundAudios.forEach(a => { a.pause(); a.currentTime = 0; });
+    if (backsoundAudio) { backsoundAudio.pause(); backsoundAudio.currentTime = 0; }
+    // Stop active click audio & safety timer
+    if (currentClickAudio) { currentClickAudio.pause(); currentClickAudio.currentTime = 0; currentClickAudio.onended = null; currentClickAudio = null; }
+    if (resumeSafetyTimer) { clearTimeout(resumeSafetyTimer); resumeSafetyTimer = null; }
   });
 </script>
 
@@ -1320,7 +1595,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   #mascot-face {
-    transition: transform 0.3s ease;
+    transition: transform 0.25s ease, filter 0.25s ease;
   }
 
   #mascot-container:hover #mascot-face {
@@ -1328,10 +1603,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   #mascot-container {
-    transition: all 0.3s ease;
+    transition: transform 0.15s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   }
 
-  #mascot-container:active {
+  #mascot-container:active:not(.animate-shake) {
     transform: scale(0.98);
   }
 
@@ -1422,17 +1697,50 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   /* === RAGE METER === */
   #rage-meter {
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    will-change: opacity;
   }
   #rage-meter:not(.hidden) {
     opacity: 1;
   }
 
+  /* === PERFORMANCE HINTS === */
+  #mascot {
+    will-change: transform, filter;
+  }
+  #mascot-container {
+    will-change: transform, box-shadow;
+  }
+
+  /* === ACCESSIBILITY: respect reduced motion === */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-on-scroll,
+    .animate-float-y,
+    .animate-float-flag,
+    .animate-float-flag-delayed,
+    .animate-pop,
+    .animate-sparkle,
+    .animate-bounce-subtle,
+    .animate-pulse,
+    .animate-idle-breathe,
+    .animate-idle-bored,
+    .animate-shimmer,
+    .animate-shake,
+    .animate-easter-egg {
+      animation-duration: 0s !important;
+      animation-delay: 0s !important;
+      transition-duration: 0s !important;
+    }
+    @keyframes fireRise {
+      0%, 100% { opacity: 0; }
+    }
+  }
+
   /* === FIRE PARTICLES === */
   @keyframes fireRise {
     0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.9; }
-    40% { transform: translateY(-25px) translateX(8px) scale(1.3); opacity: 0.6; }
-    70% { transform: translateY(-50px) translateX(-5px) scale(0.5); opacity: 0.2; }
-    100% { transform: translateY(-90px) translateX(15px) scale(0.1); opacity: 0; }
+    30% { transform: translateY(-18px) translateX(5px) scale(1.2); opacity: 0.7; }
+    60% { transform: translateY(-45px) translateX(-3px) scale(0.6); opacity: 0.3; }
+    100% { transform: translateY(-85px) translateX(12px) scale(0.1); opacity: 0; }
   }
 </style>
