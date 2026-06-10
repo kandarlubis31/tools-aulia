@@ -25,6 +25,7 @@ export const tools: ToolDefinition[] = [
   { id: 'pdf-jpg-to-pdf', categoryId: 'pdf', nameKey: 'tool.jpg_to_pdf', descKey: 'tool.jpg_to_pdf_desc', icon: 'path', color: 'cyan', path: '/pdf/jpg-to-pdf' },
   { id: 'pdf-to-ppt', categoryId: 'pdf', nameKey: 'tool.to_ppt', descKey: 'tool.to_ppt_desc', icon: 'path', color: 'orange', path: '/pdf/to-ppt' },
   { id: 'pdf-html-to-pdf', categoryId: 'pdf', nameKey: 'tool.html_to_pdf', descKey: 'tool.html_to_pdf_desc', icon: 'path', color: 'indigo', path: '/pdf/html-to-pdf' },
+  { id: 'pdf-to-text', categoryId: 'pdf', nameKey: 'tool.pdf_to_text', descKey: 'tool.pdf_to_text_desc', icon: 'path', color: 'blue', path: '/pdf/to-text' },
 
   // Image Tools
   { id: 'image-compressor', categoryId: 'image', nameKey: 'tool.compressor', descKey: 'tool.compressor_desc', icon: 'path', color: 'emerald', path: '/image/compressor' },
@@ -74,6 +75,7 @@ export const tools: ToolDefinition[] = [
   { id: 'utils-motivation', categoryId: 'utils', nameKey: 'tool.motivation', descKey: 'tool.motivation_desc', icon: 'path', color: 'violet', path: '/utils/motivation' },
   { id: 'utils-lorem', categoryId: 'utils', nameKey: 'tool.lorem', descKey: 'tool.lorem_desc', icon: 'path', color: 'slate', path: '/utils/lorem' },
   { id: 'utils-wa-builder', categoryId: 'utils', nameKey: 'tool.wa_builder', descKey: 'tool.wa_builder_desc', icon: 'path', color: 'green', path: '/utils/wa-builder' },
+  { id: 'utils-prabowo-countdown', categoryId: 'utils', nameKey: 'tool.prabowo_countdown', descKey: 'tool.prabowo_countdown_desc', icon: 'path', color: 'red', path: '/utils/prabowo-countdown' },
 ];
 
 // ==================== CATEGORY DEFINITIONS ====================

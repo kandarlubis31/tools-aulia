@@ -1,0 +1,1359 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Countdown Presiden Baru 2029">
+  <div class="max-w-4xl mx-auto px-4 min-h-[85vh] flex flex-col justify-center items-center py-10">
+    
+    <div class="text-center mb-8 animate-on-scroll">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight" data-i18n="header.prabowo_countdown">
+        🇮🇩 <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700 dark:from-red-400 dark:to-red-600">Countdown</span> 
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 dark:from-slate-100 dark:to-slate-300">Presiden</span>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700 dark:from-red-400 dark:to-red-600">Baru</span> 🇮🇩
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 text-lg max-w-xl mx-auto" data-i18n="prabowo.subtitle">
+        Menuju <strong class="text-red-600 dark:text-red-400">Indonesia Baru</strong> — versi yang katanya lebih baik dari ini.
+      </p>
+    </div>
+
+    <!-- === PRABOWO MASCOT === -->
+    <div class="w-full max-w-2xl mb-6">
+      <div id="mascot-container" role="button" tabindex="0" class="relative bg-white dark:bg-slate-800 rounded-3xl border-2 border-red-200 dark:border-red-900/50 shadow-xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-red-500/20 hover:border-red-400 dark:hover:border-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/50">
+        
+        <!-- Mascot body with animation -->
+        <div class="flex items-center gap-4 md:gap-6 p-6 md:p-8">
+          <div class="relative shrink-0">
+            <!-- Animated Prabowo SVG/Emoji -->
+            <div id="mascot" class="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-950 dark:to-red-900 rounded-2xl flex items-center justify-center text-5xl md:text-6xl select-none transition-transform duration-300 group-hover:scale-110 relative overflow-hidden">
+              <!-- Main face -->
+              <span id="mascot-face" class="relative z-10 transition-all duration-300">👨‍💼</span>
+              <!-- Blink overlay -->
+              <div id="mascot-blink" class="absolute inset-0 z-10 rounded-2xl pointer-events-none" style="background: transparent;"></div>
+              <!-- Animated sparkle overlay -->
+              <div id="mascot-sparkle" class="absolute inset-0 bg-gradient-to-t from-yellow-400/0 to-yellow-400/0 transition-all duration-500 rounded-2xl"></div>
+              <!-- Fire particles -->
+              <div id="fire-particles" class="absolute inset-0 pointer-events-none z-20 overflow-visible"></div>
+              <!-- Tiny Indonesian flag -->
+              <div class="absolute -top-1 -right-1 w-6 h-6 md:w-7 md:h-7 rounded-full bg-white dark:bg-slate-700 shadow-md flex items-center justify-center text-xs z-20 animate-bounce-subtle">
+                🇮🇩
+              </div>
+            </div>
+            
+            <!-- Speech bubble -->
+            <div id="speech-wrapper" class="absolute -bottom-2 left-1/2 -translate-x-1/2 z-20">
+              <div id="speech-bubble" class="whitespace-nowrap px-4 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs md:text-sm font-black rounded-full shadow-lg animate-float-y">
+                <span id="speech-text">Oke Gas!</span>
+              </div>
+              <div class="w-3 h-3 bg-red-500 -mt-1 mx-auto rotate-45"></div>
+            </div>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-1" data-i18n="prabowo.mascot_label">👤 MASKOT</div>
+            <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white" data-i18n="prabowo.mascot_name">Pak Prabowo 2029</h3>
+            <p id="mascot-status" class="text-sm text-slate-500 dark:text-slate-400 mt-1" data-i18n="prabowo.mascot_status">Siap-siap... tinggal nunggu waktu!</p>
+            
+            <!-- Click hint -->
+            <div class="flex items-center gap-2 mt-2">
+              <span class="text-[10px] text-slate-400 dark:text-slate-500 animate-pulse" data-i18n="prabowo.click_hint">Klik buat denger katanya!</span>
+              <span id="click-count" class="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded-full">x0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Catchphrase cycling bar -->
+        <div class="bg-gradient-to-r from-red-50 via-red-100 to-red-50 dark:from-red-950/50 dark:via-red-900/30 dark:to-red-950/50 px-6 py-2 border-t border-red-100 dark:border-red-900/30">
+          <div class="flex items-center gap-2 text-xs text-red-700 dark:text-red-300 font-medium">
+            <span class="animate-pulse">🔥</span>
+            <span data-i18n="prabowo.famous_quote">"GAS! GAS! GAS! Kita kejar!"</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- === RAGE METER === -->
+    <div id="rage-meter" class="w-full max-w-2xl mb-6 hidden transition-all duration-500">
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span id="rage-emoji" class="text-xl">😎</span>
+            <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider" data-i18n="prabowo.rage_meter">🔥 Rage Meter</span>
+          </div>
+          <span id="rage-level-text" class="text-xs font-black text-red-600 dark:text-red-400">LVL 0</span>
+        </div>
+        <div class="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden relative shadow-inner">
+          <div id="rage-fill" class="h-full rounded-full transition-all duration-300 ease-out" style="width: 0%; background: linear-gradient(to right, #22c55e, #eab308, #f97316, #dc2626, #991b1b);"></div>
+        </div>
+        <div class="flex justify-between mt-1.5 px-0.5">
+          <span class="text-[7px] md:text-[8px] text-green-500 font-bold opacity-60">😎 Santuy</span>
+          <span class="text-[7px] md:text-[8px] text-amber-500 font-bold opacity-40">😤 Panas</span>
+          <span class="text-[7px] md:text-[8px] text-orange-600 font-bold opacity-30">🤬 BAH!</span>
+          <span class="text-[7px] md:text-[8px] text-red-700 font-bold opacity-30">💀 MAX</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Countdown Card -->
+    <div class="w-full max-w-2xl bg-white dark:bg-slate-800 p-8 md:p-12 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+      
+      <!-- Decorative flags -->
+      <div class="absolute -top-10 -right-10 text-[120px] opacity-5 dark:opacity-10 select-none pointer-events-none rotate-12">
+        🇮🇩
+      </div>
+      <div class="absolute -bottom-10 -left-10 text-[120px] opacity-5 dark:opacity-10 select-none pointer-events-none -rotate-12">
+        🇮🇩
+      </div>
+
+      <div class="absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800">
+        <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+        <span id="live-badge" data-i18n="prabowo.live_badge">LIVE COUNTDOWN</span>
+      </div>
+
+      <div class="relative z-10 text-center mt-4">
+        <p class="text-sm font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider" data-i18n="prabowo.remaining_label">
+          ⏳ Sisa masa jabatan
+        </p>
+        
+        <!-- Timer Grid -->
+        <div class="grid grid-cols-4 gap-3 md:gap-6 mb-6">
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-red-50 dark:bg-red-950/50 rounded-2xl p-3 md:p-5 border border-red-100 dark:border-red-900/50 shadow-inner">
+              <span id="days" class="block text-4xl md:text-6xl font-black text-red-600 dark:text-red-400 tabular-nums">00</span>
+            </div>
+            <span class="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-2 tracking-widest" data-i18n="time.days">Hari</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-3 md:p-5 border border-slate-200 dark:border-slate-700 shadow-inner">
+              <span id="hours" class="block text-4xl md:text-6xl font-black text-slate-700 dark:text-slate-200 tabular-nums">00</span>
+            </div>
+            <span class="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-2 tracking-widest" data-i18n="time.hours">Jam</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-red-50 dark:bg-red-950/50 rounded-2xl p-3 md:p-5 border border-red-100 dark:border-red-900/50 shadow-inner">
+              <span id="minutes" class="block text-4xl md:text-6xl font-black text-red-600 dark:text-red-400 tabular-nums">00</span>
+            </div>
+            <span class="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-2 tracking-widest" data-i18n="time.minutes">Menit</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="w-full bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-3 md:p-5 border border-slate-200 dark:border-slate-700 shadow-inner">
+              <span id="seconds" class="block text-4xl md:text-6xl font-black text-slate-700 dark:text-slate-200 tabular-nums">00</span>
+            </div>
+            <span class="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-2 tracking-widest" data-i18n="time.seconds">Detik</span>
+          </div>
+        </div>
+
+        <!-- Target Date -->
+        <p class="text-xs text-slate-400 dark:text-slate-500 font-medium" data-i18n="prabowo.target_label">
+          Target: <span class="font-bold text-red-600 dark:text-red-400">20 Oktober 2029</span> — Akhir masa bakti
+        </p>
+      </div>
+    </div>
+
+    <!-- Funny Stats Cards - Now 6 cards! -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 w-full max-w-2xl mt-8">
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+        <div class="text-xl mb-1">📉</div>
+        <div class="text-2xl font-black text-slate-800 dark:text-white">100%</div>
+        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_promise">Janji Belum Terealisasi</div>
+      </div>
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+        <div class="text-xl mb-1">🥚</div>
+        <div id="percent-done" class="text-2xl font-black text-slate-800 dark:text-white">0%</div>
+        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_term">Masa Jabatan Terlewati</div>
+      </div>
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+        <div class="text-xl mb-1">💸</div>
+        <div id="stat-bbm" class="text-2xl font-black text-amber-600 dark:text-amber-400">0</div>
+        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_bbm">BBM Naik (kali)</div>
+      </div>
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+        <div class="text-xl mb-1">🏛️</div>
+        <div id="stat-utang" class="text-2xl font-black text-red-600 dark:text-red-400">Rp 0</div>
+        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_debt">Utang Negara (Triliun)</div>
+      </div>
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+        <div class="text-xl mb-1">🗣️</div>
+        <div id="stat-janji" class="text-2xl font-black text-violet-600 dark:text-violet-400">0</div>
+        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_jargon">Jargon Baru Diciptakan</div>
+      </div>
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+        <div class="text-xl mb-1">😤</div>
+        <div id="stat-rakyat" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">0</div>
+        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_rakyat">Rakyat Pindah Kewarganegaraan</div>
+      </div>
+    </div>
+
+    <!-- Daily Dose of Reality -->
+    <div class="w-full max-w-2xl mt-8">
+      <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-lg">🤡</span>
+          <h3 class="text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider" data-i18n="prabowo.reality_title">Daily Dose of Reality</h3>
+        </div>
+        <blockquote id="reality-quote" class="text-lg md:text-xl font-medium text-slate-800 dark:text-slate-100 italic leading-relaxed transition-opacity duration-300">
+          "Loading..."
+        </blockquote>
+        <div class="mt-4 flex items-center justify-between">
+          <span id="reality-source" class="text-xs text-slate-400">— Rakyat Indonesia 💀</span>
+          <button id="refresh-quote" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all" title="Quote Baru" data-i18n-attr="title" data-i18n="prabowo.new_quote">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invisible confetti container -->
+    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
+
+    <!-- Fun Facts -->
+    <div class="w-full max-w-2xl mt-6">
+      <div class="bg-gradient-to-r from-red-50 to-white dark:from-red-950/30 dark:to-slate-800 p-5 rounded-2xl border border-red-100 dark:border-red-900/30">
+        <p id="fun-fact" class="text-sm text-slate-600 dark:text-slate-400 text-center leading-relaxed" data-i18n="prabowo.fun_fact">
+          🇮🇩 Facts: Sembari menunggu 2029, kita bisa main tebak-tebakan: "Harga sembako naik berapa hari ini?"
+        </p>
+      </div>
+    </div>
+
+    <!-- Leaderboard Section -->
+    <div id="leaderboard-section" class="w-full max-w-2xl mt-8 hidden">
+      <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border-2 border-amber-200 dark:border-amber-900/50 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🏆</span>
+            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider" data-i18n="prabowo.leaderboard_title">Leaderboard Clickers</h3>
+          </div>
+          <button id="reset-leaderboard" class="text-[10px] font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 px-2 py-1 rounded transition-all" data-i18n="prabowo.leaderboard_reset">Reset</button>
+        </div>
+        <div id="leaderboard-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+          <div class="text-center text-sm text-slate-400 py-4" data-i18n="prabowo.leaderboard_empty">
+            Belum ada yang klik. Jadi orang pertama!
+          </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+          <p class="text-[10px] text-slate-400 text-center" data-i18n="prabowo.leaderboard_hint">
+            💡 Makin sering klik makin tinggi skor!
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Share Button -->
+    <div class="mt-10">
+      <button id="share-btn" class="group relative inline-flex items-center justify-center gap-3 px-8 py-3 font-bold text-white transition-all duration-200 bg-red-600 hover:bg-red-700 text-base rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-xl shadow-red-500/20" data-i18n="prabowo.share_btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        <span>Share ke Teman (Biar Sama-sama Nunggu)</span>
+      </button>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="w-full max-w-2xl mt-8 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+      <div class="flex justify-between items-center mb-3">
+        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider" data-i18n="prabowo.progress_label">Progress Menuju Indonesia Baru</span>
+        <span id="progress-label" class="text-xs font-bold text-red-600 dark:text-red-400">0%</span>
+      </div>
+      <div class="w-full h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-red-500 to-red-700 rounded-full transition-all duration-1000 ease-linear" style="width: 0%"></div>
+      </div>
+      <p class="text-[10px] text-slate-400 mt-2 text-center" data-i18n="prabowo.progress_hint">
+        🐌 Secepat ini kah? Cepetan 2029!
+      </p>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+  // Target: End of Prabowo's term - October 20, 2029
+  const TARGET_DATE = new Date('2029-10-20T00:00:00+07:00').getTime();
+  const START_DATE = new Date('2024-10-20T00:00:00+07:00').getTime();
+  const TOTAL_TERM_MS = TARGET_DATE - START_DATE;
+
+  // === PRABOWO CATCHPHRASES ===
+  const catchphrases = [
+    { text: "Oke Gas!", emoji: "👨‍💼", status: "Semangat 45!" },
+    { text: "Oke Gasss! 🔥", emoji: "🔥", status: "Gas pol!" },
+    { text: "Gas pol! Kita kejar!", emoji: "🏃‍♂️", status: "Lari kenceng!" },
+    { text: "Indonesia maju!", emoji: "🇮🇩", status: "Maju terus!" },
+    { text: "Yang penting kan oke gas!", emoji: "👍", status: "Setuju ga?" },
+    { text: "Harga naik? Oke gas aja!", emoji: "💸", status: "Gas terus!" },
+    { text: "Rakyat? Oke gas aja!", emoji: "😅", status: "Ya gitulah..." },
+    { text: "Jangan lama-lama, gas!", emoji: "⏩", status: "Cepetan!" },
+    { text: "Gas dulu, mikir kemudian!", emoji: "🤯", status: "Hehehe..." },
+    { text: "UU? Oke gas!", emoji: "📜", status: "Legislasi cepat!" },
+    { text: "Demo? Oke gas aja!", emoji: "✊", status: "Abai-in aja..." },
+    { text: "Pokoknya gas!", emoji: "🚀", status: "Meluncur!" },
+    { text: "Gas terus jangan mundur!", emoji: "🔄", status: "Mundur?" },
+    { text: "Oke gas... oke gas..", emoji: "😎", status: "Santuy..." },
+    { text: "Gas aja lah!", emoji: "🤷‍♂️", status: "Bodo amat!" },
+    { text: "Hutang? Oke gas aja!", emoji: "🏛️", status: "Gas terus pinjem!" },
+    { text: "Presidennya oke gas!", emoji: "👔", status: "Executive!" },
+    { text: "Oke... GAS! 🔥🔥🔥", emoji: "💥", status: "LEDAK!" },
+    { text: "Gas dulu, akibat belakangan!", emoji: "🎲", status: "Resiko?" },
+    { text: "Gass aja gass!", emoji: "🛵", status: "Boncengan!" },
+  ];
+
+  const realityQuotes = [
+    { text: "Presiden baru? Semoga yang ini baca buku dulu sebelum ngomong.", source: "Ekspektasi Rakyat" },
+    { text: "Janji kampanye: 'Indonesia Maju'. Realita: 'Indonesia Maaf, Lagi Proses'", source: "Twitter Indonesia" },
+    { text: "Harga BBM naik, harga sembako naik, tapi gaji? Yang sabar ya.", source: "Buruh Pabrik" },
+    { text: "2029 masih lama. Siap-siap ojek online jadi transportasi utama selama 5 tahun.", source: "Driver Gojek" },
+    { text: "Kata siapa demokrasi mati? Hidup mahal makin hidup!", source: "Rakyat Biasa" },
+    { text: "Prabowo janji hilangkan kemiskinan. Ternyata yang hilang itu akal sehat.", source: "Warung Kopi" },
+    { text: "Yang penting kan Indonesia tetap 'rukun'. Rukun tetangga, rukun sama harga-harga naik.", source: "Ibu-ibu PKK" },
+    { text: "Jangan khawatir, kalau yang ini gagal, 2029 kita voting lagi! (atau tidak?)", source: "Optimis Abadi" },
+    { text: "Prabowo punya 'konsep' untuk Indonesia. Konsep yang katanya 'masih di kepala'.", source: "Staff Istana" },
+    { text: "Utang negara naik? Itu wong cilik, ih klasik!", source: "Ekonom Pinggiran" },
+    { text: "Jangan lupa, Indonesia pernah dijajah 350 tahun. Sekarang? Dijajah utang.", source: "Sejarahwan Dadakan" },
+    { text: "Makan siang gratis katanya. Tapi gratis kenyang atau gratis kelaparan?", source: "Mahasiswa Ujian" },
+    { text: "Hari gini masih percaya politisi? Aku mah percaya countdown ini aja.", source: "Rakyat Cerdas" },
+    { text: "Rakyat: 'Kapan sejahtera?' Pemerintah: 'Sabar, masih dirumuskan.' (2004-2029)", source: "Skena BPS" },
+    { text: "Jangan terlalu berharap, nanti sakit hati. Tapi ya berharaplah, siapa tau.", source: "Filsuf Indonesia" },
+    { text: "Kalau tidak suka dengan yang ini, 2029 ada presiden baru! Atau ganti UUD lagi?", source: "MPR Dadakan" },
+    { text: "Indonesia Darurat... harga cabai.", source: "Ibu-ibu Pasar" },
+    { text: "GDP naik? Itu karena penduduk naik, guys. Per kapita? Ah sudahlah.", source: "Ekonom Muda" },
+    { text: "Korupsi turun katanya. Tapi kok koruptornya makin kaya?", source: "KPK (yang tersisa)" },
+    { text: "Semangat Indonesia! 5 tahun lagi kita bisa pilih lagi... kalau pilpresnya jadi.", source: "Pemilih Pemula" },
+  ];
+
+  // === STATE ===
+  let previousQuoteIndex = -1;
+  let previousCatchphraseIndex = -1;
+  let clickCount = 0;
+  let mascotTimer = null;
+  let leaderboardData = JSON.parse(localStorage.getItem('prabowoLeaderboard') || '[]');
+  let currentUsername = localStorage.getItem('prabowoUsername') || '';
+  let audioCtx = null;
+  
+  // Rage mode vars
+  let rageLevel = 0;
+  let lastClickTime = 0;
+  let rageDecayTimer = null;
+  const MAX_RAGE = 10;
+  
+  // Easter egg vars
+  let easterEggUnlocked = localStorage.getItem('prabowoEasterEgg') === 'true';
+  
+  // Idle animation vars
+  let idleBlinkTimer = null;
+  let idleBoredTimer = null;
+  let isBored = false;
+
+
+  // === PRABOWO "GAS!" SOUND ENGINE ===
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  function playGasSound() {
+    try {
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+
+      // --- "Ga" part: low frequency with growl ---
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      const gain2 = audioCtx.createGain();
+      const masterGain = audioCtx.createGain();
+
+      // Master volume
+      masterGain.gain.setValueAtTime(0.3, now);
+      masterGain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+
+      // Osc 1: Main voice (around 120Hz - deep male voice)
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(150, now);
+      osc1.frequency.exponentialRampToValueAtTime(90, now + 0.15);
+      osc1.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+      gain1.gain.setValueAtTime(0.4, now);
+      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+      // Osc 2: Growl/throat (around 200Hz)
+      osc2.type = 'square';
+      osc2.frequency.setValueAtTime(180, now);
+      osc2.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+      gain2.gain.setValueAtTime(0.15, now);
+      gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+      // Connect oscillators
+      osc1.connect(gain1);
+      gain1.connect(masterGain);
+      osc2.connect(gain2);
+      gain2.connect(masterGain);
+      masterGain.connect(audioCtx.destination);
+
+      // Cleanup nodes after playback
+      const cleanup = () => {
+        osc1.disconnect(); osc2.disconnect(); gain1.disconnect(); gain2.disconnect(); masterGain.disconnect();
+      };
+      osc1.onended = cleanup;
+
+      osc1.start(now);
+      osc1.stop(now + 0.35);
+      osc2.start(now);
+      osc2.stop(now + 0.35);
+
+      // --- "s" fricative (noise burst) ---
+      const bufferSize = audioCtx.sampleRate * 0.25;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+      }
+      // Filter noise to sound more like "sss"
+      const noiseSource = audioCtx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      const noiseFilter = audioCtx.createBiquadFilter();
+      noiseFilter.type = 'highpass';
+      noiseFilter.frequency.setValueAtTime(3000, now);
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.08, now + 0.25);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+
+      noiseSource.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(audioCtx.destination);
+      noiseSource.onended = () => { noiseSource.disconnect(); noiseFilter.disconnect(); noiseGain.disconnect(); };
+      noiseSource.start(now + 0.25);
+      noiseSource.stop(now + 0.55);
+
+    } catch (e) {
+      // Audio not supported or blocked - silent fail
+    }
+  }
+
+  // === RAGE MODE SOUND (INTENSE VERSION) ===
+  function playRageSound(level) {
+    try {
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+      const intensity = 1 + (level / MAX_RAGE) * 3; // 1x to 4x
+      const pitchMul = 1 + (level / MAX_RAGE) * 1.5; // 1x to 2.5x pitch
+
+      // Create a more intense sound with distortion
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const osc3 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      const gain2 = audioCtx.createGain();
+      const gain3 = audioCtx.createGain();
+      const masterGain = audioCtx.createGain();
+      const distortion = audioCtx.createWaveShaper();
+
+      // Distortion curve
+      const k = 50;
+      const samples = 22050;
+      const curve = new Float32Array(samples);
+      for (let i = 0; i < samples; i++) {
+        const x = (i * 2) / samples - 1;
+        curve[i] = ((1 + k) * x) / (1 + k * Math.abs(x));
+      }
+      distortion.curve = curve;
+      distortion.oversample = 'none';
+
+      const vol = Math.min(0.4 * intensity, 1.0);
+      masterGain.gain.setValueAtTime(vol, now);
+      masterGain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+
+      // Osc 1: Main rage voice (deeper, louder)
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(120 * pitchMul, now);
+      osc1.frequency.linearRampToValueAtTime(60 * pitchMul, now + 0.2);
+      osc1.frequency.linearRampToValueAtTime(40 * pitchMul, now + 0.4);
+      gain1.gain.setValueAtTime(0.5, now);
+      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+
+      // Osc 2: Growl
+      osc2.type = 'square';
+      osc2.frequency.setValueAtTime(150 * pitchMul, now);
+      osc2.frequency.linearRampToValueAtTime(80 * pitchMul, now + 0.3);
+      gain2.gain.setValueAtTime(0.25, now);
+      gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+      // Osc 3: High harmonic for anger
+      osc3.type = 'sawtooth';
+      osc3.frequency.setValueAtTime(300 * pitchMul, now);
+      osc3.frequency.linearRampToValueAtTime(150 * pitchMul, now + 0.25);
+      gain3.gain.setValueAtTime(0.15, now);
+      gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+      // Connect with distortion
+      osc1.connect(gain1);
+      gain1.connect(distortion);
+      osc2.connect(gain2);
+      gain2.connect(distortion);
+      osc3.connect(gain3);
+      gain3.connect(distortion);
+      distortion.connect(masterGain);
+      masterGain.connect(audioCtx.destination);
+
+      // Cleanup nodes after playback
+      const rageCleanup = () => {
+        osc1.disconnect(); osc2.disconnect(); osc3.disconnect();
+        gain1.disconnect(); gain2.disconnect(); gain3.disconnect();
+        distortion.disconnect(); masterGain.disconnect();
+      };
+      osc1.onended = rageCleanup;
+
+      osc1.start(now);
+      osc1.stop(now + 0.45);
+      osc2.start(now);
+      osc2.stop(now + 0.4);
+      osc3.start(now);
+      osc3.stop(now + 0.3);
+
+      // Louder noise burst for "S"
+      const bufSize = audioCtx.sampleRate * 0.3;
+      const nBuf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      const d = nBuf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) {
+        d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 0.5);
+      }
+      const nSrc = audioCtx.createBufferSource();
+      nSrc.buffer = nBuf;
+      const nFilt = audioCtx.createBiquadFilter();
+      nFilt.type = 'highpass';
+      nFilt.frequency.setValueAtTime(2500, now);
+      const nGain = audioCtx.createGain();
+      nGain.gain.setValueAtTime(0.15 * intensity, now + 0.3);
+      nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+
+      nSrc.connect(nFilt);
+      nFilt.connect(nGain);
+      nGain.connect(audioCtx.destination);
+      nSrc.onended = () => { nSrc.disconnect(); nFilt.disconnect(); nGain.disconnect(); };
+      nSrc.start(now + 0.3);
+      nSrc.stop(now + 0.7);
+
+      // Add rumble if rage > 5
+      if (level > 5) {
+        const rumble = audioCtx.createOscillator();
+        const rGain = audioCtx.createGain();
+        rumble.type = 'sine';
+        rumble.frequency.setValueAtTime(30, now);
+        rGain.gain.setValueAtTime(0.1 * (level / MAX_RAGE), now);
+        rGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      rumble.connect(rGain);
+      rGain.connect(audioCtx.destination);
+      rumble.onended = () => { rumble.disconnect(); rGain.disconnect(); };
+      rumble.start(now);
+      rumble.stop(now + 0.6);
+      }
+    } catch (e) {}
+  }
+
+  // === EASTER EGG: SPECIAL SOUND ===
+  function playEasterEggSound() {
+    try {
+      initAudio();
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+
+      // Triumphant chord!
+      const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + i * 0.08);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.2, now + i * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+      osc.start(now + i * 0.08);
+      osc.stop(now + 1.2);
+      });
+
+      // Big "GAS!" at the end
+      setTimeout(() => {
+        playRageSound(MAX_RAGE);
+      }, 500);
+    } catch (e) {}
+  }
+
+  // === LEADERBOARD ===
+  function generateUsername() {
+    const prefixes = ['Rakyat', 'Warga', 'Bang', 'Mbak', 'Mas', 'Pak', 'Bu', 'Kang', 'Ayang', 'Bestie', 'Bro', 'Sis', 'Om', 'Tante', 'Adek', 'Kakak'];
+    const suffixes = ['Gaspol', 'AntiGaspol', 'KlikTerus', 'PemilihPemula', 'Sarjana', 'Buruh', 'Mahasiswa', 'Driver', 'IbuKos', 'PecintaGas', 'Santuy', 'Baper', 'Receh', 'Woles', 'Gercep', 'Capek'];
+    const p = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const s = suffixes[Math.floor(Math.random() * suffixes.length)];
+    const num = Math.floor(Math.random() * 999);
+    return `${p}${s}${num}`;
+  }
+
+  function getOrCreateUsername() {
+    if (!currentUsername) {
+      currentUsername = generateUsername();
+      localStorage.setItem('prabowoUsername', currentUsername);
+    }
+    return currentUsername;
+  }
+
+  function updateLeaderboard() {
+    const username = getOrCreateUsername();
+    
+    // Find or create user entry
+    let userEntry = leaderboardData.find(e => e.username === username);
+    if (userEntry) {
+      userEntry.score = Math.max(userEntry.score || 0, clickCount);
+      userEntry.lastClick = Date.now();
+    } else {
+      leaderboardData.push({ username, score: clickCount, lastClick: Date.now() });
+    }
+
+    // Sort by score descending
+    leaderboardData.sort((a, b) => b.score - a.score);
+    
+    // Keep only top 50
+    if (leaderboardData.length > 50) {
+      leaderboardData = leaderboardData.slice(0, 50);
+    }
+
+    localStorage.setItem('prabowoLeaderboard', JSON.stringify(leaderboardData));
+    renderLeaderboard();
+  }
+
+  function renderLeaderboard() {
+    const listEl = document.getElementById('leaderboard-list');
+    const sectionEl = document.getElementById('leaderboard-section');
+    if (!listEl || !sectionEl) return;
+
+    if (leaderboardData.length === 0) {
+      sectionEl.classList.add('hidden');
+      return;
+    }
+
+    sectionEl.classList.remove('hidden');
+
+    const username = getOrCreateUsername();
+    const medalEmojis = ['🥇', '🥈', '🥉'];
+
+    listEl.innerHTML = leaderboardData.slice(0, 10).map((entry, index) => {
+      const isMe = entry.username === username;
+      const medal = medalEmojis[index] || `#${index + 1}`;
+      const timeAgo = entry.lastClick ? getTimeAgo(entry.lastClick) : 'baru';
+      
+      // Escape username to prevent XSS
+      const safeUsername = entry.username.replace(/[<>"']/g, '');
+      return `
+        <div class="flex items-center gap-3 p-2 rounded-xl ${isMe ? 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800' : 'bg-slate-50 dark:bg-slate-900/50'} transition-all hover:scale-[1.01]">
+          <span class="w-8 text-center text-sm font-bold ${index < 3 ? 'text-lg' : 'text-slate-400'}">${medal}</span>
+          <div class="flex-1 min-w-0">
+            <span class="text-sm font-bold ${isMe ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'} truncate block">
+              ${entry.legend ? '⭐ ' : ''}${safeUsername} ${isMe ? '👈' : ''}
+            </span>
+            <span class="text-[10px] text-slate-400">${timeAgo}</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="text-lg font-black ${isMe ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-white'}">${entry.score}</span>
+            <span class="text-[10px] text-slate-400">x</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function getTimeAgo(timestamp) {
+    const diff = Date.now() - timestamp;
+    if (diff < 60000) return 'baru aja';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m lalu`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}j lalu`;
+    return `${Math.floor(diff / 86400000)}h lalu`;
+  }
+
+  // === IDLE ANIMATION SYSTEM ===
+  function scheduleBlink() {
+    const delay = 3000 + Math.random() * 5000;
+    idleBlinkTimer = setTimeout(() => {
+      const faceEl = document.getElementById('mascot-face');
+      const mascotEl = document.getElementById('mascot');
+      if (!faceEl || !mascotEl) { scheduleBlink(); return; }
+
+      const currentFace = faceEl.textContent;
+      // Don't blink during easter egg boss, max rage, or bored flail
+      if (currentFace === '\u{1F934}' || currentFace === '\u{1F480}') { scheduleBlink(); return; }
+
+      // Quick blink: squish face vertically and darken blink overlay
+      const blinkEl = document.getElementById('mascot-blink');
+      if (blinkEl) {
+        faceEl.style.transform = 'scaleY(0.15)';
+        blinkEl.style.background = 'rgba(0,0,0,0.25)';
+        blinkEl.style.transition = 'background 0.08s, transform 0.08s';
+        setTimeout(() => {
+          faceEl.style.transform = 'scaleY(1)';
+          blinkEl.style.background = 'transparent';
+        }, 100);
+      }
+
+      scheduleBlink();
+    }, delay);
+  }
+
+  function resetIdle() {
+    if (idleBlinkTimer) { clearTimeout(idleBlinkTimer); idleBlinkTimer = null; }
+    if (idleBoredTimer) { clearTimeout(idleBoredTimer); idleBoredTimer = null; }
+
+    const mascotEl = document.getElementById('mascot');
+    if (mascotEl) {
+      mascotEl.classList.remove('animate-idle-bored', 'animate-idle-breathe');
+      void mascotEl.offsetWidth;
+      mascotEl.classList.add('animate-idle-breathe');
+    }
+
+    isBored = false;
+
+    // Start blink and bored timers
+    scheduleBlink();
+
+    idleBoredTimer = setTimeout(() => {
+      isBored = true;
+      const el = document.getElementById('mascot');
+      if (el) {
+        el.classList.remove('animate-idle-breathe');
+        el.classList.add('animate-idle-bored');
+      }
+      const statusEl = document.getElementById('mascot-status');
+      if (statusEl) statusEl.textContent = 'Zzz... gaskah?';
+      const speechEl = document.getElementById('speech-text');
+      if (speechEl) {
+        const boredTexts = ['Kapan diklik?', 'Bosen nih...', 'Halo?', 'Tidur dulu ah', 'Gasken lahh!'];
+        speechEl.textContent = boredTexts[Math.floor(Math.random() * boredTexts.length)];
+      }
+    }, 25000);
+  }
+
+  // === FUNCTIONS ===
+
+  function getRandomItem(arr, prevIndex) {
+    let index;
+    do {
+      index = Math.floor(Math.random() * arr.length);
+    } while (index === prevIndex && arr.length > 1);
+    return { index, item: arr[index] };
+  }
+
+  function updateQuote() {
+    const { item } = getRandomItem(realityQuotes, previousQuoteIndex);
+    previousQuoteIndex = realityQuotes.indexOf(item);
+    const quoteEl = document.getElementById('reality-quote');
+    const sourceEl = document.getElementById('reality-source');
+    if (quoteEl && sourceEl) {
+      quoteEl.style.opacity = '0';
+      setTimeout(() => {
+        quoteEl.textContent = `"${item.text}"`;
+        sourceEl.textContent = `— ${item.source}`;
+        quoteEl.style.opacity = '1';
+      }, 200);
+    }
+  }
+
+  function showCatchphrase(fromClick = true) {
+    const { item } = getRandomItem(catchphrases, previousCatchphraseIndex);
+    previousCatchphraseIndex = catchphrases.indexOf(item);
+    
+    const speechEl = document.getElementById('speech-text');
+    const faceEl = document.getElementById('mascot-face');
+    const statusEl = document.getElementById('mascot-status');
+    const sparkleEl = document.getElementById('mascot-sparkle');
+    const bubbleEl = document.getElementById('speech-bubble');
+    const mascotEl = document.getElementById('mascot');
+    const containerEl = document.getElementById('mascot-container');
+
+    if (speechEl) {
+      speechEl.style.transform = 'scale(0.5)';
+      speechEl.style.opacity = '0';
+      setTimeout(() => {
+        speechEl.textContent = item.text;
+        speechEl.style.transform = 'scale(1)';
+        speechEl.style.opacity = '1';
+      }, 150);
+    }
+    
+    if (faceEl) faceEl.textContent = item.emoji;
+    if (statusEl) statusEl.textContent = item.status;
+
+    // Sparkle effect
+    if (sparkleEl) {
+      sparkleEl.classList.add('animate-sparkle');
+      setTimeout(() => sparkleEl.classList.remove('animate-sparkle'), 600);
+    }
+
+    // Bounce the bubble
+    if (bubbleEl) {
+      bubbleEl.classList.remove('animate-pop');
+      void bubbleEl.offsetWidth; // reflow
+      bubbleEl.classList.add('animate-pop');
+    }
+
+    // Update click count
+    clickCount++;
+    const countEl = document.getElementById('click-count');
+    if (countEl) countEl.textContent = `x${clickCount}`;
+
+    // === RAGE MODE ===
+    if (fromClick) {
+      // Reset idle animation on user interaction
+      resetIdle();
+      const now = Date.now();
+      const timeSinceLast = now - lastClickTime;
+      lastClickTime = now;
+
+      // Increase rage if clicking fast (< 800ms), else decay
+      if (timeSinceLast < 800 && timeSinceLast > 20) {
+        rageLevel = Math.min(rageLevel + 1, MAX_RAGE);
+      } else if (timeSinceLast > 2000) {
+        rageLevel = Math.max(0, rageLevel - 2);
+      }
+
+      // Apply rage visuals
+      updateRageVisuals();
+
+      // Play appropriate sound
+      if (rageLevel >= 3) {
+        playRageSound(rageLevel);
+      } else {
+        playGasSound();
+      }
+
+      // Screen shake on high rage
+      if (rageLevel >= 7) {
+        containerEl?.classList.add('animate-shake');
+        setTimeout(() => containerEl?.classList.remove('animate-shake'), 300);
+      }
+
+      // Update leaderboard
+      updateLeaderboard();
+
+      // Decay rage after inactivity (keep decaying until calm)
+      if (rageDecayTimer) clearTimeout(rageDecayTimer);
+      (function startDecay() {
+        rageDecayTimer = setTimeout(() => {
+          if (rageLevel > 0) {
+            rageLevel = Math.max(0, rageLevel - 2);
+            updateRageVisuals();
+            if (rageLevel > 0) startDecay();
+          }
+        }, 2000);
+      })();
+
+      // === EASTER EGG at 100 clicks ===
+      if (clickCount === 100 && !easterEggUnlocked) {
+        easterEggUnlocked = true;
+        localStorage.setItem('prabowoEasterEgg', 'true');
+        triggerEasterEgg();
+      }
+    }
+
+    // Reset auto-change timer
+    if (mascotTimer) clearTimeout(mascotTimer);
+    mascotTimer = setTimeout(() => showCatchphrase(false), 4000);
+  }
+
+  // === FIRE PARTICLE SYSTEM ===
+  let fireInterval = null;
+  const fireColors = ['#ef4444', '#f97316', '#eab308', '#dc2626', '#ff6b35', '#ff4500'];
+
+  function startFireParticles() {
+    if (fireInterval) return;
+    fireInterval = setInterval(() => { spawnFireParticle(); }, 150);
+  }
+
+  function stopFireParticles() {
+    if (fireInterval) { clearInterval(fireInterval); fireInterval = null; }
+  }
+
+  function spawnFireParticle() {
+    const container = document.getElementById('fire-particles');
+    if (!container) return;
+    const particle = document.createElement('div');
+    const color = fireColors[Math.floor(Math.random() * fireColors.length)];
+    const size = 3 + Math.random() * 7;
+    const left = 15 + Math.random() * 70;
+    const delay = Math.random() * 0.15;
+    const duration = 0.6 + Math.random() * 1.0;
+    particle.style.cssText = `position:absolute;bottom:0;left:${left}%;width:${size}px;height:${size}px;background:${color};border-radius:${Math.random() > 0.5 ? '50%' : '1px'};animation:fireRise ${duration}s ease-out ${delay}s forwards;box-shadow:0 0 ${size * 2}px ${color}60;`;
+    container.appendChild(particle);
+    setTimeout(() => { if (particle.parentNode) particle.remove(); }, (duration + delay) * 1000 + 200);
+  }
+
+  function updateRageMeter() {
+    const meterEl = document.getElementById('rage-meter');
+    const fillEl = document.getElementById('rage-fill');
+    const emojiEl = document.getElementById('rage-emoji');
+    const labelEl = document.getElementById('rage-level-text');
+    if (!meterEl || !fillEl) return;
+    if (rageLevel === 0) {
+      meterEl.classList.add('hidden');
+      meterEl.style.opacity = '0';
+      stopFireParticles();
+      return;
+    }
+    meterEl.classList.remove('hidden');
+    meterEl.style.opacity = '0';
+    void meterEl.offsetHeight;
+    meterEl.style.opacity = '1';
+    const percent = (rageLevel / MAX_RAGE) * 100;
+    fillEl.style.width = `${percent}%`;
+    let emoji, levelLabel;
+    if (rageLevel <= 2) { emoji = '\u{1F60E}'; levelLabel = 'LVL ' + rageLevel + ' — Santuy'; }
+    else if (rageLevel <= 4) { emoji = '\u{1F624}'; levelLabel = 'LVL ' + rageLevel + ' — Mulai Panas'; }
+    else if (rageLevel <= 6) { emoji = '\u{1F621}'; levelLabel = 'LVL ' + rageLevel + ' — NAIK DARAH!'; }
+    else if (rageLevel <= 8) { emoji = '\u{1F92C}'; levelLabel = 'LVL ' + rageLevel + ' — BAH! AMARAH!'; }
+    else { emoji = '\u{1F480}'; levelLabel = 'LVL ' + rageLevel + ' — MAX RAGE!!'; }
+    if (emojiEl) emojiEl.textContent = emoji;
+    if (labelEl) labelEl.textContent = levelLabel;
+    if (rageLevel >= 5) startFireParticles(); else stopFireParticles();
+  }
+
+  // === RAGE VISUALS ===
+  function updateRageVisuals() {
+    const mascotEl = document.getElementById('mascot');
+    const containerEl = document.getElementById('mascot-container');
+    const speechBubble = document.getElementById('speech-bubble');
+    if (!mascotEl) return;
+
+    // Remove all rage classes
+    mascotEl.classList.remove('rage-1','rage-2','rage-3','rage-4','rage-5','rage-6','rage-7','rage-8','rage-9','rage-10');
+    containerEl?.classList.remove('rage-border');
+    
+    // Reset speech bubble to default
+    if (speechBubble) speechBubble.style.background = '';
+
+    if (rageLevel === 0) return;
+
+    // Add appropriate rage class
+    const rageClass = `rage-${rageLevel}`;
+    mascotEl.classList.add(rageClass);
+    if (rageLevel >= 5) containerEl?.classList.add('rage-border');
+
+    // Update speech bubble color based on rage
+    if (speechBubble) {
+      if (rageLevel >= 8) {
+        speechBubble.style.background = 'linear-gradient(to right, #dc2626, #991b1b)';
+      } else if (rageLevel >= 5) {
+        speechBubble.style.background = 'linear-gradient(to right, #f97316, #dc2626)';
+      } else {
+        speechBubble.style.background = 'linear-gradient(to right, #ef4444, #dc2626)';
+      }
+    }
+    // Update rage meter
+    updateRageMeter();
+  }
+
+  // === EASTER EGG TRIGGER ===
+  function triggerEasterEgg() {
+    const mascotEl = document.getElementById('mascot');
+    const containerEl = document.getElementById('mascot-container');
+    const countEl = document.getElementById('click-count');
+
+    // Play special sound
+    playEasterEggSound();
+
+    // Epic animation
+    containerEl?.classList.add('animate-easter-egg');
+    
+    // Change face to something epic
+    const faceEl = document.getElementById('mascot-face');
+    if (faceEl) faceEl.textContent = '🤴';
+    
+    const statusEl = document.getElementById('mascot-status');
+    if (statusEl) statusEl.textContent = '✨ LEGEND! ✨';
+    
+    if (countEl) countEl.textContent = '✨ 100x ✨';
+
+    // Confetti burst!
+    createConfetti();
+
+    // Show achievement toast
+    setTimeout(() => {
+      window.showToast?.('🏆 EASTER EGG: 100 CLICKS! Lu legend!', 'success');
+    }, 300);
+
+    // Add permanent badge to mascot
+    const badge = document.createElement('div');
+    badge.id = 'easter-egg-badge';
+    badge.className = 'absolute -bottom-1 -left-1 w-7 h-7 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xs shadow-lg z-30 animate-pulse';
+    badge.textContent = '⭐';
+    mascotEl?.appendChild(badge);
+
+    // Reset animation after 3s
+    setTimeout(() => {
+      containerEl?.classList.remove('animate-easter-egg');
+    }, 3000);
+
+    // Add badge to leaderboard entry
+    const username = getOrCreateUsername();
+    const entry = leaderboardData.find(e => e.username === username);
+    if (entry) {
+      entry.legend = true;
+      localStorage.setItem('prabowoLeaderboard', JSON.stringify(leaderboardData));
+      renderLeaderboard();
+    }
+  }
+
+  // === CONFETTI ===
+  function createConfetti() {
+    const container = document.getElementById('confetti-container');
+    if (!container) return;
+
+    // Clear any old confetti
+    container.innerHTML = '';
+
+    const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff'];
+    
+    for (let i = 0; i < 60; i++) {
+      const confetti = document.createElement('div');
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const left = Math.random() * 100;
+      const delay = Math.random() * 0.5;
+      const duration = 1 + Math.random() * 2;
+      const size = 6 + Math.random() * 8;
+      
+      confetti.style.cssText = `
+        position: absolute;
+        top: -10px;
+        left: ${left}%;
+        width: ${size}px;
+        height: ${size * 0.6}px;
+        background: ${color};
+        border-radius: 2px;
+        animation: confettiFall ${duration}s ease-out ${delay}s forwards;
+        transform: rotate(${Math.random() * 360}deg);
+      `;
+      container.appendChild(confetti);
+    }
+    
+    // Auto-cleanup after all confetti is done
+    setTimeout(() => {
+      if (container) container.innerHTML = '';
+    }, 4000);
+  }
+
+  function updateCountdown() {
+    const now = Date.now();
+    const diff = TARGET_DATE - now;
+    
+    if (diff <= 0) {
+      document.getElementById('days').textContent = '00';
+      document.getElementById('hours').textContent = '00';
+      document.getElementById('minutes').textContent = '00';
+      document.getElementById('seconds').textContent = '00';
+      document.getElementById('progress-bar').style.width = '100%';
+      document.getElementById('progress-label').textContent = '100%';
+      document.getElementById('percent-done').textContent = '100%';
+      document.getElementById('live-badge').textContent = '🎉 SUDAH SAMPAI!';
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    document.getElementById('days').textContent = String(days).padStart(2, '0');
+    document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+    document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+    document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+
+    // Calculate percentage of term completed
+    const elapsed = now - START_DATE;
+    const percentDone = Math.min(100, Math.max(0, (elapsed / TOTAL_TERM_MS) * 100));
+    const percentDisplay = Math.min(100, percentDone);
+    
+    document.getElementById('progress-bar').style.width = `${percentDisplay}%`;
+    document.getElementById('progress-label').textContent = `${percentDisplay.toFixed(4)}%`;
+    document.getElementById('percent-done').textContent = `${percentDisplay.toFixed(2)}%`;
+    
+    // Update funny dynamic stats based on actual elapsed time
+    const bbmNaik = Math.max(1, Math.floor(percentDone * 0.15 + Math.sin(percentDone * 20) * 0.5 + 1));
+    const utangValue = Math.floor(percentDone * 85 + 7800);
+    const jargonValue = Math.max(0, Math.floor(percentDone * 0.08 + days * 0.01));
+    const rakyatValue = Math.max(0, Math.floor(percentDone * 0.5 + Math.abs(Math.sin(percentDone * 30)) * 3 + 1));
+
+    document.getElementById('stat-bbm').textContent = String(bbmNaik);
+    document.getElementById('stat-utang').textContent = `Rp ${utangValue.toLocaleString('id-ID')}`;
+    document.getElementById('stat-janji').textContent = String(Math.floor(jargonValue));
+    document.getElementById('stat-rakyat').textContent = String(rakyatValue);
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    // Countdown
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+    
+    // Quotes
+    updateQuote();
+    document.getElementById('refresh-quote')?.addEventListener('click', updateQuote);
+    setInterval(updateQuote, 15000);
+
+    // Mascot - click/keyboard to cycle catchphrases
+    const mascotContainer = document.getElementById('mascot-container');
+    mascotContainer?.addEventListener('click', () => showCatchphrase(true));
+    mascotContainer?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        showCatchphrase(true);
+      }
+    });
+    
+    // Initial catchphrase
+    setTimeout(() => showCatchphrase(false), 1000);
+    mascotTimer = setTimeout(() => showCatchphrase(false), 4000);
+
+    // Start idle animation
+    resetIdle();
+
+    // Leaderboard - load existing data & render
+    renderLeaderboard();
+
+    // Re-add easter egg badge if already unlocked
+    if (easterEggUnlocked) {
+      clickCount = 100;
+      const mascotEl = document.getElementById('mascot');
+      if (mascotEl && !document.getElementById('easter-egg-badge')) {
+        const badge = document.createElement('div');
+        badge.id = 'easter-egg-badge';
+        badge.className = 'absolute -bottom-1 -left-1 w-7 h-7 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xs shadow-lg z-30 animate-pulse';
+        badge.textContent = '⭐';
+        mascotEl.appendChild(badge);
+      }
+      // Show click count at 100
+      const countEl = document.getElementById('click-count');
+      if (countEl) countEl.textContent = '✨ 100x ✨';
+    }
+
+    document.getElementById('reset-leaderboard')?.addEventListener('click', () => {
+      if (confirm('Reset semua leaderboard?')) {
+        leaderboardData = [];
+        localStorage.removeItem('prabowoLeaderboard');
+        renderLeaderboard();
+        window.showToast?.('Leaderboard direset!', 'info');
+      }
+    });
+
+    // Share button
+    document.getElementById('share-btn')?.addEventListener('click', async () => {
+      const remainingDays = document.getElementById('days')?.textContent || '??';
+      const shareText = `🇮🇩 Sisa ${remainingDays} hari lagi menuju Presiden Indonesia baru! Siapa yang paling siap? Yuk kita tunggu 2029 bareng-bareng 😂\n\nCek countdown-nya di sini: ${window.location.href}`;
+      
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: 'Countdown Presiden Baru 2029', text: shareText });
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            navigator.clipboard.writeText(shareText);
+            window.showToast?.('Link disalin! Share ke teman-teman', 'success');
+          }
+        }
+      } else {
+        navigator.clipboard.writeText(shareText);
+        window.showToast?.('Link disalin! Share ke teman-teman', 'success');
+      }
+    });
+  });
+</script>
+
+<style>
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  .animate-on-scroll {
+    animation: fadeInDown 0.6s ease-out forwards;
+  }
+  .animate-float-y {
+    animation: floatY 3s ease-in-out infinite;
+  }
+  .animate-pop {
+    animation: pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  }
+  .animate-sparkle {
+    animation: sparkle 0.6s ease-out forwards !important;
+  }
+  .animate-bounce-subtle {
+    animation: bounceSubtle 2s ease-in-out infinite;
+  }
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .animate-idle-breathe {
+    animation: idleBreathe 4s ease-in-out infinite;
+  }
+  .animate-idle-bored {
+    animation: idleBored 3s ease-in-out infinite;
+  }
+
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes sparkle {
+    0% { background: linear-gradient(to top, rgba(250, 204, 21, 0), rgba(250, 204, 21, 0)); }
+    50% { background: linear-gradient(to top, rgba(250, 204, 21, 0.6), rgba(250, 204, 21, 0.2)); }
+    100% { background: linear-gradient(to top, rgba(250, 204, 21, 0), rgba(250, 204, 21, 0)); }
+  }
+
+  @keyframes bounceSubtle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  @keyframes idleBreathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+  }
+
+  @keyframes idleBored {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.02) rotate(-2deg); }
+    75% { transform: scale(1.02) rotate(2deg); }
+  }
+
+  #speech-text {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  #mascot-face {
+    transition: transform 0.3s ease;
+  }
+
+  #mascot-container:hover #mascot-face {
+    animation: none;
+  }
+
+  #mascot-container {
+    transition: all 0.3s ease;
+  }
+
+  #mascot-container:active {
+    transform: scale(0.98);
+  }
+
+  #mascot-status {
+    transition: opacity 0.3s ease;
+  }
+
+  /* === RAGE MODE CLASSES === */
+  .rage-1 { filter: saturate(1.2) !important; }
+  .rage-2 { filter: saturate(1.4) !important; }
+  .rage-3 { filter: saturate(1.6) hue-rotate(-5deg) !important; }
+  .rage-4 { filter: saturate(1.8) hue-rotate(-8deg) brightness(1.1) !important; }
+  .rage-5 { filter: saturate(2.0) hue-rotate(-10deg) brightness(1.2) !important; }
+  .rage-6 { filter: saturate(2.5) hue-rotate(-15deg) brightness(1.3) contrast(1.2) !important; }
+  .rage-7 { filter: saturate(3.0) hue-rotate(-20deg) brightness(1.4) contrast(1.3) !important; }
+  .rage-8 { filter: saturate(3.5) hue-rotate(-25deg) brightness(1.5) contrast(1.4) !important; }
+  .rage-9 { filter: saturate(4.0) hue-rotate(-30deg) brightness(1.6) contrast(1.5) !important; }
+  .rage-10 { filter: saturate(5.0) hue-rotate(-40deg) brightness(1.8) contrast(1.6) !important; }
+
+  .rage-border {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 30px rgba(220, 38, 38, 0.4), 0 0 60px rgba(220, 38, 38, 0.2) !important;
+  }
+
+  /* === SCREEN SHAKE === */
+  .animate-shake {
+    animation: shake 0.3s ease-in-out;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10% { transform: translateX(-8px) rotate(-1deg); }
+    20% { transform: translateX(8px) rotate(1deg); }
+    30% { transform: translateX(-6px) rotate(-1deg); }
+    40% { transform: translateX(6px) rotate(1deg); }
+    50% { transform: translateX(-4px) rotate(-0.5deg); }
+    60% { transform: translateX(4px) rotate(0.5deg); }
+    70% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
+    90% { transform: translateX(-1px); }
+  }
+
+  /* === EASTER EGG === */
+  .animate-easter-egg {
+    animation: eggPulse 0.5s ease-in-out 3, glowPulse 1s ease-in-out 3 !important;
+  }
+
+  @keyframes eggPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(250, 204, 21, 0.3); }
+    50% { box-shadow: 0 0 60px rgba(250, 204, 21, 0.6), 0 0 100px rgba(250, 204, 21, 0.3); }
+  }
+
+  /* === CONFETTI FALL === */
+  @keyframes confettiFall {
+    0% {
+      transform: translateY(0) rotate(0deg) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(720deg) scale(0.3);
+      opacity: 0;
+    }
+  }
+
+  /* === CUSTOM SCROLLBAR for leaderboard === */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #334155;
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  /* === RAGE METER === */
+  #rage-meter {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  #rage-meter:not(.hidden) {
+    opacity: 1;
+  }
+
+  /* === FIRE PARTICLES === */
+  @keyframes fireRise {
+    0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.9; }
+    40% { transform: translateY(-25px) translateX(8px) scale(1.3); opacity: 0.6; }
+    70% { transform: translateY(-50px) translateX(-5px) scale(0.5); opacity: 0.2; }
+    100% { transform: translateY(-90px) translateX(15px) scale(0.1); opacity: 0; }
+  }
+</style>
