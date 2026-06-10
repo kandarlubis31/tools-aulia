@@ -3,36 +3,47 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="Countdown Presiden Baru 2029">
-  <div class="max-w-4xl mx-auto px-4 min-h-[85vh] flex flex-col justify-center items-center py-10">
-    
-    <div class="text-center mb-8 animate-on-scroll">
-      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight" data-i18n="header.prabowo_countdown">
+  <div class="max-w-4xl mx-auto px-2 sm:px-4 min-h-[85vh] flex flex-col justify-center items-center py-6 sm:py-10 relative">
+
+    <!-- Subtle background pattern -->
+    <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+      <div class="absolute inset-0 bg-[radial-gradient(#e0e7ff_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] bg-[length:24px_24px] opacity-40 dark:opacity-30"></div>
+      <div class="absolute top-0 -left-40 w-80 h-80 bg-red-500/5 dark:bg-red-500/10 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 -right-40 w-80 h-80 bg-amber-500/5 dark:bg-amber-500/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="text-center mb-6 sm:mb-8 animate-on-scroll px-2 relative">
+      <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-3 sm:mb-4 tracking-tight leading-tight" data-i18n="header.prabowo_countdown">
         🇮🇩 <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700 dark:from-red-400 dark:to-red-600">Countdown</span> 
         <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 dark:from-slate-100 dark:to-slate-300">Presiden</span>
         <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700 dark:from-red-400 dark:to-red-600">Baru</span> 🇮🇩
       </h1>
-      <p class="text-slate-600 dark:text-slate-400 text-lg max-w-xl mx-auto" data-i18n="prabowo.subtitle">
+      <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm md:text-lg max-w-xl mx-auto" data-i18n="prabowo.subtitle">
         Menuju <strong class="text-red-600 dark:text-red-400">Indonesia Baru</strong> — versi yang katanya lebih baik dari ini.
       </p>
     </div>
 
     <!-- === PRABOWO MASCOT === -->
-    <div class="w-full max-w-2xl mb-6">
-      <div id="mascot-container" role="button" tabindex="0" class="relative bg-white dark:bg-slate-800 rounded-3xl border-2 border-red-200 dark:border-red-900/50 shadow-xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-red-500/20 hover:border-red-400 dark:hover:border-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/50">
+    <div class="w-full max-w-2xl mb-4 sm:mb-6">
+      <div id="mascot-container" role="button" tabindex="0" class="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl border-2 border-red-200 dark:border-red-900/50 shadow-xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-red-500/20 hover:border-red-400 dark:hover:border-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/50">
         
         <!-- Mascot body with animation -->
-        <div class="flex items-center gap-4 md:gap-6 p-6 md:p-8">
+        <div class="flex items-center gap-3 sm:gap-4 md:gap-6 p-3 sm:p-4 md:p-6 lg:p-8">
           <div class="relative shrink-0">
-            <!-- Animated Prabowo SVG/Emoji -->
-            <div id="mascot" class="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-950 dark:to-red-900 rounded-2xl flex items-center justify-center text-5xl md:text-6xl select-none transition-transform duration-300 group-hover:scale-110 relative overflow-hidden">
-              <!-- Main face -->
-              <span id="mascot-face" class="relative z-10 transition-all duration-300">👨‍💼</span>
+            <!-- Animated Prabowo GIF Face -->
+            <div id="mascot" class="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-950 dark:to-red-900 rounded-xl sm:rounded-2xl flex items-center justify-center select-none transition-transform duration-300 group-hover:scale-110 relative overflow-hidden shadow-inner">
+              <!-- GIF Face -->
+              <img id="mascot-face" class="relative z-10 w-full h-full object-cover rounded-xl sm:rounded-2xl transition-all duration-300" src="https://media.giphy.com/media/Y39pGbofrbvN9TzcDC/giphy.gif" alt="Prabowo Joget" loading="lazy" onerror="this.onerror=null;this.style.display='none';document.getElementById('mascot-face-fallback').classList.remove('opacity-0','pointer-events-none');document.getElementById('mascot-face-fallback').classList.add('opacity-100','z-10')" />
+              <!-- Fallback emoji (shown if GIF fails) -->
+              <span id="mascot-face-fallback" class="absolute inset-0 z-0 flex items-center justify-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl opacity-0 pointer-events-none transition-all duration-300">👨‍💼</span>
               <!-- Blink overlay -->
               <div id="mascot-blink" class="absolute inset-0 z-10 rounded-2xl pointer-events-none" style="background: transparent;"></div>
               <!-- Animated sparkle overlay -->
               <div id="mascot-sparkle" class="absolute inset-0 bg-gradient-to-t from-yellow-400/0 to-yellow-400/0 transition-all duration-500 rounded-2xl"></div>
               <!-- Fire particles -->
               <div id="fire-particles" class="absolute inset-0 pointer-events-none z-20 overflow-visible"></div>
+              <!-- Status glow ring -->
+              <div id="status-ring" class="absolute inset-0 rounded-xl sm:rounded-2xl ring-2 ring-transparent transition-all duration-500"></div>
               <!-- Tiny Indonesian flag -->
               <div class="absolute -top-1 -right-1 w-6 h-6 md:w-7 md:h-7 rounded-full bg-white dark:bg-slate-700 shadow-md flex items-center justify-center text-xs z-20 animate-bounce-subtle">
                 🇮🇩
@@ -41,7 +52,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             
             <!-- Speech bubble -->
             <div id="speech-wrapper" class="absolute -bottom-2 left-1/2 -translate-x-1/2 z-20">
-              <div id="speech-bubble" class="whitespace-nowrap px-4 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs md:text-sm font-black rounded-full shadow-lg animate-float-y">
+              <div id="speech-bubble" class="whitespace-nowrap px-4 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs md:text-sm font-black rounded-full shadow-lg animate-float-y shadow-red-500/30">
                 <span id="speech-text">Oke Gas!</span>
               </div>
               <div class="w-3 h-3 bg-red-500 -mt-1 mx-auto rotate-45"></div>
@@ -49,22 +60,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
 
           <div class="flex-1 min-w-0">
-            <div class="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-1" data-i18n="prabowo.mascot_label">👤 MASKOT</div>
+            <div class="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-1 flex items-center gap-1.5" data-i18n="prabowo.mascot_label">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block animate-pulse"></span>
+              MASKOT
+            </div>
             <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white" data-i18n="prabowo.mascot_name">Pak Prabowo 2029</h3>
-            <p id="mascot-status" class="text-sm text-slate-500 dark:text-slate-400 mt-1" data-i18n="prabowo.mascot_status">Siap-siap... tinggal nunggu waktu!</p>
+            <p id="mascot-status" class="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5" data-i18n="prabowo.mascot_status">
+              <span>🕐</span> Siap-siap... tinggal nunggu waktu!
+            </p>
             
             <!-- Click hint -->
             <div class="flex items-center gap-2 mt-2">
               <span class="text-[10px] text-slate-400 dark:text-slate-500 animate-pulse" data-i18n="prabowo.click_hint">Klik buat denger katanya!</span>
-              <span id="click-count" class="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded-full">x0</span>
+              <span id="click-count" class="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded-full border border-red-200 dark:border-red-800">x0</span>
             </div>
           </div>
         </div>
 
         <!-- Catchphrase cycling bar -->
-        <div class="bg-gradient-to-r from-red-50 via-red-100 to-red-50 dark:from-red-950/50 dark:via-red-900/30 dark:to-red-950/50 px-6 py-2 border-t border-red-100 dark:border-red-900/30">
-          <div class="flex items-center gap-2 text-xs text-red-700 dark:text-red-300 font-medium">
-            <span class="animate-pulse">🔥</span>
+        <div class="bg-gradient-to-r from-red-50 via-red-100 to-red-50 dark:from-red-950/50 dark:via-red-900/30 dark:to-red-950/50 px-3 sm:px-6 py-1.5 sm:py-2 border-t border-red-100 dark:border-red-900/30">
+          <div class="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-red-700 dark:text-red-300 font-medium">
+            <span class="animate-pulse shrink-0">🔥</span>
             <span data-i18n="prabowo.famous_quote">"GAS! GAS! GAS! Kita kejar!"</span>
           </div>
         </div>
@@ -73,7 +89,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     <!-- === RAGE METER === -->
     <div id="rage-meter" class="w-full max-w-2xl mb-6 hidden transition-all duration-500">
-      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
             <span id="rage-emoji" class="text-xl">😎</span>
@@ -94,108 +110,119 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
 
     <!-- Main Countdown Card -->
-    <div class="w-full max-w-2xl bg-white dark:bg-slate-800 p-8 md:p-12 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+    <div class="w-full max-w-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 sm:p-6 md:p-8 lg:p-12 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden">
       
       <!-- Decorative flags -->
-      <div class="absolute -top-10 -right-10 text-[120px] opacity-5 dark:opacity-10 select-none pointer-events-none rotate-12">
-        🇮🇩
-      </div>
-      <div class="absolute -bottom-10 -left-10 text-[120px] opacity-5 dark:opacity-10 select-none pointer-events-none -rotate-12">
-        🇮🇩
-      </div>
+      <div class="absolute -top-10 -right-10 text-[80px] sm:text-[120px] opacity-5 dark:opacity-10 select-none pointer-events-none rotate-12 animate-float-flag">🇮🇩</div>
+      <div class="absolute -bottom-10 -left-10 text-[80px] sm:text-[120px] opacity-5 dark:opacity-10 select-none pointer-events-none -rotate-12 animate-float-flag-delayed">🇮🇩</div>
 
-      <div class="absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800">
+      <!-- Subtle shimmer overlay -->
+      <div class="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent pointer-events-none"></div>
+
+      <div class="absolute top-3 sm:top-6 left-3 sm:left-6 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800">
         <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
         <span id="live-badge" data-i18n="prabowo.live_badge">LIVE COUNTDOWN</span>
       </div>
 
-      <div class="relative z-10 text-center mt-4">
-        <p class="text-sm font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider" data-i18n="prabowo.remaining_label">
+      <div class="relative z-10 text-center mt-3 sm:mt-4">
+        <p class="text-[10px] sm:text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider" data-i18n="prabowo.remaining_label">
           ⏳ Sisa masa jabatan
         </p>
         
         <!-- Timer Grid -->
-        <div class="grid grid-cols-4 gap-3 md:gap-6 mb-6">
-          <div class="flex flex-col items-center">
-            <div class="w-full bg-red-50 dark:bg-red-950/50 rounded-2xl p-3 md:p-5 border border-red-100 dark:border-red-900/50 shadow-inner">
-              <span id="days" class="block text-4xl md:text-6xl font-black text-red-600 dark:text-red-400 tabular-nums">00</span>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-6 mb-6">
+          <div class="flex flex-col items-center group/timer">
+            <div class="w-full bg-red-50 dark:bg-red-950/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-5 border border-red-100 dark:border-red-900/50 shadow-inner min-w-0 transition-all duration-300 group-hover/timer:scale-105 group-hover/timer:shadow-md group-hover/timer:border-red-300 dark:group-hover/timer:border-red-700">
+              <span id="days" class="block text-[clamp(1.75rem,6vw,3.75rem)] font-black text-red-600 dark:text-red-400 tabular-nums leading-none truncate">00</span>
             </div>
-            <span class="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-2 tracking-widest" data-i18n="time.days">Hari</span>
+            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.days">Hari</span>
           </div>
-          <div class="flex flex-col items-center">
-            <div class="w-full bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-3 md:p-5 border border-slate-200 dark:border-slate-700 shadow-inner">
-              <span id="hours" class="block text-4xl md:text-6xl font-black text-slate-700 dark:text-slate-200 tabular-nums">00</span>
+          <div class="flex flex-col items-center group/timer">
+            <div class="w-full bg-slate-50 dark:bg-slate-900/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-5 border border-slate-200 dark:border-slate-700 shadow-inner min-w-0 transition-all duration-300 group-hover/timer:scale-105 group-hover/timer:shadow-md">
+              <span id="hours" class="block text-3xl sm:text-4xl md:text-6xl font-black text-slate-700 dark:text-slate-200 tabular-nums leading-none">00</span>
             </div>
-            <span class="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-2 tracking-widest" data-i18n="time.hours">Jam</span>
+            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.hours">Jam</span>
           </div>
-          <div class="flex flex-col items-center">
-            <div class="w-full bg-red-50 dark:bg-red-950/50 rounded-2xl p-3 md:p-5 border border-red-100 dark:border-red-900/50 shadow-inner">
-              <span id="minutes" class="block text-4xl md:text-6xl font-black text-red-600 dark:text-red-400 tabular-nums">00</span>
+          <div class="flex flex-col items-center group/timer">
+            <div class="w-full bg-red-50 dark:bg-red-950/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-5 border border-red-100 dark:border-red-900/50 shadow-inner min-w-0 transition-all duration-300 group-hover/timer:scale-105 group-hover/timer:shadow-md group-hover/timer:border-red-300 dark:group-hover/timer:border-red-700">
+              <span id="minutes" class="block text-3xl sm:text-4xl md:text-6xl font-black text-red-600 dark:text-red-400 tabular-nums leading-none">00</span>
             </div>
-            <span class="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-2 tracking-widest" data-i18n="time.minutes">Menit</span>
+            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.minutes">Menit</span>
           </div>
-          <div class="flex flex-col items-center">
-            <div class="w-full bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-3 md:p-5 border border-slate-200 dark:border-slate-700 shadow-inner">
-              <span id="seconds" class="block text-4xl md:text-6xl font-black text-slate-700 dark:text-slate-200 tabular-nums">00</span>
+          <div class="flex flex-col items-center group/timer">
+            <div class="w-full bg-slate-50 dark:bg-slate-900/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-5 border border-slate-200 dark:border-slate-700 shadow-inner min-w-0 transition-all duration-300 group-hover/timer:scale-105 group-hover/timer:shadow-md">
+              <span id="seconds" class="block text-3xl sm:text-4xl md:text-6xl font-black text-slate-700 dark:text-slate-200 tabular-nums leading-none">00</span>
             </div>
-            <span class="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-2 tracking-widest" data-i18n="time.seconds">Detik</span>
+            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.seconds">Detik</span>
           </div>
         </div>
 
         <!-- Target Date -->
-        <p class="text-xs text-slate-400 dark:text-slate-500 font-medium" data-i18n="prabowo.target_label">
-          Target: <span class="font-bold text-red-600 dark:text-red-400">20 Oktober 2029</span> — Akhir masa bakti
+        <p class="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-medium" data-i18n="prabowo.target_label">
+          Target: <span class="font-bold text-red-600 dark:text-red-400 whitespace-nowrap">20 Oktober 2029</span> — Akhir masa bakti
         </p>
       </div>
     </div>
 
-    <!-- Funny Stats Cards - Now 6 cards! -->
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 w-full max-w-2xl mt-8">
-      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-        <div class="text-xl mb-1">📉</div>
-        <div class="text-2xl font-black text-slate-800 dark:text-white">100%</div>
-        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_promise">Janji Belum Terealisasi</div>
+    <!-- Funny Stats Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 w-full max-w-2xl mt-6 sm:mt-8">
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-red-200 dark:hover:border-red-800">
+        <div class="text-lg sm:text-xl mb-1">📉</div>
+        <div class="text-lg sm:text-xl md:text-2xl font-black text-slate-800 dark:text-white">100%</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_promise">Janji Belum Terealisasi</div>
       </div>
-      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-        <div class="text-xl mb-1">🥚</div>
-        <div id="percent-done" class="text-2xl font-black text-slate-800 dark:text-white">0%</div>
-        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_term">Masa Jabatan Terlewati</div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-amber-200 dark:hover:border-amber-800">
+        <div class="text-lg sm:text-xl mb-1">🥚</div>
+        <div id="percent-done" class="text-lg sm:text-xl md:text-2xl font-black text-slate-800 dark:text-white">0%</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_term">Masa Jabatan Terlewati</div>
       </div>
-      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-        <div class="text-xl mb-1">💸</div>
-        <div id="stat-bbm" class="text-2xl font-black text-amber-600 dark:text-amber-400">0</div>
-        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_bbm">BBM Naik (kali)</div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-amber-200 dark:hover:border-amber-800">
+        <div class="text-lg sm:text-xl mb-1">💸</div>
+        <div id="stat-bbm" class="text-lg sm:text-xl md:text-2xl font-black text-amber-600 dark:text-amber-400">0</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_bbm">BBM Naik (kali)</div>
       </div>
-      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-        <div class="text-xl mb-1">🏛️</div>
-        <div id="stat-utang" class="text-2xl font-black text-red-600 dark:text-red-400">Rp 0</div>
-        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_debt">Utang Negara (Triliun)</div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-red-200 dark:hover:border-red-800">
+        <div class="text-lg sm:text-xl mb-1">🏛️</div>
+        <div id="stat-utang" class="text-lg sm:text-xl md:text-2xl font-black text-red-600 dark:text-red-400">Rp 0</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_debt">Utang Negara (Triliun)</div>
       </div>
-      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-        <div class="text-xl mb-1">🗣️</div>
-        <div id="stat-janji" class="text-2xl font-black text-violet-600 dark:text-violet-400">0</div>
-        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_jargon">Jargon Baru Diciptakan</div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-violet-200 dark:hover:border-violet-800">
+        <div class="text-lg sm:text-xl mb-1">🗣️</div>
+        <div id="stat-janji" class="text-lg sm:text-xl md:text-2xl font-black text-violet-600 dark:text-violet-400">0</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_jargon">Jargon Baru Diciptakan</div>
       </div>
-      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-        <div class="text-xl mb-1">😤</div>
-        <div id="stat-rakyat" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">0</div>
-        <div class="text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_rakyat">Rakyat Pindah Kewarganegaraan</div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-emerald-200 dark:hover:border-emerald-800">
+        <div class="text-lg sm:text-xl mb-1">😤</div>
+        <div id="stat-rakyat" class="text-lg sm:text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400">0</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_rakyat">Rakyat Pindah Kewarganegaraan</div>
       </div>
     </div>
 
-    <!-- Daily Dose of Reality -->
-    <div class="w-full max-w-2xl mt-8">
-      <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="text-lg">🤡</span>
-          <h3 class="text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider" data-i18n="prabowo.reality_title">Daily Dose of Reality</h3>
+    <!-- Daily Dose of Reality - Enhanced -->
+    <div class="w-full max-w-2xl mt-6 sm:mt-8">
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden">
+        <!-- Gradient accent bar -->
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-500 to-red-500"></div>
+        
+        <div class="flex items-center gap-2 mb-3 sm:mb-4">
+          <span class="relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/50 text-base sm:text-lg shrink-0">
+            🤡
+          </span>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider" data-i18n="prabowo.reality_title">Daily Dose of Reality</h3>
+            <span id="quote-category" class="text-[9px] text-red-500 dark:text-red-400 font-medium">N/A</span>
+          </div>
         </div>
-        <blockquote id="reality-quote" class="text-lg md:text-xl font-medium text-slate-800 dark:text-slate-100 italic leading-relaxed transition-opacity duration-300">
+        
+        <blockquote id="reality-quote" class="text-base sm:text-lg md:text-xl font-medium text-slate-800 dark:text-slate-100 italic leading-relaxed transition-opacity duration-300 border-l-[3px] border-red-300 dark:border-red-700 pl-3 sm:pl-4">
           "Loading..."
         </blockquote>
-        <div class="mt-4 flex items-center justify-between">
-          <span id="reality-source" class="text-xs text-slate-400">— Rakyat Indonesia 💀</span>
-          <button id="refresh-quote" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all" title="Quote Baru" data-i18n-attr="title" data-i18n="prabowo.new_quote">
+        
+        <div class="mt-3 sm:mt-4 flex items-center justify-between">
+          <span id="reality-source" class="text-[10px] sm:text-xs text-slate-400 flex items-center gap-1">
+            <span>✍️</span> — Rakyat Indonesia 💀
+          </span>
+          <button id="refresh-quote" class="p-1.5 sm:p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all hover:rotate-45 duration-300" title="Quote Baru" data-i18n-attr="title" data-i18n="prabowo.new_quote">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
           </button>
         </div>
@@ -206,31 +233,32 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <div id="confetti-container" class="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"></div>
 
     <!-- Fun Facts -->
-    <div class="w-full max-w-2xl mt-6">
-      <div class="bg-gradient-to-r from-red-50 to-white dark:from-red-950/30 dark:to-slate-800 p-5 rounded-2xl border border-red-100 dark:border-red-900/30">
-        <p id="fun-fact" class="text-sm text-slate-600 dark:text-slate-400 text-center leading-relaxed" data-i18n="prabowo.fun_fact">
+    <div class="w-full max-w-2xl mt-4 sm:mt-6">
+      <div class="bg-gradient-to-r from-red-50 to-white dark:from-red-950/30 dark:to-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-red-100 dark:border-red-900/30 relative overflow-hidden">
+        <div class="absolute -top-4 -right-4 text-3xl opacity-10">🇮🇩</div>
+        <p id="fun-fact" class="text-[11px] sm:text-sm text-slate-600 dark:text-slate-400 text-center leading-relaxed" data-i18n="prabowo.fun_fact">
           🇮🇩 Facts: Sembari menunggu 2029, kita bisa main tebak-tebakan: "Harga sembako naik berapa hari ini?"
         </p>
       </div>
     </div>
 
     <!-- Leaderboard Section -->
-    <div id="leaderboard-section" class="w-full max-w-2xl mt-8 hidden">
-      <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border-2 border-amber-200 dark:border-amber-900/50 shadow-lg">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-2">
-            <span class="text-xl">🏆</span>
-            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider" data-i18n="prabowo.leaderboard_title">Leaderboard Clickers</h3>
+    <div id="leaderboard-section" class="w-full max-w-2xl mt-6 sm:mt-8 hidden">
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 border-amber-200 dark:border-amber-900/50 shadow-lg">
+        <div class="flex items-center justify-between mb-3 sm:mb-4">
+          <div class="flex items-center gap-1.5 sm:gap-2">
+            <span class="text-lg sm:text-xl">🏆</span>
+            <h3 class="text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider" data-i18n="prabowo.leaderboard_title">Leaderboard Clickers</h3>
           </div>
-          <button id="reset-leaderboard" class="text-[10px] font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 px-2 py-1 rounded transition-all" data-i18n="prabowo.leaderboard_reset">Reset</button>
+          <button id="reset-leaderboard" class="text-[9px] sm:text-[10px] font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded transition-all" data-i18n="prabowo.leaderboard_reset">Reset</button>
         </div>
-        <div id="leaderboard-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
-          <div class="text-center text-sm text-slate-400 py-4" data-i18n="prabowo.leaderboard_empty">
+        <div id="leaderboard-list" class="space-y-1.5 sm:space-y-2 max-h-48 sm:max-h-60 overflow-y-auto custom-scrollbar pr-1 sm:pr-2">
+          <div class="text-center text-xs sm:text-sm text-slate-400 py-3 sm:py-4" data-i18n="prabowo.leaderboard_empty">
             Belum ada yang klik. Jadi orang pertama!
           </div>
         </div>
-        <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
-          <p class="text-[10px] text-slate-400 text-center" data-i18n="prabowo.leaderboard_hint">
+        <div class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-700">
+          <p class="text-[9px] sm:text-[10px] text-slate-400 text-center" data-i18n="prabowo.leaderboard_hint">
             💡 Makin sering klik makin tinggi skor!
           </p>
         </div>
@@ -238,21 +266,23 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
 
     <!-- Share Button -->
-    <div class="mt-10">
-      <button id="share-btn" class="group relative inline-flex items-center justify-center gap-3 px-8 py-3 font-bold text-white transition-all duration-200 bg-red-600 hover:bg-red-700 text-base rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-xl shadow-red-500/20" data-i18n="prabowo.share_btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        <span>Share ke Teman (Biar Sama-sama Nunggu)</span>
+    <div class="mt-8 sm:mt-10">
+      <button id="share-btn" class="group relative inline-flex items-center justify-center gap-2 sm:gap-3 px-5 sm:px-6 md:px-8 py-2.5 sm:py-3 font-bold text-white transition-all duration-200 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-sm sm:text-base rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-lg sm:shadow-xl shadow-red-500/20 hover:shadow-red-500/40" data-i18n="prabowo.share_btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="sm:w-[18px] sm:h-[18px] transition-transform group-hover:rotate-12 duration-300"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        <span class="text-[11px] sm:text-sm md:text-base">Share ke Teman (Biar Sama-sama Nunggu)</span>
       </button>
     </div>
 
     <!-- Progress Bar -->
-    <div class="w-full max-w-2xl mt-8 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+    <div class="w-full max-w-2xl mt-6 sm:mt-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
       <div class="flex justify-between items-center mb-3">
         <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider" data-i18n="prabowo.progress_label">Progress Menuju Indonesia Baru</span>
         <span id="progress-label" class="text-xs font-bold text-red-600 dark:text-red-400">0%</span>
       </div>
-      <div class="w-full h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-        <div id="progress-bar" class="h-full bg-gradient-to-r from-red-500 to-red-700 rounded-full transition-all duration-1000 ease-linear" style="width: 0%"></div>
+      <div class="w-full h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-red-500 to-red-700 rounded-full transition-all duration-1000 ease-linear relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
+        </div>
       </div>
       <p class="text-[10px] text-slate-400 mt-2 text-center" data-i18n="prabowo.progress_hint">
         🐌 Secepat ini kah? Cepetan 2029!
@@ -267,6 +297,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const TARGET_DATE = new Date('2029-10-20T00:00:00+07:00').getTime();
   const START_DATE = new Date('2024-10-20T00:00:00+07:00').getTime();
   const TOTAL_TERM_MS = TARGET_DATE - START_DATE;
+
+  // === PRABOWO GIF URLs ===
+  const GIFS = {
+    joget: 'https://media.giphy.com/media/Y39pGbofrbvN9TzcDC/giphy.gif',
+    marah: 'https://media.giphy.com/media/j2KK4hi34L02o3swoh/giphy.gif',
+    kabur: 'https://media.giphy.com/media/INb0QlaZKflBQZJOho/giphy.gif',
+    selfie: 'https://media.giphy.com/media/edxiHsM9ik32DW9rWy/giphy.gif',
+  };
+
+  function setMascotFace(mood) {
+    const img = document.getElementById('mascot-face');
+    if (!img) return;
+    const url = GIFS[mood] || GIFS.joget;
+    if (img.src !== url) img.src = url;
+    img.alt = `Prabowo ${mood}`;
+  }
 
   // === PRABOWO CATCHPHRASES ===
   const catchphrases = [
@@ -290,29 +336,77 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     { text: "Oke... GAS! 🔥🔥🔥", emoji: "💥", status: "LEDAK!" },
     { text: "Gas dulu, akibat belakangan!", emoji: "🎲", status: "Resiko?" },
     { text: "Gass aja gass!", emoji: "🛵", status: "Boncengan!" },
+    { text: "Gas, gas, gas! Terus!", emoji: "🎯", status: "On target!" },
+    { text: "Pokoknya oke gas semua!", emoji: "💪", status: "Kekuatan penuh!" },
+    { text: "Gas? Gas lah!", emoji: "😏", status: "Sok cool..." },
+    { text: "Gas polllll! 🔥", emoji: "🤘", status: "Metal!" },
+    { text: "Gas dulu, tobat kemudian!", emoji: "😇", status: "Maksiat dulu..." },
   ];
 
+  // === EXPANDED REALITY QUOTES ===
   const realityQuotes = [
-    { text: "Presiden baru? Semoga yang ini baca buku dulu sebelum ngomong.", source: "Ekspektasi Rakyat" },
-    { text: "Janji kampanye: 'Indonesia Maju'. Realita: 'Indonesia Maaf, Lagi Proses'", source: "Twitter Indonesia" },
-    { text: "Harga BBM naik, harga sembako naik, tapi gaji? Yang sabar ya.", source: "Buruh Pabrik" },
-    { text: "2029 masih lama. Siap-siap ojek online jadi transportasi utama selama 5 tahun.", source: "Driver Gojek" },
-    { text: "Kata siapa demokrasi mati? Hidup mahal makin hidup!", source: "Rakyat Biasa" },
-    { text: "Prabowo janji hilangkan kemiskinan. Ternyata yang hilang itu akal sehat.", source: "Warung Kopi" },
-    { text: "Yang penting kan Indonesia tetap 'rukun'. Rukun tetangga, rukun sama harga-harga naik.", source: "Ibu-ibu PKK" },
-    { text: "Jangan khawatir, kalau yang ini gagal, 2029 kita voting lagi! (atau tidak?)", source: "Optimis Abadi" },
-    { text: "Prabowo punya 'konsep' untuk Indonesia. Konsep yang katanya 'masih di kepala'.", source: "Staff Istana" },
-    { text: "Utang negara naik? Itu wong cilik, ih klasik!", source: "Ekonom Pinggiran" },
-    { text: "Jangan lupa, Indonesia pernah dijajah 350 tahun. Sekarang? Dijajah utang.", source: "Sejarahwan Dadakan" },
-    { text: "Makan siang gratis katanya. Tapi gratis kenyang atau gratis kelaparan?", source: "Mahasiswa Ujian" },
-    { text: "Hari gini masih percaya politisi? Aku mah percaya countdown ini aja.", source: "Rakyat Cerdas" },
-    { text: "Rakyat: 'Kapan sejahtera?' Pemerintah: 'Sabar, masih dirumuskan.' (2004-2029)", source: "Skena BPS" },
-    { text: "Jangan terlalu berharap, nanti sakit hati. Tapi ya berharaplah, siapa tau.", source: "Filsuf Indonesia" },
-    { text: "Kalau tidak suka dengan yang ini, 2029 ada presiden baru! Atau ganti UUD lagi?", source: "MPR Dadakan" },
-    { text: "Indonesia Darurat... harga cabai.", source: "Ibu-ibu Pasar" },
-    { text: "GDP naik? Itu karena penduduk naik, guys. Per kapita? Ah sudahlah.", source: "Ekonom Muda" },
-    { text: "Korupsi turun katanya. Tapi kok koruptornya makin kaya?", source: "KPK (yang tersisa)" },
-    { text: "Semangat Indonesia! 5 tahun lagi kita bisa pilih lagi... kalau pilpresnya jadi.", source: "Pemilih Pemula" },
+    // --- Politik & Pemerintahan ---
+    { text: "Presiden baru? Semoga yang ini baca buku dulu sebelum ngomong.", source: "Ekspektasi Rakyat", category: "Politik" },
+    { text: "Janji kampanye: 'Indonesia Maju'. Realita: 'Indonesia Maaf, Lagi Proses'", source: "Twitter Indonesia", category: "Politik" },
+    { text: "Kata siapa demokrasi mati? Hidup mahal makin hidup!", source: "Rakyat Biasa", category: "Politik" },
+    { text: "Prabowo janji hilangkan kemiskinan. Ternyata yang hilang itu akal sehat.", source: "Warung Kopi", category: "Politik" },
+    { text: "Prabowo punya 'konsep' untuk Indonesia. Konsep yang katanya 'masih di kepala'.", source: "Staff Istana", category: "Politik" },
+    { text: "Jangan khawatir, kalau yang ini gagal, 2029 kita voting lagi! (atau tidak?)", source: "Optimis Abadi", category: "Politik" },
+    { text: "Kalau tidak suka dengan yang ini, 2029 ada presiden baru! Atau ganti UUD lagi?", source: "MPR Dadakan", category: "Politik" },
+    { text: "Semangat Indonesia! 5 tahun lagi kita bisa pilih lagi... kalau pilpresnya jadi.", source: "Pemilih Pemula", category: "Politik" },
+    { text: "Hari gini masih percaya politisi? Aku mah percaya countdown ini aja.", source: "Rakyat Cerdas", category: "Politik" },
+    { text: "Rakyat: 'Kapan sejahtera?' Pemerintah: 'Sabar, masih dirumuskan.' (2004-2029)", source: "Skena BPS", category: "Politik" },
+    { text: "Jangan terlalu berharap, nanti sakit hati. Tapi ya berharaplah, siapa tau.", source: "Filsuf Indonesia", category: "Politik" },
+    { text: "Yang penting kan Indonesia tetap 'rukun'. Rukun tetangga, rukun sama harga-harga naik.", source: "Ibu-ibu PKK", category: "Politik" },
+    { text: "Program makan siang gratis! Tapi gratis kenyang atau gratis kelaparan?", source: "Mahasiswa Ujian", category: "Politik" },
+    { text: "100 hari kerja? Minimal 100 hari bikin kebijakan yang gak kontroversial dulu.", source: "Kritikus Setia", category: "Politik" },
+    { text: "Menteri baru bilang 'fokus pada rakyat'. Rakyat: 'Lho, bukannya memang dari sononya?'", source: "Rakyat Bertanya", category: "Politik" },
+    { text: "Indonesia darurat... presiden yang bisa bikin harga cabai turun.", source: "Ibu-ibu Pasar", category: "Politik" },
+    { text: "Rezim berganti, gaya sama. Bedanya cuma warna partai.", source: "Pengamat Pinggiran", category: "Politik" },
+    
+    // --- Ekonomi & Harga ---
+    { text: "Harga BBM naik, harga sembako naik, tapi gaji? Yang sabar ya.", source: "Buruh Pabrik", category: "Ekonomi" },
+    { text: "Utang negara naik? Itu wong cilik, ih klasik!", source: "Ekonom Pinggiran", category: "Ekonomi" },
+    { text: "Jangan lupa, Indonesia pernah dijajah 350 tahun. Sekarang? Dijajah utang.", source: "Sejarahwan Dadakan", category: "Ekonomi" },
+    { text: "GDP naik? Itu karena penduduk naik, guys. Per kapita? Ah sudahlah.", source: "Ekonom Muda", category: "Ekonomi" },
+    { text: "Harga sembako: naik. Gaji: tetap. Logika: pemerintah.", source: "Rakyat Pusing", category: "Ekonomi" },
+    { text: "Inflasi dikendalikan katanya. Iya, dikendalikan supaya naiknya teratur.", source: "Tukang Warung", category: "Ekonomi" },
+    { text: "Subsidi dicabut, rakyat diatur. Nanti ada bantuan langsung? Iya, langsung susah.", source: "Warga Twitter", category: "Ekonomi" },
+    { text: "Harga BBM naik? Gass aja gass! (ikut naik semuanya)", source: "Driver Ojol", category: "Ekonomi" },
+    { text: "Ekonomi Indonesia tumbuh 5%! Tapi kenapa dompetku tetap 0.5%?", source: "Karyawan Swasta", category: "Ekonomi" },
+    { text: "Pajak naik? Gass! Tapi jangan tanya fasilitas umum kenapa hancur.", source: "Wajib Pajak", category: "Ekonomi" },
+    { text: "UMK naik 3%, harga cabai naik 300%. Matematika Indonesia!", source: "Buruh Harian", category: "Ekonomi" },
+    { text: "Dolar naik? Gas! Rupiah turun? Gas! Semua di-gas-in aja!", source: "Trader Amatir", category: "Ekonomi" },
+    
+    // --- Sosial & Budaya ---
+    { text: "2029 masih lama. Siap-siap ojek online jadi transportasi utama selama 5 tahun.", source: "Driver Gojek", category: "Sosial" },
+    { text: "Korupsi turun katanya. Tapi kok koruptornya makin kaya?", source: "KPK (yang tersisa)", category: "Sosial" },
+    { text: "Orang Indonesia kuat. Tahan lapar, tahan susah, tahan sama omongan politisi.", source: "Netizen Bijak", category: "Sosial" },
+    { text: "Indonesia negara kaya? Kayak apa? Kayak rakyatnya ya? Miskin.", source: "Mahasiswa Pusing", category: "Sosial" },
+    { text: "Jangan tanya apa yang negara berikan padamu. Tanya apa kamu bisa bertahan.", source: "Filsuf Indomie", category: "Sosial" },
+    { text: "Tahun ini optimis. Tahun depan? Ya optimis lagi. Biar gak depresi.", source: "Rakyat Kuat", category: "Sosial" },
+    { text: "Banyak yang bilang 'Indonesia akan bangkit'. Padahal belum tidur.", source: "Sindiran Halus", category: "Sosial" },
+    { text: "Ciri khas Indonesia: demo di depan istana, selfie dulu, baru teriak.", source: "Mata-mata Istana", category: "Sosial" },
+    { text: "Hidup di Indonesia: kuatkan mental, siapkan fisik, jangan lupa bawa payung (hujan atau demo).", source: "Warga Biasa", category: "Sosial" },
+    { text: "Pemilu itu kayak naik angkot. Tujuan sama, tapi supirnya suka ngebut.", source: "Pengamat Politik", category: "Sosial" },
+    { text: "Hidup itu sederhana. Tapi di Indonesia jadi rumit karena bingung milih pemimpin.", source: "Orang Tua Bijak", category: "Sosial" },
+    { text: "Indonesia negara hukum. Hukumnya ada, tapi kadang kayak diluar nalar.", source: "Sarjana Hukum", category: "Sosial" },
+    { text: "Rapat: 3 jam. Keputusan: ditunda. Realisasi: tahun depan.", source: "PNS Senior", category: "Sosial" },
+    { text: "Bangga jadi orang Indonesia. Tapi kadang mikir: 'Ini beneran negara merdeka?'", source: "Generasi Z", category: "Sosial" },
+    
+    // --- Humor & Satire ---
+    { text: "Yang penting kan Indonesia tetap 'gass'. Gass pol, hancur? Ya urusan nanti!", source: "Suporter Gass", category: "Humor" },
+    { text: "Indonesia 2024-2029: drama 5 season, rating tinggi, tapi alurnya gak masuk akal.", source: "Kritikus Film", category: "Humor" },
+    { text: "Kata ibu-ibu: 'Pokoknya ganti presiden, siapa aja asal gak ginian lagi!'", source: "Ibu-ibu Arisan", category: "Humor" },
+    { text: "Indonesia itu unik. Demo bisa jadi hiburan, politik bisa jadi dagelan.", source: "Tourist Lokal", category: "Humor" },
+    { text: "2029 nanti kita lihat. Eh masih 2026 tenang, masih lama ngomonginnya.", source: "Santuy People", category: "Humor" },
+    { text: "Indonesia: where 'jam karet' is real, but 'harga beras' is more real.", source: "Bule Bertanya", category: "Humor" },
+    { text: "Ganti menteri, ganti kebijakan. Ganti presiden... ya tunggu 2029 brok!", source: "Anak Muda", category: "Humor" },
+    { text: "Saya bukan pemilih cerdas. Saya pemilih yang bingung milih siapa.", source: "Golput 2029", category: "Humor" },
+    { text: "Orang Indonesia hebat: bisa tidur nyenyak di tengah berita mencekam.", source: "Psikolog Dadakan", category: "Humor" },
+    { text: "Mau pindah negara? Mahal. Mau pindah presiden? Tunggu 2029. Mau pindah agama? Terserah.", source: "Netizen Galau", category: "Humor" },
+    { text: "Kalau Indonesia jadi acara TV, ratingnya tinggi. Genre: drama komedi politik.", source: "TV Addict", category: "Humor" },
+    { text: "Yang sabar ya guys, 2029 tinggal beberapa tahun lagi. Atau 2029 malah mundur? Duh!", source: "Pesimis Handal", category: "Humor" },
   ];
 
   // === STATE ===
@@ -338,7 +432,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let idleBoredTimer = null;
   let isBored = false;
 
-
   // === PRABOWO "GAS!" SOUND ENGINE ===
   function initAudio() {
     if (!audioCtx) {
@@ -356,18 +449,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       const now = audioCtx.currentTime;
 
-      // --- "Ga" part: low frequency with growl ---
       const osc1 = audioCtx.createOscillator();
       const osc2 = audioCtx.createOscillator();
       const gain1 = audioCtx.createGain();
       const gain2 = audioCtx.createGain();
       const masterGain = audioCtx.createGain();
 
-      // Master volume
       masterGain.gain.setValueAtTime(0.3, now);
       masterGain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
 
-      // Osc 1: Main voice (around 120Hz - deep male voice)
       osc1.type = 'sawtooth';
       osc1.frequency.setValueAtTime(150, now);
       osc1.frequency.exponentialRampToValueAtTime(90, now + 0.15);
@@ -375,21 +465,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       gain1.gain.setValueAtTime(0.4, now);
       gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
 
-      // Osc 2: Growl/throat (around 200Hz)
       osc2.type = 'square';
       osc2.frequency.setValueAtTime(180, now);
       osc2.frequency.exponentialRampToValueAtTime(100, now + 0.2);
       gain2.gain.setValueAtTime(0.15, now);
       gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
 
-      // Connect oscillators
       osc1.connect(gain1);
       gain1.connect(masterGain);
       osc2.connect(gain2);
       gain2.connect(masterGain);
       masterGain.connect(audioCtx.destination);
 
-      // Cleanup nodes after playback
       const cleanup = () => {
         osc1.disconnect(); osc2.disconnect(); gain1.disconnect(); gain2.disconnect(); masterGain.disconnect();
       };
@@ -400,14 +487,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       osc2.start(now);
       osc2.stop(now + 0.35);
 
-      // --- "s" fricative (noise burst) ---
       const bufferSize = audioCtx.sampleRate * 0.25;
       const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
       const data = noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
         data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
       }
-      // Filter noise to sound more like "sss"
       const noiseSource = audioCtx.createBufferSource();
       noiseSource.buffer = noiseBuffer;
       const noiseFilter = audioCtx.createBiquadFilter();
@@ -436,10 +521,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (!audioCtx) return;
 
       const now = audioCtx.currentTime;
-      const intensity = 1 + (level / MAX_RAGE) * 3; // 1x to 4x
-      const pitchMul = 1 + (level / MAX_RAGE) * 1.5; // 1x to 2.5x pitch
+      const intensity = 1 + (level / MAX_RAGE) * 3;
+      const pitchMul = 1 + (level / MAX_RAGE) * 1.5;
 
-      // Create a more intense sound with distortion
       const osc1 = audioCtx.createOscillator();
       const osc2 = audioCtx.createOscillator();
       const osc3 = audioCtx.createOscillator();
@@ -449,7 +533,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const masterGain = audioCtx.createGain();
       const distortion = audioCtx.createWaveShaper();
 
-      // Distortion curve
       const k = 50;
       const samples = 22050;
       const curve = new Float32Array(samples);
@@ -464,7 +547,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       masterGain.gain.setValueAtTime(vol, now);
       masterGain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
 
-      // Osc 1: Main rage voice (deeper, louder)
       osc1.type = 'sawtooth';
       osc1.frequency.setValueAtTime(120 * pitchMul, now);
       osc1.frequency.linearRampToValueAtTime(60 * pitchMul, now + 0.2);
@@ -472,21 +554,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       gain1.gain.setValueAtTime(0.5, now);
       gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
 
-      // Osc 2: Growl
       osc2.type = 'square';
       osc2.frequency.setValueAtTime(150 * pitchMul, now);
       osc2.frequency.linearRampToValueAtTime(80 * pitchMul, now + 0.3);
       gain2.gain.setValueAtTime(0.25, now);
       gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
 
-      // Osc 3: High harmonic for anger
       osc3.type = 'sawtooth';
       osc3.frequency.setValueAtTime(300 * pitchMul, now);
       osc3.frequency.linearRampToValueAtTime(150 * pitchMul, now + 0.25);
       gain3.gain.setValueAtTime(0.15, now);
       gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
 
-      // Connect with distortion
       osc1.connect(gain1);
       gain1.connect(distortion);
       osc2.connect(gain2);
@@ -496,7 +575,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       distortion.connect(masterGain);
       masterGain.connect(audioCtx.destination);
 
-      // Cleanup nodes after playback
       const rageCleanup = () => {
         osc1.disconnect(); osc2.disconnect(); osc3.disconnect();
         gain1.disconnect(); gain2.disconnect(); gain3.disconnect();
@@ -511,7 +589,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       osc3.start(now);
       osc3.stop(now + 0.3);
 
-      // Louder noise burst for "S"
       const bufSize = audioCtx.sampleRate * 0.3;
       const nBuf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
       const d = nBuf.getChannelData(0);
@@ -534,7 +611,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       nSrc.start(now + 0.3);
       nSrc.stop(now + 0.7);
 
-      // Add rumble if rage > 5
       if (level > 5) {
         const rumble = audioCtx.createOscillator();
         const rGain = audioCtx.createGain();
@@ -558,8 +634,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (!audioCtx) return;
       const now = audioCtx.currentTime;
 
-      // Triumphant chord!
-      const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+      const notes = [261.63, 329.63, 392.00, 523.25];
       notes.forEach((freq, i) => {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -575,7 +650,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       osc.stop(now + 1.2);
       });
 
-      // Big "GAS!" at the end
       setTimeout(() => {
         playRageSound(MAX_RAGE);
       }, 500);
@@ -584,8 +658,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // === LEADERBOARD ===
   function generateUsername() {
-    const prefixes = ['Rakyat', 'Warga', 'Bang', 'Mbak', 'Mas', 'Pak', 'Bu', 'Kang', 'Ayang', 'Bestie', 'Bro', 'Sis', 'Om', 'Tante', 'Adek', 'Kakak'];
-    const suffixes = ['Gaspol', 'AntiGaspol', 'KlikTerus', 'PemilihPemula', 'Sarjana', 'Buruh', 'Mahasiswa', 'Driver', 'IbuKos', 'PecintaGas', 'Santuy', 'Baper', 'Receh', 'Woles', 'Gercep', 'Capek'];
+    const prefixes = ['Rakyat', 'Warga', 'Bang', 'Mbak', 'Mas', 'Pak', 'Bu', 'Kang', 'Ayang', 'Bestie', 'Bro', 'Sis', 'Om', 'Tante', 'Adek', 'Kakak', 'Sultan', 'Mister', 'Neng', 'A'];
+
+    const suffixes = ['Gaspol', 'AntiGaspol', 'KlikTerus', 'PemilihPemula', 'Sarjana', 'Buruh', 'Mahasiswa', 'Driver', 'IbuKos', 'PecintaGas', 'Santuy', 'Baper', 'Receh', 'Woles', 'Gercep', 'Capek', 'Legend', 'Brok', 'Betah'];
     const p = prefixes[Math.floor(Math.random() * prefixes.length)];
     const s = suffixes[Math.floor(Math.random() * suffixes.length)];
     const num = Math.floor(Math.random() * 999);
@@ -603,7 +678,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   function updateLeaderboard() {
     const username = getOrCreateUsername();
     
-    // Find or create user entry
     let userEntry = leaderboardData.find(e => e.username === username);
     if (userEntry) {
       userEntry.score = Math.max(userEntry.score || 0, clickCount);
@@ -612,10 +686,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       leaderboardData.push({ username, score: clickCount, lastClick: Date.now() });
     }
 
-    // Sort by score descending
     leaderboardData.sort((a, b) => b.score - a.score);
     
-    // Keep only top 50
     if (leaderboardData.length > 50) {
       leaderboardData = leaderboardData.slice(0, 50);
     }
@@ -644,7 +716,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const medal = medalEmojis[index] || `#${index + 1}`;
       const timeAgo = entry.lastClick ? getTimeAgo(entry.lastClick) : 'baru';
       
-      // Escape username to prevent XSS
       const safeUsername = entry.username.replace(/[<>"']/g, '');
       return `
         <div class="flex items-center gap-3 p-2 rounded-xl ${isMe ? 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800' : 'bg-slate-50 dark:bg-slate-900/50'} transition-all hover:scale-[1.01]">
@@ -681,10 +752,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (!faceEl || !mascotEl) { scheduleBlink(); return; }
 
       const currentFace = faceEl.textContent;
-      // Don't blink during easter egg boss, max rage, or bored flail
       if (currentFace === '\u{1F934}' || currentFace === '\u{1F480}') { scheduleBlink(); return; }
 
-      // Quick blink: squish face vertically and darken blink overlay
       const blinkEl = document.getElementById('mascot-blink');
       if (blinkEl) {
         faceEl.style.transform = 'scaleY(0.15)';
@@ -713,7 +782,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     isBored = false;
 
-    // Start blink and bored timers
     scheduleBlink();
 
     idleBoredTimer = setTimeout(() => {
@@ -723,6 +791,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         el.classList.remove('animate-idle-breathe');
         el.classList.add('animate-idle-bored');
       }
+      setMascotFace('selfie');
       const statusEl = document.getElementById('mascot-status');
       if (statusEl) statusEl.textContent = 'Zzz... gaskah?';
       const speechEl = document.getElementById('speech-text');
@@ -748,11 +817,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     previousQuoteIndex = realityQuotes.indexOf(item);
     const quoteEl = document.getElementById('reality-quote');
     const sourceEl = document.getElementById('reality-source');
+    const categoryEl = document.getElementById('quote-category');
     if (quoteEl && sourceEl) {
       quoteEl.style.opacity = '0';
       setTimeout(() => {
         quoteEl.textContent = `"${item.text}"`;
-        sourceEl.textContent = `— ${item.source}`;
+        sourceEl.innerHTML = `<span>✍️</span> — ${item.source}`;
+        if (categoryEl && item.category) {
+          categoryEl.textContent = item.category;
+        }
         quoteEl.style.opacity = '1';
       }, 200);
     }
@@ -780,62 +853,55 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }, 150);
     }
     
-    if (faceEl) faceEl.textContent = item.emoji;
+    // Set face GIF based on catchphrase mood
+    const gifMood = item.text.includes('marah') || item.text.includes('AMARAH') ? 'marah'
+      : item.text.includes('lama') || item.text.includes('bodo') || item.text.includes('Santuy') ? 'selfie'
+      : 'joget';
+    setMascotFace(gifMood);
     if (statusEl) statusEl.textContent = item.status;
 
-    // Sparkle effect
     if (sparkleEl) {
       sparkleEl.classList.add('animate-sparkle');
       setTimeout(() => sparkleEl.classList.remove('animate-sparkle'), 600);
     }
 
-    // Bounce the bubble
     if (bubbleEl) {
       bubbleEl.classList.remove('animate-pop');
-      void bubbleEl.offsetWidth; // reflow
+      void bubbleEl.offsetWidth;
       bubbleEl.classList.add('animate-pop');
     }
 
-    // Update click count
     clickCount++;
     const countEl = document.getElementById('click-count');
     if (countEl) countEl.textContent = `x${clickCount}`;
 
-    // === RAGE MODE ===
     if (fromClick) {
-      // Reset idle animation on user interaction
       resetIdle();
       const now = Date.now();
       const timeSinceLast = now - lastClickTime;
       lastClickTime = now;
 
-      // Increase rage if clicking fast (< 800ms), else decay
       if (timeSinceLast < 800 && timeSinceLast > 20) {
         rageLevel = Math.min(rageLevel + 1, MAX_RAGE);
       } else if (timeSinceLast > 2000) {
         rageLevel = Math.max(0, rageLevel - 2);
       }
 
-      // Apply rage visuals
       updateRageVisuals();
 
-      // Play appropriate sound
       if (rageLevel >= 3) {
         playRageSound(rageLevel);
       } else {
         playGasSound();
       }
 
-      // Screen shake on high rage
       if (rageLevel >= 7) {
         containerEl?.classList.add('animate-shake');
         setTimeout(() => containerEl?.classList.remove('animate-shake'), 300);
       }
 
-      // Update leaderboard
       updateLeaderboard();
 
-      // Decay rage after inactivity (keep decaying until calm)
       if (rageDecayTimer) clearTimeout(rageDecayTimer);
       (function startDecay() {
         rageDecayTimer = setTimeout(() => {
@@ -847,7 +913,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         }, 2000);
       })();
 
-      // === EASTER EGG at 100 clicks ===
       if (clickCount === 100 && !easterEggUnlocked) {
         easterEggUnlocked = true;
         localStorage.setItem('prabowoEasterEgg', 'true');
@@ -855,7 +920,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
     }
 
-    // Reset auto-change timer
     if (mascotTimer) clearTimeout(mascotTimer);
     mascotTimer = setTimeout(() => showCatchphrase(false), 4000);
   }
@@ -921,23 +985,33 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const mascotEl = document.getElementById('mascot');
     const containerEl = document.getElementById('mascot-container');
     const speechBubble = document.getElementById('speech-bubble');
+    const statusRing = document.getElementById('status-ring');
     if (!mascotEl) return;
 
-    // Remove all rage classes
     mascotEl.classList.remove('rage-1','rage-2','rage-3','rage-4','rage-5','rage-6','rage-7','rage-8','rage-9','rage-10');
     containerEl?.classList.remove('rage-border');
     
-    // Reset speech bubble to default
     if (speechBubble) speechBubble.style.background = '';
+    if (statusRing) statusRing.className = 'absolute inset-0 rounded-xl sm:rounded-2xl ring-2 transition-all duration-500';
 
-    if (rageLevel === 0) return;
+    if (rageLevel === 0) {
+      setMascotFace('joget');
+      return;
+    }
 
-    // Add appropriate rage class
     const rageClass = `rage-${rageLevel}`;
     mascotEl.classList.add(rageClass);
     if (rageLevel >= 5) containerEl?.classList.add('rage-border');
 
-    // Update speech bubble color based on rage
+    // Set face GIF based on rage level
+    if (rageLevel >= 7) {
+      setMascotFace('marah');
+    } else if (rageLevel >= 4) {
+      setMascotFace('selfie');
+    } else {
+      setMascotFace('joget');
+    }
+
     if (speechBubble) {
       if (rageLevel >= 8) {
         speechBubble.style.background = 'linear-gradient(to right, #dc2626, #991b1b)';
@@ -947,7 +1021,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         speechBubble.style.background = 'linear-gradient(to right, #ef4444, #dc2626)';
       }
     }
-    // Update rage meter
+
+    // Update status ring
+    if (statusRing) {
+      const colors = ['', 'ring-green-400', 'ring-green-500', 'ring-yellow-400', 'ring-yellow-500', 'ring-orange-400', 'ring-orange-500', 'ring-red-400', 'ring-red-500', 'ring-red-600', 'ring-red-700'];
+      statusRing.classList.add(colors[Math.min(rageLevel, 10)] || '');
+    }
+
     updateRageMeter();
   }
 
@@ -957,13 +1037,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const containerEl = document.getElementById('mascot-container');
     const countEl = document.getElementById('click-count');
 
-    // Play special sound
     playEasterEggSound();
 
-    // Epic animation
     containerEl?.classList.add('animate-easter-egg');
     
-    // Change face to something epic
     const faceEl = document.getElementById('mascot-face');
     if (faceEl) faceEl.textContent = '🤴';
     
@@ -971,28 +1048,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (statusEl) statusEl.textContent = '✨ LEGEND! ✨';
     
     if (countEl) countEl.textContent = '✨ 100x ✨';
+    setMascotFace('kabur');
 
-    // Confetti burst!
     createConfetti();
 
-    // Show achievement toast
     setTimeout(() => {
       window.showToast?.('🏆 EASTER EGG: 100 CLICKS! Lu legend!', 'success');
     }, 300);
 
-    // Add permanent badge to mascot
     const badge = document.createElement('div');
     badge.id = 'easter-egg-badge';
     badge.className = 'absolute -bottom-1 -left-1 w-7 h-7 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xs shadow-lg z-30 animate-pulse';
     badge.textContent = '⭐';
     mascotEl?.appendChild(badge);
 
-    // Reset animation after 3s
     setTimeout(() => {
       containerEl?.classList.remove('animate-easter-egg');
     }, 3000);
 
-    // Add badge to leaderboard entry
     const username = getOrCreateUsername();
     const entry = leaderboardData.find(e => e.username === username);
     if (entry) {
@@ -1007,7 +1080,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const container = document.getElementById('confetti-container');
     if (!container) return;
 
-    // Clear any old confetti
     container.innerHTML = '';
 
     const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff'];
@@ -1034,7 +1106,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       container.appendChild(confetti);
     }
     
-    // Auto-cleanup after all confetti is done
     setTimeout(() => {
       if (container) container.innerHTML = '';
     }, 4000);
@@ -1066,7 +1137,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
     document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
 
-    // Calculate percentage of term completed
     const elapsed = now - START_DATE;
     const percentDone = Math.min(100, Math.max(0, (elapsed / TOTAL_TERM_MS) * 100));
     const percentDisplay = Math.min(100, percentDone);
@@ -1075,7 +1145,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     document.getElementById('progress-label').textContent = `${percentDisplay.toFixed(4)}%`;
     document.getElementById('percent-done').textContent = `${percentDisplay.toFixed(2)}%`;
     
-    // Update funny dynamic stats based on actual elapsed time
     const bbmNaik = Math.max(1, Math.floor(percentDone * 0.15 + Math.sin(percentDone * 20) * 0.5 + 1));
     const utangValue = Math.floor(percentDone * 85 + 7800);
     const jargonValue = Math.max(0, Math.floor(percentDone * 0.08 + days * 0.01));
@@ -1088,16 +1157,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   document.addEventListener('astro:page-load', () => {
-    // Countdown
     updateCountdown();
     setInterval(updateCountdown, 1000);
     
-    // Quotes
     updateQuote();
     document.getElementById('refresh-quote')?.addEventListener('click', updateQuote);
     setInterval(updateQuote, 15000);
 
-    // Mascot - click/keyboard to cycle catchphrases
     const mascotContainer = document.getElementById('mascot-container');
     mascotContainer?.addEventListener('click', () => showCatchphrase(true));
     mascotContainer?.addEventListener('keydown', (e) => {
@@ -1107,17 +1173,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
     });
     
-    // Initial catchphrase
     setTimeout(() => showCatchphrase(false), 1000);
     mascotTimer = setTimeout(() => showCatchphrase(false), 4000);
 
-    // Start idle animation
     resetIdle();
 
-    // Leaderboard - load existing data & render
     renderLeaderboard();
 
-    // Re-add easter egg badge if already unlocked
     if (easterEggUnlocked) {
       clickCount = 100;
       const mascotEl = document.getElementById('mascot');
@@ -1128,7 +1190,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         badge.textContent = '⭐';
         mascotEl.appendChild(badge);
       }
-      // Show click count at 100
       const countEl = document.getElementById('click-count');
       if (countEl) countEl.textContent = '✨ 100x ✨';
     }
@@ -1142,7 +1203,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
     });
 
-    // Share button
     document.getElementById('share-btn')?.addEventListener('click', async () => {
       const remainingDays = document.getElementById('days')?.textContent || '??';
       const shareText = `🇮🇩 Sisa ${remainingDays} hari lagi menuju Presiden Indonesia baru! Siapa yang paling siap? Yuk kita tunggu 2029 bareng-bareng 😂\n\nCek countdown-nya di sini: ${window.location.href}`;
@@ -1174,6 +1234,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .animate-float-y {
     animation: floatY 3s ease-in-out infinite;
   }
+  .animate-float-flag {
+    animation: floatFlag 6s ease-in-out infinite;
+  }
+  .animate-float-flag-delayed {
+    animation: floatFlag 6s ease-in-out 3s infinite;
+  }
   .animate-pop {
     animation: pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
   }
@@ -1192,6 +1258,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   .animate-idle-bored {
     animation: idleBored 3s ease-in-out infinite;
   }
+  .animate-shimmer {
+    animation: shimmer 2s ease-in-out infinite;
+  }
 
   @keyframes fadeInDown {
     from { opacity: 0; transform: translateY(-20px); }
@@ -1201,6 +1270,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   @keyframes floatY {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-6px); }
+  }
+
+  @keyframes floatFlag {
+    0%, 100% { transform: rotate(12deg) translateY(0); }
+    50% { transform: rotate(12deg) translateY(-8px); }
   }
 
   @keyframes pop {
@@ -1234,6 +1308,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     0%, 100% { transform: scale(1) rotate(0deg); }
     25% { transform: scale(1.02) rotate(-2deg); }
     75% { transform: scale(1.02) rotate(2deg); }
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
   }
 
   #speech-text {

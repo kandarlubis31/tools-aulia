@@ -1,0 +1,526 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Paste to Markdown">
+  <div class="max-w-5xl mx-auto px-4 min-h-[80vh] flex flex-col">
+    <div class="text-center mb-8 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500" data-i18n="header.paste_to_md">
+        Paste to Markdown
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto" data-i18n="header.paste_to_md_desc">
+        Tempel teks dari mana saja (Word, web, PDF), dapatkan Markdown bersih siap pakai buat AI. Hemat token!
+      </p>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 animate-fade-in">
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+         <div id="stat-original-chars" class="text-xl font-bold text-slate-600 dark:text-slate-300">0</div>
+         <div class="text-[10px] font-bold text-slate-500 uppercase mt-1" data-i18n="paste.original_chars">Karakter Asli</div>
+      </div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+         <div id="stat-md-chars" class="text-xl font-bold text-emerald-600 dark:text-emerald-400">0</div>
+         <div class="text-[10px] font-bold text-slate-500 uppercase mt-1" data-i18n="paste.md_chars">Karakter MD</div>
+      </div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+         <div id="stat-tokens" class="text-xl font-bold text-violet-600 dark:text-violet-400">0</div>
+         <div class="text-[10px] font-bold text-slate-500 uppercase mt-1" data-i18n="paste.tokens_est">Estimasi Token</div>
+      </div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+         <div id="stat-saved" class="text-xl font-bold text-amber-600 dark:text-amber-400">0%</div>
+         <div class="text-[10px] font-bold text-slate-500 uppercase mt-1" data-i18n="paste.saved">Hemat Token</div>
+      </div>
+    </div>
+
+    <!-- Main Editor Area -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 mb-12">
+      <!-- Input Panel -->
+      <div class="flex flex-col bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="bg-slate-100 dark:bg-slate-900 px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="text-xs font-bold text-slate-500 uppercase" data-i18n="paste.input_label">Input Teks</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="input-words" class="text-[10px] text-slate-400 font-medium">0 kata</span>
+            <button id="paste-btn" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 px-2 py-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition" data-i18n="btn.paste">
+              Tempel
+            </button>
+            <button id="clear-input-btn" class="text-xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition" data-i18n="btn.clear">
+              Hapus
+            </button>
+          </div>
+        </div>
+        <div 
+          id="input-area"
+          class="flex-1 w-full p-5 font-sans text-sm leading-relaxed bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none resize-none overflow-auto min-h-[300px] whitespace-pre-wrap break-words"
+          contenteditable="true"
+          data-placeholder="Tempel teks di sini... (Ctrl+V)"
+          spellcheck="false"
+        ></div>
+        <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-t border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 flex justify-between items-center">
+          <span data-i18n="paste.supported_formats">Menerima: teks biasa, HTML, rich text dari Word/docs</span>
+          <span id="input-chars" class="font-mono">0 karakter</span>
+        </div>
+      </div>
+
+      <!-- Output Panel -->
+      <div class="flex flex-col bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="bg-slate-100 dark:bg-slate-900 px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <span class="text-xs font-bold text-slate-500 uppercase" data-i18n="paste.output_label">Output Markdown</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="copy-btn" class="text-xs font-bold text-slate-500 hover:text-emerald-600 px-2 py-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition flex items-center gap-1" data-i18n="btn.copy">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+            <button id="download-btn" class="text-xs font-bold text-slate-500 hover:text-emerald-600 px-2 py-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition flex items-center gap-1" data-i18n="btn.download_md">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              .MD
+            </button>
+          </div>
+        </div>
+        <div class="flex-1 relative">
+          <pre id="output-area" class="w-full h-full p-5 font-mono text-sm leading-relaxed bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 overflow-auto whitespace-pre-wrap break-words min-h-[300px]"><span class="text-slate-400 italic" data-i18n="paste.output_placeholder">Markdown akan muncul di sini...</span></pre>
+          <div id="copy-success" class="absolute top-3 right-3 bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg opacity-0 translate-y-[-10px] transition-all duration-300 pointer-events-none">
+            <span data-i18n="common.copied">Disalin! ✓</span>
+          </div>
+        </div>
+        <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-t border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 flex justify-between items-center">
+          <span data-i18n="paste.auto_convert">Konversi otomatis setiap kali kamu menempel teks</span>
+          <span id="output-chars" class="font-mono">0 karakter</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tips Section -->
+    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800 p-5 mb-12 animate-fade-in">
+      <h3 class="text-sm font-bold text-emerald-700 dark:text-emerald-300 mb-3 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+        <span data-i18n="paste.tips_title">Kenapa Pake Markdown buat AI?</span>
+      </h3>
+      <ul class="text-xs text-emerald-600 dark:text-emerald-400 space-y-1.5">
+        <li class="flex items-start gap-2">
+          <span class="mt-0.5">•</span>
+          <span data-i18n="paste.tip1"><strong>Hemat Token:</strong> Markdown murni bisa 40-60% lebih ringan dari HTML/rich text. Artinya lebih murah dan lebih cepat!</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-0.5">•</span>
+          <span data-i18n="paste.tip2"><strong>AI Lebih Paham:</strong> Model AI (GPT, Claude, Gemini) dilatih dengan Markdown. Mereka lebih mudah memahami struktur teks.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-0.5">•</span>
+          <span data-i18n="paste.tip3"><strong>Format Tetap Rapi:</strong> Heading, list, bold, link — semua tetep kepertahan tanpa HTML berantakan.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-0.5">•</span>
+          <span data-i18n="paste.tip4"><strong>Cara Pake:</strong> Copy teks dari Word/web → Paste di sini (Ctrl+V) → Copy hasil Markdown → Paste ke AI form.</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const inputArea = document.getElementById('input-area') as HTMLDivElement;
+  const outputArea = document.getElementById('output-area') as HTMLPreElement;
+  const pasteBtn = document.getElementById('paste-btn');
+  const clearBtn = document.getElementById('clear-input-btn');
+  const copyBtn = document.getElementById('copy-btn');
+  const downloadBtn = document.getElementById('download-btn');
+  const copySuccess = document.getElementById('copy-success');
+
+  // Stats
+  const statOriginal = document.getElementById('stat-original-chars');
+  const statMd = document.getElementById('stat-md-chars');
+  const statTokens = document.getElementById('stat-tokens');
+  const statSaved = document.getElementById('stat-saved');
+  const inputWords = document.getElementById('input-words');
+  const inputChars = document.getElementById('input-chars');
+  const outputChars = document.getElementById('output-chars');
+
+  // ==================== Safe HTML Sanitizer ====================
+  function sanitizeHtml(html: string): string {
+    // Parse HTML without executing scripts
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    
+    // Remove all script and style elements
+    const scripts = doc.querySelectorAll('script, style, link, meta, iframe, object, embed');
+    scripts.forEach(el => el.remove());
+    
+    // Remove event handlers from all elements
+    const allElements = doc.querySelectorAll('*');
+    allElements.forEach(el => {
+      const attrs = el.attributes;
+      for (let i = attrs.length - 1; i >= 0; i--) {
+        const name = attrs[i].name;
+        if (name.startsWith('on') || name === 'onload' || name === 'onerror' || name === 'onclick' || name === 'onmouseover' || name === 'onfocus' || name === 'onblur' || name === 'onsubmit') {
+          el.removeAttribute(name);
+        }
+      }
+    });
+    
+    return doc.body.innerHTML;
+  }
+
+  // ==================== HTML to Markdown Converter ====================
+  function htmlToMarkdown(html: string): string {
+    if (!html.trim()) return '';
+
+    let md = sanitizeHtml(html);
+
+    // Handle line break tags
+    md = md.replace(/<br\s*\/?>/gi, '\n');
+    md = md.replace(/<\/?p[^>]*>/gi, '\n\n');
+    md = md.replace(/<\/?div[^>]*>/gi, '\n');
+    md = md.replace(/<\/?section[^>]*>/gi, '\n');
+    md = md.replace(/<\/?article[^>]*>/gi, '\n');
+    md = md.replace(/<\/?header[^>]*>/gi, '\n');
+    md = md.replace(/<\/?footer[^>]*>/gi, '\n');
+    md = md.replace(/<\/?nav[^>]*>/gi, '\n');
+    md = md.replace(/<\/?main[^>]*>/gi, '\n');
+
+    // Headings
+    md = md.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n# $1\n');
+    md = md.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n## $1\n');
+    md = md.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n');
+    md = md.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '\n#### $1\n');
+    md = md.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '\n##### $1\n');
+    md = md.replace(/<h6[^>]*>(.*?)<\/h6>/gi, '\n###### $1\n');
+
+    // Bold & Italic
+    md = md.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**');
+    md = md.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**');
+    md = md.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*');
+    md = md.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*');
+    md = md.replace(/<u[^>]*>(.*?)<\/u>/gi, '__$1__');
+    md = md.replace(/<del[^>]*>(.*?)<\/del>/gi, '~~$1~~');
+    md = md.replace(/<s[^>]*>(.*?)<\/s>/gi, '~~$1~~');
+    md = md.replace(/<strike[^>]*>(.*?)<\/strike>/gi, '~~$1~~');
+
+    // Code
+    md = md.replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`');
+    md = md.replace(/<pre[^>]*>([\s\S]*?)<\/pre>/gi, '\n```\n$1\n```\n');
+
+    // Lists - Ordered
+    md = md.replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (match: string, content: string) => {
+      let index = 1;
+      return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (m: string, item: string) => {
+        return `\n${index++}. ${item.replace(/<\/?[^>]+(>|$)/g, '').trim()}`;
+      });
+    });
+
+    // Lists - Unordered
+    md = md.replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (match: string, content: string) => {
+      return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (m: string, item: string) => {
+        return `\n- ${item.replace(/<\/?[^>]+(>|$)/g, '').trim()}`;
+      });
+    });
+
+    // Blockquotes
+    md = md.replace(/<blockquote[^>]*>(.*?)<\/blockquote>/gi, '\n> $1\n');
+
+    // Horizontal rules
+    md = md.replace(/<hr\s*\/?>/gi, '\n---\n');
+
+    // Images
+    md = md.replace(/<img[^>]*src=["']([^"']*)["'][^>]*alt=["']([^"']*)["'][^>]*>/gi, '![$2]($1)');
+    md = md.replace(/<img[^>]*src=["']([^"']*)["'][^>]*>/gi, '![]($1)');
+
+    // Links
+    md = md.replace(/<a[^>]*href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)');
+
+    // Tables - simplified
+    md = md.replace(/<table[^>]*>([\s\S]*?)<\/table>/gi, (match: string, content: string) => {
+      const rows = content.match(/<tr[^>]*>([\s\S]*?)<\/tr>/gi);
+      if (!rows || rows.length === 0) return '';
+
+      const mdRows: string[] = rows.map((row: string, idx: number) => {
+        const cells = row.match(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi);
+        if (!cells) return '';
+        const cellValues = cells.map((c: string) => {
+          return c.replace(/<t[dh][^>]*>/gi, '').replace(/<\/t[dh]>/gi, '').trim();
+        });
+        return '| ' + cellValues.join(' | ') + ' |';
+      });
+
+      // Add separator row
+      const firstRowCells = rows[0]?.match(/<t[dh][^>]*>/gi);
+      if (firstRowCells) {
+        const sep = '| ' + firstRowCells.map(() => '---').join(' | ') + ' |';
+        mdRows.splice(1, 0, sep);
+      }
+
+      return '\n' + mdRows.join('\n') + '\n';
+    });
+
+    // Remove remaining HTML tags
+    md = md.replace(/<[^>]*>/g, '');
+
+    // Decode HTML entities
+    md = md.replace(/&amp;/g, '&');
+    md = md.replace(/&lt;/g, '<');
+    md = md.replace(/&gt;/g, '>');
+    md = md.replace(/&quot;/g, '"');
+    md = md.replace(/&#39;/g, "'");
+    md = md.replace(/&nbsp;/g, ' ');
+    md = md.replace(/&#(\d+);/g, (match: string, dec: string) => String.fromCharCode(parseInt(dec, 10)));
+
+    // Clean up excessive newlines
+    md = md.replace(/\n{4,}/g, '\n\n\n');
+    md = md.replace(/^\n+/, '');
+    md = md.replace(/\n+$/, '');
+
+    // Clean lines - trim trailing whitespace
+    const lines = md.split('\n');
+    const cleaned = lines.map((line: string) => line.trimEnd()).join('\n');
+
+    return cleaned;
+  }
+
+  // ==================== Plain text to Markdown ====================
+  function textToMarkdown(text: string): string {
+    if (!text.trim()) return '';
+    
+    let md = text;
+
+    // Detect URLs and convert to markdown links
+    md = md.replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)\]}>]?)/g, '[$1]($1)');
+
+    // Detect email addresses
+    md = md.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '[$1](mailto:$1)');
+
+    return md;
+  }
+
+  // ==================== Main Converter ====================
+  function convertToMarkdown(html: string, plainText: string): string {
+    // Check if it has HTML tags
+    const hasHtml = /<[a-z][\s\S]*>/i.test(html);
+    
+    if (hasHtml) {
+      return htmlToMarkdown(html);
+    }
+    
+    return textToMarkdown(plainText);
+  }
+
+  // ==================== Get content from input ====================
+  function getContent(): { html: string; text: string } {
+    const html = inputArea?.innerHTML || '';
+    const text = inputArea?.textContent || '';
+    return { html, text };
+  }
+
+  // ==================== Update Stats ====================
+  function updateStats(original: string, markdown: string) {
+    const origChars = original.length;
+    const mdChars = markdown.length;
+    const estTokens = Math.ceil(mdChars / 4);
+    const savedPct = origChars > 0 ? Math.round((1 - mdChars / origChars) * 100) : 0;
+    const words = original.trim() ? original.trim().split(/\s+/).length : 0;
+
+    if (statOriginal) statOriginal.textContent = origChars.toLocaleString();
+    if (statMd) statMd.textContent = mdChars.toLocaleString();
+    if (statTokens) statTokens.textContent = estTokens.toLocaleString();
+    if (statSaved) statSaved.textContent = `${savedPct > 0 ? savedPct : 0}%`;
+    if (inputWords) inputWords.textContent = `${words} kata`;
+    if (inputChars) inputChars.textContent = `${origChars.toLocaleString()} karakter`;
+    if (outputChars) outputChars.textContent = `${mdChars.toLocaleString()} karakter`;
+  }
+
+  // ==================== Process Input ====================
+  function processInput() {
+    const { html, text } = getContent();
+    
+    if (!text.trim()) {
+      if (outputArea) outputArea.innerHTML = '<span class="text-slate-400 italic">Markdown akan muncul di sini...</span>';
+      updateStats('', '');
+      return;
+    }
+
+    const markdown = convertToMarkdown(html, text);
+    
+    if (outputArea) outputArea.textContent = markdown;
+    updateStats(text, markdown);
+  }
+
+  // ==================== Insert HTML safely into contenteditable ====================
+  function safeInsertHtml(html: string) {
+    if (!inputArea) return;
+    
+    // Sanitize first, then set innerHTML
+    const safe = sanitizeHtml(html);
+    inputArea.innerHTML = safe;
+  }
+
+  // ==================== Handle Paste ====================
+  function handlePaste(e: ClipboardEvent) {
+    e.preventDefault();
+    
+    // Get clipboard data
+    const htmlContent = e.clipboardData?.getData('text/html') || '';
+    const plainContent = e.clipboardData?.getData('text/plain') || '';
+    const textContent = plainContent || e.clipboardData?.getData('text') || '';
+
+    if (htmlContent) {
+      safeInsertHtml(htmlContent);
+    } else if (inputArea) {
+      inputArea.textContent = textContent;
+    }
+
+    processInput();
+  }
+
+  // ==================== Handle Input Events ====================
+  function handleInput() {
+    processInput();
+  }
+
+  // ==================== Setup Event Listeners ====================
+  if (inputArea) {
+    inputArea.addEventListener('paste', handlePaste);
+    inputArea.addEventListener('input', handleInput);
+    inputArea.addEventListener('keydown', (e: KeyboardEvent) => {
+      // Ctrl+Shift+V to paste as plain text
+      if (e.ctrlKey && e.shiftKey && e.key === 'V') {
+        e.preventDefault();
+        navigator.clipboard.readText().then(text => {
+          if (inputArea) inputArea.textContent = text;
+          processInput();
+        }).catch(() => {});
+      }
+    });
+  }
+
+  // Paste button - trigger paste via clipboard API
+  pasteBtn?.addEventListener('click', async () => {
+    try {
+      const items = await navigator.clipboard.read();
+      let htmlText = '';
+      let plainText = '';
+
+      for (const item of items) {
+        if (item.types.includes('text/html')) {
+          const blob = await item.getType('text/html');
+          htmlText = await blob.text();
+        }
+        if (item.types.includes('text/plain')) {
+          const blob = await item.getType('text/plain');
+          plainText = await blob.text();
+        }
+      }
+
+      if (htmlText) {
+        safeInsertHtml(htmlText);
+      } else if (plainText && inputArea) {
+        inputArea.textContent = plainText;
+      } else {
+        // Fallback: read text only
+        const text = await navigator.clipboard.readText();
+        if (inputArea) inputArea.textContent = text;
+      }
+      processInput();
+    } catch (err) {
+      // Fallback: focus and exec paste
+      inputArea?.focus();
+      // Use execCommand as last resort
+      try {
+        document.execCommand('paste');
+      } catch (e2) {
+        // If everything fails, try reading text
+        try {
+          const text = await navigator.clipboard.readText();
+          if (inputArea) inputArea.textContent = text;
+          processInput();
+        } catch (e3) {
+          window.showToast?.('Tidak bisa mengakses clipboard. Coba Ctrl+V langsung.', 'error');
+        }
+      }
+    }
+  });
+
+  // Clear button
+  clearBtn?.addEventListener('click', () => {
+    if (inputArea) {
+      inputArea.innerHTML = '';
+      inputArea.textContent = '';
+    }
+    processInput();
+    inputArea?.focus();
+  });
+
+  // Copy button
+  copyBtn?.addEventListener('click', async () => {
+    const markdown = outputArea?.textContent || '';
+    if (!markdown || markdown === 'Markdown akan muncul di sini...') {
+      window.showToast?.('Tidak ada konten untuk disalin!', 'warning');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(markdown);
+      
+      // Show success animation
+      if (copySuccess) {
+        copySuccess.classList.remove('opacity-0', 'translate-y-[-10px]');
+        copySuccess.classList.add('opacity-100', 'translate-y-0');
+        setTimeout(() => {
+          copySuccess.classList.add('opacity-0', 'translate-y-[-10px]');
+          copySuccess.classList.remove('opacity-100', 'translate-y-0');
+        }, 2000);
+      }
+      
+      window.showToast?.('Markdown disalin! 📋', 'success');
+    } catch (err) {
+      window.showToast?.('Gagal menyalin!', 'error');
+    }
+  });
+
+  // Download button
+  downloadBtn?.addEventListener('click', () => {
+    const markdown = outputArea?.textContent || '';
+    if (!markdown || markdown === 'Markdown akan muncul di sini...') {
+      window.showToast?.('Tidak ada konten untuk di-download!', 'warning');
+      return;
+    }
+
+    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `paste-to-md-${Date.now()}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    window.showToast?.('File .MD di-download! 📥', 'success');
+  });
+
+  // Initial state
+  if (outputArea) outputArea.innerHTML = '<span class="text-slate-400 italic">Markdown akan muncul di sini...</span>';
+</script>
+
+<style>
+  [contenteditable]:empty:before {
+    content: attr(data-placeholder);
+    color: #94a3b8;
+    font-style: italic;
+    pointer-events: none;
+  }
+  .dark [contenteditable]:empty:before {
+    color: #64748b;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+  .animate-on-scroll { animation: fadeIn 0.6s ease-out; }
+</style>

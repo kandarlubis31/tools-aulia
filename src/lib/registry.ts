@@ -76,6 +76,7 @@ export const tools: ToolDefinition[] = [
   { id: 'utils-lorem', categoryId: 'utils', nameKey: 'tool.lorem', descKey: 'tool.lorem_desc', icon: 'path', color: 'slate', path: '/utils/lorem' },
   { id: 'utils-wa-builder', categoryId: 'utils', nameKey: 'tool.wa_builder', descKey: 'tool.wa_builder_desc', icon: 'path', color: 'green', path: '/utils/wa-builder' },
   { id: 'utils-prabowo-countdown', categoryId: 'utils', nameKey: 'tool.prabowo_countdown', descKey: 'tool.prabowo_countdown_desc', icon: 'path', color: 'red', path: '/utils/prabowo-countdown' },
+  { id: 'utils-paste-to-md', categoryId: 'utils', nameKey: 'tool.paste_to_md', descKey: 'tool.paste_to_md_desc', icon: 'path', color: 'emerald', path: '/utils/paste-to-md' },
 ];
 
 // ==================== CATEGORY DEFINITIONS ====================
