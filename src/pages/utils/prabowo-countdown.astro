@@ -191,6 +191,23 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
         </div>
 
+        <!-- Center GIF - Nungguin 2029 -->
+        <div class="flex justify-center my-4 sm:my-5">
+          <div class="relative group/gif">
+            <img 
+              src="https://media.giphy.com/media/l2JdTJzFPJGkL6gOQ/giphy.gif" 
+              alt="Nunggu 2029" 
+              loading="lazy"
+              class="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 object-cover rounded-2xl shadow-lg border-2 border-red-200 dark:border-red-800 transition-all duration-300 group-hover/gif:scale-110 group-hover/gif:shadow-red-500/30 group-hover/gif:border-red-400"
+              onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'"
+            />
+            <span class="hidden w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 items-center justify-center text-4xl sm:text-5xl md:text-6xl bg-red-50 dark:bg-red-950/50 rounded-2xl border-2 border-red-200 dark:border-red-800">🕐</span>
+            <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[8px] sm:text-[9px] font-black px-2 sm:px-3 py-0.5 rounded-full whitespace-nowrap shadow-md animate-pulse" data-i18n="prabowo.gif_badge">
+              🕐 Masih Nunggu...
+            </div>
+          </div>
+        </div>
+
         <!-- Target Date -->
         <p class="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-medium" data-i18n="prabowo.target_label">
           Target: <span class="font-bold text-red-600 dark:text-red-400 whitespace-nowrap">20 Oktober 2029</span> — Akhir masa bakti
@@ -198,37 +215,37 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </div>
     </div>
 
-    <!-- Funny Stats Cards -->
+    <!-- Absurd Stats Cards (100% Non-Real 🤪) -->
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 w-full max-w-2xl mt-6 sm:mt-8">
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-red-200 dark:hover:border-red-800">
-        <div class="text-lg sm:text-xl mb-1">📉</div>
-        <div class="text-lg sm:text-xl md:text-2xl font-black text-slate-800 dark:text-white">100%</div>
-        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_promise">Janji Belum Terealisasi</div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-orange-200 dark:hover:border-orange-800">
+        <div class="text-lg sm:text-xl mb-1">🍜</div>
+        <div id="stat-mie" class="text-lg sm:text-xl md:text-2xl font-black text-orange-600 dark:text-orange-400">0</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_mie">Mie Instan Dikonsumsi (Miliar)</div>
       </div>
       <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-amber-200 dark:hover:border-amber-800">
         <div class="text-lg sm:text-xl mb-1">🥚</div>
         <div id="percent-done" class="text-lg sm:text-xl md:text-2xl font-black text-slate-800 dark:text-white">0%</div>
         <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_term">Masa Jabatan Terlewati</div>
       </div>
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-amber-200 dark:hover:border-amber-800">
-        <div class="text-lg sm:text-xl mb-1">💸</div>
-        <div id="stat-bbm" class="text-lg sm:text-xl md:text-2xl font-black text-amber-600 dark:text-amber-400">0</div>
-        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_bbm">BBM Naik (kali)</div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-pink-200 dark:hover:border-pink-800">
+        <div class="text-lg sm:text-xl mb-1">🏃</div>
+        <div id="stat-kabur" class="text-lg sm:text-xl md:text-2xl font-black text-pink-600 dark:text-pink-400">0</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_kabur">Alasan Kabur Meeting</div>
       </div>
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-red-200 dark:hover:border-red-800">
-        <div class="text-lg sm:text-xl mb-1">🏛️</div>
-        <div id="stat-utang" class="text-lg sm:text-xl md:text-2xl font-black text-red-600 dark:text-red-400">Rp 0</div>
-        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_debt">Utang Negara (Triliun)</div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-purple-200 dark:hover:border-purple-800">
+        <div class="text-lg sm:text-xl mb-1">🎭</div>
+        <div id="stat-gimmick" class="text-lg sm:text-xl md:text-2xl font-black text-purple-600 dark:text-purple-400">0</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_gimmick">Gimmick Gagal Viral</div>
       </div>
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-violet-200 dark:hover:border-violet-800">
-        <div class="text-lg sm:text-xl mb-1">🗣️</div>
-        <div id="stat-janji" class="text-lg sm:text-xl md:text-2xl font-black text-violet-600 dark:text-violet-400">0</div>
-        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_jargon">Jargon Baru Diciptakan</div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-blue-200 dark:hover:border-blue-800">
+        <div class="text-lg sm:text-xl mb-1">🌧️</div>
+        <div id="stat-hujan" class="text-lg sm:text-xl md:text-2xl font-black text-blue-600 dark:text-blue-400">0</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_hujan">Hujan Pas Ada Acara</div>
       </div>
       <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 hover:border-emerald-200 dark:hover:border-emerald-800">
-        <div class="text-lg sm:text-xl mb-1">😤</div>
-        <div id="stat-rakyat" class="text-lg sm:text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400">0</div>
-        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_rakyat">Rakyat Pindah Kewarganegaraan</div>
+        <div class="text-lg sm:text-xl mb-1">🤳</div>
+        <div id="stat-selfie" class="text-lg sm:text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400">0</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_selfie">Selfie Gak Jelas (kali)</div>
       </div>
     </div>
 
@@ -1323,15 +1340,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const miniProgressBar = document.getElementById('mini-progress-bar');
     if (miniProgressBar) miniProgressBar.style.width = `${percentDisplay}%`;
     
-    const bbmNaik = Math.max(1, Math.floor(percentDone * 0.15 + Math.sin(percentDone * 20) * 0.5 + 1));
-    const utangValue = Math.floor(percentDone * 85 + 7800);
-    const jargonValue = Math.max(0, Math.floor(percentDone * 0.08 + days * 0.01));
-    const rakyatValue = Math.max(0, Math.floor(percentDone * 0.5 + Math.abs(Math.sin(percentDone * 30)) * 3 + 1));
+    // Absurd non-real stat calculations
+    const mieValue = Math.floor(days * 7.2 + Math.sin(percentDone * 10) * 150);
+    const kaburValue = Math.max(0, Math.floor(percentDone * 0.1 + Math.abs(Math.cos(percentDone * 18)) * 2 + days * 0.015));
+    const gimmickValue = Math.max(0, Math.floor(percentDone * 0.04 + Math.sin(percentDone * 22) * 1.5 + days * 0.008));
+    const hujanValue = Math.max(1, Math.floor(percentDone * 0.03 + Math.abs(Math.sin(percentDone * 25)) * 2 + 1));
+    const selfieValue = Math.max(0, Math.floor(percentDone * 0.2 + Math.abs(Math.cos(percentDone * 15)) * 3 + days * 0.025));
 
-    document.getElementById('stat-bbm').textContent = String(bbmNaik);
-    document.getElementById('stat-utang').textContent = `Rp ${utangValue.toLocaleString('id-ID')}`;
-    document.getElementById('stat-janji').textContent = String(Math.floor(jargonValue));
-    document.getElementById('stat-rakyat').textContent = String(rakyatValue);
+    document.getElementById('stat-mie').textContent = String(mieValue);
+    document.getElementById('stat-kabur').textContent = String(kaburValue);
+    document.getElementById('stat-gimmick').textContent = String(gimmickValue);
+    document.getElementById('stat-hujan').textContent = String(hujanValue);
+    document.getElementById('stat-selfie').textContent = String(selfieValue);
   }
 
   document.addEventListener('astro:page-load', () => {
