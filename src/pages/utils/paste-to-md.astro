@@ -5,27 +5,36 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="Paste to Markdown">
   <div class="max-w-5xl mx-auto px-4 min-h-[80vh] flex flex-col">
     <div class="text-center mb-6 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500" data-i18n="header.paste_to_md">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white" data-i18n="header.paste_to_md">
         Paste to Markdown
       </h1>
-      <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto" data-i18n="header.paste_to_md_desc">
+      <p class="text-matte-400 dark:text-matte-300 max-w-2xl mx-auto" data-i18n="header.paste_to_md_desc">
         Tempel teks dari mana saja (Word, web, PDF), dapatkan Markdown bersih siap pakai buat AI. Hemat token!
       </p>
     </div>
 
     <!-- Compression Mode Selector -->
-    <div class="flex items-center justify-center gap-1.5 mb-4 animate-fade-in bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl w-fit mx-auto border border-slate-200 dark:border-slate-700">
-      <button id="mode-normal" data-mode="normal" class="compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm" data-i18n="paste.mode_normal">
-        Normal
-      </button>
-      <button id="mode-balanced" data-mode="balanced" class="compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200" data-i18n="paste.mode_balanced">
-        Balanced
-      </button>
-      <button id="mode-aggressive" data-mode="aggressive" class="compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200" data-i18n="paste.mode_aggressive">
-        Aggressive
-      </button>
-      <div class="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1"></div>
-      <span id="mode-hint" class="px-3 text-[10px] text-slate-400 dark:text-slate-500 font-medium">Konversi standar</span>
+    <div class="flex flex-col items-center gap-2 mb-4">
+      <div class="flex items-center justify-center gap-1.5 animate-fade-in bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl w-fit mx-auto border border-slate-200 dark:border-slate-700">
+        <button id="mode-normal" data-mode="normal" class="compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm" data-i18n="paste.mode_normal">
+          Normal
+        </button>
+        <button id="mode-balanced" data-mode="balanced" class="compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200" data-i18n="paste.mode_balanced">
+          Balanced
+        </button>
+        <button id="mode-aggressive" data-mode="aggressive" class="compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200" data-i18n="paste.mode_aggressive">
+          Aggressive
+        </button>
+        <div class="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+        <span id="mode-hint" class="px-3 text-[10px] text-slate-400 dark:text-slate-500 font-medium">Konversi standar</span>
+      </div>
+      <!-- Boilerplate Toggle (hidden unless Aggressive mode) -->
+      <div id="boilerplate-toggle-container" class="hidden animate-fade-in">
+        <label class="flex items-center gap-1.5 cursor-pointer group">
+          <input type="checkbox" id="boilerplate-toggle" checked class="w-3.5 h-3.5 rounded border-slate-300 text-emerald-500 focus:ring-emerald-400 focus:ring-offset-0 cursor-pointer" />
+          <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">Hapus boilerplate (cookie, footer, iklan)</span>
+        </label>
+      </div>
     </div>
 
     <!-- File Upload Drop Zone -->
@@ -248,6 +257,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const batchProgress = document.getElementById('batch-progress');
   const batchProgressBar = document.getElementById('batch-progress-bar');
 
+  // ==================== TypeScript Interfaces ====================
+  interface QueueFile extends File {
+    _status: 'processing' | 'done' | 'error' | null;
+  }
+  interface GptEncoder {
+    encode(text: string): number[];
+  }
+
   // Compression mode state
   let currentMode: 'normal' | 'balanced' | 'aggressive' = 'normal';
   let currentFileName: string = '';
@@ -255,12 +272,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let pendingMdContent: string | null = null; // Pre-compression markdown (for mode switching bypasses input truncation)
 
   // Batch upload state
-  let fileQueue: File[] = [];
+  let fileQueue: QueueFile[] = [];
   let batchProcessing = false;
   let statsFilesCount = 0;
+  let removeBoilerplateEnabled = true;
 
   // GPT Tokenizer (lazy init)
-  let gptEncoder: any = null;
+  let gptEncoder: GptEncoder | null = null;
 
   async function getGptEncoderAsync() {
     if (gptEncoder) return gptEncoder;
@@ -327,28 +345,57 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // CSV to Markdown Table
   function csvToMarkdownTable(csv: string): string {
-    const lines = csv.trim().split('\n').filter((l: string) => l.trim());
-    if (lines.length < 1) return '';
+    if (!csv.trim()) return '';
 
-    const rows = lines.map((line: string) => {
-      // Simple CSV split (handles quoted values with commas)
-      const cells: string[] = [];
-      let current = '';
-      let inQuotes = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
+    // Parse CSV with proper handling of quoted fields, newlines, and escaped quotes
+    const rows: string[][] = [];
+    let currentRow: string[] = [];
+    let currentCell = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < csv.length; i++) {
+      const ch = csv[i];
+      const nextCh = csv[i + 1] || '';
+
+      if (inQuotes) {
         if (ch === '"') {
-          inQuotes = !inQuotes;
-        } else if (ch === ',' && !inQuotes) {
-          cells.push(current.trim().replace(/^"|"$/g, ''));
-          current = '';
+          // Check for escaped quote ("")
+          if (nextCh === '"') {
+            currentCell += '"';
+            i++; // skip next quote
+          } else {
+            inQuotes = false; // end of quoted field
+          }
         } else {
-          current += ch;
+          currentCell += ch;
+        }
+      } else {
+        if (ch === '"') {
+          inQuotes = true; // start of quoted field
+        } else if (ch === ',') {
+          currentRow.push(currentCell.trim());
+          currentCell = '';
+        } else if (ch === '\n') {
+          currentRow.push(currentCell.trim());
+          if (currentRow.length > 1 || currentRow[0] !== '') {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+          currentCell = '';
+        } else if (ch === '\r') {
+          // skip carriage return
+        } else {
+          currentCell += ch;
         }
       }
-      cells.push(current.trim().replace(/^"|"$/g, ''));
-      return cells;
-    });
+    }
+    // Push last row if any
+    currentRow.push(currentCell.trim());
+    if (currentRow.length > 1 || currentRow[0] !== '') {
+      rows.push(currentRow);
+    }
+
+    if (rows.length < 1) return '';
 
     const colCount = Math.max(...rows.map((r: string[]) => r.length));
     const padCell = (c: string) => (c || '').trim();
@@ -471,8 +518,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
         script.onload = () => {
-          const b = new Blob(['self.onmessage=()=>{}'], { type: 'application/javascript' });
-          (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(b);
+          (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
           resolve((window as any).pdfjsLib);
         };
         script.onerror = () => reject(new Error('Gagal memuat PDF.js'));
@@ -562,9 +608,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // Add files to queue
   function addFilesToQueue(files: FileList | File[]) {
     for (const file of Array.from(files)) {
-      if (!fileQueue.some(f => f.name === file.name && f.size === file.size)) {
-        (file as any)._status = null;
-        fileQueue.push(file);
+      const qf = file as QueueFile;
+      if (!fileQueue.some(f => f.name === qf.name && f.size === qf.size)) {
+        qf._status = null;
+        fileQueue.push(qf);
       }
     }
     renderFileQueue();
@@ -578,6 +625,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
     if (fileName) fileName.textContent = `${fileQueue.length} file dipilih`;
     if (fileSize) fileSize.textContent = `${fileQueue.reduce((s, f) => s + f.size, 0).toLocaleString()} bytes total`;
+
+    // Auto-process single file immediately
+    if (fileQueue.length === 1 && !batchProcessing) {
+      processBatch();
+    }
   }
 
   // Batch stats
@@ -936,7 +988,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       result = stripImagesKeepAlt(result);
       result = stripLinksKeepText(result);
       result = stripEmptyListItems(result);
-      result = removeBoilerplate(result);
+      if (removeBoilerplateEnabled) {
+        result = removeBoilerplate(result);
+      }
       // Extra aggressive: collapse ALL consecutive whitespace lines
       result = result.replace(/\n{3,}/g, '\n\n');
     }
@@ -948,19 +1002,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     return result;
   }
 
-  // ==================== Main Converter ====================
+  // ==================== Main Converter (returns raw markdown, no compression) ====================
   function convertToMarkdown(html: string, plainText: string): string {
     const hasHtml = /<[a-z][\s\S]*>/i.test(html);
-    let md: string;
     
     if (hasHtml) {
-      md = htmlToMarkdown(html);
-    } else {
-      md = textToMarkdown(plainText);
+      return htmlToMarkdown(html);
     }
-
-    // Apply compression based on current mode
-    return compressMarkdown(md, currentMode);
+    return textToMarkdown(plainText);
   }
 
   // ==================== Get content from input ====================
@@ -1020,10 +1069,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       return;
     }
 
-    const markdown = convertToMarkdown(html, text);
-    
-    if (outputArea) outputArea.textContent = markdown;
-    await updateStats(text, markdown);
+    // Store raw markdown for mode switching
+    const rawMd = convertToMarkdown(html, text);
+    pendingMdContent = rawMd;
+    pendingOriginalContent = text;
+
+    // Apply compression based on current mode
+    const compressed = compressMarkdown(rawMd, currentMode);
+    if (outputArea) outputArea.textContent = compressed;
+    await updateStats(text, compressed);
   }
 
   // ==================== Insert HTML safely into contenteditable ====================
@@ -1046,6 +1100,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         el.className = 'compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200';
       }
     });
+
+    // Show/hide boilerplate toggle based on mode
+    const boilerplateToggleContainer = document.getElementById('boilerplate-toggle-container');
+    if (boilerplateToggleContainer) {
+      boilerplateToggleContainer.classList.toggle('hidden', mode !== 'aggressive');
+    }
 
     // Update mode hint
     if (modeHint) modeHint.textContent = modeHints[mode] || '';
@@ -1256,9 +1316,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     window.showToast?.('File .MD di-download! 📥', 'success');
   });
 
+  // Boilerplate toggle event listener
+  document.getElementById('boilerplate-toggle')?.addEventListener('change', async (e) => {
+    removeBoilerplateEnabled = (e.target as HTMLInputElement).checked;
+    await processInput();
+  });
+
   // Initial state
   if (outputArea) outputArea.innerHTML = '<span class="text-slate-400 italic">Markdown akan muncul di sini...</span>';
   if (modeHint) modeHint.textContent = modeHints.normal || '';
+  // Hide boilerplate toggle initially (Normal mode)
+  const boilerplateContainer = document.getElementById('boilerplate-toggle-container');
+  if (boilerplateContainer) boilerplateContainer.classList.add('hidden');
 </script>
 
 <style>

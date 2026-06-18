@@ -6,49 +6,49 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   <div class="max-w-4xl mx-auto px-4 min-h-[85vh] flex flex-col justify-center items-center py-10">
     
     <div class="text-center mb-8 animate-on-scroll">
-      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600 tracking-tight" data-i18n="header.brainstorm">
+      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-matte-900 dark:text-white tracking-tight" data-i18n="header.brainstorm">
         Infinite Spark
       </h1>
-      <p class="text-slate-600 dark:text-slate-400 text-lg max-w-lg mx-auto" data-i18n="header.brainstorm_desc">
+      <p class="text-matte-400 dark:text-matte-300 text-lg max-w-lg mx-auto" data-i18n="header.brainstorm_desc">
         Generator ide proyek, fakta unik, dan trivia teknologi. Dilengkapi fitur translate dan statistik.
       </p>
     </div>
 
     <div class="w-full max-w-3xl mb-8 flex flex-col gap-4">
         
-        <div class="flex flex-wrap justify-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+        <div class="card-base p-2 flex flex-wrap justify-center gap-2">
             <button class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 shadow-sm" data-type="facts" data-i18n="tab.facts">
                 🌍 Random Facts
             </button>
-            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700" data-type="ideas" data-i18n="tab.ideas">
+            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 text-matte-500 hover:bg-surface-hover dark:hover:bg-surface-hover" data-type="ideas" data-i18n="tab.ideas">
                 🚀 App Ideas
             </button>
-            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700" data-type="trivia" data-i18n="tab.trivia">
+            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 text-matte-500 hover:bg-surface-hover dark:hover:bg-surface-hover" data-type="trivia" data-i18n="tab.trivia">
                 💾 Tech Trivia
             </button>
-            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700" data-type="hacks" data-i18n="tab.hacks">
+            <button class="tab-btn px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 text-matte-500 hover:bg-surface-hover dark:hover:bg-surface-hover" data-type="hacks" data-i18n="tab.hacks">
                 ⚡ Life Hacks
             </button>
         </div>
 
         <div class="flex justify-between items-center px-2">
-            <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider pl-2" data-i18n="label.mode">Mode:</span>
-                <button id="mode-toggle" class="relative inline-flex h-8 w-32 items-center rounded-lg transition-colors duration-300 focus:outline-none bg-slate-200 dark:bg-slate-700">
+            <div class="card-base p-2 flex items-center gap-3">
+                <span class="text-xs font-bold text-matte-400 uppercase tracking-wider pl-2" data-i18n="label.mode">Mode:</span>
+                <button id="mode-toggle" class="relative inline-flex h-8 w-32 items-center rounded-lg transition-colors duration-300 focus:outline-none bg-matte-200 dark:bg-surface-hover">
                     <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out translate-x-1"></span>
-                    <span class="absolute left-0 w-1/2 text-[10px] font-bold text-center text-slate-600 dark:text-slate-300 z-10 pointer-events-none">OFFLINE</span>
+                    <span class="absolute left-0 w-1/2 text-[10px] font-bold text-center text-matte-600 dark:text-matte-300 z-10 pointer-events-none">OFFLINE</span>
                     <span class="absolute right-0 w-1/2 text-[10px] font-bold text-center text-slate-600 dark:text-slate-300 z-10 pointer-events-none">ONLINE</span>
                 </button>
             </div>
             
-            <div id="status-badge" class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+            <div id="status-badge" class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-surface-hover dark:bg-surface-hover text-[10px] font-bold uppercase tracking-widest text-matte-500">
+                <span class="w-2 h-2 rounded-full bg-matte-400"></span>
                 <span>Local DB</span>
             </div>
         </div>
     </div>
 
-    <div class="w-full max-w-2xl bg-white dark:bg-slate-800 p-8 md:p-12 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden group transition-all hover:shadow-amber-500/10 min-h-[300px] flex flex-col justify-between">
+    <div class="card-base p-8 md:p-12 w-full max-w-2xl relative overflow-hidden group transition-all hover:shadow-amber-500/10 min-h-[300px] flex flex-col justify-between">
       
       <div class="absolute -top-6 -right-6 text-9xl opacity-5 dark:opacity-10 pointer-events-none select-none transition-transform group-hover:rotate-12">
           💡
@@ -59,66 +59,66 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               DID YOU KNOW?
           </span>
           
-          <h2 id="content-text" class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 leading-relaxed animate-fade-in transition-opacity duration-300">
+          <h2 id="content-text" class="text-2xl md:text-3xl font-bold text-matte-800 dark:text-white leading-relaxed animate-fade-in transition-opacity duration-300">
             Tekan tombol di bawah untuk mulai mencari inspirasi...
           </h2>
       </div>
 
-      <div class="relative z-10 flex justify-center gap-3 mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
-          <button id="translate-btn" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan">
+      <div class="relative z-10 flex justify-center gap-3 mt-8 pt-6 border-t border-matte-200 dark:border-surface-border">
+          <button id="translate-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
           </button>
-          <button id="copy-btn" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 hover:text-amber-500 transition-colors" title="Copy">
+          <button id="copy-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-amber-500 transition-colors" title="Copy">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
           </button>
-          <button id="favorite-btn" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 hover:text-red-500 transition-colors" title="Save">
+          <button id="favorite-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-red-500 transition-colors" title="Save">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           </button>
-          <button id="share-btn" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 hover:text-blue-500 transition-colors" title="Share">
+          <button id="share-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-blue-500 transition-colors" title="Share">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
           </button>
       </div>
     </div>
 
-    <div class="mt-10 flex flex-col items-center gap-4">            <button id="generate-btn" class="group relative inline-flex items-center justify-center gap-3 px-12 py-4 font-bold text-white transition-all duration-200 bg-slate-900 dark:bg-white dark:text-slate-900 text-lg rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-xl shadow-amber-500/20">
+    <div class="mt-10 flex flex-col items-center gap-4">            <button id="generate-btn" class="group relative inline-flex items-center justify-center gap-3 px-12 py-4 font-bold text-white transition-all duration-200 bg-matte-900 dark:bg-white dark:text-matte-900 text-lg rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-xl shadow-amber-500/20">
             <span data-i18n="btn.generate_spark">Generate Spark</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-12 transition-transform duration-500"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M15.5 8.5v.01"/><path d="M9 14a6 6 0 0 0 6 0"/></svg>
         </button>
         <div class="flex items-center gap-4">
-            <p class="text-xs text-center text-slate-400" data-i18n="msg.press_space">Tekan Spasi untuk acak</p>
-            <button id="settings-btn" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors underline decoration-dotted" data-i18n="btn.settings">Pengaturan</button>
+            <p class="text-xs text-center text-matte-400" data-i18n="msg.press_space">Tekan Spasi untuk acak</p>
+            <button id="settings-btn" class="text-xs text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors underline decoration-dotted" data-i18n="btn.settings">Pengaturan</button>
         </div>
     </div>
 
     <div class="mt-16 grid grid-cols-3 gap-4 w-full max-w-2xl text-center">
-        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-            <div id="total-view" class="text-2xl font-black text-slate-800 dark:text-white">0</div>
-            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1" data-i18n="stat.ideas_found">Ide Ditemukan</div>
+        <div class="card-base p-4">
+            <div id="total-view" class="text-2xl font-black text-matte-800 dark:text-white">0</div>
+            <div class="text-[10px] uppercase font-bold text-matte-400 mt-1" data-i18n="stat.ideas_found">Ide Ditemukan</div>
         </div>
-        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+        <div class="card-base p-4">
             <div id="fav-cat" class="text-lg font-bold text-amber-500 truncate px-2">-</div>
-            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1" data-i18n="stat.top_category">Top Kategori</div>
+            <div class="text-[10px] uppercase font-bold text-matte-400 mt-1" data-i18n="stat.top_category">Top Kategori</div>
         </div>
-        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-            <div id="daily-streak" class="text-2xl font-black text-slate-800 dark:text-white">0</div>
-            <div class="text-[10px] uppercase font-bold text-slate-400 mt-1" data-i18n="stat.daily_streak">Streak Harian</div>
+        <div class="card-base p-4">
+            <div id="daily-streak" class="text-2xl font-black text-matte-800 dark:text-white">0</div>
+            <div class="text-[10px] uppercase font-bold text-matte-400 mt-1" data-i18n="stat.daily_streak">Streak Harian</div>
         </div>
     </div>
 
     <div id="settings-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity animate-fade-in">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-100 transition-transform">
+        <div class="card-base p-6 max-w-sm w-full transform scale-100 transition-transform">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-slate-800 dark:text-white" data-i18n="modal.settings_title">Pengaturan</h3>
-                <button id="close-settings" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                <h3 class="text-xl font-bold text-matte-800 dark:text-white" data-i18n="modal.settings_title">Pengaturan</h3>
+                <button id="close-settings" class="text-matte-400 hover:text-matte-600 dark:hover:text-matte-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
             
             <div class="space-y-6">
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.target_translate">Target Translate</label>
-                    <label for="target-lang" class="block text-xs font-bold text-slate-500 uppercase mb-1">Bahasa Target</label>
-                     <select id="target-lang" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-amber-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                    <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.target_translate">Target Translate</label>
+                    <label for="target-lang" class="block text-xs font-bold text-matte-500 uppercase mb-1">Bahasa Target</label>
+                     <select id="target-lang" class="w-full p-3 rounded-xl bg-surface-hover dark:bg-matte-900 border border-matte-200 dark:border-surface-border focus:border-amber-500 outline-none text-matte-700 dark:text-matte-200 font-medium">
                         <option value="id" selected>🇮🇩 Indonesia</option>
                         <option value="es">🇪🇸 Spanish</option>
                         <option value="ja">🇯🇵 Japanese</option>
@@ -129,15 +129,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.auto_refresh">Auto-refresh (detik)</label>
-                    <input type="number" id="auto-refresh" min="0" max="60" value="0" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-amber-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
-                    <p class="text-[10px] text-slate-400 mt-1" data-i18n="msg.fill_zero_disable">Isi 0 untuk mematikan.</p>
+                    <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.auto_refresh">Auto-refresh (detik)</label>
+                    <input type="number" id="auto-refresh" min="0" max="60" value="0" class="w-full p-3 rounded-xl bg-surface-hover dark:bg-matte-900 border border-matte-200 dark:border-surface-border focus:border-amber-500 outline-none text-matte-700 dark:text-matte-200 font-medium">
+                    <p class="text-[10px] text-matte-400 mt-1" data-i18n="msg.fill_zero_disable">Isi 0 untuk mematikan.</p>
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.font_size">Ukuran Font</label>
-                    <label for="text-size" class="block text-xs font-bold text-slate-500 uppercase mb-1">Ukuran Teks</label>
-                     <select id="text-size" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-amber-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                    <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.font_size">Ukuran Font</label>
+                    <label for="text-size" class="block text-xs font-bold text-matte-500 uppercase mb-1">Ukuran Teks</label>
+                     <select id="text-size" class="w-full p-3 rounded-xl bg-surface-hover dark:bg-matte-900 border border-matte-200 dark:border-surface-border focus:border-amber-500 outline-none text-matte-700 dark:text-matte-200 font-medium">
                         <option value="text-xl" data-i18n="size.small">Kecil</option>
                         <option value="text-2xl" selected data-i18n="size.medium">Sedang</option>
                         <option value="text-3xl" data-i18n="size.large">Besar</option>
@@ -153,24 +153,55 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
 
     <div id="favorites-section" class="hidden mt-16 w-full max-w-2xl animate-fade-in-up">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
-            <div class="flex justify-between items-center mb-4">                    <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+        <div class="card-base p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-matte-800 dark:text-white flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-red-500"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                     <span data-i18n="title.saved_sparks">Saved Sparks</span>
+                    <span id="fav-count" class="text-xs font-bold bg-surface-hover dark:bg-surface-hover text-matte-500 px-2 py-0.5 rounded-full">0</span>
                 </h3>
-                <button id="clear-favorites" class="text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-colors" data-i18n="btn.clear_all">Hapus Semua</button>
+                <div class="flex gap-2">
+                    <button id="export-favorites" class="text-xs text-slate-400 hover:text-emerald-500 transition-colors" title="Export">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </button>
+                    <button id="import-favorites" class="text-xs text-slate-400 hover:text-amber-500 transition-colors" title="Import">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </button>
+                    <button id="clear-favorites" class="text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-colors" data-i18n="btn.clear_all">Hapus Semua</button>
+                </div>
             </div>
-            <div id="favorites-list" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar pr-2"></div>
+            <div class="mb-3">
+                <input id="fav-search" type="text" placeholder="Cari favorit..." class="w-full p-2.5 text-sm rounded-xl bg-surface-hover dark:bg-matte-900 border border-matte-200 dark:border-surface-border focus:border-amber-500 outline-none text-matte-700 dark:text-matte-200">
+            </div>
+            <div id="favorites-list" class="space-y-3 max-h-72 overflow-y-auto custom-scrollbar pr-2" data-fav-list></div>
+            <div id="fav-empty-search" class="hidden text-center py-6 text-sm text-slate-400">Tidak ada hasil yang cocok.</div>
         </div>
     </div>
 
   </div>
 </BaseLayout>
 
+<style is:global>
+  .skeleton-shimmer {
+      background: linear-gradient(90deg, transparent 0%, rgba(150,150,150,0.15) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+      color: transparent !important;
+      min-height: 1.2em;
+      user-select: none;
+      pointer-events: none;
+  }
+  @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+  }
+</style>
+
 <script>
   // --- 1. DATABASES (Expanded) ---
   
-  // App Ideas
+  // App Ideas (Expanded)
   const appIdeas = [
     "Expense Tracker dengan fitur scan struk belanja (OCR).",
     "Aplikasi pencari resep berdasarkan bahan sisa di kulkas.",
@@ -191,10 +222,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     "Sistem Booking Lapangan Futsal online.",
     "Kalkulator Gizi Harian berdasarkan foto makanan.",
     "Platform Crowdfunding khusus proyek mahasiswa.",
-    "Aplikasi Manajemen Kost (Tagihan, Laporan Kerusakan)."
+    "Aplikasi Manajemen Kost (Tagihan, Laporan Kerusakan).",
+    "Sistem Deteksi Dini Kebakaran via IoT + Telegram Bot.",
+    "Aplikasi Belajar Bahasa Daerah dengan Gamification.",
+    "Platform Mentoring Karir online untuk fresh graduate.",
+    "Aplikasi Pemantau Kualitas Udara real-time via Open Data.",
+    "E-commerce Platform untuk produk UMKM desa.",
+    "Aplikasi Pertukaran Buku antar komunitas.",
+    "Fitness Tracker dengan AR untuk koreksi gerakan olahraga.",
+    "Platform Laundry online dengan fitur tracking status.",
+    "Aplikasi Catatan Perjalanan Dinas + Reimbursement.",
+    "Sistem Parkir Cerdas dengan sensor + prediksi slot kosong.",
+    "Aplikasi Terapi Bicara (Speech Therapy) untuk anak.",
+    "Platform Crowdsourcing laporan bencana alam."
   ];
 
-  // Tech Trivia
+  // Tech Trivia (Expanded)
   const techTrivia = [
     "Bug komputer pertama adalah ngengat asli di relay Harvard Mark II (1947).",
     "Domain pertama di dunia adalah symbolics.com (15 Maret 1985).",
@@ -210,10 +253,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     "Linux digunakan oleh 100% dari 500 superkomputer teratas di dunia.",
     "SpaceX menggunakan C++ dan Linux untuk menerbangkan roket Falcon 9.",
     "Hard disk pertama (1956) beratnya 1 ton tapi cuma muat 5MB data.",
-    "Wi-Fi ditemukan secara tidak sengaja saat meneliti lubang hitam."
+    "Wi-Fi ditemukan secara tidak sengaja saat meneliti lubang hitam.",
+    "Ada lebih dari 700 bahasa pemrograman yang pernah dibuat.",
+    "Simbol 'Save' (disket) sebenarnya foto nyata dari floppy disk 3.5 inci.",
+    "CAPTCHA adalah singkatan dari 'Completely Automated Public Turing test to tell Computers and Humans Apart'.",
+    "Byte pertama dibuat oleh IBM pada tahun 1956 dengan ukuran 6 bit.",
+    "Server web pertama di dunia masih berjalan sampai sekarang di CERN.",
+    "Samsung, Toshiba, dan Nokia dulunya perusahaan makanan dan kertas.",
+    "Headphone pertama di dunia beratnya 4,5 kg dan dibuat untuk komunikasi militer.",
+    "Laptop pertama (Osborne 1) punya berat 11 kg dan layar 5 inci.",
+    "Twitter dulunya disebut 'twttr' tanpa huruf vokal.",
+    "Steve Jobs dan Steve Wozniak membuat Apple I di garasi orang tua Jobs.",
+    "Sunrise (vitamin) adalah software komersial pertama di dunia.",
+    "Mouse komputer pertama terbuat dari kayu.",
+    "Youtube awalnya adalah situs kencan video.",
+    "Game 'Tetris' terinspirasi dari permainan puzzle pentomino.",
+    "Token ring adalah protokol jaringan yang menggunakan topologi ring."
   ];
 
-  // Life Hacks
+  // Life Hacks (Expanded)
   const lifeHacks = [
     "Coding stuck? Coba 'Rubber Duck Debugging' (curhat ke bebek karet).",
     "Pakai Teknik Pomodoro (25 menit kerja, 5 menit istirahat) biar fokus.",
@@ -229,10 +287,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     "Gunakan Password Manager, jangan pakai password yang sama di semua akun.",
     "Belajar shortcut keyboard VS Code biar coding secepat kilat.",
     "Olahraga mata 20-20-20: Tiap 20 menit, lihat objek 20 kaki, selama 20 detik.",
-    "Gunakan GitHub Copilot atau ChatGPT sebagai asisten, bukan pengganti otak."
+    "Gunakan GitHub Copilot atau ChatGPT sebagai asisten, bukan pengganti otak.",
+    "Sleep coding dulu, lalu review code pagi harinya dengan pikiran segar.",
+    "Gunakan Cmd/Ctrl + Shift + F di VS Code untuk search seluruh project.",
+    "Aktifkan 'Wrap Guide' di editor biar baris code gak kepanjangan.",
+    "Biasakan nulis commit message yang jelas: 'feat:', 'fix:', 'chore:'.",
+    "Gunakan 'git stash' buat simpan sementara pekerjaan yang belum selesai.",
+    "Baca error message dengan saksama — biasanya sudah ada petunjuk di situ.",
+    "Jangan multitasking saat coding: satu task sampai selesai.",
+    "Gunakan console.table() buat debugging array of objects di browser.",
+    "Buat snippet biar coding repetitive lebih cepat.",
+    "Debug dengan console.log() → kalau mentok, pakai debugger.",
+    "Pelajari regex dasar: bakal berguna seumur hidup.",
+    "Prioritaskan code yang mudah dibaca daripada code yang pintar tapi susah dipahami.",
+    "Gunakan service worker buat caching biar web bisa akses offline.",
+    "Biasakan nulis unit test: mencegah bug sebelum terjadi.",
+    "Jangan lupa stretch setiap 1 jam: leher dan punggung yang sehat bikin koding makin produktif."
   ];
 
-  // Random Facts (Fallback Offline)
+  // Random Facts (Expanded)
   const offlineFacts = [
     "Madu tidak pernah basi. Ditemukan di makam Mesir kuno masih bisa dimakan.",
     "Gurita punya tiga jantung dan darahnya biru.",
@@ -248,7 +321,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     "Di Jepang, ada lebih banyak hewan peliharaan daripada anak-anak.",
     "Lumba-lumba tidur dengan satu mata terbuka.",
     "Cokelat pernah digunakan sebagai mata uang oleh suku Aztec.",
-    "Jerapah tidak memiliki pita suara."
+    "Jerapah tidak memiliki pita suara.",
+    "Hari Sabtu adalah satu-satunya hari dalam seminggu yang tidak berubah nama dari bahasa Romawi.",
+    "Pelangi sebenarnya berbentuk lingkaran penuh, bukan setengah lingkaran.",
+    "Suhu di permukaan Venus lebih panas dari Merkurius meski lebih jauh dari matahari.",
+    "Flamingo lahir dengan warna abu-abu, baru berubah merah muda karena makan udang.",
+    "Gajah adalah satu-satunya mamalia yang tidak bisa melompat.",
+    "Mata burung unta lebih besar dari otaknya.",
+    "Ilmuwan telah menemukan bakteri yang bisa hidup di luar angkasa selama 3 tahun.",
+    "DNA manusia 99,9% identik satu sama lain.",
+    "Suara kentut dari dubur bergerak dengan kecepatan sekitar 3 meter per detik.",
+    "Nama panjang ibu kota Thailand, Bangkok, adalah 'Krung Thep Mahanakhon Amon Rattanakosin Mahinthara Ayuthaya Mahadilok Phop Noppharat Ratchathani Burirom Udomratchaniwet Mahasathan Amon Piman Awatan Sathit Sakkathattiya Witsanukam Prasit'.",
+    "Sekitar 70% dari seluruh kucing di dunia adalah kucing liar (stray/feral).",
+    "Ada lebih banyak pohon di bumi daripada bintang di galaksi Bima Sakti.",
+    "Satu sendok teh bintang neutron beratnya sekitar 6 miliar ton.",
+    "Bumi berputar dengan kecepatan sekitar 1.670 km/jam di khatulistiwa.",
+    "Rata-rata orang menghasilkan 25.000 liter air liur seumur hidupnya.",
+    "Awan rata-rata beratnya sekitar 500 ton (setara 100 gajah).",
+    "Tulang femur (paha) manusia lebih kuat dari beton.",
+    "Bulan menjauh dari Bumi sekitar 3,8 cm setiap tahun.",
+    "Total energi yang sampai ke Bumi dari Matahari dalam 1 jam bisa memenuhi kebutuhan energi dunia selama 1 tahun.",
+    "Lidah bunglon dua kali lebih panjang dari tubuhnya."
   ];
 
   // --- 2. STATE ---
@@ -287,6 +380,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const totalViewEl = document.getElementById('total-view');
   const favCatEl = document.getElementById('fav-cat');
   const dailyStreakEl = document.getElementById('daily-streak');
+  const favSearchInput = document.getElementById('fav-search');
 
   // --- 4. CORE FUNCTIONS ---
 
@@ -359,7 +453,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       generateBtn.disabled = true;
       generateBtn.classList.add('opacity-75', 'scale-95');
       const originalText = generateBtn.innerHTML;
-      generateBtn.innerHTML = '<span class="animate-pulse">Thinking...</span>';
+      generateBtn.innerHTML = '<span class="animate-pulse">🧠 Thinking...</span>';
+      
+      // Add shimmer skeleton
+      contentText.classList.add('skeleton-shimmer');
       
       // Animasi Text Out
       contentText.style.opacity = '0';
@@ -385,13 +482,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               }
           } catch (e) {
               result = getRandomItem(offlineFacts); // Fallback
-              if(isOnline) showToast(window._tToast ? window._tToast('Koneksi lambat, menggunakan data lokal') : 'Koneksi lambat, menggunakan data lokal', 'info');
+              if(isOnline) showToast('Koneksi lambat, menggunakan data lokal', 'info');
           }
 
           // Update Content
           currentContent = result;
           originalContent = result; // Backup original
           contentText.innerText = result;
+          contentText.classList.remove('skeleton-shimmer');
           trackStat(currentType);
           
           // Animasi Text In
@@ -414,10 +512,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           isTranslated = false;
           translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
           translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
-          showToast(window._tToast ? window._tToast('Kembali ke asli') : 'Kembali ke asli');
+          showToast('Kembali ke asli');
       } else {
           if (!isOnline && !navigator.onLine) {
-              showToast(window._tToast ? window._tToast('Fitur translate butuh internet!') : 'Fitur translate butuh internet!', 'error');
+              showToast('Fitur translate butuh internet!', 'error');
               return;
           }
 
@@ -436,12 +534,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                   
                   translateBtn.classList.remove('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
                   translateBtn.classList.add('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
-                  showToast(window._tToast ? window._tToast('Berhasil diterjemahkan') : 'Berhasil diterjemahkan', 'success');
+                  showToast('Berhasil diterjemahkan', 'success');
               } else {
                   throw new Error('Limit API');
               }
           } catch(e) {
-              showToast(window._tToast ? window._tToast('Gagal translate') : 'Gagal translate', 'error');
+              showToast('Gagal translate', 'error');
           } finally {
               translateBtn.disabled = false;
               translateBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>';
@@ -492,10 +590,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       
       if (favorites.includes(originalContent)) {
           favorites = favorites.filter(f => f !== originalContent);
-          showToast(window._tToast ? window._tToast('Dihapus dari favorit') : 'Dihapus dari favorit');
+          showToast('Dihapus dari favorit');
       } else {
           favorites.push(originalContent);
-          showToast(window._tToast ? window._tToast('Disimpan ke favorit!') : 'Disimpan ke favorit!', 'success');
+          showToast('Disimpan ke favorit!', 'success');
       }
       localStorage.setItem('brainstormFavs', JSON.stringify(favorites));
       updateFavoriteButton();
@@ -503,41 +601,64 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   function renderFavorites() {
+      const searchTerm = (favSearchInput.value || '').toLowerCase();
+      const filtered = searchTerm ? favorites.filter(f => f.toLowerCase().includes(searchTerm)) : favorites;
+      
       if (favorites.length === 0) {
           favoritesSection.classList.add('hidden');
           return;
       }
       favoritesSection.classList.remove('hidden');
-      favoritesList.innerHTML = favorites.map(text => `
-          <div class="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg flex justify-between items-start group hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors mb-2">
-              <p class="text-sm text-slate-700 dark:text-slate-200 line-clamp-2 cursor-pointer flex-1" onclick="loadFavorite('${text.replace(/'/g, "\\'")}')">${text}</p>
-              <button onclick="removeFavorite('${text.replace(/'/g, "\\'")}')" class="ml-2 text-slate-400 hover:text-red-500 transition-colors">
+      
+      document.getElementById('fav-count').textContent = favorites.length;
+      
+      if (filtered.length === 0) {
+          favoritesList.innerHTML = '';
+          document.getElementById('fav-empty-search').classList.remove('hidden');
+          return;
+      }
+      document.getElementById('fav-empty-search').classList.add('hidden');
+      
+      favoritesList.innerHTML = filtered.map((text, i) => `
+          <div class="fav-item p-3 bg-slate-50 dark:bg-slate-700 rounded-lg flex justify-between items-start group hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors mb-2" data-fav-index="${favorites.indexOf(text)}">
+              <p class="text-sm text-slate-700 dark:text-slate-200 line-clamp-2 cursor-pointer flex-1 fav-text">${text}</p>
+              <button class="fav-remove ml-2 text-slate-400 hover:text-red-500 transition-colors" data-fav-index="${favorites.indexOf(text)}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
           </div>
       `).join('');
   }
 
-  window.loadFavorite = function(text) {
+  // Event delegation for favorites list
+  favoritesList.addEventListener('click', (e) => {
+      const item = e.target.closest('.fav-item');
+      if (!item) return;
+      
+      const index = parseInt(item.dataset.favIndex);
+      const text = favorites[index];
+      if (!text) return;
+      
+      // Check if the click was on the remove button
+      if (e.target.closest('.fav-remove')) {
+          favorites.splice(index, 1);
+          localStorage.setItem('brainstormFavs', JSON.stringify(favorites));
+          renderFavorites();
+          updateFavoriteButton();
+          return;
+      }
+      
+      // Otherwise load the favorite
       currentContent = text;
       originalContent = text;
       contentText.innerText = text;
       
-      // Reset Translation UI
       isTranslated = false;
       translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
       translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
       
       updateFavoriteButton();
       window.scrollTo({top:0, behavior:'smooth'});
-  };
-
-  window.removeFavorite = function(text) {
-      favorites = favorites.filter(f => f !== text);
-      localStorage.setItem('brainstormFavs', JSON.stringify(favorites));
-      renderFavorites();
-      updateFavoriteButton();
-  };
+  });
 
   // --- ACTIONS ---
   
@@ -558,7 +679,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   copyBtn.addEventListener('click', () => {
       navigator.clipboard.writeText(currentContent);
-      showToast(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!', 'success');
+      showToast('Teks disalin!', 'success');
   });
 
   shareBtn.addEventListener('click', async () => {
@@ -570,16 +691,21 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           } catch(e) {
               if(e.name !== 'AbortError') {
                   navigator.clipboard.writeText(fullMessage);
-                  showToast(window._tToast ? window._tToast('Link & Teks disalin!') : 'Link & Teks disalin!');
+                  showToast('Link & Teks disalin!');
               }
           }
       } else {
           navigator.clipboard.writeText(fullMessage);
-          showToast(window._tToast ? window._tToast('Link & Teks disalin!') : 'Link & Teks disalin!');
+          showToast('Link & Teks disalin!');
       }
   });
 
   // Settings
+  // Settings Modal Open/Close
+  function closeSettingsModal() {
+      settingsModal.classList.add('hidden');
+  }
+
   settingsBtn.addEventListener('click', () => {
       settingsModal.classList.remove('hidden');
       autoRefreshInput.value = settings.autoRefresh;
@@ -587,7 +713,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       targetLangSelect.value = settings.targetLang || 'id';
   });
 
-  closeSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
+  closeSettingsBtn.addEventListener('click', closeSettingsModal);
+
+  // Backdrop click
+  settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) closeSettingsModal();
+  });
+
+  // Escape key
+  document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !settingsModal.classList.contains('hidden')) {
+          closeSettingsModal();
+      }
+  });
 
   saveSettingsBtn.addEventListener('click', () => {
       settings = {
@@ -598,20 +736,80 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       localStorage.setItem('brainSettings', JSON.stringify(settings));
       applySettings();
       settingsModal.classList.add('hidden');
-      showToast(window._tToast ? window._tToast('Pengaturan disimpan!') : 'Pengaturan disimpan!', 'success');
+      showToast('Pengaturan disimpan!', 'success');
   });
 
   clearFavoritesBtn.addEventListener('click', () => {
-      if(confirm(window._tToast ? window._tToast('Hapus semua?') : 'Hapus semua?')) {
+      if(confirm('Hapus semua favorit?')) {
           favorites = [];
           localStorage.setItem('brainstormFavs', JSON.stringify(favorites));
           renderFavorites();
           updateFavoriteButton();
+          showToast('Semua favorit dihapus!');
       }
   });
 
+  // Favorites search with debounce
+  let searchTimer;
+  favSearchInput.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(renderFavorites, 100);
+  });
+
+  // Export favorites
+  document.getElementById('export-favorites').addEventListener('click', () => {
+      if (favorites.length === 0) {
+          showToast('Belum ada favorit untuk di-export', 'warning');
+          return;
+      }
+      const blob = new Blob([JSON.stringify(favorites, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `brainstorm-favorites-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Favorit di-export!', 'success');
+  });
+
+  // Import favorites
+  document.getElementById('import-favorites').addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+              let imported;
+              try {
+                  imported = JSON.parse(ev.target.result);
+                  if (!Array.isArray(imported)) throw new Error('not array');
+              } catch (parseErr) {
+                  showToast('File JSON tidak valid!', 'error');
+                  return;
+              }
+              if (imported.length === 0) {
+                  showToast('File kosong atau format salah', 'error');
+                  return;
+              }
+              // Merge with existing, dedup
+              imported.forEach(text => {
+                  if (!favorites.includes(text)) favorites.push(text);
+              });
+              localStorage.setItem('brainstormFavs', JSON.stringify(favorites));
+              renderFavorites();
+              updateFavoriteButton();
+              showToast(`${imported.length} favorit di-import!`, 'success');
+          };
+          reader.readAsText(file);
+      };
+      input.click();
+  });
+
   document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT') {
+      if (e.code === 'Space' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
           e.preventDefault();
           generateContent();
       }
@@ -629,5 +827,34 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       applySettings();
       generateContent(); 
   });
+
+  // --- TOAST SYSTEM ---
+  function showToast(message, type = 'info') {
+      const existing = document.querySelector('.brain-toast');
+      if (existing) existing.remove();
+      
+      const toast = document.createElement('div');
+      toast.className = 'brain-toast fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-2xl border text-sm font-bold transition-all duration-500 animate-fade-in-up';
+      
+      const colors = {
+          success: 'bg-emerald-50 dark:bg-emerald-900/80 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300',
+          error: 'bg-red-50 dark:bg-red-900/80 border-red-200 dark:border-red-700 text-red-700 dark:text-red-300',
+          info: 'bg-blue-50 dark:bg-blue-900/80 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300',
+          warning: 'bg-amber-50 dark:bg-amber-900/80 border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-300'
+      };
+      
+      toast.className = `brain-toast fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-2xl border text-sm font-bold transition-all duration-500 animate-fade-in-up ${colors[type] || colors.info}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(-50%) translateY(20px)';
+          setTimeout(() => toast.remove(), 400);
+      }, 2500);
+  }
+
+  // Replace all window._tToast calls with local showToast
+  // (Already replaced above)
 
 </script>

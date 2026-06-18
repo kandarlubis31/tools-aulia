@@ -5,39 +5,39 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="UUID Generator">
   <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
     <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-fuchsia-500" data-i18n="header.uuid">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white" data-i18n="header.uuid">
         UUID Generator
       </h1>
-      <p class="text-slate-600 dark:text-slate-400">
+      <p class="text-matte-400 dark:text-matte-300">
         Generate Universally Unique Identifier (UUID v4) untuk database atau testing.
       </p>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl animate-fade-in">
+    <div class="card-base p-8 animate-fade-in">
       
       <div class="flex flex-wrap gap-4 items-center justify-between mb-6">
          <div class="flex items-center gap-3">
-            <span class="text-sm font-bold text-slate-700 dark:text-slate-300">Jumlah:</span>
-            <input type="number" id="count" min="1" max="50" value="5" class="w-20 p-2 text-center rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 outline-none focus:border-purple-500" />
+            <span class="text-sm font-semibold text-matte-700 dark:text-white">Jumlah:</span>
+            <input type="number" id="count" min="1" max="50" value="5" class="w-20 p-2 text-center rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
          </div>
          
          <div class="flex gap-2">
-            <button id="copy-btn" class="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-lg transition" data-i18n="btn.copy_all">Copy All</button>
-            <button id="generate-btn" class="px-6 py-2 text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-lg shadow-purple-500/30 transition active:scale-95 flex items-center gap-2" data-i18n="btn.regenerate">
+            <button id="copy-btn" class="px-4 py-2 text-sm font-bold text-matte-500 dark:text-matte-300 bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 rounded-lg transition" data-i18n="btn.copy_all">Copy All</button>
+            <button id="generate-btn" class="px-6 py-2 text-sm font-bold text-white dark:text-matte-900 bg-matte-900 dark:bg-white rounded-lg transition active:scale-95 flex items-center gap-2" data-i18n="btn.regenerate">
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
                Regenerate
             </button>
          </div>
       </div>
 
-      <div class="bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-         <div class="flex justify-between items-center px-4 py-2 border-b border-slate-200 dark:border-slate-700">
-             <span class="text-xs font-bold text-slate-500 uppercase" data-i18n="label.generated_uuids">Generated UUIDs</span>
+      <div class="bg-matte-100 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border overflow-hidden">
+         <div class="flex justify-between items-center px-4 py-2 border-b border-matte-200 dark:border-surface-border">
+             <span class="section-title" data-i18n="label.generated_uuids">Generated UUIDs</span>
          </div>
-         <textarea id="output-area" readonly class="w-full h-64 p-4 font-mono text-sm bg-transparent text-slate-700 dark:text-slate-300 outline-none resize-none"></textarea>
+         <textarea id="output-area" readonly class="w-full h-64 p-4 font-mono text-sm bg-transparent text-matte-700 dark:text-white outline-none resize-none"></textarea>
       </div>
       
-      <p class="text-center text-xs text-slate-400 mt-4">
+      <p class="text-center text-xs text-matte-400 mt-4">
          UUID v4 digenerate secara kriptografis menggunakan <code>crypto.randomUUID()</code> browser.
       </p>
 

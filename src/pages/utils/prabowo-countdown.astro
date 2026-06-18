@@ -17,13 +17,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 dark:from-slate-100 dark:to-slate-300">Presiden</span>
         <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700 dark:from-red-400 dark:to-red-600">Baru</span>
       </h1>
-      <p class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm md:text-lg max-w-xl mx-auto" data-i18n="prabowo.subtitle">
+      <p class="text-matte-600 dark:text-matte-400 text-xs sm:text-sm md:text-lg max-w-xl mx-auto" data-i18n="prabowo.subtitle">
         Menuju <strong class="text-red-600 dark:text-red-400">Indonesia Baru</strong> — versi yang katanya lebih baik dari ini.
       </p>
     </div>
 
     <div class="w-full max-w-2xl mb-4 sm:mb-6">
-      <div id="mascot-container" role="button" tabindex="0" class="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl border-2 border-red-200 dark:border-red-900/50 shadow-xl cursor-pointer group transition-all duration-300 hover:shadow-red-500/20 hover:border-red-400 dark:hover:border-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/50">
+      <div id="mascot-container" role="button" tabindex="0" class="relative bg-white/80 dark:bg-surface/80 backdrop-blur-sm rounded-3xl border-2 border-red-200 dark:border-red-900/50 shadow-xl cursor-pointer group transition-all duration-300 hover:shadow-red-500/20 hover:border-red-400 dark:hover:border-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/50">
         
         <div class="flex items-start gap-2 sm:gap-4 md:gap-6 p-3 sm:p-4 md:p-6 lg:p-8 pb-1">
           <div class="flex flex-col items-center shrink-0">
@@ -34,7 +34,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <div id="mascot-sparkle" class="absolute inset-0 bg-gradient-to-t from-yellow-400/0 to-yellow-400/0 transition-all duration-500 rounded-2xl"></div>
               <div id="fire-particles" class="absolute inset-0 pointer-events-none z-20 overflow-visible"></div>
               <div id="status-ring" class="absolute inset-0 rounded-xl sm:rounded-2xl ring-2 ring-transparent transition-all duration-500"></div>
-              <div class="absolute -top-1 -right-1 w-6 h-6 md:w-7 md:h-7 rounded-full bg-white dark:bg-slate-700 shadow-md flex items-center justify-center text-xs z-20 animate-bounce-subtle">
+              <div class="absolute -top-1 -right-1 w-6 h-6 md:w-7 md:h-7 rounded-full bg-white dark:bg-surface-hover shadow-md flex items-center justify-center text-xs z-20 animate-bounce-subtle">
                 🇮🇩
               </div>
             </div>
@@ -48,15 +48,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
 
           <div class="flex-1 min-w-0">
-            <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white" data-i18n="prabowo.mascot_name">Pak Prabowo 2029</h3>
-            <p id="mascot-status" class="text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5" data-i18n="prabowo.mascot_status">
+            <h3 class="text-lg md:text-xl font-black text-matte-800 dark:text-white" data-i18n="prabowo.mascot_name">Pak Prabowo 2029</h3>
+            <p id="mascot-status" class="text-sm text-matte-500 dark:text-matte-400 mt-1 flex items-center gap-1.5" data-i18n="prabowo.mascot_status">
               <span>🕐</span> Siap-siap... tinggal nunggu waktu!
             </p>
             
             <div class="flex items-center gap-2 mt-2 flex-wrap">
               <span class="flex items-center gap-1">
-                <kbd class="inline-flex items-center justify-center px-1.5 py-0.5 text-[9px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded border border-slate-300 dark:border-slate-600 shadow-sm">Space</kbd>
-                <span class="text-[10px] text-slate-400 dark:text-slate-500 animate-pulse" data-i18n="prabowo.click_hint">atau klik</span>
+                <kbd class="inline-flex items-center justify-center px-1.5 py-0.5 text-[9px] font-bold bg-surface-hover dark:bg-surface-hover text-matte-500 dark:text-matte-400 rounded border border-matte-300 dark:border-surface-border shadow-sm">Space</kbd>
+                <span class="text-[10px] text-matte-400 dark:text-matte-500 animate-pulse" data-i18n="prabowo.click_hint">atau klik</span>
               </span>
               <span id="click-count" class="text-sm sm:text-base font-black text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/50 px-3 py-1.5 rounded-md border-2 border-red-300 dark:border-red-700 transition-all duration-300 shadow-sm whitespace-nowrap min-w-[60px] text-center inline-block">0 klik</span>
             </div>
@@ -76,15 +76,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
 
     <div id="rage-meter" class="w-full max-w-2xl mb-6 hidden transition-all duration-500">
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+      <div class="bg-white/80 dark:bg-surface/80 backdrop-blur-sm p-4 rounded-2xl border border-matte-200 dark:border-surface-border shadow-sm">
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
             <span id="rage-emoji" class="text-xl">😎</span>
-            <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider" data-i18n="prabowo.rage_meter">🔥 Rage Meter</span>
+            <span class="text-xs font-bold text-matte-500 dark:text-matte-400 uppercase tracking-wider" data-i18n="prabowo.rage_meter">🔥 Rage Meter</span>
           </div>
           <span id="rage-level-text" class="text-xs font-black text-red-600 dark:text-red-400">LVL 0</span>
         </div>
-        <div class="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden relative shadow-inner">
+        <div class="w-full h-3 bg-matte-200 dark:bg-surface-hover rounded-full overflow-hidden relative shadow-inner">
           <div id="rage-fill" class="h-full rounded-full transition-all duration-300 ease-out" style="width: 0%; background: linear-gradient(to right, #22c55e, #eab308, #f97316, #dc2626, #991b1b);"></div>
         </div>
         <div class="flex justify-between mt-1.5 px-0.5">
@@ -98,12 +98,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     <div class="w-full max-w-2xl mb-6 animate-on-scroll">
       <div class="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 p-[2px] rounded-2xl shadow-lg shadow-red-500/20">
-        <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5">
+        <div class="bg-white dark:bg-matte-900 rounded-2xl p-4 sm:p-5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2 sm:gap-3">
               <span class="text-2xl sm:text-3xl">⏳</span>
               <div>
-                <p class="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider" data-i18n="prabowo.term_remaining_label">Sisa Masa Jabatan</p>
+                <p class="text-[10px] sm:text-xs font-bold text-matte-500 dark:text-matte-400 uppercase tracking-wider" data-i18n="prabowo.term_remaining_label">Sisa Masa Jabatan</p>
                 <p class="text-lg sm:text-xl md:text-2xl font-black text-red-600 dark:text-red-400">
                   <span id="remaining-days-big" class="tabular-nums">0000</span>
                   <span class="text-sm md:text-base text-red-400 dark:text-red-500 ml-1">hari</span>
@@ -111,23 +111,23 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               </div>
             </div>
             <div class="text-right">
-              <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider" data-i18n="prabowo.term_passed_label">Terlewati</p>
+              <p class="text-[9px] sm:text-[10px] font-bold text-matte-400 dark:text-matte-500 uppercase tracking-wider" data-i18n="prabowo.term_passed_label">Terlewati</p>
               <p class="text-lg sm:text-xl font-black text-amber-500 dark:text-amber-400">
                 <span id="remaining-pct-big" class="tabular-nums">0.00</span><span class="text-sm ml-0.5">%</span>
               </p>
             </div>
           </div>
-          <div class="mt-3 w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+          <div class="mt-3 w-full h-2 bg-matte-200 dark:bg-surface-hover rounded-full overflow-hidden">
             <div id="mini-progress-bar" class="h-full rounded-full transition-all duration-1000 ease-linear" style="width: 0%; background: linear-gradient(to right, #ef4444, #f97316);"></div>
           </div>
-          <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 text-center" data-i18n="prabowo.progress_hint">
+          <p class="text-[10px] text-matte-400 dark:text-matte-500 mt-2 text-center" data-i18n="prabowo.progress_hint">
             🐌 Secepat ini kah? Cepetan 2029!
           </p>
         </div>
       </div>
     </div>
 
-    <div class="w-full max-w-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 sm:p-6 md:p-8 lg:p-12 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+    <div class="w-full max-w-2xl bg-white/80 dark:bg-surface/80 backdrop-blur-sm p-4 sm:p-6 md:p-8 lg:p-12 rounded-2xl sm:rounded-3xl shadow-2xl border border-matte-200 dark:border-surface-border relative overflow-hidden">
       <div class="absolute -top-10 -right-10 text-[80px] sm:text-[120px] opacity-5 dark:opacity-10 select-none pointer-events-none rotate-12 animate-float-flag">🇮🇩</div>
       <div class="absolute -bottom-10 -left-10 text-[80px] sm:text-[120px] opacity-5 dark:opacity-10 select-none pointer-events-none -rotate-12 animate-float-flag-delayed">🇮🇩</div>
       <div class="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent pointer-events-none"></div>
@@ -138,7 +138,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </div>
 
       <div class="relative z-10 text-center mt-3 sm:mt-4">
-        <p class="text-[10px] sm:text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
+        <p class="text-[10px] sm:text-xs md:text-sm font-bold text-matte-500 dark:text-matte-400 mb-2 uppercase tracking-wider">
           ⏳ <span data-i18n="prabowo.remaining_detail_label">Detail Hitung Mundur</span>
         </p>
         
@@ -147,25 +147,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <div class="w-full bg-red-50 dark:bg-red-950/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-5 border border-red-100 dark:border-red-900/50 shadow-inner flex justify-center items-center transition-all duration-300 group-hover/timer:scale-105 group-hover/timer:shadow-md group-hover/timer:border-red-300 dark:group-hover/timer:border-red-700">
               <span id="days" class="block text-[clamp(1.5rem,5vw,3rem)] font-black text-red-600 dark:text-red-400 tabular-nums leading-none overflow-visible">00</span>
             </div>
-            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.days">Hari</span>
+            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-matte-500 dark:text-matte-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.days">Hari</span>
           </div>
           <div class="flex flex-col items-center group/timer">
-            <div class="w-full bg-slate-50 dark:bg-slate-900/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-5 border border-slate-200 dark:border-slate-700 shadow-inner min-w-[80px] sm:min-w-[100px] md:min-w-[120px] transition-all duration-300 group-hover/timer:scale-105 group-hover/timer:shadow-md">
-              <span id="hours" class="block text-3xl sm:text-4xl md:text-6xl font-black text-slate-700 dark:text-slate-200 tabular-nums leading-none overflow-visible whitespace-nowrap">00</span>
+            <div class="w-full bg-matte-50 dark:bg-matte-900/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-5 border border-matte-200 dark:border-surface-border shadow-inner min-w-[80px] sm:min-w-[100px] md:min-w-[120px] transition-all duration-300 group-hover/timer:scale-105 group-hover/timer:shadow-md">
+              <span id="hours" class="block text-3xl sm:text-4xl md:text-6xl font-black text-matte-700 dark:text-matte-200 tabular-nums leading-none overflow-visible whitespace-nowrap">00</span>
             </div>
-            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.hours">Jam</span>
+            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-matte-500 dark:text-matte-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.hours">Jam</span>
           </div>
           <div class="flex flex-col items-center group/timer">
             <div class="w-full bg-red-50 dark:bg-red-950/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-5 border border-red-100 dark:border-red-900/50 shadow-inner min-w-[80px] sm:min-w-[100px] md:min-w-[120px] transition-all duration-300 group-hover/timer:scale-105 group-hover/timer:shadow-md group-hover/timer:border-red-300 dark:group-hover/timer:border-red-700">
               <span id="minutes" class="block text-3xl sm:text-4xl md:text-6xl font-black text-red-600 dark:text-red-400 tabular-nums leading-none overflow-visible whitespace-nowrap">00</span>
             </div>
-            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.minutes">Menit</span>
+            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-matte-500 dark:text-matte-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.minutes">Menit</span>
           </div>
           <div class="flex flex-col items-center group/timer">
-            <div class="w-full bg-slate-50 dark:bg-slate-900/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-5 border border-slate-200 dark:border-slate-700 shadow-inner min-w-[80px] sm:min-w-[100px] md:min-w-[120px] transition-all duration-300 group-hover/timer:scale-105 group-hover/timer:shadow-md">
-              <span id="seconds" class="block text-3xl sm:text-4xl md:text-6xl font-black text-slate-700 dark:text-slate-200 tabular-nums leading-none overflow-visible whitespace-nowrap">00</span>
+            <div class="w-full bg-matte-50 dark:bg-matte-900/50 rounded-xl sm:rounded-2xl p-2 sm:p-3 md:p-5 border border-matte-200 dark:border-surface-border shadow-inner min-w-[80px] sm:min-w-[100px] md:min-w-[120px] transition-all duration-300 group-hover/timer:scale-105 group-hover/timer:shadow-md">
+              <span id="seconds" class="block text-3xl sm:text-4xl md:text-6xl font-black text-matte-700 dark:text-matte-200 tabular-nums leading-none overflow-visible whitespace-nowrap">00</span>
             </div>
-            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.seconds">Detik</span>
+            <span class="text-[9px] sm:text-[10px] md:text-xs font-bold text-matte-500 dark:text-matte-400 uppercase mt-1.5 sm:mt-2 tracking-widest" data-i18n="time.seconds">Detik</span>
           </div>
         </div>
 
@@ -173,10 +173,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <div id="center-gif-wrapper" class="relative">
             <!-- Placeholder: shown while countdown runs -->
             <div id="gif-placeholder" class="flex flex-col items-center gap-1.5">
-              <div class="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center transition-all duration-300 hover:border-red-300 dark:hover:border-red-700">
+              <div class="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 bg-matte-100 dark:bg-matte-800/80 rounded-2xl border-2 border-dashed border-matte-300 dark:border-surface-border flex items-center justify-center transition-all duration-300 hover:border-red-300 dark:hover:border-red-700">
                 <span class="text-3xl sm:text-4xl md:text-5xl animate-bounce-subtle">🎁</span>
               </div>
-              <span class="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-medium text-center px-2">
+              <span class="text-[9px] sm:text-[10px] text-matte-400 dark:text-matte-500 font-medium text-center px-2">
                 ⏳ Nanti nongol pas countdown abis!
               </span>
             </div>
@@ -197,66 +197,66 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
         </div>
 
-        <p class="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-medium" data-i18n="prabowo.target_label">
+        <p class="text-[10px] sm:text-xs text-matte-400 dark:text-matte-500 font-medium" data-i18n="prabowo.target_label">
           Target: <span class="font-bold text-red-600 dark:text-red-400 whitespace-nowrap">20 Oktober 2029</span> <span id="target-end-text">— Akhir masa bakti</span>
         </p>
       </div>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 w-full max-w-2xl mt-6 sm:mt-8">
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between h-full hover:border-orange-200 dark:hover:border-orange-800">
+      <div class="bg-white/80 dark:bg-surface/80 backdrop-blur-sm p-4 rounded-xl sm:rounded-2xl border border-matte-200 dark:border-surface-border shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between h-full hover:border-orange-200 dark:hover:border-orange-800">
         <div class="text-lg sm:text-xl mb-1">🍜</div>
         <div id="stat-mie" class="text-lg sm:text-xl md:text-2xl font-black text-orange-600 dark:text-orange-400">0</div>
-        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_mie">Mie Instan Dikonsumsi (Miliar)</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-matte-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_mie">Mie Instan Dikonsumsi (Miliar)</div>
       </div>
       <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between h-full hover:border-amber-200 dark:hover:border-amber-800">
         <div class="text-lg sm:text-xl mb-1">🥚</div>
-        <div id="percent-done" class="text-lg sm:text-xl md:text-2xl font-black text-slate-800 dark:text-white">0%</div>
-        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_term">Masa Jabatan Terlewati</div>
+        <div id="percent-done" class="text-lg sm:text-xl md:text-2xl font-black text-matte-800 dark:text-white">0%</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-matte-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_term">Masa Jabatan Terlewati</div>
       </div>
       <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between h-full hover:border-pink-200 dark:hover:border-pink-800">
         <div class="text-lg sm:text-xl mb-1">🏃</div>
         <div id="stat-kabur" class="text-lg sm:text-xl md:text-2xl font-black text-pink-600 dark:text-pink-400">0</div>
-        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_kabur">Alasan Kabur Meeting</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-matte-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_kabur">Alasan Kabur Meeting</div>
       </div>
       <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between h-full hover:border-purple-200 dark:hover:border-purple-800">
         <div class="text-lg sm:text-xl mb-1">🎭</div>
         <div id="stat-gimmick" class="text-lg sm:text-xl md:text-2xl font-black text-purple-600 dark:text-purple-400">0</div>
-        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_gimmick">Gimmick Gagal Viral</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-matte-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_gimmick">Gimmick Gagal Viral</div>
       </div>
       <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between h-full hover:border-blue-200 dark:hover:border-blue-800">
         <div class="text-lg sm:text-xl mb-1">🌧️</div>
         <div id="stat-hujan" class="text-lg sm:text-xl md:text-2xl font-black text-blue-600 dark:text-blue-400">0</div>
-        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_hujan">Hujan Pas Ada Acara</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-matte-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_hujan">Hujan Pas Ada Acara</div>
       </div>
       <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 flex flex-col justify-between h-full hover:border-emerald-200 dark:hover:border-emerald-800">
         <div class="text-lg sm:text-xl mb-1">🤳</div>
         <div id="stat-selfie" class="text-lg sm:text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400">0</div>
-        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-slate-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_selfie">Selfie Gak Jelas (kali)</div>
+        <div class="text-[7px] sm:text-[9px] uppercase font-bold text-matte-400 mt-0.5 leading-tight" data-i18n="prabowo.stat_selfie">Selfie Gak Jelas (kali)</div>
       </div>
     </div>
 
     <div class="w-full max-w-2xl mt-6 sm:mt-8">
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden">
+      <div class="bg-white/80 dark:bg-surface/80 backdrop-blur-sm p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border border-matte-200 dark:border-surface-border shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden">
         <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-500 to-red-500"></div>
         
         <div class="flex items-center gap-2 mb-3 sm:mb-4">
           <span class="relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/50 text-base sm:text-lg shrink-0">🤡</span>
           <div class="flex-1 min-w-0">
-            <h3 class="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider" data-i18n="prabowo.reality_title">Daily Dose of Reality</h3>
+            <h3 class="text-xs sm:text-sm font-bold text-matte-600 dark:text-matte-300 uppercase tracking-wider" data-i18n="prabowo.reality_title">Daily Dose of Reality</h3>
             <span id="quote-category" class="text-[9px] text-red-500 dark:text-red-400 font-medium">Politik</span>
           </div>
         </div>
         
-        <blockquote id="reality-quote" class="text-base sm:text-lg md:text-xl font-medium text-slate-800 dark:text-slate-100 italic leading-relaxed transition-opacity duration-300 border-l-[3px] border-red-300 dark:border-red-700 pl-3 sm:pl-4">
+        <blockquote id="reality-quote" class="text-base sm:text-lg md:text-xl font-medium text-matte-800 dark:text-white italic leading-relaxed transition-opacity duration-300 border-l-[3px] border-red-300 dark:border-red-700 pl-3 sm:pl-4">
           "Presiden baru? Semoga yang ini baca buku dulu sebelum ngomong."
         </blockquote>
         
         <div class="mt-3 sm:mt-4 flex items-center justify-between">
-          <span id="reality-source" class="text-[10px] sm:text-xs text-slate-400 flex items-center gap-1">
+          <span id="reality-source" class="text-[10px] sm:text-xs text-matte-400 flex items-center gap-1">
             <span>✍️</span> — Rakyat Indonesia 💀
           </span>
-          <button id="refresh-quote" class="p-1.5 sm:p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all hover:rotate-45 duration-300" title="Quote Baru" data-i18n-attr="title" data-i18n="prabowo.new_quote">
+          <button id="refresh-quote" class="p-1.5 sm:p-2 rounded-lg bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all hover:rotate-45 duration-300" title="Quote Baru" data-i18n-attr="title" data-i18n="prabowo.new_quote">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
           </button>
         </div>
@@ -284,11 +284,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <span id="fun-fact-icon" class="text-base sm:text-lg transition-all duration-300">💡</span>
           <span class="text-[10px] sm:text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider" data-i18n="prabowo.fact_title">Fun Fact</span>
         </div>
-        <p id="fun-fact" class="text-sm sm:text-base text-slate-700 dark:text-slate-200 leading-relaxed transition-opacity duration-300 font-medium">
+        <p id="fun-fact" class="text-sm sm:text-base text-matte-700 dark:text-matte-200 leading-relaxed transition-opacity duration-300 font-medium">
           🇮🇩 Sembari menunggu 2029, kita bisa main tebak-tebakan: "Harga sembako naik berapa hari ini?"
         </p>
         <div class="flex items-center justify-between mt-3">
-          <button id="prev-fact" class="p-1.5 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 text-slate-400 hover:text-amber-600 transition-all text-sm" title="Sebelumnya">◀</button>
+          <button id="prev-fact" class="p-1.5 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 text-matte-400 hover:text-amber-600 transition-all text-sm" title="Sebelumnya">◀</button>
           <div class="flex gap-1.5">
             <span class="w-2 h-2 rounded-full bg-amber-400 dark:bg-amber-500 fact-dot fact-dot-0"></span>
             <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 fact-dot fact-dot-1"></span>
@@ -298,28 +298,28 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
           <div class="flex items-center gap-2">
             <span id="fun-fact-counter" class="text-xs font-black text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-2.5 py-1 rounded-md">1/5</span>
-            <button id="next-fact" class="p-1.5 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 text-slate-400 hover:text-amber-600 transition-all text-sm" title="Selanjutnya">▶</button>
+            <button id="next-fact" class="p-1.5 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 text-matte-400 hover:text-amber-600 transition-all text-sm" title="Selanjutnya">▶</button>
           </div>
         </div>
       </div>
     </div>
 
     <div id="leaderboard-section" class="w-full max-w-2xl mt-6 sm:mt-8 hidden">
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 border-amber-200 dark:border-amber-900/50 shadow-lg">
+      <div class="bg-white/80 dark:bg-surface/80 backdrop-blur-sm p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 border-amber-200 dark:border-amber-900/50 shadow-lg">
         <div class="flex items-center justify-between mb-3 sm:mb-4">
           <div class="flex items-center gap-1.5 sm:gap-2">
             <span class="text-lg sm:text-xl">🏆</span>
-            <h3 class="text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider" data-i18n="prabowo.leaderboard_title">Leaderboard Clickers</h3>
+            <h3 class="text-[11px] sm:text-sm font-bold text-matte-700 dark:text-matte-300 uppercase tracking-wider" data-i18n="prabowo.leaderboard_title">Leaderboard Clickers</h3>
           </div>
           <button id="reset-leaderboard" class="text-[9px] sm:text-[10px] font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded transition-all" data-i18n="prabowo.leaderboard_reset">Reset</button>
         </div>
         <div id="leaderboard-list" class="space-y-1.5 sm:space-y-2 max-h-48 sm:max-h-60 overflow-y-auto custom-scrollbar pr-1 sm:pr-2">
-          <div class="text-center text-xs sm:text-sm text-slate-400 py-3 sm:py-4" data-i18n="prabowo.leaderboard_empty">
+          <div class="text-center text-xs sm:text-sm text-matte-400 py-3 sm:py-4" data-i18n="prabowo.leaderboard_empty">
             Belum ada yang klik. Jadi orang pertama!
           </div>
         </div>
-        <div class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-700">
-          <p class="text-[9px] sm:text-[10px] text-slate-400 text-center" data-i18n="prabowo.leaderboard_hint">
+        <div class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-matte-200 dark:border-surface-border">
+          <p class="text-[9px] sm:text-[10px] text-matte-400 text-center" data-i18n="prabowo.leaderboard_hint">
             💡 Makin sering klik makin tinggi skor!
           </p>
         </div>

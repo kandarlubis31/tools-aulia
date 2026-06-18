@@ -31,6 +31,7 @@ export default defineConfig({
         globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
         globIgnores: ["**/404.html", "**/404/index.html"],
         navigateFallback: '/',
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/cdnjs\.cloudflare\.com\/.*/i,

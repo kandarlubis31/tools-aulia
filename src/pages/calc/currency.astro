@@ -5,15 +5,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="Real-time Currency Converter">
   <div class="max-w-xl mx-auto px-4 min-h-[60vh]">
     <div class="text-center mb-8 pt-8 animate-fade-in">
-      <h1 class="text-3xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600" data-i18n="header.currency">
+      <h1 class="text-3xl font-extrabold mb-2 text-matte-900 dark:text-white" data-i18n="header.currency">
         Konversi Mata Uang
       </h1>
-      <p class="text-slate-600 dark:text-slate-400" data-i18n="header.currency_desc">
+      <p class="text-matte-400 dark:text-matte-300" data-i18n="header.currency_desc">
         Kurs live real-time dengan smart caching.
       </p>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl animate-fade-in-up relative overflow-hidden">
+    <div class="card-base p-8 animate-fade-in-up relative overflow-hidden">
       
       <div id="loading" class="absolute inset-0 bg-white/90 dark:bg-slate-900/90 z-20 flex items-center justify-center backdrop-blur-sm transition-opacity duration-500">
         <div class="flex flex-col items-center gap-2">
@@ -25,9 +25,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="space-y-6">
         
         <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1" data-i18n="label.amount_money">Jumlah Uang</label>
+            <label class="section-title mb-1" data-i18n="label.amount_money">Jumlah Uang</label>
             
-            <input type="number" id="amount" value="1" min="0" class="w-full p-4 text-2xl font-bold rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900 outline-none transition-all text-slate-800 dark:text-white placeholder-slate-400" placeholder="0" />
+            <input type="number" id="amount" value="1" min="0" class="w-full p-4 text-2xl font-bold rounded-xl bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:border-accent-blue outline-none transition-all text-matte-800 dark:text-white placeholder-matte-400" placeholder="0" />
 
             <div class="flex flex-wrap gap-2 mt-3">
                 <button class="shortcut-btn px-3 py-1 text-xs font-bold rounded-md bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900 transition-colors" data-multiply="100">
@@ -47,7 +47,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
         <div class="flex items-center gap-2">
             <div class="flex-1">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1" data-i18n="label.from">Dari</label>
+                <label class="section-title mb-1" data-i18n="label.from">Dari</label>
                 <div class="relative">
                     <label for="from-currency" class="sr-only">Mata Uang Asal</label>
                     <select id="from-currency" class="w-full p-3 rounded-xl bg-slate-100 dark:bg-slate-700 border border-transparent hover:border-slate-300 dark:hover:border-slate-600 font-bold text-slate-700 dark:text-slate-200 cursor-pointer outline-none appearance-none text-center">
@@ -72,7 +72,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             </button>
 
             <div class="flex-1">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1" data-i18n="label.to">Ke</label>
+                <label class="section-title mb-1" data-i18n="label.to">Ke</label>
                 <div class="relative">
                     <label for="to-currency" class="sr-only">Mata Uang Tujuan</label>
                     <select id="to-currency" class="w-full p-3 rounded-xl bg-slate-100 dark:bg-slate-700 border border-transparent hover:border-slate-300 dark:hover:border-slate-600 font-bold text-slate-700 dark:text-slate-200 cursor-pointer outline-none appearance-none text-center">
@@ -93,12 +93,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             </div>
         </div>
 
-        <div class="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-center transition-all hover:shadow-md">
+        <div class="bg-matte-100 dark:bg-surface-hover p-6 rounded-2xl border border-matte-200 dark:border-surface-border text-center transition-all">
             <p class="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-1" data-i18n="msg.conversion_result">Hasil Konversi</p>
-            <div id="result" class="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white break-words tracking-tight">
+            <div id="result" class="text-3xl md:text-4xl font-extrabold text-matte-800 dark:text-white break-words tracking-tight">
                 ...
             </div>
-            <p id="rate-info" class="text-xs text-slate-400 mt-2 font-mono">1 USD = ... IDR</p>
+            <p id="rate-info" class="text-xs text-matte-400 mt-2 font-mono">1 USD = ... IDR</p>
         </div>
 
         <p class="text-[10px] text-center text-slate-400" data-i18n="msg.data_source">

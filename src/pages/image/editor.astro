@@ -7,17 +7,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 animate-fade-in">
       <div>
-        <h1 class="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+        <h1 class="text-2xl font-bold text-matte-800 dark:text-white flex items-center gap-2">
           <span class="bg-pink-100 dark:bg-pink-900/30 text-pink-600 p-2 rounded-lg">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
           </span>
           Studio Editor
         </h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Edit foto dengan filter dan alat profesional</p>
+        <p class="text-sm text-matte-400 dark:text-matte-300 mt-1">Edit foto dengan filter dan alat profesional</p>
       </div>
       
       <div class="flex gap-2">
-        <label class="cursor-pointer px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-bold transition-colors flex items-center gap-2">
+        <label class="cursor-pointer px-4 py-2 bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 dark:hover:bg-surface-hover text-matte-500 dark:text-matte-300 rounded-lg font-bold transition-colors flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Buka Foto
           <input type="file" id="file-input" accept="image/*" class="hidden">
@@ -31,27 +31,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     <div class="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden animate-fade-in-up">
       
-      <div class="flex-1 bg-slate-100 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden flex items-center justify-center group select-none">
+      <div class="flex-1 bg-surface-hover dark:bg-matte-900/50 rounded-2xl border border-matte-200 dark:border-surface-border relative overflow-hidden flex items-center justify-center group select-none">
         
         <div id="placeholder" class="text-center p-8">
-          <div class="inline-flex items-center justify-center w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full mb-4 text-slate-400">
+          <div class="inline-flex items-center justify-center w-20 h-20 bg-matte-200 dark:bg-surface rounded-full mb-4 text-matte-400">
             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
           </div>
-          <p class="text-slate-500 font-medium">Buka foto untuk mulai mengedit</p>
-          <p class="text-slate-400 text-sm mt-2">Mendukung format: JPG, PNG, GIF, WebP</p>
+          <p class="text-matte-500 font-medium">Buka foto untuk mulai mengedit</p>
+          <p class="text-matte-400 text-sm mt-2">Mendukung format: JPG, PNG, GIF, WebP</p>
         </div>
 
         <div id="image-container" class="hidden relative w-full h-full flex items-center justify-center">
           <img id="preview-img" class="max-w-full max-h-full object-contain transition-all duration-100" alt="Edited image preview" />
-          <div id="zoom-controls" class="absolute bottom-4 right-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur rounded-lg shadow-lg flex items-center p-1">
-            <button id="zoom-out" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
+          <div id="zoom-controls" class="absolute bottom-4 right-4 bg-white/90 dark:bg-surface/90 backdrop-blur rounded-lg shadow-lg flex items-center p-1">
+            <button id="zoom-out" class="p-2 hover:bg-matte-100 dark:hover:bg-surface-hover rounded transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             </button>
             <span id="zoom-level" class="px-2 text-xs font-mono">100%</span>
-            <button id="zoom-in" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
+            <button id="zoom-in" class="p-2 hover:bg-matte-100 dark:hover:bg-surface-hover rounded transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             </button>
-            <button id="zoom-fit" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
+            <button id="zoom-fit" class="p-2 hover:bg-matte-100 dark:hover:bg-surface-hover rounded transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
             </button>
           </div>
@@ -74,27 +74,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
         </div>
 
-        <div id="toolbar" class="hidden absolute top-4 left-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur rounded-lg shadow-lg flex items-center p-1">
-          <button id="compare-btn" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors" title="Bandingkan">
+        <div id="toolbar" class="hidden absolute top-4 left-4 bg-white/90 dark:bg-surface/90 backdrop-blur rounded-lg shadow-lg flex items-center p-1">
+          <button id="compare-btn" class="p-2 hover:bg-matte-100 dark:hover:bg-surface-hover rounded transition-colors" title="Bandingkan">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           </button>
-          <button id="undo-btn" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors" title="Undo (Ctrl+Z)">
+          <button id="undo-btn" class="p-2 hover:bg-matte-100 dark:hover:bg-surface-hover rounded transition-colors" title="Undo (Ctrl+Z)">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg>
           </button>
-          <button id="redo-btn" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors" title="Redo (Ctrl+Y)">
+          <button id="redo-btn" class="p-2 hover:bg-matte-100 dark:hover:bg-surface-hover rounded transition-colors" title="Redo (Ctrl+Y)">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7"/></svg>
           </button>
         </div>
 
       </div>
 
-      <div class="w-full lg:w-80 flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden h-[50vh] lg:h-auto">
+      <div class="w-full lg:w-80 flex flex-col card-base overflow-hidden h-[50vh] lg:h-auto">
         
-        <div class="flex border-b border-slate-200 dark:border-slate-700">
+        <div class="flex border-b border-matte-200 dark:border-surface-border">
           <button class="tab-btn flex-1 py-3 text-sm font-bold text-pink-600 border-b-2 border-pink-600 bg-pink-50 dark:bg-slate-700" data-target="adjust">Adjust</button>
-          <button class="tab-btn flex-1 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200" data-target="filters">Filters</button>
-          <button class="tab-btn flex-1 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200" data-target="transform">Transform</button>
-          <button class="tab-btn flex-1 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200" data-target="export">Export</button>
+          <button class="tab-btn flex-1 py-3 text-sm font-bold text-matte-500 hover:text-matte-700 dark:text-matte-400 dark:hover:text-matte-200" data-target="filters">Filters</button>
+          <button class="tab-btn flex-1 py-3 text-sm font-bold text-matte-500 hover:text-matte-700 dark:text-matte-400 dark:hover:text-matte-200" data-target="transform">Transform</button>
+          <button class="tab-btn flex-1 py-3 text-sm font-bold text-matte-500 hover:text-matte-700 dark:text-matte-400 dark:hover:text-matte-200" data-target="export">Export</button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-5 custom-scrollbar relative">
@@ -102,58 +102,58 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <div id="panel-adjust" class="space-y-5">
             <div class="control-group">
               <div class="flex justify-between mb-1">
-                <label class="text-xs font-bold uppercase text-slate-500">Brightness</label>
-                <span class="text-xs font-mono text-slate-700 dark:text-slate-300 val-display">100%</span>
+                <label class="section-title">Brightness</label>
+                <span class="text-xs font-mono text-matte-700 dark:text-matte-300 val-display">100%</span>
               </div>
-              <input type="range" class="slider w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="200" value="100" data-filter="brightness">
+              <input type="range" class="slider w-full h-2 bg-matte-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="200" value="100" data-filter="brightness">
             </div>
 
             <div class="control-group">
               <div class="flex justify-between mb-1">
-                <label class="text-xs font-bold uppercase text-slate-500">Contrast</label>
-                <span class="text-xs font-mono text-slate-700 dark:text-slate-300 val-display">100%</span>
+                <label class="section-title">Contrast</label>
+                <span class="text-xs font-mono text-matte-700 dark:text-matte-300 val-display">100%</span>
               </div>
-              <input type="range" class="slider w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="200" value="100" data-filter="contrast">
+              <input type="range" class="slider w-full h-2 bg-matte-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="200" value="100" data-filter="contrast">
             </div>
 
             <div class="control-group">
               <div class="flex justify-between mb-1">
-                <label class="text-xs font-bold uppercase text-slate-500">Saturation</label>
-                <span class="text-xs font-mono text-slate-700 dark:text-slate-300 val-display">100%</span>
+                <label class="section-title">Saturation</label>
+                <span class="text-xs font-mono text-matte-700 dark:text-matte-300 val-display">100%</span>
               </div>
-              <input type="range" class="slider w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="200" value="100" data-filter="saturate">
+              <input type="range" class="slider w-full h-2 bg-matte-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="200" value="100" data-filter="saturate">
             </div>
 
             <div class="control-group">
               <div class="flex justify-between mb-1">
-                <label class="text-xs font-bold uppercase text-slate-500">Hue</label>
-                <span class="text-xs font-mono text-slate-700 dark:text-slate-300 val-display">0°</span>
+                <label class="section-title">Hue</label>
+                <span class="text-xs font-mono text-matte-700 dark:text-matte-300 val-display">0°</span>
               </div>
-              <input type="range" class="slider w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="360" value="0" data-filter="hue">
+              <input type="range" class="slider w-full h-2 bg-matte-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="360" value="0" data-filter="hue">
             </div>
 
             <div class="control-group">
               <div class="flex justify-between mb-1">
-                <label class="text-xs font-bold uppercase text-slate-500">Sepia</label>
-                <span class="text-xs font-mono text-slate-700 dark:text-slate-300 val-display">0%</span>
+                <label class="section-title">Sepia</label>
+                <span class="text-xs font-mono text-matte-700 dark:text-matte-300 val-display">0%</span>
               </div>
-              <input type="range" class="slider w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="100" value="0" data-filter="sepia">
+              <input type="range" class="slider w-full h-2 bg-matte-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="100" value="0" data-filter="sepia">
             </div>
 
             <div class="control-group">
               <div class="flex justify-between mb-1">
-                <label class="text-xs font-bold uppercase text-slate-500">Grayscale</label>
-                <span class="text-xs font-mono text-slate-700 dark:text-slate-300 val-display">0%</span>
+                <label class="section-title">Grayscale</label>
+                <span class="text-xs font-mono text-matte-700 dark:text-matte-300 val-display">0%</span>
               </div>
-              <input type="range" class="slider w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="100" value="0" data-filter="grayscale">
+              <input type="range" class="slider w-full h-2 bg-matte-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="100" value="0" data-filter="grayscale">
             </div>
 
             <div class="control-group">
               <div class="flex justify-between mb-1">
-                <label class="text-xs font-bold uppercase text-slate-500">Blur</label>
-                <span class="text-xs font-mono text-slate-700 dark:text-slate-300 val-display">0px</span>
+                <label class="section-title">Blur</label>
+                <span class="text-xs font-mono text-matte-700 dark:text-matte-300 val-display">0px</span>
               </div>
-              <input type="range" class="slider w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="10" value="0" step="0.1" data-filter="blur">
+              <input type="range" class="slider w-full h-2 bg-matte-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="0" max="10" value="0" step="0.1" data-filter="blur">
             </div>
           </div>
 
@@ -162,30 +162,30 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
           <div id="panel-transform" class="hidden space-y-4">
              <div>
-                <label class="text-xs font-bold uppercase text-slate-500 mb-2 block">Rotate</label>
+                <label class="text-xs font-bold uppercase text-matte-500 mb-2 block">Rotate</label>
                 <div class="flex gap-2">
-                   <button class="transform-btn flex-1 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors" data-action="rotate-left">
+                   <button class="transform-btn flex-1 py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors" data-action="rotate-left">
                       ↺ -90°
                    </button>
-                   <button class="transform-btn flex-1 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors" data-action="rotate-right">
+                   <button class="transform-btn flex-1 py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors" data-action="rotate-right">
                       ↻ +90°
                    </button>
                 </div>
              </div>
              <div>
-                <label class="text-xs font-bold uppercase text-slate-500 mb-2 block">Flip</label>
+                <label class="text-xs font-bold uppercase text-matte-500 mb-2 block">Flip</label>
                 <div class="flex gap-2">
-                   <button class="transform-btn flex-1 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors" data-action="flip-x">
+                   <button class="transform-btn flex-1 py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors" data-action="flip-x">
                       ↔ Horizontal
                    </button>
-                   <button class="transform-btn flex-1 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors" data-action="flip-y">
+                   <button class="transform-btn flex-1 py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors" data-action="flip-y">
                       ↕ Vertical
                    </button>
                 </div>
              </div>
              <div>
-                <label class="text-xs font-bold uppercase text-slate-500 mb-2 block">Crop</label>
-                <button id="crop-btn" class="w-full py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors">
+                <label class="text-xs font-bold uppercase text-matte-500 mb-2 block">Crop</label>
+                <button id="crop-btn" class="w-full py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors">
                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"/><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"/></svg>
                    Crop Image
                 </button>
@@ -194,53 +194,53 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
           <div id="panel-export" class="hidden space-y-4">
             <div>
-              <label class="text-xs font-bold uppercase text-slate-500 mb-2 block">Format</label>
+              <label class="text-xs font-bold uppercase text-matte-500 mb-2 block">Format</label>
               <div class="grid grid-cols-3 gap-2">
-                <button class="export-format-btn py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors text-sm font-medium" data-format="png">
+                <button class="export-format-btn py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors text-sm font-medium" data-format="png">
                   PNG
                 </button>
-                <button class="export-format-btn py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors text-sm font-medium" data-format="jpeg">
+                <button class="export-format-btn py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors text-sm font-medium" data-format="jpeg">
                   JPEG
                 </button>
-                <button class="export-format-btn py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors text-sm font-medium" data-format="webp">
+                <button class="export-format-btn py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors text-sm font-medium" data-format="webp">
                   WebP
                 </button>
               </div>
             </div>
             <div id="quality-control" class="hidden">
               <div class="flex justify-between mb-1">
-                <label class="text-xs font-bold uppercase text-slate-500">Quality</label>
-                <span class="text-xs font-mono text-slate-700 dark:text-slate-300 quality-display">90%</span>
+                <label class="section-title">Quality</label>
+                <span class="text-xs font-mono text-matte-700 dark:text-matte-300 quality-display">90%</span>
               </div>
-              <input type="range" class="quality-slider w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="10" max="100" value="90" step="5">
+              <input type="range" class="quality-slider w-full h-2 bg-matte-200 rounded-lg appearance-none cursor-pointer accent-pink-500" min="10" max="100" value="90" step="5">
             </div>
             <div>
-              <label class="text-xs font-bold uppercase text-slate-500 mb-2 block">Size</label>
+              <label class="text-xs font-bold uppercase text-matte-500 mb-2 block">Size</label>
               <div class="grid grid-cols-2 gap-2">
-                <button class="export-size-btn py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors text-sm font-medium" data-size="original">
+                <button class="export-size-btn py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors text-sm font-medium" data-size="original">
                   Original
                 </button>
-                <button class="export-size-btn py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors text-sm font-medium" data-size="half">
+                <button class="export-size-btn py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors text-sm font-medium" data-size="half">
                   50%
                 </button>
-                <button class="export-size-btn py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors text-sm font-medium" data-size="quarter">
+                <button class="export-size-btn py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors text-sm font-medium" data-size="quarter">
                   25%
                 </button>
-                <button class="export-size-btn py-2 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-slate-600 dark:text-slate-300 transition-colors text-sm font-medium" data-size="custom">
+                <button class="export-size-btn py-2 bg-surface-hover dark:bg-surface-hover rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 text-matte-600 dark:text-matte-300 transition-colors text-sm font-medium" data-size="custom">
                   Custom
                 </button>
               </div>
             </div>
             <div id="custom-size" class="hidden grid grid-cols-2 gap-2">
-              <input type="number" id="custom-width" placeholder="Width (px)" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-700 dark:text-slate-300">
-              <input type="number" id="custom-height" placeholder="Height (px)" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-700 dark:text-slate-300">
+              <input type="number" id="custom-width" placeholder="Width (px)" class="px-3 py-2 bg-surface-hover dark:bg-surface-hover rounded-lg text-matte-700 dark:text-matte-300">
+              <input type="number" id="custom-height" placeholder="Height (px)" class="px-3 py-2 bg-surface-hover dark:bg-surface-hover rounded-lg text-matte-700 dark:text-matte-300">
             </div>
           </div>
 
         </div>
 
-        <div class="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30">
-           <button id="reset-all" class="w-full py-2 text-sm font-bold text-slate-500 hover:text-red-500 transition-colors flex items-center justify-center gap-2">
+        <div class="p-4 border-t border-matte-200 dark:border-surface-border bg-matte-100 dark:bg-surface-hover">
+           <button id="reset-all" class="w-full py-2 text-sm font-bold text-matte-500 hover:text-red-500 transition-colors flex items-center justify-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
               Reset Semua
            </button>

@@ -7,43 +7,43 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
     <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-cyan-600" data-i18n="header.hash">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white" data-i18n="header.hash">
         Hash Generator
       </h1>
-      <p class="text-slate-600 dark:text-slate-400" data-i18n="header.hash_desc">
+      <p class="text-matte-400 dark:text-matte-300" data-i18n="header.hash_desc">
         Enkripsi teks menggunakan algoritma hashing standar (MD5, SHA-1, SHA-256).
       </p>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg mb-8 animate-fade-in">
-        <label class="block text-sm font-bold text-slate-500 mb-2 uppercase" data-i18n="label.hash_input">Input Text</label>
-        <textarea id="hash-input" class="w-full p-4 font-mono text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 transition-colors resize-none h-32" placeholder="Ketik teks yang ingin di-hash..." data-i18n-attr="placeholder" data-i18n="ph.type_hash"></textarea>
+    <div class="card-base p-6 mb-8 animate-fade-in">
+        <label class="section-title mb-2" data-i18n="label.hash_input">Input Text</label>
+        <textarea id="hash-input" class="w-full p-4 font-mono text-sm bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-accent-blue transition-colors resize-none h-32" placeholder="Ketik teks yang ingin di-hash..." data-i18n-attr="placeholder" data-i18n="ph.type_hash"></textarea>
     </div>
 
     <div class="space-y-4 animate-fade-in" style="animation-delay: 0.1s;">
         
-        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-            <div class="w-24 font-bold text-slate-500">MD5</div>
-            <input type="text" id="out-md5" readonly class="flex-1 p-2 bg-transparent font-mono text-sm text-slate-800 dark:text-slate-200 outline-none truncate" placeholder="..." />
-            <button class="copy-btn text-xs font-bold px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded hover:bg-blue-200 transition" data-target="out-md5" data-i18n="btn.copy">Copy</button>
+        <div class="card-base p-4 flex flex-col md:flex-row md:items-center gap-4">
+            <div class="w-24 font-bold text-matte-400">MD5</div>
+            <input type="text" id="out-md5" readonly class="flex-1 p-2 bg-transparent font-mono text-sm text-matte-800 dark:text-white outline-none truncate" placeholder="..." />
+            <button class="copy-btn text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-target="out-md5" data-i18n="btn.copy">Copy</button>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-            <div class="w-24 font-bold text-slate-500">SHA-1</div>
-            <input type="text" id="out-sha1" readonly class="flex-1 p-2 bg-transparent font-mono text-sm text-slate-800 dark:text-slate-200 outline-none truncate" placeholder="..." />
-            <button class="copy-btn text-xs font-bold px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded hover:bg-blue-200 transition" data-target="out-sha1" data-i18n="btn.copy">Copy</button>
+        <div class="card-base p-4 flex flex-col md:flex-row md:items-center gap-4">
+            <div class="w-24 font-bold text-matte-400">SHA-1</div>
+            <input type="text" id="out-sha1" readonly class="flex-1 p-2 bg-transparent font-mono text-sm text-matte-800 dark:text-white outline-none truncate" placeholder="..." />
+            <button class="copy-btn text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-target="out-sha1" data-i18n="btn.copy">Copy</button>
         </div>
 
         <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center gap-4 border-l-4 border-l-blue-500">
-            <div class="w-24 font-bold text-slate-700 dark:text-slate-300">SHA-256</div>
-            <input type="text" id="out-sha256" readonly class="flex-1 p-2 bg-transparent font-mono text-sm text-slate-800 dark:text-slate-200 outline-none truncate" placeholder="..." />
-            <button class="copy-btn text-xs font-bold px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded hover:bg-blue-200 transition" data-target="out-sha256" data-i18n="btn.copy">Copy</button>
+            <div class="w-24 font-bold text-matte-700 dark:text-white">SHA-256</div>
+            <input type="text" id="out-sha256" readonly class="flex-1 p-2 bg-transparent font-mono text-sm text-matte-800 dark:text-white outline-none truncate" placeholder="..." />
+            <button class="copy-btn text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-target="out-sha256" data-i18n="btn.copy">Copy</button>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-            <div class="w-24 font-bold text-slate-500">SHA-512</div>
-            <input type="text" id="out-sha512" readonly class="flex-1 p-2 bg-transparent font-mono text-sm text-slate-800 dark:text-slate-200 outline-none truncate" placeholder="..." />
-            <button class="copy-btn text-xs font-bold px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded hover:bg-blue-200 transition" data-target="out-sha512" data-i18n="btn.copy">Copy</button>
+        <div class="card-base p-4 flex flex-col md:flex-row md:items-center gap-4">
+            <div class="w-24 font-bold text-matte-400">SHA-512</div>
+            <input type="text" id="out-sha512" readonly class="flex-1 p-2 bg-transparent font-mono text-sm text-matte-800 dark:text-white outline-none truncate" placeholder="..." />
+            <button class="copy-btn text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-target="out-sha512" data-i18n="btn.copy">Copy</button>
         </div>
 
     </div>

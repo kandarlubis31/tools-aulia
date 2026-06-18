@@ -5,35 +5,35 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="Case Converter">
   <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
     <div class="text-center mb-8 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-pink-500">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white">
         Case Converter
       </h1>
-      <p class="text-slate-600 dark:text-slate-400" data-i18n="header.case_desc">
+      <p class="text-matte-400 dark:text-matte-300" data-i18n="header.case_desc">
         Ubah format huruf teks Anda dengan satu klik.
       </p>
     </div>
 
     <div class="flex flex-wrap justify-center gap-2 mb-6 animate-fade-in">
-       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="upper">UPPERCASE</button>
-       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="lower">lowercase</button>
-       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="title">Title Case</button>
-       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="sentence">Sentence case</button>
-       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="camel">camelCase</button>
-       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="snake">snake_case</button>
-       <button class="case-btn bg-slate-200 dark:bg-slate-700 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30 text-slate-700 dark:text-slate-200 hover:text-fuchsia-600 px-4 py-2 rounded-lg font-bold text-sm transition" data-case="kebab">kebab-case</button>
+       <button class="case-btn bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 dark:hover:bg-surface-hover text-matte-500 dark:text-matte-300 hover:text-accent-blue px-4 py-2 rounded-lg font-bold text-sm transition" data-case="upper">UPPERCASE</button>
+       <button class="case-btn bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 dark:hover:bg-surface-hover text-matte-500 dark:text-matte-300 hover:text-accent-blue px-4 py-2 rounded-lg font-bold text-sm transition" data-case="lower">lowercase</button>
+       <button class="case-btn bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 dark:hover:bg-surface-hover text-matte-500 dark:text-matte-300 hover:text-accent-blue px-4 py-2 rounded-lg font-bold text-sm transition" data-case="title">Title Case</button>
+       <button class="case-btn bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 dark:hover:bg-surface-hover text-matte-500 dark:text-matte-300 hover:text-accent-blue px-4 py-2 rounded-lg font-bold text-sm transition" data-case="sentence">Sentence case</button>
+       <button class="case-btn bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 dark:hover:bg-surface-hover text-matte-500 dark:text-matte-300 hover:text-accent-blue px-4 py-2 rounded-lg font-bold text-sm transition" data-case="camel">camelCase</button>
+       <button class="case-btn bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 dark:hover:bg-surface-hover text-matte-500 dark:text-matte-300 hover:text-accent-blue px-4 py-2 rounded-lg font-bold text-sm transition" data-case="snake">snake_case</button>
+       <button class="case-btn bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 dark:hover:bg-surface-hover text-matte-500 dark:text-matte-300 hover:text-accent-blue px-4 py-2 rounded-lg font-bold text-sm transition" data-case="kebab">kebab-case</button>
     </div>
 
-    <div class="flex flex-col h-96 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in">
-       <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-          <span class="text-xs font-bold text-slate-500 uppercase" data-i18n="text.case_editor">Text Editor</span>
+    <div class="flex flex-col h-96 card-base overflow-hidden animate-fade-in">
+       <div class="bg-matte-100 dark:bg-surface-hover px-4 py-2 border-b border-matte-200 dark:border-surface-border flex justify-between items-center">
+          <span class="section-title" data-i18n="text.case_editor">Text Editor</span>
           <div class="flex gap-2">
-             <button id="copy-btn" class="text-xs font-bold text-fuchsia-600 hover:text-fuchsia-700">Copy</button>
-             <button id="clear-btn" class="text-xs font-bold text-red-500 hover:text-red-600 ml-2">Clear</button>
+             <button id="copy-btn" class="text-xs font-bold text-accent-blue hover:opacity-80">Copy</button>
+             <button id="clear-btn" class="text-xs font-bold text-rose-500 hover:text-rose-600 ml-2">Clear</button>
           </div>
        </div>
-       <textarea id="text-input" class="flex-1 w-full p-6 font-sans text-lg bg-transparent text-slate-800 dark:text-slate-200 outline-none resize-none" placeholder="Ketik atau tempel teks di sini..." data-i18n-attr="placeholder" data-i18n="ph.type_or_paste"></textarea>
+       <textarea id="text-input" class="flex-1 w-full p-6 font-sans text-lg bg-transparent text-matte-800 dark:text-white outline-none resize-none" placeholder="Ketik atau tempel teks di sini..." data-i18n-attr="placeholder" data-i18n="ph.type_or_paste"></textarea>
        
-       <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500">
+       <div class="bg-matte-100 dark:bg-surface-hover px-4 py-2 border-t border-matte-200 dark:border-surface-border text-xs text-matte-400">
           <span id="char-count">0 <span data-i18n="text.characters">karakter</span></span> | <span id="word-count">0 <span data-i18n="text.words">kata</span></span>
        </div>
     </div>

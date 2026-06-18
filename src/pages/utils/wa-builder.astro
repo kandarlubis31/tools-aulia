@@ -8,10 +8,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   <div class="max-w-7xl mx-auto px-4 py-8">
     
     <header class="text-center mb-10 animate-fade-in">
-      <h1 class="text-3xl md:text-5xl font-extrabold mb-4 text-slate-900 dark:text-white" data-i18n="header.wa_builder_full">
+      <h1 class="text-3xl md:text-5xl font-extrabold mb-4 text-matte-900 dark:text-white" data-i18n="header.wa_builder_full">
         WhatsApp <span class="text-emerald-500">Super Builder</span>
       </h1>
-      <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto" data-i18n="header.wa_builder_desc_full">
+      <p class="text-matte-600 dark:text-matte-400 max-w-2xl mx-auto" data-i18n="header.wa_builder_desc_full">
         Buat link WhatsApp dengan formatting teks lengkap, preview visual real-time, dan QR Code instan.
       </p>
     </header>
@@ -20,38 +20,38 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       
       <!-- Input Panel -->
       <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl animate-fade-in-up">
+        <div class="card-base p-6 shadow-xl animate-fade-in-up">
           
           <!-- Phone Input -->
           <div class="mb-6">
             <div class="flex justify-between items-center mb-2">
-              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300" data-i18n="label.whatsapp_number">Nomor WhatsApp</label>
+              <label class="block text-sm font-bold text-matte-700 dark:text-matte-300" data-i18n="label.whatsapp_number">Nomor WhatsApp</label>
               <div class="flex gap-1">
-                <button id="save-contact-btn" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 px-2 py-1 rounded transition-colors" title="Save Contact" data-i18n-attr="title" data-i18n="title.save_contact">
+                <button id="save-contact-btn" class="text-xs bg-surface-hover dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-hover px-2 py-1 rounded transition-colors" title="Save Contact" data-i18n-attr="title" data-i18n="title.save_contact">
                   💾
                 </button>
-                <button id="load-contacts-btn" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 px-2 py-1 rounded transition-colors" title="Load Contacts" data-i18n-attr="title" data-i18n="title.load_contacts">
+                <button id="load-contacts-btn" class="text-xs bg-surface-hover dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-hover px-2 py-1 rounded transition-colors" title="Load Contacts" data-i18n-attr="title" data-i18n="title.load_contacts">
                   📋
                 </button>
               </div>
             </div>
             <div class="relative">
                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span class="text-slate-400 font-bold">📞</span>
+                  <span class="text-matte-400 font-bold">📞</span>
                </div>
-               <input type="text" id="phone" placeholder="Contoh: 081234567890" class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white transition-all font-mono" data-i18n-attr="placeholder" data-i18n="ph.phone_example" />
+               <input type="text" id="phone" placeholder="Contoh: 081234567890" class="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-hover dark:bg-matte-900 border border-matte-300 dark:border-surface-border focus:ring-2 focus:ring-accent-blue outline-none text-matte-800 dark:text-white transition-all font-mono" data-i18n-attr="placeholder" data-i18n="ph.phone_example" />
             </div>
             <div class="flex justify-between items-center mt-1">
-              <p class="text-xs text-slate-400" data-i18n="text.auto_format_08xx">Otomatis ubah 08xx jadi 628xx. Spasi & strip diabaikan.</p>
-              <p id="phone-status" class="text-xs text-slate-400"></p>
+              <p class="text-xs text-matte-400" data-i18n="text.auto_format_08xx">Otomatis ubah 08xx jadi 628xx. Spasi & strip diabaikan.</p>
+              <p id="phone-status" class="text-xs text-matte-400"></p>
             </div>
           </div>
 
           <!-- Saved Contacts Dropdown -->
           <div id="contacts-container" class="mb-6 hidden">
-            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.saved_contacts">Kontak Tersimpan</label>
+            <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.saved_contacts">Kontak Tersimpan</label>
             <label for="saved-contacts" class="sr-only">Kontak Tersimpan</label>
-             <select id="saved-contacts" class="w-full p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white transition-all">
+             <select id="saved-contacts" class="w-full p-2 rounded-xl bg-surface-hover dark:bg-matte-900 border border-matte-300 dark:border-surface-border focus:ring-2 focus:ring-accent-blue outline-none text-matte-800 dark:text-white transition-all">
               <option value="">-- Pilih Kontak --</option>
             </select>
           </div>
@@ -59,22 +59,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <!-- Message Input -->
           <div class="mb-6">
             <div class="flex justify-between items-end mb-2">
-              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300" data-i18n="label.message">Pesan</label>
+              <label class="block text-sm font-bold text-matte-700 dark:text-matte-300" data-i18n="label.message">Pesan</label>
               
               <div class="flex items-center gap-2">
-                <div class="flex gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-lg">
-                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-slate-600 font-bold text-slate-700 dark:text-slate-200" data-tag="*" title="Bold (Tebal)" data-i18n-attr="title" data-i18n="title.bold">B</button>
-                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-slate-600 italic text-slate-700 dark:text-slate-200" data-tag="_" title="Italic (Miring)" data-i18n-attr="title" data-i18n="title.italic">I</button>
-                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-slate-600 line-through text-slate-700 dark:text-slate-200" data-tag="~" title="Strikethrough (Coret)" data-i18n-attr="title" data-i18n="title.strikethrough">S</button>
-                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-slate-600 font-mono text-xs text-slate-700 dark:text-slate-200" data-tag="```" title="Monospace" data-i18n-attr="title" data-i18n="title.monospace">{'<>'}</button>
+                <div class="flex gap-1 bg-surface-hover dark:bg-surface-hover p-1 rounded-lg">
+                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-surface-hover font-bold text-matte-700 dark:text-matte-200" data-tag="*" title="Bold (Tebal)" data-i18n-attr="title" data-i18n="title.bold">B</button>
+                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-surface-hover italic text-matte-700 dark:text-matte-200" data-tag="_" title="Italic (Miring)" data-i18n-attr="title" data-i18n="title.italic">I</button>
+                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-surface-hover line-through text-matte-700 dark:text-matte-200" data-tag="~" title="Strikethrough (Coret)" data-i18n-attr="title" data-i18n="title.strikethrough">S</button>
+                  <button class="fmt-btn w-8 h-8 flex items-center justify-center rounded hover:bg-white dark:hover:bg-surface-hover font-mono text-xs text-matte-700 dark:text-matte-200" data-tag="```" title="Monospace" data-i18n-attr="title" data-i18n="title.monospace">{'<>'}</button>
                 </div>
-                <button id="emoji-btn" class="w-8 h-8 flex items-center justify-center rounded bg-slate-100 dark:bg-slate-700 hover:bg-white dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200" title="Emoji" data-i18n-attr="title" data-i18n="title.emoji">😊</button>
+                <button id="emoji-btn" class="w-8 h-8 flex items-center justify-center rounded bg-surface-hover dark:bg-surface-hover hover:bg-white dark:hover:bg-surface-hover text-matte-700 dark:text-matte-200" title="Emoji" data-i18n-attr="title" data-i18n="title.emoji">😊</button>
               </div>
             </div>
 
             <div class="relative">
-              <textarea id="message" rows="6" class="w-full p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 dark:text-white transition-all resize-none font-sans" placeholder="Ketik pesan di sini..." data-i18n-attr="placeholder" data-i18n="ph.type_message"></textarea>
-              <div class="absolute bottom-2 right-2 text-xs text-slate-400">
+              <textarea id="message" rows="6" class="w-full p-4 rounded-xl bg-surface-hover dark:bg-matte-900 border border-matte-300 dark:border-surface-border focus:ring-2 focus:ring-accent-blue outline-none text-matte-800 dark:text-white transition-all resize-none font-sans" placeholder="Ketik pesan di sini..." data-i18n-attr="placeholder" data-i18n="ph.type_message"></textarea>
+              <div class="absolute bottom-2 right-2 text-xs text-matte-400">
                 <span id="char-count">0</span> / 1000
               </div>
             </div>
@@ -82,14 +82,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
           <!-- Message Templates -->
           <div class="mb-6">
-            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.message_template">Template Pesan</label>
+            <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.message_template">Template Pesan</label>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="halo" data-i18n="template.salam">Salam</button>
-              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="terima kasih" data-i18n="template.thanks">Terima Kasih</button>
-              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="undangan" data-i18n="template.invitation">Undangan</button>
-              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="promosi" data-i18n="template.promo">Promosi</button>
-              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="pengumuman" data-i18n="template.announcement">Pengumuman</button>
-              <button class="template-btn text-xs p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded transition-colors" data-template="ucapan" data-i18n="template.greeting">Ucapan</button>
+              <button class="template-btn text-xs p-2 bg-surface-hover dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-hover rounded transition-colors" data-template="halo" data-i18n="template.salam">Salam</button>
+              <button class="template-btn text-xs p-2 bg-surface-hover dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-hover rounded transition-colors" data-template="terima kasih" data-i18n="template.thanks">Terima Kasih</button>
+              <button class="template-btn text-xs p-2 bg-surface-hover dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-hover rounded transition-colors" data-template="undangan" data-i18n="template.invitation">Undangan</button>
+              <button class="template-btn text-xs p-2 bg-surface-hover dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-hover rounded transition-colors" data-template="promosi" data-i18n="template.promo">Promosi</button>
+              <button class="template-btn text-xs p-2 bg-surface-hover dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-hover rounded transition-colors" data-template="pengumuman" data-i18n="template.announcement">Pengumuman</button>
+              <button class="template-btn text-xs p-2 bg-surface-hover dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-hover rounded transition-colors" data-template="ucapan" data-i18n="template.greeting">Ucapan</button>
             </div>
           </div>
 
@@ -107,7 +107,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
           <!-- Action Buttons -->
           <div class="grid grid-cols-2 gap-3">
-            <a id="open-wa-btn" href="#" target="_blank" class="block text-center bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3 rounded-xl hover:scale-[1.02] transition-transform shadow-lg" data-i18n="btn.open_whatsapp">
+            <a id="open-wa-btn" href="#" target="_blank" class="block text-center bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-bold py-3 rounded-xl hover:scale-[1.02] transition-transform shadow-lg" data-i18n="btn.open_whatsapp">
               🚀 Buka WhatsApp
             </a>
             <button id="share-btn" class="block text-center bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl hover:scale-[1.02] transition-transform shadow-lg" data-i18n="btn.share_link">
@@ -117,15 +117,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
 
         <!-- History Section -->
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl animate-fade-in-up">
+        <div class="card-base p-6 shadow-xl animate-fade-in-up">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-slate-700 dark:text-slate-300" data-i18n="label.history">Riwayat Link</h3>
+            <h3 class="font-bold text-matte-700 dark:text-matte-300" data-i18n="label.history">Riwayat Link</h3>
             <button id="clear-history-btn" class="text-xs bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 px-2 py-1 rounded transition-colors" data-i18n="btn.clear_all">
               Hapus Semua
             </button>
           </div>
           <div id="history-container" class="space-y-2 max-h-60 overflow-y-auto">
-            <p class="text-slate-400 dark:text-slate-500 text-sm text-center py-4" data-i18n="text.no_history_wa">Belum ada riwayat</p>
+            <p class="text-matte-400 dark:text-matte-500 text-sm text-center py-4" data-i18n="text.no_history_wa">Belum ada riwayat</p>
           </div>
         </div>
       </div>
@@ -134,9 +134,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="space-y-6 animate-fade-in-up" style="animation-delay: 0.1s;">
         
         <!-- WhatsApp Preview -->
-        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl">
+        <div class="card-base p-4 shadow-xl">
           <div class="flex justify-between items-center mb-3">
-            <h3 class="font-bold text-slate-700 dark:text-slate-300" data-i18n="label.message_preview">Preview Pesan</h3>
+            <h3 class="font-bold text-matte-700 dark:text-matte-300" data-i18n="label.message_preview">Preview Pesan</h3>
             <div class="flex gap-1">
               <button id="preview-light-btn" class="w-6 h-6 rounded-full bg-white border-2 border-slate-300" title="Light Theme" data-i18n-attr="title" data-i18n="title.light_theme"></button>
               <button id="preview-dark-btn" class="w-6 h-6 rounded-full bg-slate-800 border-2 border-slate-600" title="Dark Theme" data-i18n-attr="title" data-i18n="title.dark_theme"></button>
@@ -181,35 +181,35 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
 
         <!-- QR Code Section -->
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg">
+        <div class="card-base p-6 shadow-lg">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-slate-700 dark:text-slate-300" data-i18n="label.qr_code">QR Code</h3>
+            <h3 class="font-bold text-matte-700 dark:text-matte-300" data-i18n="label.qr_code">QR Code</h3>
             <div class="flex gap-2">
               <label for="qr-size" class="sr-only">Ukuran QR Code</label>
-               <select id="qr-size" class="text-xs bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded px-2 py-1">
+               <select id="qr-size" class="text-xs bg-surface-hover dark:bg-surface-hover border border-matte-300 dark:border-surface-border rounded px-2 py-1">
                 <option value="128" data-i18n="label.qr_small">Kecil</option>
                 <option value="160" selected data-i18n="label.qr_medium">Sedang</option>
                 <option value="200" data-i18n="label.qr_large">Besar</option>
               </select>
-              <button id="download-qr-btn" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 px-2 py-1 rounded transition-colors" title="Download QR" data-i18n-attr="title" data-i18n="title.download_qr">
+              <button id="download-qr-btn" class="text-xs bg-surface-hover dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-hover px-2 py-1 rounded transition-colors" title="Download QR" data-i18n-attr="title" data-i18n="title.download_qr">
                 ⬇️
               </button>
             </div>
           </div>
           <div class="flex justify-center mb-4">
-             <div id="qrcode" class="p-3 bg-white rounded-lg border border-slate-200"></div>
+             <div id="qrcode" class="p-3 bg-white rounded-lg border border-matte-200"></div>
           </div>
-          <p class="text-xs text-slate-500 text-center" data-i18n="text.scan_qr_chat">Scan untuk langsung chat tanpa simpan nomor.</p>
+          <p class="text-xs text-matte-500 text-center" data-i18n="text.scan_qr_chat">Scan untuk langsung chat tanpa simpan nomor.</p>
         </div>
       </div>
     </div>
 
     <!-- Emoji Picker Modal -->
     <div id="emoji-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-xl p-4 max-w-md w-full max-h-96 overflow-y-auto">
+      <div class="card-base rounded-xl p-4 max-w-md w-full max-h-96 overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="font-bold text-slate-700 dark:text-slate-300" data-i18n="btn.select_emoji">Pilih Emoji</h3>
-          <button id="close-emoji-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <h3 class="font-bold text-matte-700 dark:text-matte-300" data-i18n="btn.select_emoji">Pilih Emoji</h3>
+          <button id="close-emoji-btn" class="text-matte-400 hover:text-matte-600 dark:hover:text-matte-200">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
@@ -413,7 +413,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Render History
     function renderHistory() {
       if (history.length === 0) {
-        historyContainer.innerHTML = '<p class="text-slate-400 dark:text-slate-500 text-sm text-center py-4">Belum ada riwayat</p>';
+        historyContainer.innerHTML = '<p class="text-matte-400 dark:text-matte-500 text-sm text-center py-4">Belum ada riwayat</p>';
         return;
       }
       
@@ -433,7 +433,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <p class="text-xs text-slate-500 dark:text-slate-400 truncate">${entry.message || (window._tToast ? window._tToast('(tanpa pesan)') : '(tanpa pesan)')}</p>
             </div>
             <div class="flex items-center gap-1 ml-2">
-              <span class="text-xs text-slate-400">${formattedDate}</span>
+              <span class="text-xs text-matte-400">${formattedDate}</span>
               <button class="history-copy-btn text-xs bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 px-2 py-1 rounded" data-link="${entry.link}">${window._tToast ? window._tToast('Copy') : 'Copy'}</button>
             </div>
           </div>

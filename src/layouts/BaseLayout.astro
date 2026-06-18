@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
 import { tools } from '../data/tools';
+import '../styles/global.css';
 
 // Derive search-friendly tool list from shared data
 const searchTools = tools.map(t => ({
@@ -51,7 +52,7 @@ if (isPdfTool) {
 ---
 
 <!doctype html>
-<html lang="id" class="scroll-smooth transition-colors duration-500 ease-in-out">
+<html lang="id" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
@@ -108,35 +109,45 @@ if (isPdfTool) {
   <link rel="apple-touch-icon" href="/pwa-192x192.png" />
   
   <!-- PWA registration handled automatically by @vite-pwa/astro with registerType: autoUpdate -->
-</head>  <body class="antialiased bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-500 ease-in-out min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+</head>  <body class="antialiased bg-[#fafafa] dark:bg-matte-950 text-matte-800 dark:text-white min-h-screen flex flex-col font-sans">
   
   <div id="toast-container" class="fixed top-24 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
-  <div id="offline-indicator" class="hidden fixed bottom-0 left-0 w-full bg-rose-600 text-white text-center py-2 text-sm font-bold z-[100] shadow-lg animate-slide-up">
-    <span data-i18n="offline.msg">⚠️ Koneksi terputus. Anda sedang offline.</span>
-  </div>
-  <div id="navigation-loading" class="fixed top-0 left-0 w-full h-1 bg-slate-200 dark:bg-slate-800 z-[100] overflow-hidden hidden">
-    <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 w-0 transform origin-left transition-all duration-300"></div>
+  <!-- Scroll Progress Bar -->
+  <div id="scroll-progress" aria-hidden="true">
+    <div id="scroll-progress-bar"></div>
   </div>
 
-  <div id="pwa-custom-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 opacity-0 transition-opacity duration-300">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300">
-        <div class="h-24 bg-gradient-to-tr from-sky-500 to-violet-600 flex items-center justify-center">
-             <div class="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center">
-                 <img src="/favicon.svg" alt="App Icon" class="w-10 h-10" />
+  <!-- Back to Top Button -->
+  <button id="back-to-top" aria-label="Back to top" class="fixed bottom-6 right-6 z-[90] w-9 h-9 rounded-lg bg-matte-900 dark:bg-white text-white dark:text-matte-900 shadow-md flex items-center justify-center opacity-0 translate-y-4 pointer-events-none transition-all duration-150 hover:opacity-90">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
+
+  <div id="offline-indicator" class="hidden fixed bottom-0 left-0 w-full bg-matte-800 dark:bg-matte-700 text-white text-center py-2 text-sm font-medium z-[100] shadow-lg animate-slide-up">
+    <span data-i18n="offline.msg">⚠️ Koneksi terputus. Anda sedang offline.</span>
+  </div>
+  <div id="navigation-loading" class="fixed top-0 left-0 w-full h-0.5 bg-matte-200 dark:bg-surface-border z-[100] overflow-hidden hidden">
+    <div class="h-full bg-accent-blue w-0 transform origin-left transition-all duration-150"></div>
+  </div>
+
+  <div id="pwa-custom-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 opacity-0 transition-opacity duration-150">
+    <div class="bg-white dark:bg-surface-elevated rounded-xl border border-matte-200 dark:border-surface-border shadow-xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-150">
+        <div class="h-20 bg-matte-100 dark:bg-surface-hover flex items-center justify-center">
+             <div class="w-14 h-14 bg-white dark:bg-matte-800 rounded-xl shadow-md flex items-center justify-center">
+                 <img src="/favicon.svg" alt="App Icon" class="w-8 h-8" />
              </div>
         </div>
         
-        <div class="p-6 text-center">
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2" data-i18n="pwa.install_title">Install ToolsAulia</h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400 mb-6" data-i18n="pwa.install_desc">
-                Akses semua tools secara <strong>offline</strong>, lebih cepat, dan masuk langsung dari layar utama HP kamu.
+        <div class="p-5 text-center">
+            <h3 class="text-base font-semibold text-matte-800 dark:text-white mb-2" data-i18n="pwa.install_title">Install ToolsAulia</h3>
+            <p class="text-xs text-matte-400 dark:text-matte-300 mb-5" data-i18n="pwa.install_desc">
+                Akses semua tools secara offline, lebih cepat, dan langsung dari layar utama.
             </p>
             
-            <div class="space-y-3">
-                <button id="pwa-confirm-install" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all transform hover:scale-[1.02]" data-i18n="pwa.install_now">
+            <div class="space-y-2">
+                <button id="pwa-confirm-install" class="w-full py-2.5 px-4 bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold text-sm rounded-lg transition-all duration-150 hover:opacity-90" data-i18n="pwa.install_now">
                     Install Sekarang
                 </button>
-                <button id="pwa-cancel-install" class="w-full py-3 px-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium rounded-xl transition-colors" data-i18n="pwa.later">
+                <button id="pwa-cancel-install" class="w-full py-2.5 px-4 bg-matte-100 dark:bg-surface-hover text-matte-500 dark:text-matte-300 font-medium text-sm rounded-lg transition-all duration-150" data-i18n="pwa.later">
                     Nanti Saja
                 </button>
             </div>
@@ -144,71 +155,131 @@ if (isPdfTool) {
     </div>
   </div>
 
-  <header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md transition-all duration-300 hover:shadow-md hover:shadow-sky-500/5">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <a href="/" class="group flex items-center gap-2.5 font-bold text-xl tracking-tight z-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-md p-1 transition-all duration-300 hover:scale-105">
-        <div class="relative w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-500 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/20 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
-        </div>
-        <span class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300">
-          Tools<span class="text-sky-500">Aulia</span>
+  <header class="sticky top-0 z-50 w-full border-b border-matte-200 dark:border-surface-border bg-white/80 dark:bg-matte-950/80 backdrop-blur-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-2 font-bold text-base tracking-tight z-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/40 rounded-md p-1">
+        <span class="text-matte-800 dark:text-white">
+          Tools<span class="text-accent-blue">Aulia</span>
         </span>
       </a>
       
       <nav class="hidden md:flex items-center gap-1">
-        <a href="/" class={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isHome ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400'}`} data-i18n="nav.home">Home</a>
-        <a href="/pdf" class={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isPdfRoot || isPdfTool ? 'bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400'}`} data-i18n="nav.pdf_tools">PDF Tools</a>
+        <a href="/" class={`nav-item ${isHome ? 'nav-item-active' : 'nav-item-inactive'}`} data-i18n="nav.home">Home</a>
         
-        <button id="search-btn" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all duration-300 hover:scale-110 hover:text-sky-500" aria-label="Search tools" data-i18n-attr="aria-label" data-i18n="nav.search_aria">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <!-- Tools Dropdown -->
+        <div class="relative group">
+          <button class="nav-item nav-item-inactive cursor-pointer flex items-center gap-1" aria-haspopup="true" aria-expanded="false">
+            <span data-i18n="nav.tools">Tools</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-150 group-hover:rotate-180"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="absolute top-full left-0 mt-1 w-52 bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 py-1.5 origin-top-left">
+            <a href="/pdf" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium text-matte-700 dark:text-white hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <span data-i18n="nav.pdf_tools">PDF Tools</span>
+            </a>
+            <a href="/?cat=image" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium text-matte-700 dark:text-white hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span data-i18n="nav.category_image">Image</span>
+            </a>
+            <a href="/?cat=dev" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium text-matte-700 dark:text-white hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              <span data-i18n="nav.category_dev">Dev</span>
+            </a>
+            <a href="/?cat=calc" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium text-matte-700 dark:text-white hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="10" y2="18"/></svg>
+              <span data-i18n="nav.category_calc">Calc</span>
+            </a>
+            <a href="/?cat=security" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium text-matte-700 dark:text-white hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span data-i18n="nav.category_security">Security</span>
+            </a>
+            <a href="/?cat=utils" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium text-matte-700 dark:text-white hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg>
+              <span data-i18n="nav.category_utils">Utils</span>
+            </a>
+            <a href="/?cat=file" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium text-matte-700 dark:text-white hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3-3 3 3"/></svg>
+              <span data-i18n="nav.category_file">File</span>
+            </a>
+          </div>
+        </div>
+        
+        <div class="divider-thin w-px h-5 mx-2"></div>
+        
+        <button id="search-btn" class="w-8 h-8 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all duration-150" aria-label="Search tools">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         </button>
         
-        <div class="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
-        
-        <button id="theme-toggle-desktop" class="relative p-2 rounded-full hover:bg-gradient-to-br hover:from-amber-100 hover:to-orange-100 dark:hover:bg-gradient-to-br dark:hover:from-slate-700 dark:hover:to-slate-600 text-slate-500 dark:text-slate-400 transition-all duration-300 hover:scale-110 group" aria-label="Toggle theme" data-i18n-attr="aria-label" data-i18n="nav.theme_aria">
-          <span class="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 opacity-0 group-hover:opacity-20 dark:group-hover:opacity-30 transition-opacity duration-300"></span>
-          <svg id="sun-icon" class="hidden dark:block w-5 h-5 relative z-10 transition-transform duration-300 group-hover:rotate-45 group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-          <svg id="moon-icon" class="block dark:hidden w-5 h-5 relative z-10 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        <button id="theme-toggle-desktop" class="w-8 h-8 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all duration-150" aria-label="Toggle theme">
+          <svg id="sun-icon" class="hidden dark:block w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          <svg id="moon-icon" class="block dark:hidden w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         </button>
         
-        <button id="lang-toggle-desktop" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all duration-300 hover:scale-110 hover:text-emerald-500 hover:rotate-12" aria-label="Toggle language">
-          <span id="lang-label-desktop" class="uppercase">ID</span>
+        <button id="lang-toggle-desktop" class="w-8 h-8 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all duration-150">
+          <span id="lang-label-desktop" class="text-2xs font-bold uppercase tracking-wide-2">ID</span>
         </button>
         
-        <button id="install-pwa-btn" class="hidden p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sky-500 dark:text-sky-400 transition-all duration-300 hover:scale-110 hover:text-emerald-500" aria-label="Install app" data-i18n-attr="aria-label" data-i18n="nav.install_aria">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <button id="install-pwa-btn" class="hidden w-8 h-8 flex items-center justify-center rounded-lg text-accent-blue hover:text-accent-blue/80 hover:bg-accent-blue/5 transition-all duration-150">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </button>
       </nav>
 
-      <button id="mobile-menu-btn" class="md:hidden p-2 text-slate-600 dark:text-slate-300 transition-all duration-300 hover:scale-110 hover:text-sky-500" aria-label="Toggle menu">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+      <button id="mobile-menu-btn" class="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all duration-150" aria-label="Toggle menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
       </button>
     </div>
 
-    <div id="mobile-menu" class="hidden absolute top-16 left-0 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-xl md:hidden flex-col p-2 gap-1 transition-all z-40 origin-top animate-fade-in-down">
-      <div class="p-3">
-        <input type="text" id="mobile-search" placeholder="Cari tools..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:scale-105 text-slate-800 dark:text-slate-200 transition-all duration-300" data-i18n-attr="placeholder" data-i18n="search.mobile_placeholder">
-      </div>        <a href="/" class="block p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-200 mobile-link" data-i18n="nav.mobile_dashboard">Dashboard</a>        <a href="/pdf" class="block p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-200 mobile-link" data-i18n="nav.mobile_pdf">PDF Tools</a>
+    <div id="mobile-menu" class="hidden absolute top-14 left-0 w-full bg-white dark:bg-surface-elevated border-b border-matte-200 dark:border-surface-border shadow-xl md:hidden flex-col transition-all z-40 origin-top animate-fade-in-down">
+      <!-- Search -->
+      <div class="p-3 border-b border-matte-100 dark:border-surface-border">
+        <input type="text" id="mobile-search" placeholder="Cari tools..." class="w-full pl-9 pr-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 text-sm text-matte-800 dark:text-white transition-all duration-150" data-i18n-attr="placeholder" data-i18n="search.mobile_placeholder">
+      </div>
       
-      <div class="border-t border-slate-100 dark:border-slate-800 pt-2 mt-2 px-3 pb-2">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-sm text-slate-500 font-medium">Tema</span>
-          <button id="lang-toggle-mobile" class="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-110 hover:rotate-12 transition-all duration-300 text-xs font-bold uppercase">
-            <span id="lang-label-mobile">ID</span>
+      <!-- Quick Links -->
+      <div class="px-2 pt-2 pb-1">
+        <span class="text-2xs font-bold uppercase tracking-wide-3 text-matte-400 px-3 py-1.5 block">Menu</span>
+        <a href="/" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-matte-700 dark:text-white font-medium text-sm hover:bg-matte-100 dark:hover:bg-surface-hover transition-all duration-150 mobile-link">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span data-i18n="nav.mobile_dashboard">Dashboard</span>
+        </a>
+        <a href="/pdf" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-matte-700 dark:text-white font-medium text-sm hover:bg-matte-100 dark:hover:bg-surface-hover transition-all duration-150 mobile-link">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span data-i18n="nav.mobile_pdf">PDF Tools</span>
+        </a>
+      </div>
+      
+      <!-- Category Links -->
+      <div class="px-2 pb-1">
+        <span class="text-2xs font-bold uppercase tracking-wide-3 text-matte-400 px-3 py-1.5 block">Kategori</span>
+        <div class="grid grid-cols-2 gap-0.5">
+          <a href="/?cat=image" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link">🖼️ <span data-i18n="nav.category_image">Image</span></a>
+          <a href="/?cat=dev" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link">💻 <span data-i18n="nav.category_dev">Dev</span></a>
+          <a href="/?cat=calc" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link">🧮 <span data-i18n="nav.category_calc">Calc</span></a>
+          <a href="/?cat=security" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link">🔒 <span data-i18n="nav.category_security">Security</span></a>
+          <a href="/?cat=utils" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link">⚡ <span data-i18n="nav.category_utils">Utils</span></a>
+          <a href="/?cat=file" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link">📂 <span data-i18n="nav.category_file">File</span></a>
+        </div>
+      </div>
+      
+      <!-- Settings -->
+      <div class="border-t border-matte-100 dark:border-surface-border px-3 py-3 space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <button id="theme-toggle-mobile" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-200 dark:hover:bg-matte-600 transition-all duration-150">
+            <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            <span class="dark:hidden" data-i18n="nav.mobile_theme_dark">Gelap</span>
+            <span class="hidden dark:inline" data-i18n="nav.mobile_theme_light">Terang</span>
           </button>
-          <button id="theme-toggle-mobile" class="relative p-2 rounded-full bg-gradient-to-br from-amber-100 to-orange-50 dark:from-slate-700 dark:to-slate-600 text-slate-600 dark:text-slate-300 hover:scale-110 transition-all duration-300 group">
-            <span class="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></span>
-            <span class="dark:hidden relative z-10 flex items-center gap-2 text-xs font-bold uppercase" data-i18n="nav.mobile_theme_dark">Gelap 🌙</span>
-            <span class="hidden dark:flex relative z-10 items-center gap-2 text-xs font-bold uppercase" data-i18n="nav.mobile_theme_light">Terang ☀️</span>
+          <button id="lang-toggle-mobile" class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-200 dark:hover:bg-matte-600 transition-all duration-150">
+            <span id="lang-label-mobile" class="font-bold uppercase tracking-wide-2">ID</span>
           </button>
         </div>
         
-        <button id="install-pwa-mobile" class="hidden w-full p-2 rounded-lg bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 font-bold text-sm transition-all duration-300 hover:scale-105 hover:bg-sky-100 dark:hover:bg-sky-900/40 flex items-center justify-center gap-2" data-i18n="nav.mobile_install">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <button id="install-pwa-mobile" class="hidden w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-accent-blue/10 text-accent-blue text-sm font-semibold hover:bg-accent-blue/15 transition-all duration-150" data-i18n="nav.mobile_install">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Install App
         </button>
-        <button id="cache-clear-mobile" class="w-full p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm transition-all duration-300 hover:scale-105 hover:text-rose-500 flex items-center justify-center gap-2 mt-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        <button id="cache-clear-mobile" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-500 dark:text-matte-300 text-xs font-medium hover:bg-matte-200 dark:hover:bg-matte-600 hover:text-rose-500 transition-all duration-150">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
           <span data-i18n="nav.clear_cache">Bersihkan Cache</span>
         </button>
       </div>
@@ -216,17 +287,17 @@ if (isPdfTool) {
   </header>
 
   <div id="search-modal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-start justify-center pt-20 px-4">
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-2xl animate-fade-in-down">
-      <div class="p-4 border-b border-slate-200 dark:border-slate-700">
+    <div class="bg-white dark:bg-surface-elevated rounded-xl border border-matte-200 dark:border-surface-border shadow-xl w-full max-w-2xl animate-fade-in-down">
+      <div class="p-4 border-b border-matte-200 dark:border-surface-border">
         <div class="relative">
-          <input type="text" id="search-modal-input" placeholder="Cari tools..." class="w-full pl-10 pr-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:scale-[1.02] text-slate-800 dark:text-slate-200 transition-all duration-300" autocomplete="off" data-i18n-attr="placeholder" data-i18n="search.placeholder">
-          <button id="close-search" class="absolute inset-y-0 right-0 pr-3 flex items-center" aria-label="Close search" data-i18n-attr="aria-label" data-i18n="search.close_aria">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          <input type="text" id="search-modal-input" placeholder="Cari tools..." class="w-full pl-9 pr-9 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 text-sm text-matte-800 dark:text-white transition-all duration-150" autocomplete="off" data-i18n-attr="placeholder" data-i18n="search.placeholder">
+          <button id="close-search" class="absolute inset-y-0 right-0 pr-3 flex items-center" aria-label="Close search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 hover:text-matte-600 dark:hover:text-matte-300"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
       </div>
-      <div id="search-results" class="max-h-96 overflow-y-auto p-4">
-        <div class="text-center py-8 text-slate-500 dark:text-slate-400">
+      <div id="search-results" class="max-h-96 overflow-y-auto p-3">
+        <div class="text-center py-8 text-matte-400">
           <p data-i18n="search.empty">Ketik untuk mencari tools</p>
         </div>
       </div>
@@ -235,11 +306,9 @@ if (isPdfTool) {
 
   <main id="main-content" class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
     { showBackBtn && (
-      <div class="mb-8 animate-fade-in-down">
-        <a id="back-btn" href={backLink} class="inline-flex items-center gap-3 text-sm font-semibold text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 transition-colors group px-4 py-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm">
-          <div class="bg-slate-200 dark:bg-slate-800 p-1 rounded-md group-hover:bg-sky-100 dark:group-hover:bg-sky-900/30 group-hover:text-sky-600 transition-colors">
-             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-          </div>
+      <div class="mb-6 animate-fade-in-down">
+        <a id="back-btn" href={backLink} class="inline-flex items-center gap-2 text-xs font-medium text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors px-3 py-2 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-elevated">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
           <span id="back-btn-text" data-i18n={backI18nKey}>{backLabel}</span>
         </a>
       </div>
@@ -247,39 +316,31 @@ if (isPdfTool) {
     <slot />
   </main>
 
-  <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-auto pb-safe transition-all duration-500">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+  <footer class="border-t border-matte-200 dark:border-surface-border bg-white dark:bg-matte-900 mt-auto pb-safe">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-5">
         <div>
-          <h3 class="font-bold text-slate-800 dark:text-slate-200 mb-4" data-i18n="footer.about_title">Tentang ToolsAulia</h3>
-          <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 max-w-sm" data-i18n="footer.about_desc">
-            Koleksi tools developer sederhana yang berjalan sepenuhnya di browser (Client-Side). Aman, cepat, dan tanpa upload data ke server.
+          <h3 class="font-semibold text-matte-700 dark:text-white text-sm mb-1">Tools<span class="text-accent-blue">Aulia</span></h3>
+          <p class="text-xs text-matte-400 dark:text-matte-300 max-w-xs" data-i18n="footer.about_desc">
+            Koleksi tools developer yang berjalan 100% di browser.
           </p>
-          <div class="flex gap-4">
-            <a href="https://github.com/kandarlubis31" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all duration-300 hover:scale-110 hover:-translate-y-0.5" data-i18n="footer.github">Github</a>
-            <a href="https://paklubis.my.id" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all duration-300 hover:scale-110 hover:-translate-y-0.5" data-i18n="footer.website">Website</a>
-          </div>
         </div>
-        <div>
-          <h3 class="font-bold text-slate-800 dark:text-slate-200 mb-4" data-i18n="footer.categories">Kategori Tools</h3>
-          <ul class="space-y-2 text-sm">
-            <li><a href="/pdf" class="text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors" data-i18n="footer.pdf_tools">PDF Tools</a></li>
-            <li><a href="/image" class="text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors" data-i18n="footer.image_tools">Image Tools</a></li>
-            <li><a href="/dev" class="text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors" data-i18n="footer.dev_tools">Developer Tools</a></li>
-          </ul>
+        <div class="flex gap-4">
+          <a href="https://github.com/kandarlubis31" target="_blank" rel="noopener noreferrer" class="text-xs text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors">Github</a>
+          <a href="https://paklubis.my.id" target="_blank" rel="noopener noreferrer" class="text-xs text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors">Website</a>
+          <button id="cache-clear-btn" class="text-xs flex items-center gap-1 text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors" title="Clear cache & reload">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            <span data-i18n="nav.clear_cache">Cache</span>
+          </button>
         </div>
       </div>
-      <div class="border-t border-slate-200 dark:border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-        <p>&copy; {new Date().getFullYear()} <span class="font-bold text-slate-700 dark:text-slate-300">Aulia Iskandar Lubis</span>.</p>
-        <div class="flex items-center gap-4">
-        <button id="cache-clear-btn" class="text-xs flex items-center gap-1 text-slate-500 hover:text-rose-500 transition-all duration-300 hover:scale-105 hover:-translate-y-0.5" title="Clear cache & reload">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300 group-hover:rotate-12"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-          <span data-i18n="nav.clear_cache">Bersihkan Cache</span>
-        </button>
-      </div>
-      </div>
+      <div class="divider-thin mb-4"></div>
+      <p class="text-xs text-matte-400">&copy; {new Date().getFullYear()} Aulia Iskandar Lubis</p>
     </div>
   </footer>
+
+  <!-- Pass search tools data to client scripts (avoids esbuild parse error) -->
+  <script id="search-tools-json" type="application/json" set:html={JSON.stringify(searchTools)}></script>
 
   <!-- Performance: Load i18n phrases async to not block rendering -->
   <script src="/i18n-phrases.js" defer></script>
@@ -300,17 +361,8 @@ if (isPdfTool) {
       }
       return result;
     };
-    window.showToast = (message, type = 'success') => {
-      const container = document.getElementById('toast-container');
-      if (!container) return;
-      const toast = document.createElement('div');
-      const colors = { success: 'bg-emerald-500 text-white', error: 'bg-rose-500 text-white', info: 'bg-blue-500 text-white', warning: 'bg-amber-500 text-white' };
-      toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-x-10 opacity-0 min-w-[300px] backdrop-blur-sm ${colors[type] || colors.success}`;
-      toast.innerHTML = `<span class="font-bold text-sm">${window._tToast(message)}</span>`;
-      container.appendChild(toast);
-      requestAnimationFrame(() => toast.classList.remove('translate-x-10', 'opacity-0'));
-      setTimeout(() => { toast.classList.add('translate-x-10', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
-    };
+    // window.showToast dipasang oleh module script dari composables
+    // Lihat bagian <script> di bawah import useToast
 
     document.addEventListener('astro:page-load', () => {
       const pwaModal = document.getElementById('pwa-custom-modal');
@@ -507,7 +559,7 @@ if (isPdfTool) {
         cacheClearMobile.addEventListener('click', cacheClearHandler);
       }
 
-      const toolsList = ${JSON.stringify(searchTools)};
+      const toolsList = JSON.parse(document.getElementById('search-tools-json')?.textContent || '[]');
       
       const searchInputEl = document.getElementById('search-modal-input');
       const searchResultsEl = document.getElementById('search-results');
@@ -543,15 +595,15 @@ if (isPdfTool) {
             searchResultsEl.innerHTML = filtered.map(t => {
               const descText = (window.i18n && window.i18n.t) ? window.i18n.t(t.descKey, t.descFallback) : t.descFallback;
               return `
-              <a href="${t.url}" class="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group">
-                <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 group-hover:text-sky-500 group-hover:bg-sky-50 dark:group-hover:bg-sky-900/20 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l7.81-9.24a1 1 0 0 1 1.54 0l7.81 9.24A1 1 0 0 1 20 14h-7v7h-2v-7z"/></svg>
+              <a href="${t.url}" class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150 group">
+                <div class="w-9 h-9 rounded-lg bg-matte-100 dark:bg-surface-hover flex items-center justify-center text-matte-400 group-hover:text-accent-blue transition-colors duration-150 shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l7.81-9.24a1 1 0 0 1 1.54 0l7.81 9.24A1 1 0 0 1 20 14h-7v7h-2v-7z"/></svg>
                 </div>
-                <div>
-                  <p class="font-bold text-slate-800 dark:text-slate-200 group-hover:text-sky-600 dark:group-hover:text-sky-400">${t.name}</p>
-                  <p class="text-xs text-slate-500 dark:text-slate-400">${descText}</p>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-semibold text-matte-800 dark:text-white group-hover:text-accent-blue transition-colors duration-150 truncate">${t.name}</p>
+                  <p class="text-2xs text-matte-400 truncate">${descText}</p>
                 </div>
-                <span class="ml-auto text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">${t.category}</span>
+                <span class="shrink-0 text-2xs font-medium uppercase tracking-wide-2 text-matte-400 bg-matte-100 dark:bg-surface-hover px-2 py-0.5 rounded">${t.category}</span>
               </a>
             `;
             }).join('');
@@ -562,6 +614,42 @@ if (isPdfTool) {
       const navLoad = document.getElementById('navigation-loading');
       var navBar = navLoad && navLoad.querySelector('div');
       
+      // Back to Top Button
+      const backToTopBtn = document.getElementById('back-to-top');
+      if (backToTopBtn) {
+        const toggleBackToTop = () => {
+          if (window.scrollY > 400) {
+            backToTopBtn.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+          } else {
+            backToTopBtn.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+          }
+        };
+        window.addEventListener('scroll', toggleBackToTop, { passive: true });
+        backToTopBtn.addEventListener('click', () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        document.addEventListener('astro:after-swap', toggleBackToTop);
+        setTimeout(toggleBackToTop, 200);
+      }
+
+      // Scroll Progress Bar
+      const updateScrollProgress = () => {
+        const bar = document.getElementById('scroll-progress-bar');
+        if (!bar) return;
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        if (docHeight > 0) {
+          const progress = Math.min((scrollTop / docHeight) * 100, 100);
+          bar.style.width = progress + '%';
+        } else {
+          bar.style.width = '0%';
+        }
+      };
+      window.addEventListener('scroll', updateScrollProgress, { passive: true });
+      window.addEventListener('resize', updateScrollProgress, { passive: true });
+      document.addEventListener('astro:after-swap', () => setTimeout(updateScrollProgress, 100));
+      setTimeout(updateScrollProgress, 200);
+
       document.addEventListener('astro:after-preparation', () => {
         if (navLoad) navLoad.classList.remove('hidden');
         if(navBar) navBar.style.width = '30%';
@@ -580,7 +668,9 @@ if (isPdfTool) {
 
   <script>
     import { translations, getLang, setLang, t } from '../i18n/translations';
+    import { showToast } from '../composables/useToast';
     window.i18n = { getLang, setLang, translations, t };
+    window.showToast = showToast;
 
     // Auto-generate dictionary from translations.ts for all unique tool headings/descriptions
     const dynamicPhrases = Object.values(translations).reduce((acc: Record<string, string>, item: any) => {
@@ -885,31 +975,3 @@ if (isPdfTool) {
   </script>
 </body>
 </html>
-
-<style is:global>
-  html { font-family: 'Inter', system-ui, sans-serif; }
-  
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
-  .dark ::-webkit-scrollbar-thumb { background: #334155; }
-  
-  .animate-fade-in-down { animation: fadeInDown 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-  .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-  .animate-slide-up { animation: slideUp 0.5s ease-out; }
-  
-  @keyframes fadeInDown { 
-    from { opacity: 0; transform: translateY(-10px); } 
-    to { opacity: 1; transform: translateY(0); } 
-  }
-  @keyframes fadeInUp { 
-    from { opacity: 0; transform: translateY(20px); scale: 0.95; } 
-    to { opacity: 1; transform: translateY(0); scale: 1; } 
-  }
-  @keyframes slideUp { 
-    from { transform: translateY(100%); } 
-    to { transform: translateY(0); } 
-  }
-  
-  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-</style>

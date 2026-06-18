@@ -5,17 +5,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="BMI Calculator">
   <div class="max-w-6xl mx-auto px-4 min-h-[60vh]">
     <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-500">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white">
         BMI Calculator
       </h1>
-      <p class="text-slate-600 dark:text-slate-400">
+      <p class="text-matte-400 dark:text-matte-300">
         Hitung Indeks Massa Tubuh Anda dan dapatkan rekomendasi kesehatan yang tepat.
       </p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in pb-20">
       <div class="lg:col-span-2">
-        <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+        <div class="card-base p-8">
           
           <div class="flex justify-center mb-8">
             <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-700 rounded-lg">
@@ -27,56 +27,56 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             
             <div id="height-input-container">
-              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.height">
+              <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.height">
                 Tinggi Badan <span class="metric-unit text-slate-400 font-normal">(cm)</span><span class="imperial-unit hidden text-slate-400 font-normal">(ft/in)</span>
               </label>
               
-              <input type="number" id="height" class="metric-input w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-900 transition-all" placeholder="170" data-i18n-attr="placeholder" data-i18n="ph.height" />
+              <input type="number" id="height" class="metric-input w-full p-3 rounded-xl bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-all" placeholder="170" data-i18n-attr="placeholder" data-i18n="ph.height" />
               
               <div class="imperial-input hidden flex gap-3">
                 <div class="relative flex-1">
-                    <input type="number" id="height-ft" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 outline-none focus:border-teal-500 transition-all" placeholder="5" data-i18n-attr="placeholder" data-i18n="ph.height_ft" />
+                    <input type="number" id="height-ft" class="w-full p-3 rounded-xl bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-all" placeholder="5" data-i18n-attr="placeholder" data-i18n="ph.height_ft" />
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">ft</span>
                 </div>
                 <div class="relative flex-1">
-                    <input type="number" id="height-in" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 outline-none focus:border-teal-500 transition-all" placeholder="7" data-i18n-attr="placeholder" data-i18n="ph.height_in" />
+                    <input type="number" id="height-in" class="w-full p-3 rounded-xl bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-all" placeholder="7" data-i18n-attr="placeholder" data-i18n="ph.height_in" />
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">in</span>
                 </div>
               </div>
             </div>
             
             <div id="weight-input-container">
-              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.weight">
+              <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.weight">
                 Berat Badan <span class="metric-unit text-slate-400 font-normal">(kg)</span><span class="imperial-unit hidden text-slate-400 font-normal">(lbs)</span>
               </label>
               <div class="relative">
-                  <input type="number" id="weight" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-900 transition-all" placeholder="65" data-i18n-attr="placeholder" data-i18n="ph.weight" />
+                  <input type="number" id="weight" class="w-full p-3 rounded-xl bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-all" placeholder="65" data-i18n-attr="placeholder" data-i18n="ph.weight" />
               </div>
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div>
-              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.age">Usia</label>
-              <input type="number" id="age" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 outline-none focus:border-teal-500 transition-all" placeholder="25" min="2" max="120" data-i18n-attr="placeholder" data-i18n="ph.age" />
+              <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.age">Usia</label>
+              <input type="number" id="age" class="w-full p-3 rounded-xl bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-all" placeholder="25" min="2" max="120" data-i18n-attr="placeholder" data-i18n="ph.age" />
             </div>
             
             <div>
-              <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.gender">Jenis Kelamin</label>
+              <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.gender">Jenis Kelamin</label>
               <div class="flex gap-4 pt-1">
                 <label class="flex items-center cursor-pointer group">
                   <input type="radio" name="gender" value="male" class="w-5 h-5 text-teal-600 focus:ring-teal-500 border-gray-300" checked />
-                  <span class="ml-2 text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-teal-600 transition-colors" data-i18n="label.male">Pria</span>
+                  <span class="ml-2 text-sm font-medium text-matte-700 dark:text-white group-hover:text-teal-600 transition-colors" data-i18n="label.male">Pria</span>
                 </label>
                 <label class="flex items-center cursor-pointer group">
                   <input type="radio" name="gender" value="female" class="w-5 h-5 text-teal-600 focus:ring-teal-500 border-gray-300" />
-                  <span class="ml-2 text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-teal-600 transition-colors" data-i18n="label.female">Wanita</span>
+                  <span class="ml-2 text-sm font-medium text-matte-700 dark:text-white group-hover:text-teal-600 transition-colors" data-i18n="label.female">Wanita</span>
                 </label>
               </div>
             </div>
           </div>
 
-          <button id="calc-btn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all mb-8" data-i18n="btn.calculate_bmi">
+          <button id="calc-btn" class="w-full bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-bold py-3.5 rounded-xl transition-all mb-8" data-i18n="btn.calculate_bmi">
             Hitung BMI Sekarang
           </button>
 
@@ -100,11 +100,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <div class="card-base p-4">
                     <h4 class="text-xs font-bold text-slate-400 uppercase mb-1" data-i18n="label.ideal_weight">Berat Ideal</h4>
                     <p class="text-xl font-bold text-teal-600 dark:text-teal-400" id="ideal-weight">0 - 0 kg</p>
                   </div>
-                  <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <div class="card-base p-4">
                     <h4 class="text-xs font-bold text-slate-400 uppercase mb-1" data-i18n="label.category">Kategori</h4>
                     <p class="text-xl font-bold text-slate-700 dark:text-slate-200" id="bmi-category">Normal</p>
                   </div>
@@ -121,7 +121,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                     <span data-i18n="btn.save">Simpan</span>
                   </button>
-                  <button id="share-btn" class="flex-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold py-2.5 px-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+                  <button id="share-btn" class="flex-1 bg-white dark:bg-slate-800 text-matte-700 dark:text-white border border-slate-200 dark:border-slate-700 font-bold py-2.5 px-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                     <span data-i18n="btn.share">Bagikan</span>
                   </button>
@@ -134,15 +134,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       <div class="space-y-6">
         
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
-          <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-4" data-i18n="label.bmi_classification">Klasifikasi BMI</h3>
+        <div class="card-base p-6">
+          <h3 class="text-lg font-bold text-matte-700 dark:text-white mb-4" data-i18n="label.bmi_classification">Klasifikasi BMI</h3>
           <div class="space-y-3 text-sm">
             <div class="flex justify-between items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-700/50">
               <div class="flex items-center gap-3">
                 <div class="w-3 h-3 bg-blue-400 rounded-full"></div>
-                <span class="text-slate-600 dark:text-slate-400" data-i18n="text.underweight">Kurus</span>
+                <span class="text-matte-400 dark:text-matte-300" data-i18n="text.underweight">Kurus</span>
               </div>
-              <span class="font-mono font-bold text-slate-700 dark:text-slate-300">&lt; 18.5</span>
+              <span class="font-mono font-bold text-matte-700 dark:text-white">&lt; 18.5</span>
             </div>
             <div class="flex justify-between items-center p-2 rounded bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-800">
               <div class="flex items-center gap-3">
@@ -154,41 +154,41 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <div class="flex justify-between items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-700/50">
               <div class="flex items-center gap-3">
                 <div class="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                <span class="text-slate-600 dark:text-slate-400" data-i18n="text.overweight">Gemuk</span>
+                <span class="text-matte-400 dark:text-matte-300" data-i18n="text.overweight">Gemuk</span>
               </div>
-              <span class="font-mono font-bold text-slate-700 dark:text-slate-300">25.0 - 29.9</span>
+              <span class="font-mono font-bold text-matte-700 dark:text-white">25.0 - 29.9</span>
             </div>
             <div class="flex justify-between items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-700/50">
               <div class="flex items-center gap-3">
                 <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <span class="text-slate-600 dark:text-slate-400" data-i18n="text.obesity_1">Obesitas I</span>
+                <span class="text-matte-400 dark:text-matte-300" data-i18n="text.obesity_1">Obesitas I</span>
               </div>
-              <span class="font-mono font-bold text-slate-700 dark:text-slate-300">30.0 - 34.9</span>
+              <span class="font-mono font-bold text-matte-700 dark:text-white">30.0 - 34.9</span>
             </div>
             <div class="flex justify-between items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-700/50">
               <div class="flex items-center gap-3">
                 <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span class="text-slate-600 dark:text-slate-400" data-i18n="text.obesity_2">Obesitas II</span>
+                <span class="text-matte-400 dark:text-matte-300" data-i18n="text.obesity_2">Obesitas II</span>
               </div>
-              <span class="font-mono font-bold text-slate-700 dark:text-slate-300">35.0 - 39.9</span>
+              <span class="font-mono font-bold text-matte-700 dark:text-white">35.0 - 39.9</span>
             </div>
             <div class="flex justify-between items-center p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-700/50">
               <div class="flex items-center gap-3">
                 <div class="w-3 h-3 bg-red-700 rounded-full"></div>
-                <span class="text-slate-600 dark:text-slate-400" data-i18n="text.obesity_3">Obesitas III</span>
+                <span class="text-matte-400 dark:text-matte-300" data-i18n="text.obesity_3">Obesitas III</span>
               </div>
-              <span class="font-mono font-bold text-slate-700 dark:text-slate-300">&ge; 40.0</span>
+              <span class="font-mono font-bold text-matte-700 dark:text-white">&ge; 40.0</span>
             </div>
           </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
+        <div class="card-base p-6">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300" data-i18n="label.history">Riwayat</h3>
+            <h3 class="text-lg font-bold text-matte-700 dark:text-white" data-i18n="label.history">Riwayat</h3>
             <button id="clear-history-btn" class="text-xs font-bold text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded transition-colors" data-i18n="btn.clear_all">Hapus Semua</button>
           </div>
           <div id="history-container" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-1">
-            <p class="text-sm text-slate-400 text-center py-6" data-i18n="text.no_calc_history">Belum ada riwayat perhitungan.</p>
+            <p class="text-sm text-matte-400 text-center py-6" data-i18n="text.no_calc_history">Belum ada riwayat perhitungan.</p>
           </div>
         </div>
 
@@ -196,20 +196,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
   </div>
 
-  <div id="toast" class="fixed bottom-6 right-6 transform translate-x-[120%] transition-transform duration-300 z-50">
-    <div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 font-bold shadow-slate-900/20">
-      <svg id="toast-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-      <span id="toast-message">Notifikasi</span>
-    </div>
-  </div>
+  
 </BaseLayout>
 
-<style>
-  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-  .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 99px; }
-  .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
-</style>
+
 
 <script>
   // Elements
@@ -428,7 +418,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // History Management
   function renderHistory() {
     if (bmiHistory.length === 0) {
-        historyContainer.innerHTML = '<p class="text-sm text-slate-400 text-center py-6">Belum ada riwayat perhitungan.</p>';
+        historyContainer.innerHTML = '<p class="text-sm text-matte-400 text-center py-6">Belum ada riwayat perhitungan.</p>';
         return;
     }
 

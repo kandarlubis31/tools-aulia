@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
-// --- 1. DATA TOOLS ---
+// --- PDF TOOLS DATA ---
 const pdfTools = [
   // MANIPULASI
   { 
@@ -141,6 +141,12 @@ const categories = [
 
 const popularTools = ['merge', 'compress', 'split', 'rotate'];
 
+const glowColors: Record<string, string> = {
+  rose: '#f43f5e', orange: '#f97316', emerald: '#10b981', blue: '#3b82f6',
+  indigo: '#6366f1', teal: '#14b8a6', yellow: '#eab308', purple: '#a855f7',
+  cyan: '#06b6d4', slate: '#64748b', pink: '#ec4899', gray: '#6b7280',
+};
+
 const getColorClass = (color: string) => {
   const map: Record<string, string> = {
     rose: "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400",
@@ -162,27 +168,82 @@ const getColorClass = (color: string) => {
 
 <BaseLayout pageTitle="PDF Mas Aul">
   
+  <!-- Background Blobs — Rose/Orange Theme -->
   <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-    <div class="absolute top-[-20%] left-[20%] w-[50%] h-[50%] bg-rose-500/10 rounded-full blur-[120px]"></div>
-    <div class="absolute bottom-[-20%] right-[10%] w-[40%] h-[40%] bg-orange-500/10 rounded-full blur-[100px]"></div>
+    <div class="absolute top-[-15%] left-[-10%] w-[45%] h-[45%] bg-rose-500/20 dark:bg-rose-500/15 rounded-full blur-[120px] animate-pulse-slow"></div>
+    <div class="absolute bottom-[-15%] right-[-10%] w-[45%] h-[45%] bg-orange-500/20 dark:bg-orange-500/15 rounded-full blur-[120px] animate-pulse-slow animation-delay-2000"></div>
+    <div class="absolute top-[35%] left-[35%] w-[30%] h-[30%] bg-amber-500/10 dark:bg-amber-500/8 rounded-full blur-[100px] animate-pulse-slow animation-delay-3000"></div>
     <div class="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03] dark:opacity-[0.05]"></div>
   </div>
 
-  <div class="relative pt-16 pb-12 px-4 text-center animate-fade-in-down">
-    <div class="inline-flex items-center justify-center p-3 mb-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-rose-100 dark:border-rose-900/30 text-rose-500">
-      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
+  <!-- Hero Section -->
+  <div class="text-center pt-16 pb-12 px-4 animate-fade-in-down">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-bold uppercase tracking-wider mb-6 border border-rose-200/60 dark:border-rose-700/50 -rotate-3 hover:rotate-0 transition-transform duration-500 shadow-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>PDF Power Tools</span>
     </div>
       
-    <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight leading-tight">
+    <h1 class="text-4xl md:text-6xl font-extrabold mb-4 tracking-tight leading-tight font-heading">
       PDF <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-orange-500">Mas Aul</span>
     </h1>
       
-    <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-      Koleksi lengkap tools PDF untuk segala kebutuhan dokumenmu. <br>
-      <span class="font-bold text-slate-800 dark:text-slate-200">100% Client-Side</span>, file diproses di browser kamu sendiri.
+    <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8">
+      Koleksi lengkap <strong>{pdfTools.length}</strong> tools PDF untuk segala kebutuhan dokumenmu. 
+      <span class="font-semibold text-slate-800 dark:text-slate-200">100% Client-Side</span>, file diproses di browser kamu sendiri.
     </p>
+
+    <!-- Stats -->
+    <div class="flex items-center justify-center gap-3 mb-4 text-sm flex-wrap">
+      <div class="stat-pill-indigo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <span class="font-bold">{pdfTools.length}</span>
+        <span class="text-indigo-400">Tools</span>
+      </div>
+      <div class="stat-pill-emerald">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V5"/><path d="M6 20v-4"/></svg>
+        <span>100%</span>
+        <span class="text-emerald-400">Client-Side</span>
+      </div>
+    </div>
   </div>
 
+  <!-- Frequently Used — Diperkuat -->
+  <section class="max-w-7xl mx-auto px-4 mb-8">
+    <div class="rounded-2xl p-6 border relative overflow-hidden" style="background: linear-gradient(135deg, rgba(244,63,94,0.05), rgba(249,115,22,0.02)); border-color: rgba(244,63,94,0.15);">
+      <div class="dark:border-rose-800/20 absolute top-[-50%] right-[-50%] w-full h-full bg-[radial-gradient(circle,rgba(244,63,94,0.08),transparent_70%)] pointer-events-none"></div>
+      
+      <div class="flex items-center gap-3 mb-5 relative">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-400 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <span data-i18n="pdf.frequently_used">Sering Dipakai</span>
+          </h2>
+          <p class="text-[10px] text-slate-400 dark:text-slate-500">Recommended picks</p>
+        </div>
+        <span class="ml-auto text-[10px] font-bold bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 px-3 py-1 rounded-full border border-rose-200 dark:border-rose-700/50 shrink-0">{popularTools.length} tools</span>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 relative">
+        {pdfTools.filter(tool => popularTools.some(popular => tool.href.includes(popular))).map((tool) => (
+          <a href={tool.href} 
+             class="tool-card-glow group flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-700 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+             style={`--glow-color: ${glowColors[tool.color] || '#f43f5e'}`}>
+            <div class={`p-2.5 rounded-lg ${getColorClass(tool.color)} transition-transform group-hover:scale-110`}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800 dark:text-white text-sm group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">{tool.title}</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[120px]">{tool.desc}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Sticky Filter Navbar -->
   <div class="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/70 dark:bg-slate-950/70 border-b border-slate-200/50 dark:border-slate-800/50 transition-all duration-300 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row gap-4 items-center justify-between">
       
@@ -233,35 +294,11 @@ const getColorClass = (color: string) => {
     </div>
   </div>
 
+  <!-- All Tools Grid -->
   <div class="max-w-7xl mx-auto px-4 py-8 pb-32">
     
-    <div class="mb-10">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          <span data-i18n="pdf.frequently_used">Sering Dipakai</span>
-        </h2>
-      </div>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {pdfTools.filter(tool => popularTools.some(popular => tool.href.includes(popular))).map((tool) => (
-          <a href={tool.href} class="group bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 hover:border-rose-200 dark:hover:border-rose-800 hover:shadow-lg hover:shadow-rose-500/5 transition-all duration-300">
-            <div class="flex items-center gap-3">
-              <div class={`p-2 rounded-lg ${getColorClass(tool.color)} group-hover:scale-110 transition-transform`}>
-                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
-              </div>
-              <div>
-                <h3 class="font-bold text-slate-800 dark:text-white text-sm group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">{tool.title}</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 truncate w-32">{tool.desc}</p>
-              </div>
-            </div>
-          </a>
-        ))}
-      </div>
-    </div>
-
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-bold text-slate-800 dark:text-white" data-i18n="pdf.all_tools">Semua Tools</h2>
+      <h2 class="text-xl font-bold text-slate-800 dark:text-white font-heading" data-i18n="pdf.all_tools">Semua Tools</h2>
       <span id="pdf-tool-count" class="text-xs font-medium px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-slate-600 dark:text-slate-400">{pdfTools.length} <span data-i18n="pdf.tools_count">tools</span></span>
     </div>
 
@@ -273,15 +310,22 @@ const getColorClass = (color: string) => {
         else if (tool.href.includes('to-') || tool.href.includes('-to-') || tool.href.includes('html-to-pdf') || tool.href.includes('to-text')) cat = 'konversi';
         else cat = 'security';
 
+        const isPopular = popularTools.some(p => tool.href.includes(p));
+
         return (
           <div class="pdf-tool-card h-full" data-title={tool.title.toLowerCase()} data-category={cat}>
-            <a href={tool.href} class="block h-full p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-rose-500 dark:hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/10 transition-all duration-300 group">
+            <a href={tool.href} 
+               class={`tool-card-glow group block h-full p-5 rounded-2xl border transition-all duration-300 shadow-sm
+                 ${isPopular 
+                   ? 'bg-white dark:bg-slate-900/80 border-rose-200 dark:border-rose-800/40 hover:border-rose-500' 
+                   : 'tool-card-base hover:border-rose-500'}`}
+               style={`--glow-color: ${glowColors[tool.color] || '#f43f5e'}`}>
               <div class="flex items-start gap-4">
-                <div class={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center ${getColorClass(tool.color)}`}>
+                <div class={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${getColorClass(tool.color)}`}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
                 </div>
-                <div>
-                  <h3 class="font-bold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">{tool.title}</h3>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-bold text-slate-900 dark:text-white hover:text-rose-600 dark:hover:text-rose-400 transition-colors">{tool.title}</h3>
                   <p class="text-sm text-slate-500 mt-1 leading-relaxed">{tool.desc}</p>
                 </div>
               </div>
@@ -291,6 +335,7 @@ const getColorClass = (color: string) => {
       })}
     </div>
 
+    <!-- Empty State -->
     <div id="pdf-no-results" class="hidden flex-col items-center justify-center py-20 text-center animate-fade-in">
        <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-slate-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -299,13 +344,16 @@ const getColorClass = (color: string) => {
        <p class="text-slate-500 text-sm" data-i18n="pdf.try_another">Coba cari dengan kata kunci lain.</p>
     </div>
 
-    <div class="mt-16 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 rounded-2xl p-6 border border-emerald-100 dark:border-emerald-800/30 flex items-center gap-4">
-      <div class="p-3 bg-white dark:bg-slate-900 rounded-full shadow-sm text-emerald-500">
-         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      </div>
-      <div>
-         <h4 class="font-bold text-emerald-800 dark:text-emerald-400" data-i18n="pdf.privacy_title">Privasi Dijamin Aman</h4>
-         <p class="text-sm text-emerald-700 dark:text-emerald-500/80 mt-0.5" data-i18n="pdf.privacy_desc">Semua proses dilakukan secara offline di browser. File kamu tidak pernah di-upload ke server manapun.</p>
+    <!-- Privacy Section -->
+    <div class="mt-16 rounded-2xl p-6 border relative overflow-hidden" style="background: linear-gradient(135deg, rgba(16,185,129,0.05), rgba(20,184,166,0.02)); border-color: rgba(16,185,129,0.15);">
+      <div class="flex items-center gap-4 relative">
+        <div class="p-3 bg-white dark:bg-slate-900 rounded-xl shadow-sm text-emerald-500">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+           <h4 class="font-bold text-emerald-800 dark:text-emerald-400 font-heading" data-i18n="pdf.privacy_title">Privasi Dijamin Aman</h4>
+           <p class="text-sm text-emerald-700 dark:text-emerald-500/80 mt-0.5" data-i18n="pdf.privacy_desc">Semua proses dilakukan secara offline di browser. File kamu tidak pernah di-upload ke server manapun.</p>
+        </div>
       </div>
     </div>
 
@@ -315,7 +363,6 @@ const getColorClass = (color: string) => {
 
 <script>
   document.addEventListener('astro:page-load', () => {
-    // KITA PAKAI ID BARU DI SINI
     const searchInput = document.getElementById('pdf-search-input');
     const categoryBtns = document.querySelectorAll('.pdf-category-btn');
     const mobileFilter = document.getElementById('pdf-mobile-filter');
@@ -323,7 +370,6 @@ const getColorClass = (color: string) => {
     const noResults = document.getElementById('pdf-no-results');
     const toolCount = document.getElementById('pdf-tool-count');
 
-    // Jika element tidak ada (mungkin karena navigasi ke halaman lain), stop script
     if (!searchInput || !toolCards.length) return;
 
     let activeCategory = 'all';
@@ -340,7 +386,6 @@ const getColorClass = (color: string) => {
 
         if (matchSearch && matchCat) {
           card.classList.remove('hidden');
-          // Animasi fade in
           if (!card.classList.contains('animate-fade-in-up')) {
              card.classList.add('animate-fade-in-up');
           }
@@ -386,34 +431,6 @@ const getColorClass = (color: string) => {
         updateDisplay();
     });
 
-    // Jalankan sekali saat load agar status default benar
     updateDisplay();
   });
 </script>
-
-<style>
-  .animate-fade-in-down { animation: fadeInDown 0.6s ease-out forwards; }
-  .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-  
-  @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); scale: 0.95; } to { opacity: 1; transform: translateY(0); scale: 1; } }
-
-  .custom-scrollbar::-webkit-scrollbar {
-    height: 4px;
-    display: block;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 4px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #94a3b8;
-  }
-  .custom-scrollbar {
-     scrollbar-width: thin;
-     scrollbar-color: #cbd5e1 transparent;
-  }
-</style>

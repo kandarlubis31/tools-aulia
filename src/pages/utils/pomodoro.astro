@@ -44,11 +44,28 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
+  // --- Color theme mapping (complete strings so Tailwind JIT can see them) ---
+  const THEMES = {
+    rose: {
+      display: 'text-8xl font-mono font-bold text-rose-500 tracking-tighter transition-colors duration-500',
+      toggle: 'w-20 h-20 rounded-full bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95',
+      modeActive: 'mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-slate-600 shadow text-rose-500 rounded-lg transition-all',
+    },
+    teal: {
+      display: 'text-8xl font-mono font-bold text-teal-500 tracking-tighter transition-colors duration-500',
+      toggle: 'w-20 h-20 rounded-full bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95',
+      modeActive: 'mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-slate-600 shadow text-teal-500 rounded-lg transition-all',
+    },
+    blue: {
+      display: 'text-8xl font-mono font-bold text-blue-500 tracking-tighter transition-colors duration-500',
+      toggle: 'w-20 h-20 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95',
+      modeActive: 'mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-slate-600 shadow text-blue-500 rounded-lg transition-all',
+    },
+  };
+
   var timer = null;
   var timeLeft = 25 * 60; // seconds
   var isRunning = false;
-  var currentColor = 'rose';
-
   const display = document.getElementById('timer-display');
   const statusText = document.getElementById('status-text');
   const toggleBtn = document.getElementById('toggle-btn');
@@ -110,17 +127,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     clearInterval(timer);
     isRunning = false;
     timeLeft = mins * 60;
-    currentColor = color;
-    
     updateDisplay();
     
-    // Update UI Colors
-    if(display) {
-        display.className = 'text-8xl font-mono font-bold text-' + color + '-500 tracking-tighter transition-colors duration-500';
-    }
-    if(toggleBtn) {
-        toggleBtn.className = 'w-20 h-20 rounded-full bg-' + color + '-500 hover:bg-' + color + '-600 text-white shadow-lg shadow-' + color + '-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95';
-    }
+    // Update UI Colors (via THEMES mapping — NOT template strings)
+    const theme = THEMES[color] || THEMES.rose;
+    if(display) display.className = theme.display;
+    if(toggleBtn) toggleBtn.className = theme.toggle;
     if(statusText) statusText.innerText = label;
     
     if (iconPlay) iconPlay.classList.remove('hidden');
@@ -149,9 +161,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       // Styles Reset
       modeBtns.forEach(b => b.className = "mode-btn flex-1 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-all");
       
-      // Active Style
+      // Active Style (via THEMES mapping — NOT template strings)
       var color = e.target.dataset.color;
-      e.target.className = 'mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-slate-600 shadow text-' + color + '-500 rounded-lg transition-all';
+      var theme = THEMES[color] || THEMES.rose;
+      e.target.className = theme.modeActive;
 
       // Logic
       var mins = parseInt(e.target.dataset.time);
