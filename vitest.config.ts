@@ -25,6 +25,5 @@ export default defineConfig({
         lines: 70,
       },
     },
-    setupFiles: ['./src/tests/setup.ts'],
   },
 });

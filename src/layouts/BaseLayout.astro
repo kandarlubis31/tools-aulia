@@ -1,5 +1,15 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import { tools } from '../data/tools';
+
+// Derive search-friendly tool list from shared data
+const searchTools = tools.map(t => ({
+  name: t.title,
+  url: t.href,
+  category: t.category,
+  descKey: t.descKey,
+  descFallback: t.desc,
+}));
 
 interface Props {
   pageTitle: string;
@@ -497,63 +507,7 @@ if (isPdfTool) {
         cacheClearMobile.addEventListener('click', cacheClearHandler);
       }
 
-      const toolsList = [
-        { name: 'PDF Merger', url: '/pdf/merge', category: 'PDF', descKey: 'header.merge_desc', descFallback: 'Gabungkan banyak file PDF menjadi satu' },
-        { name: 'PDF Splitter', url: '/pdf/split', category: 'PDF', descKey: 'header.split_desc', descFallback: 'Pisah file PDF menjadi beberapa bagian' },
-        { name: 'PDF Delete Pages', url: '/pdf/delete', category: 'PDF', descKey: 'header.delete_desc', descFallback: 'Hapus halaman dari PDF' },
-        { name: 'PDF Extract Pages', url: '/pdf/extract', category: 'PDF', descKey: 'header.extract_desc', descFallback: 'Ekstrak halaman tertentu dari PDF' },
-        { name: 'PDF Rotate', url: '/pdf/rotate', category: 'PDF', descKey: 'header.rotate_desc', descFallback: 'Putar halaman PDF' },
-        { name: 'PDF Grayscale', url: '/pdf/grayscale', category: 'PDF', descKey: 'header.grayscale_desc', descFallback: 'Ubah PDF menjadi grayscale' },
-        { name: 'PDF Compress', url: '/pdf/compress', category: 'PDF', descKey: 'header.compress_desc', descFallback: 'Kompres ukuran file PDF' },
-        { name: 'PDF to JPG', url: '/pdf/to-jpg', category: 'PDF', descKey: 'tool.pdf_to_jpg_desc', descFallback: 'Konversi PDF ke gambar JPG' },
-        { name: 'JPG to PDF', url: '/pdf/jpg-to-pdf', category: 'PDF', descKey: 'header.jpg_to_pdf_desc', descFallback: 'Konversi gambar JPG ke PDF' },
-        { name: 'HTML to PDF', url: '/pdf/html-to-pdf', category: 'PDF', descKey: 'header.html_to_pdf_desc', descFallback: 'Konversi HTML ke PDF' },
-        { name: 'PDF to PPT', url: '/pdf/to-ppt', category: 'PDF', descKey: 'header.to_ppt_desc', descFallback: 'Konversi PDF ke PowerPoint' },
-        { name: 'PDF Sign', url: '/pdf/sign', category: 'PDF', descKey: 'header.sign_desc', descFallback: 'Tanda tangan file PDF' },
-        { name: 'PDF Watermark', url: '/pdf/watermark', category: 'PDF', descKey: 'header.watermark_desc', descFallback: 'Tambah watermark ke PDF' },
-        { name: 'PDF Metadata', url: '/pdf/metadata', category: 'PDF', descKey: 'header.metadata_desc', descFallback: 'Lihat dan edit metadata PDF' },
-        { name: 'PDF Page Numbers', url: '/pdf/page-numbers', category: 'PDF', descKey: 'header.page_numbers_desc', descFallback: 'Tambah nomor halaman PDF' },
-        { name: 'PDF Reorder', url: '/pdf/reorder', category: 'PDF', descKey: 'header.reorder_desc', descFallback: 'Atur ulang halaman PDF' },
-        { name: 'Image Compressor', url: '/image/compressor', category: 'Image', descKey: 'header.image_compressor_desc', descFallback: 'Kompres gambar tanpa upload' },
-        { name: 'Image Converter', url: '/image/converter', category: 'Image', descKey: 'header.converter_desc', descFallback: 'Konversi format gambar' },
-        { name: 'Image Editor', url: '/image/editor', category: 'Image', descKey: 'header.editor_desc', descFallback: 'Edit gambar sederhana' },
-        { name: 'HTML to Image', url: '/image/html-to-img', category: 'Image', descKey: 'header.html_to_img_desc', descFallback: 'Konversi HTML ke gambar' },
-        { name: 'Color Tools', url: '/image/color', category: 'Image', descKey: 'header.color_desc', descFallback: 'Picker dan konversi warna' },
-        { name: 'Age Calculator', url: '/calc/age', category: 'Calc', descKey: 'header.age_desc', descFallback: 'Hitung umur detail' },
-        { name: 'BMI Calculator', url: '/calc/bmi', category: 'Calc', descKey: 'header.bmi_desc', descFallback: 'Hitung indeks massa tubuh' },
-        { name: 'Case Converter', url: '/calc/case', category: 'Calc', descKey: 'header.case_desc', descFallback: 'Ubah huruf besar/kecil' },
-        { name: 'Currency Converter', url: '/calc/currency', category: 'Calc', descKey: 'header.currency_desc', descFallback: 'Konversi mata uang' },
-        { name: 'Number Converter', url: '/calc/number', category: 'Calc', descKey: 'header.number_desc', descFallback: 'Konversi angka' },
-        { name: 'Percentage Calculator', url: '/calc/percentage', category: 'Calc', descKey: 'header.percentage_desc', descFallback: 'Kalkulator persentase' },
-        { name: 'Unit Converter', url: '/calc/unit', category: 'Calc', descKey: 'header.unit_desc', descFallback: 'Konversi satuan' },
-        { name: 'Base64 Converter', url: '/dev/base64', category: 'Dev', descKey: 'header.base64_desc', descFallback: 'Encode/decode Base64' },
-        { name: 'Cron Generator', url: '/dev/cron', category: 'Dev', descKey: 'header.cron_desc', descFallback: 'Generator ekspresi cron' },
-        { name: 'CSS Shadow Generator', url: '/dev/css-shadow', category: 'Dev', descKey: 'header.css_shadow_desc', descFallback: 'Generator box-shadow CSS' },
-        { name: 'Diff Checker', url: '/dev/diff', category: 'Dev', descKey: 'header.diff_desc', descFallback: 'Bandingkan teks' },
-        { name: 'JSON Formatter', url: '/dev/json', category: 'Dev', descKey: 'header.json_desc', descFallback: 'Format dan validasi JSON' },
-        { name: 'Markdown Editor', url: '/dev/markdown', category: 'Dev', descKey: 'header.markdown_desc', descFallback: 'Editor markdown live' },
-        { name: 'My IP & Network', url: '/dev/my-ip', category: 'Dev', descKey: 'header.my_ip_desc', descFallback: 'Cek IP dan info jaringan' },
-        { name: 'Proxy Tester', url: '/dev/proxy', category: 'Dev', descKey: 'header.proxy_desc', descFallback: 'Tes proxy' },
-        { name: 'Timestamp Converter', url: '/dev/timestamp', category: 'Dev', descKey: 'header.timestamp_desc', descFallback: 'Konversi timestamp' },
-        { name: 'URL Tools', url: '/dev/url', category: 'Dev', descKey: 'header.url_desc', descFallback: 'Encode/decode URL' },
-        { name: 'CSV to JSON', url: '/file/csv-json', category: 'File', descKey: 'header.csv_json_desc', descFallback: 'Konversi CSV ke JSON' },
-        { name: 'PDF to Markdown', url: '/file/pdf-to-md', category: 'File', descKey: 'header.pdf_to_md_desc', descFallback: 'Ekstrak teks PDF ke Markdown' },
-        { name: 'Hash Generator', url: '/security/hash', category: 'Security', descKey: 'header.hash_desc', descFallback: 'Generate hash MD5/SHA' },
-        { name: 'Password Generator', url: '/security/password', category: 'Security', descKey: 'header.password_desc', descFallback: 'Generator password kuat' },
-        { name: 'UUID Generator', url: '/security/uuid', category: 'Security', descKey: 'header.uuid_desc', descFallback: 'Generate UUID' },
-        { name: 'Brainstorm', url: '/utils/brainstorm', category: 'Utils', descKey: 'header.brainstorm_desc', descFallback: 'Generator ide dan fakta' },
-        { name: 'Jokes', url: '/utils/jokes', category: 'Utils', descKey: 'header.jokes_desc', descFallback: 'Kumpulan lelucon' },
-        { name: 'Lorem Ipsum', url: '/utils/lorem', category: 'Utils', descKey: 'header.lorem_desc', descFallback: 'Generator teks dummy' },
-        { name: 'Motivation', url: '/utils/motivation', category: 'Utils', descKey: 'header.motivation_desc', descFallback: 'Kutipan motivasi' },
-        { name: 'Pomodoro Timer', url: '/utils/pomodoro', category: 'Utils', descKey: 'header.pomodoro_desc', descFallback: 'Timer produktivitas' },
-        { name: 'QR Code Generator', url: '/utils/qr', category: 'Utils', descKey: 'header.qr_desc', descFallback: 'Buat QR Code' },
-        { name: 'Stopwatch', url: '/utils/stopwatch', category: 'Utils', descKey: 'header.stopwatch_desc', descFallback: 'Stopwatch sederhana' },
-        { name: 'Todo List', url: '/utils/todo', category: 'Utils', descKey: 'header.todo_desc', descFallback: 'Aplikasi todo list' },
-        { name: 'WA Link Builder', url: '/utils/wa-builder', category: 'Utils', descKey: 'header.wa_builder_desc', descFallback: 'Buat link WhatsApp' },
-        { name: 'Word Counter', url: '/utils/word-counter', category: 'Utils', descKey: 'header.word_counter_desc', descFallback: 'Hitung kata dan karakter' },
-        { name: 'Countdown 2029', url: '/utils/prabowo-countdown', category: 'Utils', descKey: 'tool.prabowo_countdown_desc', descFallback: 'Hitung mundur ganti presiden!' },
-        { name: 'Paste to Markdown', url: '/utils/paste-to-md', category: 'Utils', descKey: 'header.paste_to_md_desc', descFallback: 'Tempel teks, dapatkan Markdown bersih buat AI' },
-      ];
+      const toolsList = ${JSON.stringify(searchTools)};
       
       const searchInputEl = document.getElementById('search-modal-input');
       const searchResultsEl = document.getElementById('search-results');

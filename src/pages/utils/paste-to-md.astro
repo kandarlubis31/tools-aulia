@@ -4,7 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 <BaseLayout pageTitle="Paste to Markdown">
   <div class="max-w-5xl mx-auto px-4 min-h-[80vh] flex flex-col">
-    <div class="text-center mb-8 pt-8 animate-on-scroll">
+    <div class="text-center mb-6 pt-8 animate-on-scroll">
       <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500" data-i18n="header.paste_to_md">
         Paste to Markdown
       </h1>
@@ -13,23 +13,105 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </p>
     </div>
 
+    <!-- Compression Mode Selector -->
+    <div class="flex items-center justify-center gap-1.5 mb-4 animate-fade-in bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl w-fit mx-auto border border-slate-200 dark:border-slate-700">
+      <button id="mode-normal" data-mode="normal" class="compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm" data-i18n="paste.mode_normal">
+        Normal
+      </button>
+      <button id="mode-balanced" data-mode="balanced" class="compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200" data-i18n="paste.mode_balanced">
+        Balanced
+      </button>
+      <button id="mode-aggressive" data-mode="aggressive" class="compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200" data-i18n="paste.mode_aggressive">
+        Aggressive
+      </button>
+      <div class="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+      <span id="mode-hint" class="px-3 text-[10px] text-slate-400 dark:text-slate-500 font-medium">Konversi standar</span>
+    </div>
+
+    <!-- File Upload Drop Zone -->
+    <div id="file-upload-zone" class="relative mb-4 animate-fade-in bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer group">
+      <input type="file" id="file-input" accept=".txt,.md,.html,.htm,.csv,.json,.xml,.docx,.rtf,.pdf" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+      <div id="file-upload-content" class="p-5 text-center pointer-events-none">
+        <div id="file-upload-default" class="flex flex-col items-center gap-2">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/></svg>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-slate-600 dark:text-slate-300">Upload Files → Markdown</p>
+            <p class="text-[10px] text-slate-400 mt-0.5">Tarik atau pilih banyak file sekaligus</p>
+          </div>
+          <div class="flex flex-wrap justify-center gap-1.5 mt-1">
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">.txt</span>
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">.md</span>
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-md bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">.html</span>
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">.csv</span>
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">.json</span>
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-md bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">.xml</span>
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-md bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400">.docx</span>
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-md bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400">.rtf</span>
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-md bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">.pdf</span>
+          </div>
+        </div>
+        <div id="file-upload-info" class="hidden items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div id="file-icon" class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="text-left">
+              <p id="file-name" class="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[200px]"></p>
+              <p id="file-size" class="text-[10px] text-slate-400"></p>
+            </div>
+          </div>
+          <button id="clear-file-btn" class="pointer-events-auto px-3 py-1.5 text-xs font-bold text-rose-500 hover:text-rose-600 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-all" title="Hapus file">
+            ✕ Hapus File
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- File Queue (hidden until batch upload) -->
+    <div id="file-queue-container" class="hidden mb-4 animate-fade-in">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+          <span data-i18n="paste.file_queue">Antrian File</span>
+          <span id="file-queue-count" class="text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full">0</span>
+        </h3>
+        <div class="flex gap-2">
+          <button id="process-batch-btn" class="hidden px-3 py-1.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all shadow-sm">
+            ▶ Proses Semua
+          </button>
+        </div>
+      </div>
+      <div id="file-queue-list" class="space-y-1.5 max-h-[180px] overflow-y-auto"></div>
+      <div id="batch-progress" class="hidden mt-2 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+        <div id="batch-progress-bar" class="bg-emerald-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+
     <!-- Stats Bar -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 animate-fade-in">
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
-         <div id="stat-original-chars" class="text-xl font-bold text-slate-600 dark:text-slate-300">0</div>
-         <div class="text-[10px] font-bold text-slate-500 uppercase mt-1" data-i18n="paste.original_chars">Karakter Asli</div>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-5 animate-fade-in">
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+         <div id="stat-original-chars" class="text-lg font-bold text-slate-600 dark:text-slate-300">0</div>
+         <div class="text-[9px] font-bold text-slate-500 uppercase mt-0.5" data-i18n="paste.original_chars">Karakter Asli</div>
       </div>
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
-         <div id="stat-md-chars" class="text-xl font-bold text-emerald-600 dark:text-emerald-400">0</div>
-         <div class="text-[10px] font-bold text-slate-500 uppercase mt-1" data-i18n="paste.md_chars">Karakter MD</div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+         <div id="stat-md-chars" class="text-lg font-bold text-emerald-600 dark:text-emerald-400">0</div>
+         <div class="text-[9px] font-bold text-slate-500 uppercase mt-0.5" data-i18n="paste.md_chars">Karakter MD</div>
       </div>
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
-         <div id="stat-tokens" class="text-xl font-bold text-violet-600 dark:text-violet-400">0</div>
-         <div class="text-[10px] font-bold text-slate-500 uppercase mt-1" data-i18n="paste.tokens_est">Estimasi Token</div>
+      <div id="stat-gpt-tokens-box" class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center cursor-help relative group">
+         <div id="stat-gpt-tokens" class="text-lg font-bold text-violet-600 dark:text-violet-400">0</div>
+         <div class="text-[9px] font-bold text-slate-500 uppercase mt-0.5">GPT-4 Tokens</div>
+         <div id="gpt-token-tooltip" class="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 dark:bg-slate-700 text-white text-[10px] rounded-lg shadow-xl whitespace-nowrap z-10">
+           Akurat — dihitung dengan tokenizer GPT-4 resmi
+         </div>
       </div>
-      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
-         <div id="stat-saved" class="text-xl font-bold text-amber-600 dark:text-amber-400">0%</div>
-         <div class="text-[10px] font-bold text-slate-500 uppercase mt-1" data-i18n="paste.saved">Hemat Token</div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+         <div id="stat-saved" class="text-lg font-bold text-amber-600 dark:text-amber-400">0%</div>
+         <div class="text-[9px] font-bold text-slate-500 uppercase mt-0.5" data-i18n="paste.saved">Hemat</div>
+      </div>
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+         <div id="stat-cost" class="text-lg font-bold text-rose-500 dark:text-rose-400">$0</div>
+         <div class="text-[9px] font-bold text-slate-500 uppercase mt-0.5" data-i18n="paste.est_cost">Estimasi Biaya</div>
       </div>
     </div>
 
@@ -90,7 +172,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
         </div>
         <div class="bg-slate-50 dark:bg-slate-900 px-4 py-2 border-t border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 flex justify-between items-center">
-          <span data-i18n="paste.auto_convert">Konversi otomatis setiap kali kamu menempel teks</span>
+          <span id="compression-info" data-i18n="paste.auto_convert">Konversi otomatis setiap kali kamu menempel teks</span>
           <span id="output-chars" class="font-mono">0 karakter</span>
         </div>
       </div>
@@ -119,6 +201,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <span class="mt-0.5">•</span>
           <span data-i18n="paste.tip4"><strong>Cara Pake:</strong> Copy teks dari Word/web → Paste di sini (Ctrl+V) → Copy hasil Markdown → Paste ke AI form.</span>
         </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-0.5">•</span>
+          <span data-i18n="paste.tip5"><strong>Mode Kompresi:</strong> Mode <em>Balanced</em> rapihkan spasi, <em>Aggressive</em> buang gambar & link untuk penghematan maksimal.</span>
+        </li>
       </ul>
     </div>
   </div>
@@ -133,34 +219,433 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const downloadBtn = document.getElementById('download-btn');
   const copySuccess = document.getElementById('copy-success');
 
+  // File upload elements
+  const fileUploadZone = document.getElementById('file-upload-zone');
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const fileUploadDefault = document.getElementById('file-upload-default');
+  const fileUploadInfo = document.getElementById('file-upload-info');
+  const fileName = document.getElementById('file-name');
+  const fileSize = document.getElementById('file-size');
+  const clearFileBtn = document.getElementById('clear-file-btn');
+
   // Stats
   const statOriginal = document.getElementById('stat-original-chars');
   const statMd = document.getElementById('stat-md-chars');
-  const statTokens = document.getElementById('stat-tokens');
+  const statGptTokens = document.getElementById('stat-gpt-tokens');
   const statSaved = document.getElementById('stat-saved');
+  const statCost = document.getElementById('stat-cost');
   const inputWords = document.getElementById('input-words');
   const inputChars = document.getElementById('input-chars');
   const outputChars = document.getElementById('output-chars');
+  const compressionInfo = document.getElementById('compression-info');
+  const modeHint = document.getElementById('mode-hint');
+
+  // Batch elements
+  const fileQueueContainer = document.getElementById('file-queue-container');
+  const fileQueueCount = document.getElementById('file-queue-count');
+  const fileQueueList = document.getElementById('file-queue-list');
+  const processBatchBtn = document.getElementById('process-batch-btn');
+  const batchProgress = document.getElementById('batch-progress');
+  const batchProgressBar = document.getElementById('batch-progress-bar');
+
+  // Compression mode state
+  let currentMode: 'normal' | 'balanced' | 'aggressive' = 'normal';
+  let currentFileName: string = '';
+  let pendingOriginalContent: string | null = null; // Full original file content (for stats & display in info bar)
+  let pendingMdContent: string | null = null; // Pre-compression markdown (for mode switching bypasses input truncation)
+
+  // Batch upload state
+  let fileQueue: File[] = [];
+  let batchProcessing = false;
+  let statsFilesCount = 0;
+
+  // GPT Tokenizer (lazy init)
+  let gptEncoder: any = null;
+
+  async function getGptEncoderAsync() {
+    if (gptEncoder) return gptEncoder;
+    try {
+      const { getEncoding } = await import('js-tiktoken');
+      gptEncoder = getEncoding('cl100k_base');
+    } catch {}
+    return gptEncoder;
+  }
+
+  // Count GPT tokens accurately (async — loads js-tiktoken on first call)
+  async function countGptTokens(text: string): Promise<number> {
+    try {
+      const enc = await getGptEncoderAsync();
+      if (!enc) return Math.ceil(text.length / 4);
+      return enc.encode(text).length;
+    } catch {
+      return Math.ceil(text.length / 4);
+    }
+  }
+
+  // Estimate cost for GPT-4o ($2.50 / 1M input tokens)
+  function estimateCost(tokens: number): string {
+    const ratePerMillion = 2.50;
+    const cost = (tokens / 1_000_000) * ratePerMillion;
+    if (cost < 0.001) return '< $0.001';
+    if (cost < 0.01) return `~$${cost.toFixed(4)}`;
+    return `~$${cost.toFixed(3)}`;
+  }
+
+  // ==================== Mode Hints ====================
+  const modeHints: Record<string, string> = {
+    normal: 'Mempertahankan semua format',
+    balanced: 'Rapihkan spasi & baris kosong',
+    aggressive: 'Hemat token maksimal',
+  };
+
+  // ==================== File Upload Helpers ====================
+
+  // File type detection by extension
+  function getFileType(filename: string): string {
+    const ext = filename.split('.').pop()?.toLowerCase() || '';
+    const typeMap: Record<string, string> = {
+      'txt': 'text',
+      'md': 'markdown',
+      'html': 'html',
+      'htm': 'html',
+      'csv': 'csv',
+      'json': 'json',
+      'xml': 'xml',
+      'docx': 'docx',
+      'rtf': 'rtf',
+      'pdf': 'pdf',
+    };
+    return typeMap[ext] || 'text';
+  }
+
+  // Format file size
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  // CSV to Markdown Table
+  function csvToMarkdownTable(csv: string): string {
+    const lines = csv.trim().split('\n').filter((l: string) => l.trim());
+    if (lines.length < 1) return '';
+
+    const rows = lines.map((line: string) => {
+      // Simple CSV split (handles quoted values with commas)
+      const cells: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          inQuotes = !inQuotes;
+        } else if (ch === ',' && !inQuotes) {
+          cells.push(current.trim().replace(/^"|"$/g, ''));
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      cells.push(current.trim().replace(/^"|"$/g, ''));
+      return cells;
+    });
+
+    const colCount = Math.max(...rows.map((r: string[]) => r.length));
+    const padCell = (c: string) => (c || '').trim();
+
+    // Header row
+    const header = '| ' + rows[0].map(padCell).join(' | ') + ' |';
+    // Separator row
+    const sep = '| ' + Array(colCount).fill('---').join(' | ') + ' |';
+    // Data rows
+    const data = rows.slice(1).map((r: string[]) =>
+      '| ' + r.map(padCell).join(' | ') + ' |'
+    ).join('\n');
+
+    return `\n${header}\n${sep}\n${data}\n`;
+  }
+
+  // Convert content based on file type
+  function convertFileContent(content: string, fileType: string): string {
+    switch (fileType) {
+      case 'html':
+        return htmlToMarkdown(content);
+      case 'csv':
+        return csvToMarkdownTable(content);
+      case 'json':
+        try {
+          const parsed = JSON.parse(content);
+          return '```json\n' + JSON.stringify(parsed, null, 2) + '\n```';
+        } catch {
+          return '```json\n' + content + '\n```';
+        }
+      case 'xml':
+        return '```xml\n' + content + '\n```';
+      case 'markdown':
+        return content; // Already MD, pass through
+      case 'text':
+      case 'rtf':
+      default:
+        return textToMarkdown(content);
+    }
+  }
+
+  // ==================== Batch File Queue ====================
+
+  function renderFileQueue() {
+    if (!fileQueueList) return;
+    if (fileQueue.length === 0) {
+      fileQueueContainer?.classList.add('hidden');
+      processBatchBtn?.classList.add('hidden');
+      return;
+    }
+
+    fileQueueContainer?.classList.remove('hidden');
+    if (fileQueueCount) fileQueueCount.textContent = fileQueue.length.toString();
+
+    fileQueueList.innerHTML = fileQueue.map((f, i) => {
+      const ext = f.name.split('.').pop()?.toLowerCase() || 'txt';
+      const colorMap: Record<string, string> = {
+        html: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+        htm: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+        csv: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+        json: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
+        xml: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400',
+        docx: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400',
+        rtf: 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400',
+        pdf: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+        md: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400',
+      };
+      const extColor = colorMap[ext] || 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400';
+      const statusClass = !f._status ? '' : f._status === 'done' ? 'opacity-60' : '';
+      return `<div class="flex items-center justify-between bg-white/80 dark:bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 ${statusClass}">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${extColor} shrink-0">.${ext}</span>
+          <span class="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">${f.name}</span>
+          <span class="text-[10px] text-slate-400 shrink-0">${formatFileSize(f.size)}</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          ${f._status === 'done' ? '<span class="text-[10px] text-emerald-500 font-bold">✓</span>' : f._status === 'error' ? '<span class="text-[10px] text-rose-500 font-bold">✗</span>' : f._status === 'processing' ? '<span class="w-3 h-3 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></span>' : ''}
+          ${!batchProcessing ? `<button data-remove="${i}" class="remove-file-btn text-rose-400 hover:text-rose-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    // Show process button when files are ready
+    const allDone = fileQueue.length > 0 && fileQueue.every(f => f._status === 'done');
+    const hasPending = fileQueue.some(f => !f._status);
+    if (processBatchBtn) {
+      processBatchBtn.classList.toggle('hidden', allDone || !hasPending || batchProcessing);
+    }
+
+    // Remove file buttons
+    document.querySelectorAll('.remove-file-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.remove || '0', 10);
+        fileQueue.splice(idx, 1);
+        renderFileQueue();
+        if (fileQueue.length === 0) resetAll();
+      });
+    });
+  }
+
+  // Convert a single file and return the result
+  async function convertSingleFile(file: File): Promise<{ original: string; markdown: string; error?: string }> {
+    const fileType = getFileType(file.name);
+
+    let textContent: string;
+    let contentForMd: string;
+
+    if (fileType === 'docx') {
+      const mammoth = await import('mammoth');
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      textContent = result.value;
+      contentForMd = htmlToMarkdown(textContent);
+    } else if (fileType === 'pdf') {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfjsLib = await new Promise<any>((resolve, reject) => {
+        if ((window as any).pdfjsLib) { resolve((window as any).pdfjsLib); return; }
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.onload = () => {
+          const b = new Blob(['self.onmessage=()=>{}'], { type: 'application/javascript' });
+          (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(b);
+          resolve((window as any).pdfjsLib);
+        };
+        script.onerror = () => reject(new Error('Gagal memuat PDF.js'));
+        document.head.appendChild(script);
+      });
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, useWorkerFetch: false, isEvalSupported: false }).promise;
+      let extracted = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const tc = await page.getTextContent();
+        extracted += tc.items.map((item: any) => item.str).join(' ') + '\n\n';
+      }
+      textContent = extracted;
+      contentForMd = textToMarkdown(extracted);
+    } else {
+      textContent = await file.text();
+      contentForMd = convertFileContent(textContent, fileType);
+    }
+
+    const compressed = compressMarkdown(contentForMd, currentMode);
+    return { original: textContent, markdown: compressed };
+  }
+
+  // Process all files in queue sequentially
+  async function processBatch() {
+    if (batchProcessing || fileQueue.length === 0) return;
+    batchProcessing = true;
+    if (processBatchBtn) processBatchBtn.classList.add('hidden');
+    if (batchProgress) batchProgress.classList.remove('hidden');
+    if (fileUploadZone) fileUploadZone.classList.add('opacity-50', 'pointer-events-none');
+
+    let combinedOriginal = '';
+    let combinedMarkdown = '';
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (let i = 0; i < fileQueue.length; i++) {
+      const file = fileQueue[i];
+      file._status = 'processing';
+      renderFileQueue();
+
+      // Update progress
+      if (batchProgressBar) batchProgressBar.style.width = `${((i) / fileQueue.length) * 100}%`;
+
+      try {
+        const result = await convertSingleFile(file);
+
+        // Append with file header
+        const header = `\n# ${file.name}\n\n`;
+        combinedOriginal += header + result.original + '\n\n';
+        combinedMarkdown += header + result.markdown + '\n\n';
+
+        file._status = 'done';
+        successCount++;
+      } catch (err) {
+        file._status = 'error';
+        errorCount++;
+        combinedMarkdown += `\n# ${file.name}\n\n*Error: ${err instanceof Error ? err.message : 'Gagal memproses'}*\n\n`;
+      }
+
+      renderFileQueue();
+    }
+
+    // Final progress
+    if (batchProgressBar) batchProgressBar.style.width = '100%';
+
+    // Store for mode switching
+    pendingOriginalContent = combinedOriginal;
+    pendingMdContent = combinedMarkdown;
+
+    // Show original content in input (first file truncated)
+    if (inputArea) {
+      inputArea.textContent = `${fileQueue.length} file diproses\n\n${fileQueue.map(f => `• ${f.name}${f._status === 'done' ? ' ✓' : ' ✗'}`).join('\n')}`;
+    }
+
+    // Show combined markdown
+    if (outputArea) outputArea.textContent = combinedMarkdown;
+    await updateBatchStats(combinedOriginal, combinedMarkdown, successCount, errorCount);
+
+    batchProcessing = false;
+    if (fileUploadZone) fileUploadZone.classList.remove('opacity-50', 'pointer-events-none');
+    setTimeout(() => { if (batchProgress) batchProgress.classList.add('hidden'); }, 1000);
+
+    window.showToast?.(`${successCount} file berhasil dikonversi${errorCount > 0 ? `, ${errorCount} gagal` : ''}!`, errorCount > 0 ? 'warning' : 'success');
+  }
+
+  // Add files to queue
+  function addFilesToQueue(files: FileList | File[]) {
+    for (const file of Array.from(files)) {
+      if (!fileQueue.some(f => f.name === file.name && f.size === file.size)) {
+        (file as any)._status = null;
+        fileQueue.push(file);
+      }
+    }
+    renderFileQueue();
+    if (fileUploadDefault) {
+      fileUploadDefault.classList.add('hidden');
+      fileUploadDefault.classList.remove('flex');
+    }
+    if (fileUploadInfo) {
+      fileUploadInfo.classList.remove('hidden');
+      fileUploadInfo.classList.add('flex');
+    }
+    if (fileName) fileName.textContent = `${fileQueue.length} file dipilih`;
+    if (fileSize) fileSize.textContent = `${fileQueue.reduce((s, f) => s + f.size, 0).toLocaleString()} bytes total`;
+  }
+
+  // Batch stats
+  async function updateBatchStats(original: string, markdown: string, successCount: number, errorCount: number) {
+    statsFilesCount = successCount;
+    const origChars = original.length;
+    const mdChars = markdown.length;
+    const mdTokens = await countGptTokens(markdown);
+    const origTokens = await countGptTokens(original);
+    const savedPct = origChars > 0 ? Math.round((1 - mdChars / origChars) * 100) : 0;
+    const tokenSavedPct = origTokens > 0 ? Math.round((1 - mdTokens / origTokens) * 100) : 0;
+
+    if (statOriginal) statOriginal.innerHTML = origChars.toLocaleString() + `<span class="block text-[8px] text-slate-400 font-normal">${successCount} file</span>`;
+    if (statMd) statMd.textContent = mdChars.toLocaleString();
+    if (statGptTokens) statGptTokens.textContent = mdTokens.toLocaleString();
+    if (statSaved) statSaved.textContent = `${tokenSavedPct > 0 ? tokenSavedPct : 0}%`;
+    if (statCost) statCost.textContent = estimateCost(mdTokens);
+    if (outputChars) outputChars.textContent = `${mdChars.toLocaleString()} karakter`;
+
+    if (compressionInfo) {
+      const saved = origTokens - mdTokens;
+      compressionInfo.textContent = `Batch ${successCount} file · GPT-4: ${origTokens.toLocaleString()} → ${mdTokens.toLocaleString()} token (hemat ${saved.toLocaleString()}, ${tokenSavedPct}%)`;
+    }
+  }
+
+  // Reset everything
+  function resetAll() {
+    currentFileName = '';
+    pendingOriginalContent = null;
+    pendingMdContent = null;
+    fileQueue = [];
+    batchProcessing = false;
+    statsFilesCount = 0;
+
+    if (fileUploadDefault) { fileUploadDefault.classList.remove('hidden'); fileUploadDefault.classList.add('flex'); }
+    if (fileUploadInfo) { fileUploadInfo.classList.add('hidden'); fileUploadInfo.classList.remove('flex'); }
+    if (fileInput) fileInput.value = '';
+    if (fileQueueContainer) fileQueueContainer.classList.add('hidden');
+    if (processBatchBtn) processBatchBtn.classList.add('hidden');
+    if (batchProgress) batchProgress.classList.add('hidden');
+    if (fileUploadZone) fileUploadZone.classList.remove('opacity-50', 'pointer-events-none');
+  }
 
   // ==================== Safe HTML Sanitizer ====================
   function sanitizeHtml(html: string): string {
-    // Parse HTML without executing scripts
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     
-    // Remove all script and style elements
-    const scripts = doc.querySelectorAll('script, style, link, meta, iframe, object, embed');
-    scripts.forEach(el => el.remove());
+    // Remove dangerous elements
+    const dangerous = doc.querySelectorAll('script, style, link, meta, iframe, object, embed, noscript');
+    dangerous.forEach(el => el.remove());
     
-    // Remove event handlers from all elements
+    // Remove event handlers and style/class attributes
     const allElements = doc.querySelectorAll('*');
     allElements.forEach(el => {
       const attrs = el.attributes;
+      const toRemove: string[] = [];
       for (let i = attrs.length - 1; i >= 0; i--) {
-        const name = attrs[i].name;
-        if (name.startsWith('on') || name === 'onload' || name === 'onerror' || name === 'onclick' || name === 'onmouseover' || name === 'onfocus' || name === 'onblur' || name === 'onsubmit') {
-          el.removeAttribute(name);
+        const name = attrs[i].name.toLowerCase();
+        if (name.startsWith('on') || name === 'onload' || name === 'onerror') {
+          toRemove.push(name);
         }
+      }
+      toRemove.forEach(name => el.removeAttribute(name));
+      
+      // Remove empty font/span elements that just add cruft
+      if ((el.tagName === 'FONT' || el.tagName === 'SPAN') && !el.textContent?.trim()) {
+        el.remove();
       }
     });
     
@@ -173,16 +658,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     let md = sanitizeHtml(html);
 
-    // Handle line break tags
+    // Handle block-level elements - convert to newlines
     md = md.replace(/<br\s*\/?>/gi, '\n');
-    md = md.replace(/<\/?p[^>]*>/gi, '\n\n');
-    md = md.replace(/<\/?div[^>]*>/gi, '\n');
-    md = md.replace(/<\/?section[^>]*>/gi, '\n');
-    md = md.replace(/<\/?article[^>]*>/gi, '\n');
-    md = md.replace(/<\/?header[^>]*>/gi, '\n');
-    md = md.replace(/<\/?footer[^>]*>/gi, '\n');
-    md = md.replace(/<\/?nav[^>]*>/gi, '\n');
-    md = md.replace(/<\/?main[^>]*>/gi, '\n');
+    md = md.replace(/<\/(p|div|section|article|header|footer|nav|main|aside|details|summary)[^>]*>\s*<[^/]/gi, (m) => m.replace(/>\s*</, '>\n<'));
+    md = md.replace(/<\/(p|div|section|article|header|footer|nav|main|aside)[^>]*>/gi, '\n\n');
+    md = md.replace(/<(p|div|section|article|header|footer|nav|main|aside)[^>]*>/gi, '');
+    md = md.replace(/<\/?(blockquote|pre|figure|figcaption|details|summary)[^>]*>/gi, '\n\n');
 
     // Headings
     md = md.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n# $1\n');
@@ -192,7 +673,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     md = md.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '\n##### $1\n');
     md = md.replace(/<h6[^>]*>(.*?)<\/h6>/gi, '\n###### $1\n');
 
-    // Bold & Italic
+    // Bold & Italic & Strikethrough
     md = md.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**');
     md = md.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**');
     md = md.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*');
@@ -207,17 +688,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     md = md.replace(/<pre[^>]*>([\s\S]*?)<\/pre>/gi, '\n```\n$1\n```\n');
 
     // Lists - Ordered
-    md = md.replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (match: string, content: string) => {
+    md = md.replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (_match: string, content: string) => {
       let index = 1;
-      return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (m: string, item: string) => {
-        return `\n${index++}. ${item.replace(/<\/?[^>]+(>|$)/g, '').trim()}`;
+      return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (_m: string, item: string) => {
+        const cleaned = item.replace(/<\/?[^>]+(>|$)/g, '').trim();
+        return cleaned ? `\n${index++}. ${cleaned}` : '';
       });
     });
 
     // Lists - Unordered
-    md = md.replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (match: string, content: string) => {
-      return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (m: string, item: string) => {
-        return `\n- ${item.replace(/<\/?[^>]+(>|$)/g, '').trim()}`;
+    md = md.replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (_match: string, content: string) => {
+      return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (_m: string, item: string) => {
+        const cleaned = item.replace(/<\/?[^>]+(>|$)/g, '').trim();
+        return cleaned ? `\n- ${cleaned}` : '';
       });
     });
 
@@ -234,12 +717,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Links
     md = md.replace(/<a[^>]*href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)');
 
-    // Tables - simplified
-    md = md.replace(/<table[^>]*>([\s\S]*?)<\/table>/gi, (match: string, content: string) => {
+    // Tables
+    md = md.replace(/<table[^>]*>([\s\S]*?)<\/table>/gi, (_match: string, content: string) => {
       const rows = content.match(/<tr[^>]*>([\s\S]*?)<\/tr>/gi);
       if (!rows || rows.length === 0) return '';
 
-      const mdRows: string[] = rows.map((row: string, idx: number) => {
+      const mdRows: string[] = rows.map((row: string) => {
         const cells = row.match(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi);
         if (!cells) return '';
         const cellValues = cells.map((c: string) => {
@@ -248,10 +731,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         return '| ' + cellValues.join(' | ') + ' |';
       });
 
-      // Add separator row
-      const firstRowCells = rows[0]?.match(/<t[dh][^>]*>/gi);
-      if (firstRowCells) {
-        const sep = '| ' + firstRowCells.map(() => '---').join(' | ') + ' |';
+      const headerCells = rows[0]?.match(/<t[dh][^>]*>/gi);
+      if (headerCells) {
+        const sep = '| ' + headerCells.map(() => '---').join(' | ') + ' |';
         mdRows.splice(1, 0, sep);
       }
 
@@ -268,14 +750,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     md = md.replace(/&quot;/g, '"');
     md = md.replace(/&#39;/g, "'");
     md = md.replace(/&nbsp;/g, ' ');
-    md = md.replace(/&#(\d+);/g, (match: string, dec: string) => String.fromCharCode(parseInt(dec, 10)));
+    md = md.replace(/&#(\d+);/g, (_match: string, dec: string) => String.fromCharCode(parseInt(dec, 10)));
 
-    // Clean up excessive newlines
+    // Clean up excessive newlines (base level)
     md = md.replace(/\n{4,}/g, '\n\n\n');
     md = md.replace(/^\n+/, '');
     md = md.replace(/\n+$/, '');
 
-    // Clean lines - trim trailing whitespace
+    // Trim trailing whitespace per line
     const lines = md.split('\n');
     const cleaned = lines.map((line: string) => line.trimEnd()).join('\n');
 
@@ -297,16 +779,188 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     return md;
   }
 
+  // ==================== Compression Functions ====================
+
+  // Collapse 3+ consecutive blank lines to just 1 blank line
+  function collapseBlankLines(md: string): string {
+    return md.replace(/\n{3,}/g, '\n\n');
+  }
+
+  // Strip images but keep alt text as plain text
+  function stripImagesKeepAlt(md: string): string {
+    // ![alt](url) → alt text
+    return md.replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1').trim();
+  }
+
+  // Strip links but keep link text
+  function stripLinksKeepText(md: string): string {
+    // [text](url) → text
+    return md.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  }
+
+  // Remove empty list items
+  function stripEmptyListItems(md: string): string {
+    return md.replace(/^[-*+]\s*$/gm, '').replace(/^\d+\.\s*$/gm, '');
+  }
+
+  // Remove common boilerplate / tracking patterns
+  function removeBoilerplate(md: string): string {
+    // Social sharing & follow patterns
+    const boilerplatePatterns = [
+      /Share this (article|post|page|story|video).*?(?:\n|$)/gi,
+      /Follow us on.*?(?:\n|$)/gi,
+      /Subscribe to our (newsletter|channel|YouTube|feed).*?(?:\n|$)/gi,
+      /Sign up for our newsletter.*?(?:\n|$)/gi,
+      /Join our (mailing list|community|newsletter).*?(?:\n|$)/gi,
+      /Like us on.*?(?:\n|$)/gi,
+      /Tweet this.*?(?:\n|$)/gi,
+      /Pin it.*?(?:\n|$)/gi,
+      /Share on.*?(?:\n|$)/gi,
+      /Add to (any|your) (reading list|bookmarks|favorites).*?(?:\n|$)/gi,
+
+      // Email footer patterns
+      /You are receiving this email because.*?(?:\n|$)/gi,
+      /If you\'d like to unsubscribe.*?(?:\n|$)/gi,
+      /To unsubscribe.*?(?:\n|$)/gi,
+      /Unsubscribe.*?(?:\n|$)/gi,
+      /View this email in your browser.*?(?:\n|$)/gi,
+      /This email was sent to.*?(?:\n|$)/gi,
+      /No longer want to receive.*?(?:\n|$)/gi,
+      /Manage your (email )?preferences.*?(?:\n|$)/gi,
+      /Privacy Policy.*?(?:\n|$)/gi,
+      /Terms of Service.*?(?:\n|$)/gi,
+      /All rights reserved.*?(?:\n|$)/gi,
+
+      // Cookie & privacy patterns
+      /This site uses cookies.*?(?:\n|$)/gi,
+      /Cookie Notice.*?(?:\n|$)/gi,
+      /We use cookies.*?(?:\n|$)/gi,
+      /Accept (all )?cookies.*?(?:\n|$)/gi,
+      /Cookie (Settings|Preferences).*?(?:\n|$)/gi,
+      /Privacy & Cookies Policy.*?(?:\n|$)/gi,
+      /Read more about our privacy policy.*?(?:\n|$)/gi,
+      /This website uses cookies.*?(?:\n|$)/gi,
+
+      // Generic promotional patterns
+      /Click here to.*?(?:\n|$)/gi,
+      /Read more.*?(?:\n|$)/gi,
+      /Learn more.*?(?:\n|$)/gi,
+      /Download now.*?(?:\n|$)/gi,
+      /Buy now.*?(?:\n|$)/gi,
+      /Shop now.*?(?:\n|$)/gi,
+      /Limited time offer.*?(?:\n|$)/gi,
+      /Sponsored.*?(?:\n|$)/gi,
+      /Advertisement.*?(?:\n|$)/gi,
+      /Promoted.*?(?:\n|$)/gi,
+
+      // Indonesian social sharing & follow patterns
+      /Bagikan (artikel|postingan|halaman|cerita|video) ini.*?(?:\n|$)/gi,
+      /Ikuti (kami|saya|akun) di.*?(?:\n|$)/gi,
+      /Bagikan ke.*?(?:\n|$)/gi,
+      /Bagikan melalui.*?(?:\n|$)/gi,
+      /Berlangganan (newsletter|channel|YouTube).*?(?:\n|$)/gi,
+      /Daftar (untuk|ke) newsletter.*?(?:\n|$)/gi,
+      /Gabung (komunitas|group|grup) kami.*?(?:\n|$)/gi,
+      /Suka halaman kami.*?(?:\n|$)/gi,
+      /Tweet ini.*?(?:\n|$)/gi,
+
+      // Indonesian email footer patterns
+      /Anda menerima email ini karena.*?(?:\n|$)/gi,
+      /Jika (Anda|kamu) tidak ingin (lagi )?berlangganan.*?(?:\n|$)/gi,
+      /(Untuk|Cara) berhenti berlangganan.*?(?:\n|$)/gi,
+      /Berhenti berlangganan.*?(?:\n|$)/gi,
+      /(Lihat|Buka) email ini di browser.*?(?:\n|$)/gi,
+      /Email ini dikirim (ke|kepada).*?(?:\n|$)/gi,
+      /(Tidak|Ga) mau (lagi )?menerima.*?(?:\n|$)/gi,
+      /Kelola preferensi.*?(?:\n|$)/gi,
+      /Kebijakan Privasi.*?(?:\n|$)/gi,
+      /Syarat (dan|&) Ketentuan.*?(?:\n|$)/gi,
+      /Hak Cipta Dilindungi.*?(?:\n|$)/gi,
+      /Hak cipta.*?(?:\n|$)/gi,
+
+      // Indonesian cookie & privacy patterns
+      /Situs ini menggunakan cookie.*?(?:\n|$)/gi,
+      /Kami menggunakan cookie.*?(?:\n|$)/gi,
+      /Pemberitahuan Cookie.*?(?:\n|$)/gi,
+      /Terima (semua )?cookie.*?(?:\n|$)/gi,
+      /Pengaturan Cookie.*?(?:\n|$)/gi,
+      /(Baca|Pelajari) (lebih lanjut|tentang) kebijakan privasi.*?(?:\n|$)/gi,
+      /Website ini menggunakan cookie.*?(?:\n|$)/gi,
+      /Kebijakan Privasi & Cookie.*?(?:\n|$)/gi,
+
+      // Indonesian generic promotional patterns
+      /Klik di sini untuk.*?(?:\n|$)/gi,
+      /Baca selengkapnya.*?(?:\n|$)/gi,
+      /Pelajari lebih lanjut.*?(?:\n|$)/gi,
+      /Download sekarang.*?(?:\n|$)/gi,
+      /Beli sekarang.*?(?:\n|$)/gi,
+      /Beli di sini.*?(?:\n|$)/gi,
+      /Belanja sekarang.*?(?:\n|$)/gi,
+      /Penawaran terbatas.*?(?:\n|$)/gi,
+      /Diskon terbatas.*?(?:\n|$)/gi,
+      /Promo terbatas.*?(?:\n|$)/gi,
+      /Disponsori.*?(?:\n|$)/gi,
+      /Iklan.*?(?:\n|$)/gi,
+      /Promosi.*?(?:\n|$)/gi,
+      /Kerjasama berbayar.*?(?:\n|$)/gi,
+      /Endorsement.*?(?:\n|$)/gi,
+
+      // Structural noise
+      /^_{2,}$/gm,
+      /^[-=]{5,}$/gm,
+      /^[*]{3,}$/gm,
+      /^\s*#+\s*$|^\s*$/,  // Empty headings or lines with only spaces
+    ];
+    for (const pattern of boilerplatePatterns) {
+      md = md.replace(pattern, '');
+    }
+    return md;
+  }
+
+  // Main compression dispatcher
+  function compressMarkdown(md: string, mode: string): string {
+    if (!md) return md;
+    
+    // Normal: no extra compression
+    let result = md;
+
+    if (mode === 'balanced' || mode === 'aggressive') {
+      result = collapseBlankLines(result);
+      // Trim trailing whitespace per line
+      result = result.split('\n').map(l => l.trimEnd()).join('\n');
+    }
+
+    if (mode === 'aggressive') {
+      // Also trim leading whitespace in aggressive mode
+      result = result.split('\n').map(l => l.trim()).join('\n');
+      result = stripImagesKeepAlt(result);
+      result = stripLinksKeepText(result);
+      result = stripEmptyListItems(result);
+      result = removeBoilerplate(result);
+      // Extra aggressive: collapse ALL consecutive whitespace lines
+      result = result.replace(/\n{3,}/g, '\n\n');
+    }
+
+    // Final cleanup for all modes
+    result = result.replace(/^\n+/, '');
+    result = result.replace(/\n+$/, '');
+
+    return result;
+  }
+
   // ==================== Main Converter ====================
   function convertToMarkdown(html: string, plainText: string): string {
-    // Check if it has HTML tags
     const hasHtml = /<[a-z][\s\S]*>/i.test(html);
+    let md: string;
     
     if (hasHtml) {
-      return htmlToMarkdown(html);
+      md = htmlToMarkdown(html);
+    } else {
+      md = textToMarkdown(plainText);
     }
-    
-    return textToMarkdown(plainText);
+
+    // Apply compression based on current mode
+    return compressMarkdown(md, currentMode);
   }
 
   // ==================== Get content from input ====================
@@ -316,53 +970,98 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     return { html, text };
   }
 
-  // ==================== Update Stats ====================
-  function updateStats(original: string, markdown: string) {
+  // ==================== Update Stats (async — uses js-tiktoken) ====================
+  async function updateStats(original: string, markdown: string) {
     const origChars = original.length;
     const mdChars = markdown.length;
-    const estTokens = Math.ceil(mdChars / 4);
+    const mdTokens = await countGptTokens(markdown);
+    const origTokens = await countGptTokens(original);
     const savedPct = origChars > 0 ? Math.round((1 - mdChars / origChars) * 100) : 0;
+    const tokenSavedPct = origTokens > 0 ? Math.round((1 - mdTokens / origTokens) * 100) : 0;
     const words = original.trim() ? original.trim().split(/\s+/).length : 0;
 
     if (statOriginal) statOriginal.textContent = origChars.toLocaleString();
     if (statMd) statMd.textContent = mdChars.toLocaleString();
-    if (statTokens) statTokens.textContent = estTokens.toLocaleString();
-    if (statSaved) statSaved.textContent = `${savedPct > 0 ? savedPct : 0}%`;
+    if (statGptTokens) statGptTokens.textContent = mdTokens.toLocaleString();
+    if (statSaved) statSaved.textContent = `${tokenSavedPct > 0 ? tokenSavedPct : 0}%`;
+    if (statCost) statCost.textContent = estimateCost(mdTokens);
     if (inputWords) inputWords.textContent = `${words} kata`;
     if (inputChars) inputChars.textContent = `${origChars.toLocaleString()} karakter`;
     if (outputChars) outputChars.textContent = `${mdChars.toLocaleString()} karakter`;
+
+    // Show token savings info in compression info bar
+    if (compressionInfo) {
+      if (mdTokens > 0 && origTokens > 0) {
+        const saved = origTokens - mdTokens;
+        compressionInfo.textContent = `GPT-4: ${origTokens.toLocaleString()} → ${mdTokens.toLocaleString()} token (hemat ${saved.toLocaleString()}, ${tokenSavedPct}%)`;
+      } else {
+        compressionInfo.textContent = window._tToast ? window._tToast('Konversi otomatis setiap kali kamu menempel teks') : 'Konversi otomatis setiap kali kamu menempel teks';
+      }
+    }
   }
 
-  // ==================== Process Input ====================
-  function processInput() {
+  // ==================== Process Input (async) ====================
+  async function processInput() {
+    // When re-processing file content (e.g. compression mode switch), use stored intermediate markdown
+    if (pendingMdContent) {
+      const compressed = compressMarkdown(pendingMdContent, currentMode);
+      if (outputArea) outputArea.textContent = compressed;
+      await updateStats(pendingOriginalContent || '', compressed);
+      return;
+    }
+
+    // Normal paste/input flow
     const { html, text } = getContent();
     
     if (!text.trim()) {
       if (outputArea) outputArea.innerHTML = '<span class="text-slate-400 italic">Markdown akan muncul di sini...</span>';
-      updateStats('', '');
+      await updateStats('', '');
+      if (compressionInfo) compressionInfo.textContent = 'Tempel teks untuk mulai konversi...';
       return;
     }
 
     const markdown = convertToMarkdown(html, text);
     
     if (outputArea) outputArea.textContent = markdown;
-    updateStats(text, markdown);
+    await updateStats(text, markdown);
   }
 
   // ==================== Insert HTML safely into contenteditable ====================
   function safeInsertHtml(html: string) {
     if (!inputArea) return;
-    
-    // Sanitize first, then set innerHTML
     const safe = sanitizeHtml(html);
     inputArea.innerHTML = safe;
   }
 
+  // ==================== Compression Mode Switching (async) ====================
+  async function setCompressionMode(mode: 'normal' | 'balanced' | 'aggressive') {
+    currentMode = mode;
+    
+    // Update UI
+    document.querySelectorAll('.compression-mode').forEach(btn => {
+      const el = btn as HTMLElement;
+      if (el.dataset.mode === mode) {
+        el.className = 'compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm';
+      } else {
+        el.className = 'compression-mode px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200';
+      }
+    });
+
+    // Update mode hint
+    if (modeHint) modeHint.textContent = modeHints[mode] || '';
+
+    // Reprocess input with new mode
+    await processInput();
+  }
+
   // ==================== Handle Paste ====================
-  function handlePaste(e: ClipboardEvent) {
+  async function handlePaste(e: ClipboardEvent) {
     e.preventDefault();
     
-    // Get clipboard data
+    // User is pasting, so clear any pending file content
+    pendingOriginalContent = null;
+    pendingMdContent = null;
+    
     const htmlContent = e.clipboardData?.getData('text/html') || '';
     const plainContent = e.clipboardData?.getData('text/plain') || '';
     const textContent = plainContent || e.clipboardData?.getData('text') || '';
@@ -373,31 +1072,92 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       inputArea.textContent = textContent;
     }
 
-    processInput();
+    await processInput();
   }
 
   // ==================== Handle Input Events ====================
   function handleInput() {
+    // User is typing, clear any pending file content
+    pendingOriginalContent = null;
+    pendingMdContent = null;
     processInput();
   }
+
+  // ==================== File Upload Event Handlers ====================
+
+  // File input change (multiple files)
+  fileInput?.addEventListener('change', (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+      addFilesToQueue(target.files);
+    }
+    // Reset input so same files can be re-selected
+    target.value = '';
+  });
+
+  // Drag & drop on upload zone (multiple files)
+  if (fileUploadZone) {
+    fileUploadZone.addEventListener('dragover', (e: DragEvent) => {
+      e.preventDefault();
+      fileUploadZone.classList.add('border-emerald-400', 'dark:border-emerald-500', 'bg-emerald-50/50', 'dark:bg-emerald-900/10');
+    });
+    fileUploadZone.addEventListener('dragleave', () => {
+      fileUploadZone.classList.remove('border-emerald-400', 'dark:border-emerald-500', 'bg-emerald-50/50', 'dark:bg-emerald-900/10');
+    });
+    fileUploadZone.addEventListener('drop', (e: DragEvent) => {
+      e.preventDefault();
+      fileUploadZone.classList.remove('border-emerald-400', 'dark:border-emerald-500', 'bg-emerald-50/50', 'dark:bg-emerald-900/10');
+      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        addFilesToQueue(e.dataTransfer.files);
+        // Sync the file input for accessibility
+        const dt = new DataTransfer();
+        for (const f of Array.from(e.dataTransfer.files)) dt.items.add(f);
+        if (fileInput) fileInput.files = dt.files;
+      }
+    });
+  }
+
+  // Clear file button — clear queue & reset
+  clearFileBtn?.addEventListener('click', async (e: Event) => {
+    e.stopPropagation();
+    resetAll();
+    if (inputArea) {
+      inputArea.innerHTML = '';
+      inputArea.textContent = '';
+    }
+    if (outputArea) outputArea.innerHTML = '<span class="text-slate-400 italic">Markdown akan muncul di sini...</span>';
+    await updateStats('', '');
+    if (compressionInfo) compressionInfo.textContent = 'Tempel teks atau upload file untuk mulai...';
+    window.showToast?.('Semua file dihapus', 'info');
+  });
+
+  // Process batch button
+  processBatchBtn?.addEventListener('click', processBatch);
 
   // ==================== Setup Event Listeners ====================
   if (inputArea) {
     inputArea.addEventListener('paste', handlePaste);
     inputArea.addEventListener('input', handleInput);
     inputArea.addEventListener('keydown', (e: KeyboardEvent) => {
-      // Ctrl+Shift+V to paste as plain text
       if (e.ctrlKey && e.shiftKey && e.key === 'V') {
         e.preventDefault();
-        navigator.clipboard.readText().then(text => {
+        navigator.clipboard.readText().then(async text => {
           if (inputArea) inputArea.textContent = text;
-          processInput();
+          await processInput();
         }).catch(() => {});
       }
     });
   }
 
-  // Paste button - trigger paste via clipboard API
+  // Mode switcher buttons
+  document.querySelectorAll('.compression-mode').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = (btn as HTMLElement).dataset.mode as 'normal' | 'balanced' | 'aggressive';
+      if (mode) setCompressionMode(mode);
+    });
+  });
+
+  // Paste button
   pasteBtn?.addEventListener('click', async () => {
     try {
       const items = await navigator.clipboard.read();
@@ -420,37 +1180,32 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       } else if (plainText && inputArea) {
         inputArea.textContent = plainText;
       } else {
-        // Fallback: read text only
         const text = await navigator.clipboard.readText();
         if (inputArea) inputArea.textContent = text;
       }
-      processInput();
-    } catch (err) {
-      // Fallback: focus and exec paste
+      await processInput();
+    } catch (_err) {
       inputArea?.focus();
-      // Use execCommand as last resort
       try {
         document.execCommand('paste');
-      } catch (e2) {
-        // If everything fails, try reading text
+      } catch (_e2) {
         try {
           const text = await navigator.clipboard.readText();
           if (inputArea) inputArea.textContent = text;
-          processInput();
-        } catch (e3) {
+          await processInput();
+        } catch (_e3) {
           window.showToast?.('Tidak bisa mengakses clipboard. Coba Ctrl+V langsung.', 'error');
         }
       }
     }
   });
 
-  // Clear button
-  clearBtn?.addEventListener('click', () => {
-    if (inputArea) {
-      inputArea.innerHTML = '';
-      inputArea.textContent = '';
-    }
-    processInput();
+  // Clear button (input panel)
+  clearBtn?.addEventListener('click', async () => {
+    resetAll();
+    if (outputArea) outputArea.innerHTML = '<span class="text-slate-400 italic">Markdown akan muncul di sini...</span>';
+    await updateStats('', '');
+    if (compressionInfo) compressionInfo.textContent = 'Tempel teks atau upload file untuk mulai...';
     inputArea?.focus();
   });
 
@@ -465,7 +1220,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     try {
       await navigator.clipboard.writeText(markdown);
       
-      // Show success animation
       if (copySuccess) {
         copySuccess.classList.remove('opacity-0', 'translate-y-[-10px]');
         copySuccess.classList.add('opacity-100', 'translate-y-0');
@@ -476,7 +1230,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
       
       window.showToast?.('Markdown disalin! 📋', 'success');
-    } catch (err) {
+    } catch (_err) {
       window.showToast?.('Gagal menyalin!', 'error');
     }
   });
@@ -504,6 +1258,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // Initial state
   if (outputArea) outputArea.innerHTML = '<span class="text-slate-400 italic">Markdown akan muncul di sini...</span>';
+  if (modeHint) modeHint.textContent = modeHints.normal || '';
 </script>
 
 <style>
