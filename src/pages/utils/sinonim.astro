@@ -1,0 +1,681 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Persamaan Kata / Sinonim">
+  <div class="max-w-3xl mx-auto px-4">
+    
+    <!-- Header -->
+    <div class="text-center mb-8 animate-fade-in-down">
+      <h1 class="text-2xl md:text-3xl font-bold text-matte-900 dark:text-white mb-3 tracking-tight" data-i18n="header.sinonim">
+        Persamaan Kata
+      </h1>
+      <p class="text-sm text-matte-400 dark:text-matte-300 max-w-lg mx-auto leading-relaxed" data-i18n="header.sinonim_desc">
+        Cari sinonim (persamaan kata) dan antonim (lawan kata) untuk kata apa pun — 
+        dukung Bahasa Indonesia &amp; Inggris. Data dari Wiktionary.
+      </p>
+    </div>
+
+    <!-- Search Card -->
+    <div class="card-base p-5 mb-6">
+      <div class="flex gap-2.5">
+        <div class="relative flex-1">
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Masukkan kata, misal: kardinalitas, rumah, baik..." 
+            class="w-full pl-9 pr-3 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 text-sm text-matte-800 dark:text-white transition-all duration-150"
+            autocomplete="off"
+            data-i18n-attr="placeholder"
+            data-i18n="sinonim.placeholder"
+          />
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-matte-400 shrink-0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          
+          <!-- Autocomplete Dropdown -->
+          <div id="autocomplete-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar animate-fade-in-down"></div>
+        </div>
+        <button 
+          id="search-btn"
+          class="px-5 py-2.5 bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold text-sm rounded-lg hover:opacity-90 transition-all duration-150 shrink-0"
+          data-i18n="sinonim.cari"
+        >
+          Cari
+        </button>
+      </div>
+      <div class="flex items-center justify-between mt-2.5">
+        <p class="text-2xs text-matte-400 flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <span data-i18n="sinonim.source">Sumber: Wiktionary API — gratis, real-time, tanpa perlu API key.</span>
+        </p>
+        <div id="cache-status" class="hidden flex items-center gap-1.5">
+          <span id="cache-count" class="text-2xs text-emerald-500 font-medium"></span>
+          <button id="clear-cache-btn" class="text-2xs text-matte-400 hover:text-rose-500 transition-colors">Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="hidden card-base p-8 text-center animate-fade-in">
+      <div class="flex flex-col items-center gap-3">
+        <svg class="animate-spin h-6 w-6 text-accent-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-sm text-matte-400" data-i18n="sinonim.searching">Mencari persamaan kata...</span>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="hidden card-base p-6 text-center animate-fade-in">
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-matte-100 dark:bg-surface-hover flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <div>
+          <p id="error-message" class="text-sm font-medium text-matte-700 dark:text-white mb-1">Kata tidak ditemukan</p>
+          <p class="text-xs text-matte-400" data-i18n="sinonim.error_not_found">Coba kata lain atau periksa ejaan kamu.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results-section" class="hidden space-y-4 animate-fade-in-up">
+      
+      <!-- Word Header -->
+      <div class="card-base p-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 id="word-display" class="text-xl font-bold text-matte-900 dark:text-white mb-0.5"></h2>
+            <p id="word-phonetic" class="text-xs text-matte-400"></p>
+          </div>
+          <button id="copy-results-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-matte-400 hover:text-accent-blue hover:bg-matte-100 dark:hover:bg-surface-hover transition-all duration-150" title="Copy all results">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span data-i18n="common.copy">Copy</span>
+          </button>
+        </div>
+        <div class="flex gap-2 mt-3">
+          <span id="lang-badge" class="badge-muted text-2xs">ID</span>
+          <span id="cache-badge" class="hidden inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wide-2 bg-emerald-50 dark:bg-emerald-900/10 text-emerald-500 border border-emerald-200 dark:border-emerald-800">
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Offline
+          </span>
+          <span id="meaning-count" class="text-2xs text-matte-400"></span>
+        </div>
+      </div>
+
+      <!-- Meanings -->
+      <div id="meanings-container" class="space-y-3"></div>
+
+      <!-- Recent Searches -->
+      <div id="recent-section" class="hidden card-base p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="section-title flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span data-i18n="sinonim.recent">Pencarian Terakhir</span>
+          </h3>
+          <button id="clear-recent" class="text-2xs font-medium text-matte-400 hover:text-rose-500 transition-colors" data-i18n="btn.clear_all">Hapus Semua</button>
+        </div>
+        <div id="recent-list" class="flex flex-wrap gap-1.5"></div>
+      </div>
+
+    </div>
+
+    <!-- Initial Empty State -->
+    <div id="empty-state" class="card-base p-10 text-center animate-fade-in">
+      <div class="w-16 h-16 rounded-full bg-matte-100 dark:bg-surface-hover flex items-center justify-center mx-auto mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"/><polyline points="10 6 14 10 10 14"/></svg>
+      </div>
+      <h3 class="text-sm font-semibold text-matte-700 dark:text-white mb-1.5" data-i18n="sinonim.empty_title">Cari Persamaan Kata</h3>
+      <p class="text-xs text-matte-400 max-w-xs mx-auto leading-relaxed" data-i18n="sinonim.empty_desc">
+        Ketik kata di atas, lalu tekan Enter atau klik Cari. 
+        Mendukung Bahasa Indonesia &amp; Inggris.
+      </p>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const searchBtn = document.getElementById('search-btn');
+    const loadingState = document.getElementById('loading-state');
+    const errorState = document.getElementById('error-state');
+    const errorMessage = document.getElementById('error-message');
+    const resultsSection = document.getElementById('results-section');
+    const emptyState = document.getElementById('empty-state');
+    const wordDisplay = document.getElementById('word-display');
+    const wordPhonetic = document.getElementById('word-phonetic');
+    const langBadge = document.getElementById('lang-badge');
+    const meaningCount = document.getElementById('meaning-count');
+    const meaningsContainer = document.getElementById('meanings-container');
+    const recentSection = document.getElementById('recent-section');
+    const recentList = document.getElementById('recent-list');
+    const clearRecentBtn = document.getElementById('clear-recent');
+    const copyResultsBtn = document.getElementById('copy-results-btn');
+    const autocompleteDropdown = document.getElementById('autocomplete-dropdown');
+
+    const RECENT_KEY = 'sinonim_recent';
+    const CACHE_KEY = 'sinonim_cache';
+    const CACHE_MAX = 50;
+    const MAX_RECENT = 8;
+    let selectedSuggestionIndex = -1;
+    let currentSuggestions: string[] = [];
+
+    // --- Synonym Cache (offline fallback) ---
+    function getCache(): Record<string, { data: any[]; lang: string; timestamp: number }> {
+      try {
+        return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+      } catch { return {}; }
+    }
+
+    function saveToCache(word: string, data: any[], lang: string) {
+      const cache = getCache();
+      cache[word.toLowerCase()] = { data, lang, timestamp: Date.now() };
+      // Prune oldest entries if over limit
+      const entries = Object.entries(cache);
+      if (entries.length > CACHE_MAX) {
+        entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+        const pruned = Object.fromEntries(entries.slice(-CACHE_MAX));
+        localStorage.setItem(CACHE_KEY, JSON.stringify(pruned));
+      } else {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+      }
+      updateCacheStatus();
+    }
+
+    function getFromCache(word: string): { data: any[]; lang: string } | null {
+      const cache = getCache();
+      const entry = cache[word.toLowerCase()];
+      return entry ? { data: entry.data, lang: entry.lang } : null;
+    }
+
+    function getCacheStats(): { count: number } {
+      const cache = getCache();
+      return { count: Object.keys(cache).length };
+    }
+
+    function clearAllCache() {
+      localStorage.removeItem(CACHE_KEY);
+      updateCacheStatus();
+    }
+
+    function updateCacheStatus() {
+      const { count } = getCacheStats();
+      const cacheStatus = document.getElementById('cache-status');
+      const cacheCount = document.getElementById('cache-count');
+      if (count > 0) {
+        cacheStatus?.classList.remove('hidden');
+        if (cacheCount) cacheCount.textContent = `${count} kata tersimpan offline`;
+      } else {
+        cacheStatus?.classList.add('hidden');
+      }
+    }
+
+    function showCacheBadge(fromCache: boolean) {
+      const badge = document.getElementById('cache-badge');
+      if (badge) {
+        if (fromCache) {
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }
+
+    // --- Word list for autocomplete (loaded dynamically from public/id-words.json) ---
+    let idWordsPromise: Promise<string[]> | null = null;
+    let idWordsCache: string[] | null = null;
+
+    async function loadIdWords(): Promise<string[]> {
+      if (idWordsCache) return idWordsCache;
+      if (idWordsPromise) return idWordsPromise;
+      idWordsPromise = fetch('/id-words.json')
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load word list');
+          return res.json();
+        })
+        .then(words => {
+          idWordsCache = words;
+          idWordsPromise = null;
+          return words;
+        })
+        .catch(err => {
+          idWordsPromise = null; // Allow retry on next keystroke
+          console.warn('Word list load failed, autocomplete unavailable', err);
+          return []; // Return empty array so autocomplete gracefully shows no results
+        });
+      return idWordsPromise;
+    }
+
+    // --- Autocomplete ---
+    function getSuggestions(query: string, wordList: string[]): string[] {
+      if (!query || query.length < 1) return [];
+      const q = query.toLowerCase();
+      const maxResults = 10;
+      const results: string[] = [];
+      // Binary search for first match position
+      let left = 0;
+      let right = wordList.length - 1;
+      let firstIdx = -1;
+      while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        const midVal = wordList[mid];
+        if (midVal >= q) {
+          firstIdx = mid;
+          right = mid - 1;
+        } else {
+          left = mid + 1;
+        }
+      }
+      // Collect matches from firstIdx onward
+      if (firstIdx !== -1) {
+        for (let i = firstIdx; i < wordList.length && results.length < maxResults; i++) {
+          if (wordList[i].startsWith(q)) {
+            results.push(wordList[i]);
+          } else if (wordList[i] > q && !wordList[i].startsWith(q)) {
+            break; // No more prefix matches
+          }
+        }
+      }
+      return results;
+    }
+
+    function renderSuggestions(suggestions: string[]) {
+      currentSuggestions = suggestions;
+      selectedSuggestionIndex = -1;
+      
+      if (!autocompleteDropdown || suggestions.length === 0) {
+        if (autocompleteDropdown) autocompleteDropdown.classList.add('hidden');
+        return;
+      }
+      
+      autocompleteDropdown.classList.remove('hidden');
+      autocompleteDropdown.innerHTML = suggestions.map((word, idx) => `
+        <button 
+          class="autocomplete-item w-full text-left px-3.5 py-2.5 text-sm text-matte-700 dark:text-white hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-75 border-b border-matte-100 dark:border-surface-border last:border-0 flex items-center gap-2"
+          data-index="${idx}"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <span class="font-medium">${word}</span>
+          <span class="ml-auto text-2xs text-matte-400">Cari sinonim</span>
+        </button>
+      `).join('');
+      
+      // Click handler — use event delegation instead
+      autocompleteDropdown.addEventListener('click', (e: MouseEvent) => {
+        const item = (e.target as HTMLElement).closest('.autocomplete-item') as HTMLElement | null;
+        if (!item) return;
+        const word = item.querySelector('.font-medium')?.textContent?.trim() || '';
+        if (word && searchInput) {
+          searchInput.value = word;
+          closeAutocomplete();
+          searchWord(word);
+        }
+      });
+    }
+
+    function closeAutocomplete() {
+      if (autocompleteDropdown) autocompleteDropdown.classList.add('hidden');
+      currentSuggestions = [];
+      selectedSuggestionIndex = -1;
+    }
+
+    function updateActiveSuggestion() {
+      if (!autocompleteDropdown) return;
+      const items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
+      items.forEach((item, idx) => {
+        if (idx === selectedSuggestionIndex) {
+          (item as HTMLElement).classList.add('bg-accent-blue/10', 'text-accent-blue');
+          (item as HTMLElement).classList.remove('text-matte-700', 'dark:text-white');
+          item.scrollIntoView({ block: 'nearest' });
+        } else {
+          (item as HTMLElement).classList.remove('bg-accent-blue/10', 'text-accent-blue');
+          (item as HTMLElement).classList.add('text-matte-700', 'dark:text-white');
+        }
+      });
+    }
+
+    // --- Recent Searches ---
+    function getRecent(): string[] {
+      try {
+        return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+      } catch { return []; }
+    }
+
+    function saveRecent(word: string) {
+      let recent = getRecent();
+      recent = recent.filter(w => w.toLowerCase() !== word.toLowerCase());
+      recent.unshift(word);
+      recent = recent.slice(0, MAX_RECENT);
+      localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+      renderRecent();
+    }
+
+    function renderRecent() {
+      const words = getRecent();
+      if (words.length === 0) {
+        recentSection?.classList.add('hidden');
+        return;
+      }
+      recentSection?.classList.remove('hidden');
+      if (recentList) {
+        recentList.innerHTML = words.map(w => 
+          `<button class="recent-word px-2.5 py-1 rounded-md bg-matte-100 dark:bg-surface-hover text-xs font-medium text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-matte-600 hover:text-matte-800 dark:hover:text-white transition-all duration-150">${w}</button>`
+        ).join('');
+        recentList.querySelectorAll('.recent-word').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const word = (btn as HTMLElement).textContent || '';
+            if (searchInput) searchInput.value = word;
+            searchWord(word);
+          });
+        });
+      }
+    }
+
+    clearRecentBtn?.addEventListener('click', () => {
+      localStorage.removeItem(RECENT_KEY);
+      renderRecent();
+    });
+
+    // --- API Call ---
+    async function searchWord(word: string) {
+      if (!word.trim()) return;
+
+      // Show loading
+      loadingState?.classList.remove('hidden');
+      errorState?.classList.add('hidden');
+      resultsSection?.classList.add('hidden');
+      emptyState?.classList.add('hidden');
+      showCacheBadge(false);
+
+      // Auto-detect language: if contains non-ASCII (Indonesian chars like "abcdefghijklmnopqrstuvwxyz" are all ASCII,
+      // but Indonesian uses mostly ASCII. Let's check: if word contains `ny`, `ng`, `kh`, `sy` etc common in ID...
+      // Simple heuristic: if word has only ASCII letters, try English first, fallback to Indonesian
+      const isEnglish = /^[a-zA-Z\s-]+$/.test(word) && !/^(ny|ng|sy|kh|dh|th|bh|ch|gh|sh|zh)$/i.test(word.substring(0,2));
+      
+      try {
+        // Try with detected language first, fallback to other
+        let data = null;
+        let usedLang = 'en';
+        
+        const langsToTry = isEnglish ? ['en', 'id'] : ['id', 'en'];
+        
+        for (const lang of langsToTry) {
+          try {
+            const res = await fetch(`https://api.freedictionaryapi.dev/api/v2/entries/${lang}/${encodeURIComponent(word.trim().toLowerCase())}`);
+            if (res.ok) {
+              data = await res.json();
+              usedLang = lang;
+              break;
+            }
+          } catch {}
+        }
+
+        if (!data || !Array.isArray(data) || data.length === 0) {
+          throw new Error('Not found');
+        }
+
+        // Save to cache on success
+        saveToCache(word.trim(), data, usedLang);
+        saveRecent(word.trim());
+        renderResults(data, word.trim(), usedLang, false);
+      } catch (err) {
+        // Try cache fallback
+        const cached = getFromCache(word.trim());
+        if (cached) {
+          loadingState?.classList.add('hidden');
+          saveRecent(word.trim());
+          renderResults(cached.data, word.trim(), cached.lang, true);
+          return;
+        }
+        loadingState?.classList.add('hidden');
+        errorState?.classList.remove('hidden');
+        if (errorMessage) {
+          errorMessage.textContent = `"${word.trim()}" tidak ditemukan. Coba kata lain.`;
+        }
+      }
+    }
+
+    // --- Render Results ---
+    function renderResults(data: any[], word: string, lang: string, fromCache = false) {
+      loadingState?.classList.add('hidden');
+      resultsSection?.classList.remove('hidden');
+      emptyState?.classList.add('hidden');
+      showCacheBadge(fromCache);
+
+      // Word header
+      if (wordDisplay) wordDisplay.textContent = word;
+      if (wordPhonetic) {
+        const phonetic = data[0]?.phonetic || data[0]?.phonetics?.find((p: any) => p.text)?.text || '';
+        wordPhonetic.textContent = phonetic;
+      }
+      if (langBadge) langBadge.textContent = lang.toUpperCase();
+
+      // Collect all meanings
+      const allMeanings: { partOfSpeech: string; synonyms: string[]; antonyms: string[]; definitions: string[] }[] = [];
+      
+      data.forEach((entry: any) => {
+        (entry.meanings || []).forEach((meaning: any) => {
+          const synonyms = new Set<string>();
+          const antonyms = new Set<string>();
+          const definitions: string[] = [];
+          
+          // Collect from meaning-level
+          (meaning.synonyms || []).forEach((s: string) => synonyms.add(s));
+          (meaning.antonyms || []).forEach((a: string) => antonyms.add(a));
+          
+          // Collect from definition-level
+          (meaning.definitions || []).forEach((def: any) => {
+            (def.synonyms || []).forEach((s: string) => synonyms.add(s));
+            (def.antonyms || []).forEach((a: string) => antonyms.add(a));
+            if (def.definition) definitions.push(def.definition);
+          });
+          
+          allMeanings.push({
+            partOfSpeech: meaning.partOfSpeech || 'unknown',
+            synonyms: Array.from(synonyms),
+            antonyms: Array.from(antonyms),
+            definitions: definitions.slice(0, 2), // Show max 2 definitions
+          });
+        });
+      });
+
+      if (meaningCount) {
+        const totalSyn = allMeanings.reduce((sum, m) => sum + m.synonyms.length, 0);
+        const totalAnt = allMeanings.reduce((sum, m) => sum + m.antonyms.length, 0);
+        meaningCount.textContent = `${allMeanings.length} arti · ${totalSyn} sinonim · ${totalAnt} antonim`;
+      }
+
+      // Render meanings
+      if (meaningsContainer) {
+        meaningsContainer.innerHTML = allMeanings.map(meaning => {
+          const posLabel = meaning.partOfSpeech.charAt(0).toUpperCase() + meaning.partOfSpeech.slice(1);
+          
+          const hasSynonyms = meaning.synonyms.length > 0;
+          const hasAntonyms = meaning.antonyms.length > 0;
+          const hasDefinitions = meaning.definitions.length > 0;
+          
+          if (!hasSynonyms && !hasAntonyms) return '';
+
+          return `
+            <div class="card-base p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="badge-accent text-2xs">${posLabel}</span>
+              </div>
+              
+              ${hasDefinitions ? `
+                <div class="mb-3 space-y-1">
+                  ${meaning.definitions.map(def => `
+                    <p class="text-xs text-matte-500 dark:text-matte-300 italic leading-relaxed">${def}</p>
+                  `).join('')}
+                </div>
+              ` : ''}
+              
+              ${hasSynonyms ? `
+                <div class="mb-2.5">
+                  <p class="text-2xs font-bold uppercase tracking-wide-3 text-matte-400 mb-1.5 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    Sinonim
+                  </p>
+                  <div class="flex flex-wrap gap-1.5">
+                    ${meaning.synonyms.map(s => `
+                      <button class="synonym-chip px-2.5 py-1 rounded-md bg-accent-blue/5 text-accent-blue text-xs font-medium hover:bg-accent-blue/10 transition-all duration-150">${s}</button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              
+              ${hasAntonyms ? `
+                <div>
+                  <p class="text-2xs font-bold uppercase tracking-wide-3 text-matte-400 mb-1.5 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    Antonim
+                  </p>
+                  <div class="flex flex-wrap gap-1.5">
+                    ${meaning.antonyms.map(a => `
+                      <button class="antonym-chip px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-900/10 text-rose-500 dark:text-rose-400 text-xs font-medium hover:bg-rose-100 dark:hover:bg-rose-900/20 transition-all duration-150">${a}</button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Click on synonym/antonym chips to search that word
+      document.querySelectorAll('.synonym-chip, .antonym-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const word = (chip as HTMLElement).textContent || '';
+          if (searchInput) searchInput.value = word;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          searchWord(word);
+        });
+      });
+    }
+
+    // --- Event Listeners ---
+    searchBtn?.addEventListener('click', () => {
+      if (searchInput) searchWord(searchInput.value);
+    });
+
+    // --- Autocomplete Input Handler (with lazy word list load) ---
+    let autocompleteTimer: ReturnType<typeof setTimeout> | null = null;
+    
+    searchInput?.addEventListener('input', () => {
+      const val = searchInput.value;
+      
+      // Debounce autocomplete
+      if (autocompleteTimer) clearTimeout(autocompleteTimer);
+      autocompleteTimer = setTimeout(async () => {
+        if (val.length >= 1) {
+          // Ensure word list is loaded
+          const idWords = await loadIdWords();
+          const suggestions = getSuggestions(val, idWords);
+          renderSuggestions(suggestions);
+        } else {
+          closeAutocomplete();
+        }
+      }, 80);
+    });
+
+    searchInput?.addEventListener('keydown', (e: KeyboardEvent) => {
+      const hasDropdown = autocompleteDropdown && !autocompleteDropdown.classList.contains('hidden');
+      
+      if (e.key === 'ArrowDown' && hasDropdown) {
+        e.preventDefault();
+        const maxIdx = currentSuggestions.length - 1;
+        selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, maxIdx);
+        updateActiveSuggestion();
+      } else if (e.key === 'ArrowUp' && hasDropdown) {
+        e.preventDefault();
+        selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, 0);
+        updateActiveSuggestion();
+      } else if (e.key === 'Tab' && hasDropdown && selectedSuggestionIndex >= 0) {
+        e.preventDefault();
+        const selectedWord = currentSuggestions[selectedSuggestionIndex];
+        if (selectedWord) {
+          searchInput.value = selectedWord;
+          closeAutocomplete();
+          searchWord(selectedWord);
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (hasDropdown && selectedSuggestionIndex >= 0) {
+          const selectedWord = currentSuggestions[selectedSuggestionIndex];
+          if (selectedWord) {
+            searchInput.value = selectedWord;
+            closeAutocomplete();
+            searchWord(selectedWord);
+            return;
+          }
+        }
+        closeAutocomplete();
+        searchWord(searchInput.value);
+      } else if (e.key === 'Escape') {
+        closeAutocomplete();
+      }
+    });
+
+    // Close autocomplete on outside click
+    document.addEventListener('click', (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (autocompleteDropdown && !target.closest('#autocomplete-dropdown') && target !== searchInput) {
+        closeAutocomplete();
+      }
+    });
+
+    // Focus in - reopen suggestions if input has value
+    searchInput?.addEventListener('focus', async () => {
+      if (searchInput && searchInput.value.length >= 1) {
+        const idWords = await loadIdWords();
+        const suggestions = getSuggestions(searchInput.value, idWords);
+        if (suggestions.length > 0) {
+          renderSuggestions(suggestions);
+        }
+      }
+    });
+
+    // Copy results
+    copyResultsBtn?.addEventListener('click', () => {
+      const word = wordDisplay?.textContent || '';
+      const chips = document.querySelectorAll('.synonym-chip, .antonym-chip');
+      const syns: string[] = [];
+      const ants: string[] = [];
+      chips.forEach(chip => {
+        if (chip.classList.contains('synonym-chip')) syns.push(chip.textContent || '');
+        if (chip.classList.contains('antonym-chip')) ants.push(chip.textContent || '');
+      });
+      
+      let text = `Persamaan kata "${word}":\n`;
+      if (syns.length > 0) text += `Sinonim: ${syns.join(', ')}\n`;
+      if (ants.length > 0) text += `Antonim: ${ants.join(', ')}`;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const original = copyResultsBtn?.innerHTML || '';
+        if (copyResultsBtn) {
+          copyResultsBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span class="text-emerald-500">Copied!</span>`;
+          setTimeout(() => { copyResultsBtn.innerHTML = original; }, 2000);
+        }
+      });
+    });
+
+    // Clear cache button
+    document.getElementById('clear-cache-btn')?.addEventListener('click', () => {
+      clearAllCache();
+    });
+
+    // Init
+    renderRecent();
+    updateCacheStatus();
+
+    // Check URL params for ?word= 
+    const params = new URLSearchParams(window.location.search);
+    const wordParam = params.get('word') || params.get('q');
+    if (wordParam && searchInput) {
+      searchInput.value = wordParam;
+      searchWord(wordParam);
+    }
+  });
+</script>
