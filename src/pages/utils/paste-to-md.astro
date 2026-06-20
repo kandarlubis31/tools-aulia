@@ -1206,13 +1206,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // ==================== Process Input (async) ====================
   async function processInput() {
     let resultText = '';
+    let origText = '';
 
     // When re-processing file content (e.g. compression mode switch), use stored intermediate markdown
     if (pendingMdContent) {
       const compressed = compressMarkdown(pendingMdContent, currentMode);
       resultText = compressed;
+      origText = pendingOriginalContent || '';
       if (outputArea) outputArea.textContent = compressed;
-      await updateStats(pendingOriginalContent || '', compressed);
     } else {
       // Normal paste/input flow
       const { html, text } = getContent();
@@ -1232,17 +1233,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       // Apply compression based on current mode
       const compressed = compressMarkdown(rawMd, currentMode);
       resultText = compressed;
+      origText = text;
       if (outputArea) outputArea.textContent = compressed;
-      await updateStats(text, compressed);
     }
 
-    // Auto-copy to clipboard if enabled
+    // Auto-copy FIRST — preserves user activation (paste/input event)
+    // Must happen before any await to keep transient activation alive
     if (autoCopyEnabled && resultText) {
       const ok = await copyToClipboard(resultText);
-      if (ok) {
-        showCopySuccess();
-      }
+      if (ok) showCopySuccess();
     }
+
+    // THEN update stats (async — no longer needs user activation)
+    await updateStats(origText, resultText);
   }
 
   // ==================== Insert HTML safely into contenteditable ====================

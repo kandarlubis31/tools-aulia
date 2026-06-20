@@ -10,7 +10,7 @@ export default defineConfig({
     tailwind(),
     AstroPWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'grid.svg', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'android-chrome-192x192.png', 'android-chrome-512x512.png', 'safari-pinned-tab.svg'],
       manifest: {
         name: 'ToolsAulia',
         short_name: 'ToolsAulia',
@@ -22,9 +22,9 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         icons: [
-          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+          { src: 'android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'android-chrome-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
         ]
       },
       workbox: {
