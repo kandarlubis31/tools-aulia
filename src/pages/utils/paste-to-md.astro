@@ -762,9 +762,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Horizontal rules
     md = md.replace(/<hr\s*\/?>/gi, '\n---\n');
 
-    // Images
-    md = md.replace(/<img[^>]*src=["']([^"']*)["'][^>]*alt=["']([^"']*)["'][^>]*>/gi, '![$2]($1)');
-    md = md.replace(/<img[^>]*src=["']([^"']*)["'][^>]*>/gi, '![]($1)');
+    // Images — robust handling regardless of attribute order
+    md = md.replace(/<img[^>]*>/gi, (_match: string) => {
+      const srcMatch = _match.match(/src=["']([^"']*)["']/i);
+      const altMatch = _match.match(/alt=["']([^"']*)["']/i);
+      const src = srcMatch ? srcMatch[1] : '';
+      const alt = altMatch ? altMatch[1] : '';
+      // Strip base64 data URIs (prevents 7M-char bloat from DOCX screenshots)
+      if (!src || src.startsWith('data:')) return alt || '';
+      // External URL images → keep as markdown
+      return alt ? `![${alt}](${src})` : `![](${src})`;
+    });
 
     // Links
     md = md.replace(/<a[^>]*href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)');
@@ -1288,8 +1296,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           copySuccess.classList.remove('opacity-100', 'translate-y-0');
         }, 2000);
       }
-      
-      window.showToast?.('Markdown disalin! 📋', 'success');
     } catch (_err) {
       window.showToast?.('Gagal menyalin!', 'error');
     }
