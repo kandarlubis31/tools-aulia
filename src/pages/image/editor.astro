@@ -66,7 +66,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <img id="edited-img" class="max-w-full max-h-full object-contain" alt="Edited image" />
             </div>
             <div id="compare-handle" class="absolute top-0 bottom-0 w-1 bg-white shadow-lg cursor-ew-resize" style="left: 50%;">
-              <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-1 shadow-lg">
+              <div class="absolute top-1/2 left-1/2 transform -tranmatte-x-1/2 -tranmatte-y-1/2 bg-white rounded-full p-1 shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
@@ -91,7 +91,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="w-full lg:w-80 flex flex-col card-base overflow-hidden h-[50vh] lg:h-auto">
         
         <div class="flex border-b border-matte-200 dark:border-surface-border">
-          <button class="tab-btn flex-1 py-3 text-sm font-bold text-pink-600 border-b-2 border-pink-600 bg-pink-50 dark:bg-slate-700" data-target="adjust">Adjust</button>
+          <button class="tab-btn flex-1 py-3 text-sm font-bold text-pink-600 border-b-2 border-pink-600 bg-pink-50 dark:bg-matte-700" data-target="adjust">Adjust</button>
           <button class="tab-btn flex-1 py-3 text-sm font-bold text-matte-500 hover:text-matte-700 dark:text-matte-400 dark:hover:text-matte-200" data-target="filters">Filters</button>
           <button class="tab-btn flex-1 py-3 text-sm font-bold text-matte-500 hover:text-matte-700 dark:text-matte-400 dark:hover:text-matte-200" data-target="transform">Transform</button>
           <button class="tab-btn flex-1 py-3 text-sm font-bold text-matte-500 hover:text-matte-700 dark:text-matte-400 dark:hover:text-matte-200" data-target="export">Export</button>
@@ -338,7 +338,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // --- INIT PRESETS UI ---
     presets.forEach(preset => {
        const btn = document.createElement('button');
-       btn.className = "p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 hover:bg-pink-50 dark:hover:bg-pink-900/20 hover:border-pink-300 transition-all text-sm font-bold text-slate-600 dark:text-slate-300";
+       btn.className = "p-3 rounded-xl border border-matte-200 dark:border-matte-700 bg-matte-50 dark:bg-matte-700/50 hover:bg-pink-50 dark:hover:bg-pink-900/20 hover:border-pink-300 transition-all text-sm font-bold text-matte-600 dark:text-matte-300";
        btn.textContent = preset.name;
        btn.onclick = () => applyPreset(preset.filter);
        filtersContainer.appendChild(btn);
@@ -575,15 +575,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
        btn.addEventListener('click', () => {
           // Reset Active State
           tabBtns.forEach(b => {
-             b.classList.remove('text-pink-600', 'border-b-2', 'border-pink-600', 'bg-pink-50', 'dark:bg-slate-700');
-             b.classList.add('text-slate-500', 'dark:text-slate-400');
+             b.classList.remove('text-pink-600', 'border-b-2', 'border-pink-600', 'bg-pink-50', 'dark:bg-matte-700');
+             b.classList.add('text-matte-500', 'dark:text-matte-400');
           });
           // Hide all panels
           Object.values(panels).forEach(p => p.classList.add('hidden'));
 
           // Set Active
-          btn.classList.add('text-pink-600', 'border-b-2', 'border-pink-600', 'bg-pink-50', 'dark:bg-slate-700');
-          btn.classList.remove('text-slate-500', 'dark:text-slate-400');
+          btn.classList.add('text-pink-600', 'border-b-2', 'border-pink-600', 'bg-pink-50', 'dark:bg-matte-700');
+          btn.classList.remove('text-matte-500', 'dark:text-matte-400');
           
           const target = btn.dataset.target;
           panels[target].classList.remove('hidden');
@@ -664,10 +664,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           // Update UI
           exportFormatBtns.forEach(b => {
              b.classList.remove('bg-pink-100', 'dark:bg-pink-900/30', 'text-pink-600');
-             b.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-300');
+             b.classList.add('bg-matte-100', 'dark:bg-matte-700', 'text-matte-600', 'dark:text-matte-300');
           });
           
-          btn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-300');
+          btn.classList.remove('bg-matte-100', 'dark:bg-matte-700', 'text-matte-600', 'dark:text-matte-300');
           btn.classList.add('bg-pink-100', 'dark:bg-pink-900/30', 'text-pink-600');
           
           // Show/hide quality control based on format
@@ -686,10 +686,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           // Update UI
           exportSizeBtns.forEach(b => {
              b.classList.remove('bg-pink-100', 'dark:bg-pink-900/30', 'text-pink-600');
-             b.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-300');
+             b.classList.add('bg-matte-100', 'dark:bg-matte-700', 'text-matte-600', 'dark:text-matte-300');
           });
           
-          btn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-300');
+          btn.classList.remove('bg-matte-100', 'dark:bg-matte-700', 'text-matte-600', 'dark:text-matte-300');
           btn.classList.add('bg-pink-100', 'dark:bg-pink-900/30', 'text-pink-600');
           
           // Show/hide custom size inputs

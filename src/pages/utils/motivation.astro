@@ -17,8 +17,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <div class="w-full max-w-2xl flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
         
         <div class="relative w-full md:w-1/2">
-            <label for="category-select" class="block text-xs font-bold text-slate-500 uppercase mb-1">Kategori</label>
-             <select id="category-select" class="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-violet-500 appearance-none cursor-pointer shadow-sm">
+            <label for="category-select" class="block text-xs font-bold text-matte-500 uppercase mb-1">Kategori</label>
+             <select id="category-select" class="w-full bg-white dark:bg-matte-800 text-matte-700 dark:text-matte-200 font-bold py-3 px-4 rounded-xl border border-matte-200 dark:border-matte-700 outline-none focus:ring-2 focus:ring-violet-500 appearance-none cursor-pointer shadow-sm">
                 <option value="random" data-i18n="cat.random">Campur Aduk</option>
                 <option value="coding" data-i18n="cat.coding">Coding & Tech</option>
                 <option value="wisdom" data-i18n="cat.wisdom">Life & Wisdom</option>
@@ -26,32 +26,32 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 <option value="motivational" data-i18n="cat.motivational">Motivational</option>
                 <option value="humor" data-i18n="cat.humor">Humor</option>
             </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-matte-500">
                 <svg class="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
             </div>
         </div>
 
-        <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider pl-2">Mode:</span>
-            <button id="mode-toggle" class="relative inline-flex h-8 w-32 items-center rounded-lg transition-colors duration-300 focus:outline-none bg-slate-200 dark:bg-slate-700">
-                <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out translate-x-1"></span>
-                <span class="absolute left-0 w-1/2 text-[10px] font-bold text-center text-slate-600 dark:text-slate-300 z-10 pointer-events-none">OFFLINE</span>
-                <span class="absolute right-0 w-1/2 text-[10px] font-bold text-center text-slate-600 dark:text-slate-300 z-10 pointer-events-none">ONLINE</span>
+        <div class="flex items-center gap-3 bg-white dark:bg-matte-800 p-2 rounded-xl border border-matte-200 dark:border-matte-700 shadow-sm">
+            <span class="text-xs font-bold text-matte-400 uppercase tracking-wider pl-2">Mode:</span>
+            <button id="mode-toggle" class="relative inline-flex h-8 w-32 items-center rounded-lg transition-colors duration-300 focus:outline-none bg-matte-200 dark:bg-matte-700">
+                <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out tranmatte-x-1"></span>
+                <span class="absolute left-0 w-1/2 text-[10px] font-bold text-center text-matte-600 dark:text-matte-300 z-10 pointer-events-none">OFFLINE</span>
+                <span class="absolute right-0 w-1/2 text-[10px] font-bold text-center text-matte-600 dark:text-matte-300 z-10 pointer-events-none">ONLINE</span>
             </button>
         </div>
     </div>
 
-    <div class="w-full max-w-2xl bg-white dark:bg-slate-800 p-8 md:p-12 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden transition-all duration-300 group">
+    <div class="w-full max-w-2xl bg-white dark:bg-matte-800 p-8 md:p-12 rounded-3xl shadow-2xl border border-matte-200 dark:border-matte-700 relative overflow-hidden transition-all duration-300 group">
       
-      <div id="status-badge" class="absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-          <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+      <div id="status-badge" class="absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-matte-100 dark:bg-matte-700 text-[10px] font-bold uppercase tracking-widest text-matte-500">
+          <span class="w-2 h-2 rounded-full bg-matte-400"></span>
           <span data-i18n="text.local_database">Offline Database</span>
       </div>
 
       <div class="absolute top-4 right-8 text-8xl text-violet-100 dark:text-violet-900/30 font-serif select-none pointer-events-none">”</div>
 
       <div id="quote-container" class="relative z-10 flex flex-col h-full justify-center min-h-[180px] text-center mt-6">
-        <h2 id="quote-text" class="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 leading-relaxed transition-opacity duration-300" data-i18n="text.preparing_inspiration">
+        <h2 id="quote-text" class="text-2xl md:text-3xl font-bold text-matte-800 dark:text-matte-100 leading-relaxed transition-opacity duration-300" data-i18n="text.preparing_inspiration">
           "Menyiapkan inspirasi..."
         </h2>
         
@@ -63,30 +63,30 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </div>
 
       <div class="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button id="translate-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan" data-i18n-attr="title" data-i18n="btn.translate">
+          <button id="tranmatte-btn" class="p-2 rounded-lg bg-matte-100 dark:bg-matte-700 text-matte-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan" data-i18n-attr="title" data-i18n="btn.translate">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
           </button>
           
-          <button id="copy-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-violet-500 transition-colors" title="Salin" data-i18n-attr="title" data-i18n="btn.copy">
+          <button id="copy-btn" class="p-2 rounded-lg bg-matte-100 dark:bg-matte-700 text-matte-500 hover:text-violet-500 transition-colors" title="Salin" data-i18n-attr="title" data-i18n="btn.copy">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
           </button>
-          <button id="favorite-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-red-500 transition-colors" title="Favorit" data-i18n-attr="title" data-i18n="btn.favorite">
+          <button id="favorite-btn" class="p-2 rounded-lg bg-matte-100 dark:bg-matte-700 text-matte-500 hover:text-red-500 transition-colors" title="Favorit" data-i18n-attr="title" data-i18n="btn.favorite">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           </button>
-          <button id="share-btn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-violet-500 transition-colors" title="Bagikan" data-i18n-attr="title" data-i18n="btn.share">
+          <button id="share-btn" class="p-2 rounded-lg bg-matte-100 dark:bg-matte-700 text-matte-500 hover:text-violet-500 transition-colors" title="Bagikan" data-i18n-attr="title" data-i18n="btn.share">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
           </button>
       </div>
     </div>
 
     <div class="mt-10 flex flex-col items-center gap-4">
-        <button id="generate-btn" class="group relative inline-flex items-center justify-center gap-3 px-10 py-4 font-bold text-white transition-all duration-200 bg-slate-900 dark:bg-white dark:text-slate-900 text-lg rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-xl shadow-violet-500/20">
+        <button id="generate-btn" class="group relative inline-flex items-center justify-center gap-3 px-10 py-4 font-bold text-white transition-all duration-200 bg-matte-900 dark:bg-white dark:text-matte-900 text-lg rounded-full focus:outline-none hover:scale-105 active:scale-95 shadow-xl shadow-violet-500/20">
             <span data-i18n="btn.search_again">Cari Lagi</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-180 transition-transform duration-500"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
         </button>
         <div class="flex items-center gap-4">
-            <p class="text-xs text-center text-slate-400" data-i18n="msg.press_space">Tekan <kbd class="font-sans px-1 border rounded">Spasi</kbd> untuk acak</p>
-            <button id="settings-btn" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors" data-i18n="btn.settings">Pengaturan</button>
+            <p class="text-xs text-center text-matte-400" data-i18n="msg.press_space">Tekan <kbd class="font-sans px-1 border rounded">Spasi</kbd> untuk acak</p>
+            <button id="settings-btn" class="text-xs text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors" data-i18n="btn.settings">Pengaturan</button>
         </div>
     </div>
 
@@ -94,16 +94,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div class="card-base p-6 max-w-sm w-full transform scale-100 transition-transform">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-matte-800 dark:text-white" data-i18n="modal.settings_title">Pengaturan</h3>
-                <button id="close-settings" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                <button id="close-settings" class="text-matte-400 hover:text-matte-600 dark:hover:text-matte-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
             
             <div class="space-y-6">
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.translation_lang">Bahasa Terjemahan</label>
-                    <label for="target-lang" class="block text-xs font-bold text-slate-500 uppercase mb-1">Bahasa</label>
-                     <select id="target-lang" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-violet-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                    <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.translation_lang">Bahasa Terjemahan</label>
+                    <label for="target-lang" class="block text-xs font-bold text-matte-500 uppercase mb-1">Bahasa</label>
+                     <select id="target-lang" class="w-full p-3 rounded-xl bg-matte-50 dark:bg-matte-900 border border-matte-200 dark:border-matte-700 focus:border-violet-500 outline-none text-matte-700 dark:text-matte-200 font-medium">
                         <option value="id" selected>🇮🇩 Indonesia</option>
                         <option value="es">🇪🇸 Spanish</option>
                         <option value="fr">🇫🇷 French</option>
@@ -114,15 +114,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.auto_refresh">Auto-refresh (detik)</label>
-                    <input type="number" id="auto-refresh" min="0" max="60" value="0" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-violet-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
-                    <p class="text-[10px] text-slate-400 mt-1" data-i18n="msg.fill_zero_disable">Isi 0 untuk mematikan auto-refresh.</p>
+                    <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.auto_refresh">Auto-refresh (detik)</label>
+                    <input type="number" id="auto-refresh" min="0" max="60" value="0" class="w-full p-3 rounded-xl bg-matte-50 dark:bg-matte-900 border border-matte-200 dark:border-matte-700 focus:border-violet-500 outline-none text-matte-700 dark:text-matte-200 font-medium">
+                    <p class="text-[10px] text-matte-400 mt-1" data-i18n="msg.fill_zero_disable">Isi 0 untuk mematikan auto-refresh.</p>
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.text_size">Ukuran Teks</label>
-                    <label for="text-size" class="block text-xs font-bold text-slate-500 uppercase mb-1">Ukuran</label>
-                     <select id="text-size" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-violet-500 outline-none text-slate-700 dark:text-slate-200 font-medium">
+                    <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.text_size">Ukuran Teks</label>
+                    <label for="text-size" class="block text-xs font-bold text-matte-500 uppercase mb-1">Ukuran</label>
+                     <select id="text-size" class="w-full p-3 rounded-xl bg-matte-50 dark:bg-matte-900 border border-matte-200 dark:border-matte-700 focus:border-violet-500 outline-none text-matte-700 dark:text-matte-200 font-medium">
                         <option value="text-xl" data-i18n="size.small">Kecil</option>
                         <option value="text-2xl" selected data-i18n="size.medium">Sedang</option>
                         <option value="text-3xl" data-i18n="size.large">Besar</option>
@@ -130,10 +130,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 </div>
                 
                 <div class="flex items-center justify-between">
-                    <span class="text-sm font-bold text-slate-700 dark:text-slate-300" data-i18n="label.show_author">Tampilkan Author</span>
+                    <span class="text-sm font-bold text-matte-700 dark:text-matte-300" data-i18n="label.show_author">Tampilkan Author</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="show-author" class="sr-only peer" checked>
-                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500"></div>
+                        <div class="w-11 h-6 bg-matte-200 peer-focus:outline-none rounded-full peer dark:bg-matte-700 peer-checked:after:tranmatte-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500"></div>
                     </label>
                 </div>
             </div>
@@ -206,7 +206,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const copyBtn = document.getElementById('copy-btn');
   const favoriteBtn = document.getElementById('favorite-btn');
   const shareBtn = document.getElementById('share-btn');
-  const translateBtn = document.getElementById('translate-btn');
+  const translateBtn = document.getElementById('tranmatte-btn');
   const settingsBtn = document.getElementById('settings-btn');
   const settingsModal = document.getElementById('settings-modal');
   const closeSettingsBtn = document.getElementById('close-settings');
@@ -234,13 +234,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           modeIndicator.classList.remove('bg-emerald-400');
           modeIndicator.classList.add('bg-white');
 
-          statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span class="text-slate-500 dark:text-slate-400">Local Database</span>';
-          statusBadge.className = "absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold uppercase tracking-widest";
+          statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-matte-400"></span><span class="text-matte-500 dark:text-matte-400">Local Database</span>';
+          statusBadge.className = "absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-matte-100 dark:bg-matte-700 text-[10px] font-bold uppercase tracking-widest";
       }
   }
 
   function applySettings() {
-      quoteText.className = `${settings.textSize} font-bold text-slate-800 dark:text-slate-100 leading-relaxed transition-opacity duration-300`;
+      quoteText.className = `${settings.textSize} font-bold text-matte-800 dark:text-matte-100 leading-relaxed transition-opacity duration-300`;
       quoteAuthor.style.display = settings.showAuthor ? 'block' : 'none';
       
       if (autoRefreshInterval) clearInterval(autoRefreshInterval);
@@ -251,7 +251,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       // 1. Reset State Translate
       isTranslated = false;
       translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
-      translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+      translateBtn.classList.add('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
 
       // 2. UI Loading State
       generateBtn.disabled = true;
@@ -343,7 +343,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           isTranslated = false;
           
           translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
-          translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+          translateBtn.classList.add('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
           window.showToast(window._tToast ? window._tToast('Kembali ke teks asli') : 'Kembali ke teks asli', 'info');
       } else {
           // TRANSLATE LOGIC
@@ -371,7 +371,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                   currentQuote = translatedData;
                   isTranslated = true;
                   
-                  translateBtn.classList.remove('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+                  translateBtn.classList.remove('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
                   translateBtn.classList.add('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
                   window.showToast(window._tToast ? window._tToast('Berhasil diterjemahkan') : 'Berhasil diterjemahkan', 'success');
               } else {
@@ -430,18 +430,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   function renderFavorites() {
     if (favorites.length === 0) {
-      favoritesList.innerHTML = '            <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4" data-i18n="text.no_fav_quotes">Belum ada quote favorit</p>';
+      favoritesList.innerHTML = '            <p class="text-sm text-matte-500 dark:text-matte-400 text-center py-4" data-i18n="text.no_fav_quotes">Belum ada quote favorit</p>';
       favoritesSection.classList.add('hidden');
       return;
     }
     favoritesSection.classList.remove('hidden');
     favoritesList.innerHTML = favorites.map(fav => `
-      <div class="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors cursor-pointer group flex justify-between items-start favorite-item" data-text="${fav.text.replace(/"/g, '&quot;')}" data-author="${fav.author.replace(/"/g, '&quot;')}">
+      <div class="p-3 bg-matte-50 dark:bg-matte-700 rounded-lg hover:bg-matte-100 dark:hover:bg-matte-600 transition-colors cursor-pointer group flex justify-between items-start favorite-item" data-text="${fav.text.replace(/"/g, '&quot;')}" data-author="${fav.author.replace(/"/g, '&quot;')}">
           <div class="flex-1">
-            <p class="text-sm font-medium text-slate-700 dark:text-slate-300 line-clamp-2">"${fav.text}"</p>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">- ${fav.author}</p>
+            <p class="text-sm font-medium text-matte-700 dark:text-matte-300 line-clamp-2">"${fav.text}"</p>
+            <p class="text-xs text-matte-500 dark:text-matte-400 mt-1">- ${fav.author}</p>
           </div>
-          <button class="delete-fav ml-2 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition-colors" data-id="${fav.id}">
+          <button class="delete-fav ml-2 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-matte-400 hover:text-red-500 transition-colors" data-id="${fav.id}">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
       </div>
@@ -460,7 +460,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             // Reset translate state
             isTranslated = false;
             translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
-            translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+            translateBtn.classList.add('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
             
             displayQuote({text, author});
             updateFavoriteButton();

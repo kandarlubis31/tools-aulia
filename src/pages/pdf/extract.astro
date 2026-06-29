@@ -20,24 +20,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">
         Extract Pages
       </h1>
-      <p class="text-slate-600 dark:text-slate-400">
+      <p class="text-matte-600 dark:text-matte-400">
         Pilih halaman yang ingin Anda ambil dan simpan sebagai file terpisah.
       </p>
     </div>
 
-    <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-slate-300 dark:border-slate-600 rounded-3xl p-12 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-slate-800/50 transition-all group text-center animate-on-scroll">
+    <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-matte-300 dark:border-matte-600 rounded-3xl p-12 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-matte-800/50 transition-all group text-center animate-on-scroll">
       <div class="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 22h2a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><path d="M14 22v-4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2Z"/></svg>
       </div>
-      <h3 class="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2">Pilih PDF</h3>
+      <h3 class="text-2xl font-bold text-matte-700 dark:text-matte-200 mb-2">Pilih PDF</h3>
       <input type="file" id="file-input" accept="application/pdf" class="hidden" />
     </div>
 
     <div id="workspace" class="hidden pb-20 animate-fade-in">
-      <div class="sticky top-24 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg mb-8 flex flex-wrap gap-4 justify-between items-center max-w-4xl mx-auto">
+      <div class="sticky top-24 z-40 bg-white/90 dark:bg-matte-900/90 backdrop-blur-md p-4 rounded-xl border border-matte-200 dark:border-matte-700 shadow-lg mb-8 flex flex-wrap gap-4 justify-between items-center max-w-4xl mx-auto">
          <div class="flex gap-2">
-            <button id="select-all" class="text-xs font-bold px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded hover:bg-slate-200 transition">Pilih Semua</button>
-            <button id="clear-all" class="text-xs font-bold px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded hover:bg-slate-200 transition">Reset</button>
+            <button id="select-all" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-matte-700 rounded hover:bg-matte-200 transition">Pilih Semua</button>
+            <button id="clear-all" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-matte-700 rounded hover:bg-matte-200 transition">Reset</button>
          </div>
          <button id="save-btn" disabled class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -94,11 +94,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       // Card
       const card = document.createElement('div');
-      card.className = "relative bg-slate-200 dark:bg-slate-800 p-1 rounded-lg cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all border-4 border-transparent";
+      card.className = "relative bg-matte-200 dark:bg-matte-800 p-1 rounded-lg cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all border-4 border-transparent";
       card.dataset.index = i - 1;
       
       const badge = document.createElement('span');
-      badge.className = "absolute top-2 left-2 bg-slate-900/80 text-white text-xs font-bold px-2 py-1 rounded shadow-sm z-10";
+      badge.className = "absolute top-2 left-2 bg-matte-900/80 text-white text-xs font-bold px-2 py-1 rounded shadow-sm z-10";
       badge.innerText = i;
 
       // Checkmark Overlay

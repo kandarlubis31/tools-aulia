@@ -29,7 +29,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             data-i18n-attr="placeholder"
             data-i18n="sinonim.placeholder"
           />
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-matte-400 shrink-0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -tranmatte-y-1/2 text-matte-400 shrink-0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           
           <!-- Autocomplete Dropdown -->
           <div id="autocomplete-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar animate-fade-in-down"></div>
@@ -45,7 +45,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="flex items-center justify-between mt-2.5">
         <p class="text-2xs text-matte-400 flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-          <span data-i18n="sinonim.source">Sumber: Wiktionary API — gratis, real-time, tanpa perlu API key.</span>
+          <span data-i18n="sinonim.source">Sumber: Wiktionary API + KBBI Edisi VI (fallback) — gratis, tanpa API key.</span>
         </p>
         <div id="cache-status" class="hidden flex items-center gap-1.5">
           <span id="cache-count" class="text-2xs text-emerald-500 font-medium"></span>
@@ -62,6 +62,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
         <span class="text-sm text-matte-400" data-i18n="sinonim.searching">Mencari persamaan kata...</span>
+      </div>
+    </div>
+
+    <!-- KBBI Loading State (shown when loading KBBI fallback dataset) -->
+    <div id="kbbi-loading" class="hidden card-base p-6 text-center animate-fade-in">
+      <div class="flex flex-col items-center gap-2">
+        <svg class="animate-spin h-5 w-5 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-xs text-amber-600 dark:text-amber-400">Memuat data dari KBBI Edisi VI (49.000+ kata)...</span>
       </div>
     </div>
 
@@ -100,6 +111,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             Offline
           </span>
           <span id="meaning-count" class="text-2xs text-matte-400"></span>
+          <span id="kbbi-badge" class="hidden inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold uppercase tracking-wide-2 bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"/><polyline points="10 6 14 10 10 14"/></svg>
+            KBBI
+          </span>
         </div>
       </div>
 
@@ -136,6 +151,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
+  import { debounce } from '../../composables/useDebounce';
   document.addEventListener('astro:page-load', () => {
     const searchInput = document.getElementById('search-input') as HTMLInputElement;
     const searchBtn = document.getElementById('search-btn');
@@ -388,6 +404,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       resultsSection?.classList.add('hidden');
       emptyState?.classList.add('hidden');
       showCacheBadge(false);
+      showKbbiBadge(false);
 
       // Auto-detect language: if contains non-ASCII (Indonesian chars like "abcdefghijklmnopqrstuvwxyz" are all ASCII,
       // but Indonesian uses mostly ASCII. Let's check: if word contains `ny`, `ng`, `kh`, `sy` etc common in ID...
@@ -429,7 +446,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           renderResults(cached.data, word.trim(), cached.lang, true);
           return;
         }
+        // Try KBBI fallback (lazy-load dataset on first failure)
         loadingState?.classList.add('hidden');
+        const kbbiResult = await searchKbbiSinonim(word.trim());
+        if (kbbiResult) {
+          // Cache the KBBI result so next time it loads from localStorage
+          saveToCache(word.trim(), [{ word: word.trim(), meanings: kbbiResult.meanings }], 'id');
+          saveRecent(word.trim());
+          renderKbbiResults(kbbiResult, word.trim());
+          return;
+        }
+        // Nothing found anywhere
         errorState?.classList.remove('hidden');
         if (errorMessage) {
           errorMessage.textContent = `"${word.trim()}" tidak ditemukan. Coba kata lain.`;
@@ -555,29 +582,231 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       });
     }
 
+    // --- KBBI Thesaurus Fallback (lazy-loaded from public/kbbi-sinonim.json) ---
+    // Format: [kata, definisi, turunan|pipe|separated, gabungan|pipe|separated]
+    let kbbiSinonimPromise: Promise<[string, string, string, string][]> | null = null;
+    let kbbiSinonimCache: [string, string, string, string][] | null = null;
+
+    async function loadKbbiSinonim(): Promise<[string, string, string, string][]> {
+      if (kbbiSinonimCache) return kbbiSinonimCache;
+      if (kbbiSinonimPromise) return kbbiSinonimPromise;
+      kbbiSinonimPromise = fetch('/kbbi-sinonim.json')
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load KBBI thesaurus');
+          return res.json();
+        })
+        .then(data => {
+          kbbiSinonimCache = data;
+          kbbiSinonimPromise = null;
+          return data;
+        })
+        .catch(err => {
+          kbbiSinonimPromise = null;
+          console.warn('KBBI fallback load failed', err);
+          return [];
+        });
+      return kbbiSinonimPromise;
+    }
+
+    function binarySearchKbbi(
+      data: [string, string, string, string][],
+      target: string
+    ): [string, string, string, string] | null {
+      let left = 0;
+      let right = data.length - 1;
+      while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        const midWord = data[mid][0];
+        if (midWord === target) return data[mid];
+        if (midWord < target) {
+          left = mid + 1;
+        } else {
+          right = mid - 1;
+        }
+      }
+      return null;
+    }
+
+    function showKbbiBadge(fromKbbi: boolean) {
+      const badge = document.getElementById('kbbi-badge');
+      if (badge) {
+        if (fromKbbi) {
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }
+
+    async function searchKbbiSinonim(word: string): Promise<{
+      definisi: string;
+      turunan: string[];
+      gabungan: string[];
+      meanings: { partOfSpeech: string; synonyms: string[]; antonyms: string[]; definitions: string[] }[];
+    } | null> {
+      const kbbiLoading = document.getElementById('kbbi-loading');
+      
+      // Show loading state while loading the 9.3MB dataset
+      kbbiLoading?.classList.remove('hidden');
+      
+      try {
+        const data = await loadKbbiSinonim();
+        if (!data || data.length === 0) {
+          kbbiLoading?.classList.add('hidden');
+          return null;
+        }
+        
+        const q = word.trim().toLowerCase();
+        const entry = binarySearchKbbi(data, q);
+        kbbiLoading?.classList.add('hidden');
+        
+        if (!entry) return null;
+        
+        const [kata, definisi, turunanStr, gabunganStr] = entry;
+        
+        // Parse pipe-separated lists
+        const turunan = turunanStr ? turunanStr.split('|').filter(t => t && t !== q) : [];
+        const gabungan = gabunganStr ? gabunganStr.split('|').filter(g => g && !turunan.includes(g)) : [];
+        
+        // Show note if this is a derived word (reverse entry)
+        const isDerived = definisi.startsWith('Bentuk turunan');
+        
+        return {
+          definisi,
+          turunan,
+          gabungan,
+          meanings: [{
+            partOfSpeech: 'kata',
+            synonyms: turunan,
+            antonyms: [],
+            definitions: isDerived
+              ? [definisi]
+              : [definisi],
+          }],
+        };
+      } catch (err) {
+        kbbiLoading?.classList.add('hidden');
+        console.warn('KBBI search failed:', err);
+        return null;
+      }
+    }
+
+    // --- Render KBBI Results ---
+    function renderKbbiResults(
+      result: { definisi: string; turunan: string[]; gabungan: string[]; meanings: { partOfSpeech: string; synonyms: string[]; antonyms: string[]; definitions: string[] }[] },
+      word: string
+    ) {
+      loadingState?.classList.add('hidden');
+      errorState?.classList.add('hidden');
+      resultsSection?.classList.remove('hidden');
+      emptyState?.classList.add('hidden');
+      showCacheBadge(false);
+      showKbbiBadge(true);
+
+      // Word header
+      if (wordDisplay) wordDisplay.textContent = word;
+      if (wordPhonetic) wordPhonetic.textContent = '';
+      if (langBadge) langBadge.textContent = 'ID';
+
+      if (meaningCount) {
+        const parts: string[] = [];
+        if (result.definisi) parts.push(`1 arti`);
+        if (result.turunan.length > 0) parts.push(`${result.turunan.length} sinonim`);
+        if (result.gabungan.length > 0) parts.push(`${result.gabungan.length} kata gabungan`);
+        meaningCount.textContent = parts.join(' · ');
+      }
+
+      // Render meanings
+      if (meaningsContainer) {
+        const htmlParts: string[] = [];
+
+        // Definition section
+        if (result.definisi) {
+          htmlParts.push(`
+            <div class="card-base p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="badge-accent text-2xs">Definisi</span>
+              </div>
+              <p class="text-xs text-matte-500 dark:text-matte-300 leading-relaxed">${escapeHtml(result.definisi)}</p>
+            </div>
+          `);
+        }
+
+        // Sinonim (turunan) section
+        if (result.turunan.length > 0) {
+          htmlParts.push(`
+            <div class="card-base p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="badge-accent text-2xs">Persamaan Kata</span>
+                <span class="text-2xs text-matte-400">(${result.turunan.length})</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                ${result.turunan.map(s => `
+                  <button class="synonym-chip px-2.5 py-1 rounded-md bg-accent-blue/5 text-accent-blue text-xs font-medium hover:bg-accent-blue/10 transition-all duration-150">${escapeHtml(s)}</button>
+                `).join('')}
+              </div>
+            </div>
+          `);
+        }
+
+        // Kata Gabungan section
+        if (result.gabungan.length > 0) {
+          htmlParts.push(`
+            <div class="card-base p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="badge-outline text-2xs">Kata Gabungan</span>
+                <span class="text-2xs text-matte-400">(${result.gabungan.length})</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                ${result.gabungan.map(g => `
+                  <button class="compound-chip px-2.5 py-1 rounded-md bg-teal-50 dark:bg-teal-900/10 text-teal-600 dark:text-teal-400 text-xs font-medium hover:bg-teal-100 dark:hover:bg-teal-900/20 transition-all duration-150">${escapeHtml(g)}</button>
+                `).join('')}
+              </div>
+            </div>
+          `);
+        }
+
+        meaningsContainer.innerHTML = htmlParts.join('\n');
+      }
+
+      // Click on synonym/compound chips to search that word
+      document.querySelectorAll('.synonym-chip, .compound-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const word = (chip as HTMLElement).textContent || '';
+          if (searchInput) searchInput.value = word;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          searchWord(word);
+        });
+      });
+
+    }
+
+    // Helper: escape HTML special chars in user data
+    function escapeHtml(str: string): string {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(str));
+      return div.innerHTML;
+    }
+
     // --- Event Listeners ---
     searchBtn?.addEventListener('click', () => {
       if (searchInput) searchWord(searchInput.value);
     });
 
-    // --- Autocomplete Input Handler (with lazy word list load) ---
-    let autocompleteTimer: ReturnType<typeof setTimeout> | null = null;
-    
+    // --- Autocomplete Input Handler (with lazy word list load, debounced) ---
+    const debouncedAutocomplete = debounce(async (val: string) => {
+      if (val.length >= 1) {
+        const idWords = await loadIdWords();
+        const suggestions = getSuggestions(val, idWords);
+        renderSuggestions(suggestions);
+      } else {
+        closeAutocomplete();
+      }
+    }, 80);
+
     searchInput?.addEventListener('input', () => {
       const val = searchInput.value;
-      
-      // Debounce autocomplete
-      if (autocompleteTimer) clearTimeout(autocompleteTimer);
-      autocompleteTimer = setTimeout(async () => {
-        if (val.length >= 1) {
-          // Ensure word list is loaded
-          const idWords = await loadIdWords();
-          const suggestions = getSuggestions(val, idWords);
-          renderSuggestions(suggestions);
-        } else {
-          closeAutocomplete();
-        }
-      }, 80);
+      debouncedAutocomplete(val);
     });
 
     searchInput?.addEventListener('keydown', (e: KeyboardEvent) => {

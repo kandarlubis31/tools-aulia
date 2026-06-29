@@ -9,24 +9,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-orange-500" data-i18n="header.pomodoro">
         Pomodoro Focus
       </h1>
-      <p class="text-slate-600 dark:text-slate-400" data-i18n="header.pomodoro_desc">
+      <p class="text-matte-600 dark:text-matte-400" data-i18n="header.pomodoro_desc">
         Tingkatkan produktivitas dengan teknik interval waktu.
       </p>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl w-full max-w-md text-center animate-fade-in">
+    <div class="bg-white dark:bg-matte-800 p-8 rounded-3xl border border-matte-200 dark:border-matte-700 shadow-2xl w-full max-w-md text-center animate-fade-in">
        
-       <div class="flex p-1 bg-slate-100 dark:bg-slate-700 rounded-xl mb-8">
-          <button class="mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-slate-600 shadow text-rose-500 rounded-lg transition-all" data-time="25" data-color="rose" data-i18n="text.focus_mode">Fokus</button>
-          <button class="mode-btn flex-1 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-all" data-time="5" data-color="teal" data-i18n="text.short_break">Short Break</button>
-          <button class="mode-btn flex-1 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-all" data-time="15" data-color="blue" data-i18n="text.long_break">Long Break</button>
+       <div class="flex p-1 bg-matte-100 dark:bg-matte-700 rounded-xl mb-8">
+          <button class="mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-matte-600 shadow text-rose-500 rounded-lg transition-all" data-time="25" data-color="rose" data-i18n="text.focus_mode">Fokus</button>
+          <button class="mode-btn flex-1 py-2 text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all" data-time="5" data-color="teal" data-i18n="text.short_break">Short Break</button>
+          <button class="mode-btn flex-1 py-2 text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all" data-time="15" data-color="blue" data-i18n="text.long_break">Long Break</button>
        </div>
 
        <div class="relative mb-10">
           <div id="timer-display" class="text-8xl font-mono font-bold text-rose-500 tracking-tighter transition-colors duration-500">
              25:00
           </div>
-          <p id="status-text" class="text-slate-400 font-medium mt-2 uppercase tracking-widest text-sm" data-i18n="text.time_to_focus">Waktunya Fokus</p>
+          <p id="status-text" class="text-matte-400 font-medium mt-2 uppercase tracking-widest text-sm" data-i18n="text.time_to_focus">Waktunya Fokus</p>
        </div>
 
        <div class="flex justify-center gap-4">
@@ -34,7 +34,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
              <svg id="icon-play" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
              <svg id="icon-pause" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
           </button>
-          <button id="reset-btn" class="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 flex items-center justify-center transition-all">
+          <button id="reset-btn" class="w-16 h-16 rounded-full bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-matte-600 flex items-center justify-center transition-all">
              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
           </button>
        </div>
@@ -49,17 +49,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     rose: {
       display: 'text-8xl font-mono font-bold text-rose-500 tracking-tighter transition-colors duration-500',
       toggle: 'w-20 h-20 rounded-full bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95',
-      modeActive: 'mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-slate-600 shadow text-rose-500 rounded-lg transition-all',
+      modeActive: 'mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-matte-600 shadow text-rose-500 rounded-lg transition-all',
     },
     teal: {
       display: 'text-8xl font-mono font-bold text-teal-500 tracking-tighter transition-colors duration-500',
       toggle: 'w-20 h-20 rounded-full bg-teal-500 hover:bg-teal-600 text-white shadow-lg shadow-teal-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95',
-      modeActive: 'mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-slate-600 shadow text-teal-500 rounded-lg transition-all',
+      modeActive: 'mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-matte-600 shadow text-teal-500 rounded-lg transition-all',
     },
     blue: {
       display: 'text-8xl font-mono font-bold text-blue-500 tracking-tighter transition-colors duration-500',
       toggle: 'w-20 h-20 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95',
-      modeActive: 'mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-slate-600 shadow text-blue-500 rounded-lg transition-all',
+      modeActive: 'mode-btn flex-1 py-2 text-sm font-bold bg-white dark:bg-matte-600 shadow text-blue-500 rounded-lg transition-all',
     },
   };
 
@@ -159,7 +159,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   modeBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       // Styles Reset
-      modeBtns.forEach(b => b.className = "mode-btn flex-1 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 transition-all");
+      modeBtns.forEach(b => b.className = "mode-btn flex-1 py-2 text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all");
       
       // Active Style (via THEMES mapping — NOT template strings)
       var color = e.target.dataset.color;

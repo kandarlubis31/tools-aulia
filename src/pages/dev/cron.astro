@@ -9,13 +9,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   <div class="max-w-5xl mx-auto px-4 py-12">
     
     <header class="text-center mb-10 animate-fade-in">
-      <h1 class="text-4xl font-extrabold text-slate-900 dark:text-white mb-2">Cron Generator</h1>
-      <p class="text-slate-500" data-i18n="header.cron_desc">Bikin jadwal Cron Job tanpa pusing mikirin urutan bintang (*).</p>
+      <h1 class="text-4xl font-extrabold text-matte-900 dark:text-white mb-2">Cron Generator</h1>
+      <p class="text-matte-500" data-i18n="header.cron_desc">Bikin jadwal Cron Job tanpa pusing mikirin urutan bintang (*).</p>
     </header>
 
     
 
-    <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 mb-8 animate-fade-in-up">
+    <div class="bg-white dark:bg-matte-800 p-8 rounded-2xl shadow-lg border border-matte-200 dark:border-matte-700 mb-8 animate-fade-in-up">
       
       <div class="mb-6 text-center min-h-[3rem] flex items-center justify-center">
         <span id="human-result" class="text-lg md:text-xl font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-2 rounded-lg transition-all" data-i18n="text.loading">
@@ -29,7 +29,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             type="text" 
             id="cron-input" 
             value="* * * * *" 
-            class="flex-1 text-center text-3xl md:text-5xl font-mono py-4 bg-slate-50 dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-600 rounded-xl focus:border-indigo-500 focus:ring-0 outline-none text-slate-800 dark:text-slate-200 tracking-widest transition-all"
+            class="flex-1 text-center text-3xl md:text-5xl font-mono py-4 bg-matte-50 dark:bg-matte-900 border-2 border-matte-300 dark:border-matte-600 rounded-xl focus:border-indigo-500 focus:ring-0 outline-none text-matte-800 dark:text-matte-200 tracking-widest transition-all"
             spellcheck="false"
           >
           <button id="copy-btn" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors flex items-center justify-center" title="Copy to clipboard">
@@ -39,7 +39,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <p id="error-msg" class="text-red-500 text-sm mt-2 text-center hidden font-bold"></p>
       </div>
 
-      <div class="grid grid-cols-5 gap-1 text-center text-xs font-bold text-slate-400 uppercase tracking-tighter mb-8">
+      <div class="grid grid-cols-5 gap-1 text-center text-xs font-bold text-matte-400 uppercase tracking-tighter mb-8">
         <div>Minute</div>
         <div>Hour</div>
         <div>Day (Month)</div>
@@ -47,18 +47,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div>Day (Week)</div>
       </div>
 
-      <div class="mb-8 border-t border-slate-200 dark:border-slate-700 pt-6">
+      <div class="mb-8 border-t border-matte-200 dark:border-matte-700 pt-6">
         <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300" data-i18n="text.visual_builder">Visual Builder</h3>
+        <h3 class="text-sm font-bold text-matte-700 dark:text-matte-300" data-i18n="text.visual_builder">Visual Builder</h3>
         <button id="toggle-builder" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline" data-i18n="btn.hide">Hide</button>
         </div>
         
         <div id="visual-builder" class="space-y-4">
           <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div class="space-y-2">
-              <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Minute</label>
+              <label class="text-xs font-bold text-matte-600 dark:text-matte-400">Minute</label>
               <label for="minute-select" class="sr-only">Minute</label>
-              <select id="minute-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
+              <select id="minute-select" class="w-full p-2 bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 rounded text-sm">
                 <option value="*">Every minute</option>
                 <option value="0">At index 0</option>
                 <option value="*/5">Every 5 mins</option>
@@ -66,13 +66,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 <option value="30">At index 30</option>
                 <option value="custom">Custom</option>
               </select>
-              <input type="text" id="minute-custom" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm hidden" placeholder="0-59">
+              <input type="text" id="minute-custom" class="w-full p-2 bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 rounded text-sm hidden" placeholder="0-59">
             </div>
             
             <div class="space-y-2">
-              <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Hour</label>
+              <label class="text-xs font-bold text-matte-600 dark:text-matte-400">Hour</label>
               <label for="hour-select" class="sr-only">Hour</label>
-              <select id="hour-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
+              <select id="hour-select" class="w-full p-2 bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 rounded text-sm">
                 <option value="*">Every hour</option>
                 <option value="0">Midnight (00)</option>
                 <option value="9">9 AM</option>
@@ -81,26 +81,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 <option value="*/2">Every 2 hours</option>
                 <option value="custom">Custom</option>
               </select>
-              <input type="text" id="hour-custom" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm hidden" placeholder="0-23">
+              <input type="text" id="hour-custom" class="w-full p-2 bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 rounded text-sm hidden" placeholder="0-23">
             </div>
             
             <div class="space-y-2">
-              <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Day (Month)</label>
+              <label class="text-xs font-bold text-matte-600 dark:text-matte-400">Day (Month)</label>
               <label for="day-select" class="sr-only">Day</label>
-              <select id="day-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
+              <select id="day-select" class="w-full p-2 bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 rounded text-sm">
                 <option value="*">Every day</option>
                 <option value="1">1st of month</option>
                 <option value="15">15th of month</option>
                 <option value="L">Last day</option>
                 <option value="custom">Custom</option>
               </select>
-              <input type="text" id="day-custom" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm hidden" placeholder="1-31">
+              <input type="text" id="day-custom" class="w-full p-2 bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 rounded text-sm hidden" placeholder="1-31">
             </div>
             
             <div class="space-y-2">
-              <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Month</label>
+              <label class="text-xs font-bold text-matte-600 dark:text-matte-400">Month</label>
               <label for="month-select" class="sr-only">Month</label>
-              <select id="month-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
+              <select id="month-select" class="w-full p-2 bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 rounded text-sm">
                 <option value="*">Every month</option>
                 <option value="1">January</option>
                 <option value="6">June</option>
@@ -108,13 +108,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 <option value="*/3">Every 3 months</option>
                 <option value="custom">Custom</option>
               </select>
-              <input type="text" id="month-custom" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm hidden" placeholder="1-12">
+              <input type="text" id="month-custom" class="w-full p-2 bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 rounded text-sm hidden" placeholder="1-12">
             </div>
             
             <div class="space-y-2">
-              <label class="text-xs font-bold text-slate-600 dark:text-slate-400">Weekday</label>
+              <label class="text-xs font-bold text-matte-600 dark:text-matte-400">Weekday</label>
               <label for="weekday-select" class="sr-only">Weekday</label>
-              <select id="weekday-select" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm">
+              <select id="weekday-select" class="w-full p-2 bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 rounded text-sm">
                 <option value="*">Every day</option>
                 <option value="1-5">Mon-Fri</option>
                 <option value="0,6">Sat-Sun</option>
@@ -122,7 +122,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 <option value="5">Friday</option>
                 <option value="custom">Custom</option>
               </select>
-              <input type="text" id="weekday-custom" class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-sm hidden" placeholder="0-6 (Sun-Sat)">
+              <input type="text" id="weekday-custom" class="w-full p-2 bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 rounded text-sm hidden" placeholder="0-6 (Sun-Sat)">
             </div>
           </div>
           
@@ -132,32 +132,32 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <div class="mb-8 border-t border-slate-200 dark:border-slate-700 pt-6">          <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3" data-i18n="text.quick_presets">Quick Presets</h3>
+      <div class="mb-8 border-t border-matte-200 dark:border-matte-700 pt-6">          <h3 class="text-sm font-bold text-matte-700 dark:text-matte-300 mb-3" data-i18n="text.quick_presets">Quick Presets</h3>
         <div class="flex flex-wrap gap-2">
-          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors" data-val="* * * * *">Every Minute</button>
-          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors" data-val="*/5 * * * *">Every 5 Mins</button>
-          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors" data-val="0 * * * *">Hourly</button>
-          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors" data-val="0 0 * * *">Daily (Midnight)</button>
-          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors" data-val="0 9 * * 1-5">Work Hours</button>
-          <button class="preset-btn px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 text-sm rounded-lg transition-colors" data-val="@reboot">@reboot</button>
+          <button class="preset-btn px-3 py-1.5 bg-matte-100 dark:bg-matte-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-matte-600 dark:text-matte-300 text-sm rounded-lg transition-colors" data-val="* * * * *">Every Minute</button>
+          <button class="preset-btn px-3 py-1.5 bg-matte-100 dark:bg-matte-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-matte-600 dark:text-matte-300 text-sm rounded-lg transition-colors" data-val="*/5 * * * *">Every 5 Mins</button>
+          <button class="preset-btn px-3 py-1.5 bg-matte-100 dark:bg-matte-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-matte-600 dark:text-matte-300 text-sm rounded-lg transition-colors" data-val="0 * * * *">Hourly</button>
+          <button class="preset-btn px-3 py-1.5 bg-matte-100 dark:bg-matte-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-matte-600 dark:text-matte-300 text-sm rounded-lg transition-colors" data-val="0 0 * * *">Daily (Midnight)</button>
+          <button class="preset-btn px-3 py-1.5 bg-matte-100 dark:bg-matte-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-matte-600 dark:text-matte-300 text-sm rounded-lg transition-colors" data-val="0 9 * * 1-5">Work Hours</button>
+          <button class="preset-btn px-3 py-1.5 bg-matte-100 dark:bg-matte-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-matte-600 dark:text-matte-300 text-sm rounded-lg transition-colors" data-val="@reboot">@reboot</button>
         </div>
       </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 mb-8">
-      <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+    <div class="bg-white dark:bg-matte-800 p-6 rounded-xl border border-matte-200 dark:border-matte-700 mb-8">
+      <h3 class="text-sm font-bold text-matte-800 dark:text-matte-200 mb-4 flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         Next Executions (Estimasi)
       </h3>
       <div id="next-executions" class="space-y-2">
-        <p class="text-slate-600 dark:text-slate-400 text-sm animate-pulse">Calculating...</p>
+        <p class="text-matte-600 dark:text-matte-400 text-sm animate-pulse">Calculating...</p>
       </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700">          <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4" data-i18n="text.implementation_code">Implementation Code</h3>
+    <div class="bg-white dark:bg-matte-800 p-6 rounded-xl border border-matte-200 dark:border-matte-700">          <h3 class="text-sm font-bold text-matte-800 dark:text-matte-200 mb-4" data-i18n="text.implementation_code">Implementation Code</h3>
       <div class="mb-4">
         <label for="language-select" class="sr-only">Language</label>
-        <select id="language-select" class="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 mb-2">
+        <select id="language-select" class="text-xs bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 rounded px-2 py-1 mb-2">
           <option value="nodejs">Node.js (node-cron)</option>
           <option value="python">Python (crontab)</option>
           <option value="php">PHP (crontab)</option>
@@ -165,17 +165,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <option value="java">Java (Spring Boot)</option>
         </select>
         <div class="relative">
-          <pre id="code-example" class="p-4 bg-slate-900 text-slate-100 rounded-lg overflow-x-auto text-sm font-mono"></pre>
-          <button id="copy-code-btn" class="absolute top-2 right-2 p-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors">
+          <pre id="code-example" class="p-4 bg-matte-900 text-matte-100 rounded-lg overflow-x-auto text-sm font-mono"></pre>
+          <button id="copy-code-btn" class="absolute top-2 right-2 p-1.5 bg-matte-700 hover:bg-matte-600 text-white rounded transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
           </button>
         </div>
       </div>
     </div>
 
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 transform translate-y-20 opacity-0 transition-all duration-300 z-[100] px-6 py-3 rounded-full shadow-2xl bg-slate-900 text-white text-sm font-medium flex items-center gap-3">
-        <span id="toast-msg">Copied!</span>
-    </div>
+
 
   </div>
 </BaseLayout>
@@ -198,17 +196,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         cust: document.getElementById(`${id}-custom`)
     }));
 
-    const toast = document.getElementById('toast');
-    const toastMsg = document.getElementById('toast-msg');
-
     // --- FUNCTIONS ---
-
-    function showToast(msg) {
-        if(!toast) return;
-        toastMsg.textContent = msg;
-        toast.classList.remove('translate-y-20', 'opacity-0');
-        setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2000);
-    }
 
     function translateCron() {
       const val = cronInput.value;
@@ -234,7 +222,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     function updateNextExecutions() {
       const val = cronInput.value;
       if (val.startsWith('@')) {
-          nextExecutions.innerHTML = '<p class="text-slate-500 text-sm">Special macros cannot be previewed exactly.</p>';
+          nextExecutions.innerHTML = '<p class="text-matte-500 text-sm">Special macros cannot be previewed exactly.</p>';
           return;
       }
 
@@ -260,9 +248,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         }
 
         nextExecutions.innerHTML = results.map(time => 
-          `<div class="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-900 rounded border border-slate-100 dark:border-slate-700">
-            <span class="text-slate-600 dark:text-slate-300 text-sm font-mono">${time}</span>
-            <span class="text-xs text-slate-400">Estimated</span>
+          `<div class="flex justify-between items-center p-2 bg-matte-50 dark:bg-matte-900 rounded border border-matte-100 dark:border-matte-700">
+            <span class="text-matte-600 dark:text-matte-300 text-sm font-mono">${time}</span>
+            <span class="text-xs text-matte-400">Estimated</span>
            </div>`
         ).join('');
 
@@ -310,7 +298,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         translateCron();
         updateNextExecutions();
         updateCodeExample();
-        showToast(window._tToast ? window._tToast('Cron updated!') : 'Cron updated!');
+        window.showToast?.(window._tToast ? window._tToast('Cron updated!') : 'Cron updated!', 'success');
     });
 
     // Input Change
@@ -336,12 +324,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Copy Buttons
     document.getElementById('copy-btn').addEventListener('click', () => {
         navigator.clipboard.writeText(cronInput.value);
-        showToast(window._tToast ? window._tToast('Cron copied!') : 'Cron copied!');
+        window.showToast?.(window._tToast ? window._tToast('Cron copied!') : 'Cron copied!', 'success');
     });
     
     document.getElementById('copy-code-btn').addEventListener('click', () => {
         navigator.clipboard.writeText(codeExample.textContent);
-        showToast(window._tToast ? window._tToast('Code copied!') : 'Code copied!');
+        window.showToast?.(window._tToast ? window._tToast('Code copied!') : 'Code copied!', 'success');
     });
 
     // --- INIT ---

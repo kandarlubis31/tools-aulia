@@ -121,7 +121,7 @@ if (isPdfTool) {
   </div>
 
   <!-- Back to Top Button -->
-  <button id="back-to-top" aria-label="Back to top" class="fixed bottom-6 right-6 z-[90] w-9 h-9 rounded-lg bg-matte-900 dark:bg-white text-white dark:text-matte-900 shadow-md flex items-center justify-center opacity-0 translate-y-4 pointer-events-none transition-all duration-150 hover:opacity-90">
+  <button id="back-to-top" aria-label="Back to top" class="fixed bottom-6 right-6 z-[90] w-9 h-9 rounded-lg bg-matte-900 dark:bg-white text-white dark:text-matte-900 shadow-md flex items-center justify-center opacity-0 tranmatte-y-4 pointer-events-none transition-all duration-150 hover:opacity-90">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
   </button>
 
@@ -576,7 +576,7 @@ if (isPdfTool) {
           searchDebounceTimer = setTimeout(() => {
             const query = e.target.value.toLowerCase().trim();
             if (!query) {
-              searchResultsEl.innerHTML = '<div class="text-center py-8 text-slate-500 dark:text-slate-400"><p data-i18n="search.empty">Ketik untuk mencari tools</p></div>';
+              searchResultsEl.innerHTML = '<div class="text-center py-8 text-matte-500 dark:text-matte-400"><p data-i18n="search.empty">Ketik untuk mencari tools</p></div>';
               if (window.i18n && window.i18n.translateNode) window.i18n.translateNode(searchResultsEl);
               return;
             }
@@ -590,7 +590,7 @@ if (isPdfTool) {
             });
 
             if (filtered.length === 0) {
-              searchResultsEl.innerHTML = '<div class="text-center py-8 text-slate-500 dark:text-slate-400"><p data-i18n="search.no_results">Tidak ada hasil untuk</p><p class="font-bold mt-1">"' + query + '"</p></div>';
+              searchResultsEl.innerHTML = '<div class="text-center py-8 text-matte-500 dark:text-matte-400"><p data-i18n="search.no_results">Tidak ada hasil untuk</p><p class="font-bold mt-1">"' + query + '"</p></div>';
               if (window.i18n && window.i18n.translateNode) window.i18n.translateNode(searchResultsEl);
               return;
             }
@@ -622,9 +622,9 @@ if (isPdfTool) {
       if (backToTopBtn) {
         const toggleBackToTop = () => {
           if (window.scrollY > 400) {
-            backToTopBtn.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+            backToTopBtn.classList.remove('opacity-0', 'tranmatte-y-4', 'pointer-events-none');
           } else {
-            backToTopBtn.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+            backToTopBtn.classList.add('opacity-0', 'tranmatte-y-4', 'pointer-events-none');
           }
         };
         window.addEventListener('scroll', toggleBackToTop, { passive: true });

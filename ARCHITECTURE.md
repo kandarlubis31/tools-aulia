@@ -116,44 +116,21 @@ Reusable logic functions that can be used across tools:
 | Composable | Purpose |
 |------------|---------|
 | `useToast` | Toast notification system with translation support |
-| `useFileHandler` | Drag-and-drop file handling with validation |
 | `useClipboard` | Copy to clipboard with fallback |
-| `useProgress` | Progress bar with XSS-safe DOM creation |
+| `useDebounce` | Generic debounce utility |
+| `useLocalHistory` | localStorage-backed history manager |
 
-### 5. Types (`src/types/`)
+### 5. Types
 
-TypeScript interfaces:
+TypeScript interfaces are defined inline within Astro pages and composables.
 
-```typescript
-// src/types/tool.ts
-interface ToolDefinition {
-  id: string;
-  nameKey: string;      // i18n key
-  descKey: string;      // i18n key
-  icon: string;
-  color: ThemeColor;
-  path: string;
-}
+### 6. Data
 
-interface ToolCategory {
-  id: string;
-  nameKey: string;
-  icon: string;
-  tools: ToolDefinition[];
-}
-```
+Centralized tool definitions:
 
-### 6. Registry (`src/lib/registry.ts`)
-
-Centralized tool registry with plugin-based architecture:
-
-```typescript
-// Provides:
-// - getAllTools() - List all available tools
-// - getToolsByCategory(category) - Tools in a category
-// - getToolById(id) - Single tool lookup
-// - searchTools(query) - Search functionality
-```
+- `src/data/tools.ts` — All tool definitions with names, descriptions, categories, icons
+- `src/data/new-tools.ts` — Newest tools for homepage section
+- `src/data/id-words.ts` — 195k Indonesian word list for autocomplete
 
 ### 7. i18n (`src/i18n/translations.ts`)
 
@@ -377,7 +354,7 @@ For performance-critical operations:
 
 | Layer | Technology |
 |-------|------------|
-| Framework | Astro 4.x |
+| Framework | Astro 5.x |
 | Styling | Tailwind CSS |
 | Language | TypeScript (strict) |
 | Testing | Vitest + Playwright |
@@ -386,5 +363,5 @@ For performance-critical operations:
 
 ---
 
-**Last updated:** June 2024  
+**Last updated:** June 2026  
 **Maintained by:** Aulia Iskandar Lubis

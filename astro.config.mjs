@@ -59,6 +59,15 @@ export default defineConfig({
               expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 365 },
               cacheableResponse: { statuses: [0, 200] }
             }
+          },
+          {
+            urlPattern: /\/kbbi-sinonim\.json$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'kbbi-sinonim',
+              expiration: { maxEntries: 1, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] }
+            }
           }
         ]
       },

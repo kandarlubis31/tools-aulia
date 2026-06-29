@@ -18,17 +18,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="lg:col-span-2 space-y-6">
         
         <div id="eyedropper-section" class="hidden bg-gradient-to-r from-pink-600 to-rose-600 p-1 rounded-2xl shadow-lg">
-           <div class="bg-white dark:bg-slate-800 p-6 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+           <div class="bg-white dark:bg-matte-800 p-6 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4">
               <div class="flex items-center gap-4">
                  <div class="p-3 bg-pink-100 dark:bg-pink-900/30 text-pink-600 rounded-full animate-pulse">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.9.9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l-9 9H6v-3l9-9Z"/></svg>
                  </div>
                  <div>
-                    <h3 class="font-bold text-slate-800 dark:text-white">Pipet Layar (EyeDropper)</h3>
-                    <p class="text-xs text-slate-500">Ambil warna dari pixel mana saja di monitor Anda.</p>
+                    <h3 class="font-bold text-matte-800 dark:text-white">Pipet Layar (EyeDropper)</h3>
+                    <p class="text-xs text-matte-500">Ambil warna dari pixel mana saja di monitor Anda.</p>
                  </div>
               </div>
-              <button id="btn-eyedropper" class="w-full sm:w-auto px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-lg hover:scale-105 transition shadow-lg flex items-center justify-center gap-2">
+              <button id="btn-eyedropper" class="w-full sm:w-auto px-6 py-3 bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-bold rounded-lg hover:scale-105 transition shadow-lg flex items-center justify-center gap-2">
                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
                  Buka Pipet
               </button>
@@ -44,11 +44,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               </label>
            </div>
            
-           <div class="relative bg-slate-100 dark:bg-slate-950 flex items-center justify-center min-h-[400px] overflow-hidden group cursor-crosshair">
+           <div class="relative bg-matte-100 dark:bg-matte-950 flex items-center justify-center min-h-[400px] overflow-hidden group cursor-crosshair">
               <div id="placeholder-text" class="absolute text-center px-4 pointer-events-none">
                 <div class="text-6xl mb-4 opacity-50">🖼️</div>
-                <p class="text-slate-400 font-medium">Upload gambar untuk mulai picking</p>
-                <p class="text-slate-500 text-sm mt-2">Mendukung JPG, PNG, WEBP</p>
+                <p class="text-matte-400 font-medium">Upload gambar untuk mulai picking</p>
+                <p class="text-matte-500 text-sm mt-2">Mendukung JPG, PNG, WEBP</p>
               </div>
               
               <canvas id="image-canvas" class="max-w-full max-h-[500px] shadow-2xl hidden cursor-crosshair"></canvas>
@@ -63,8 +63,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
            </div>
         </div>
 
-        <div id="palette-section" class="hidden bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-fade-in">
-          <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
+        <div id="palette-section" class="hidden bg-white dark:bg-matte-800 rounded-2xl border border-matte-200 dark:border-matte-700 shadow-xl overflow-hidden animate-fade-in">
+          <div class="p-4 border-b border-matte-200 dark:border-matte-700 bg-matte-50 dark:bg-matte-900">
             <div class="flex justify-between items-center">
               <span class="font-bold text-matte-400 text-sm uppercase">🎨 Dominant Palette</span>
               <button id="extract-palette-btn" class="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-100 dark:bg-rose-900/30 px-3 py-1.5 rounded-lg transition">
@@ -84,15 +84,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
          
          <div class="card-base p-6 sticky top-24">
             <div class="mb-6 text-center">
-               <div id="color-preview" class="w-full h-32 rounded-xl shadow-lg mb-3 border-4 border-white dark:border-slate-600 transition-all" style="background-color: #ec4899;"></div>
-               <span id="contrast-badge" class="inline-block px-3 py-1.5 rounded-lg text-xs font-bold uppercase bg-slate-100 text-slate-600 shadow-sm">Text: WHITE</span>
+               <div id="color-preview" class="w-full h-32 rounded-xl shadow-lg mb-3 border-4 border-white dark:border-matte-600 transition-all" style="background-color: #ec4899;"></div>
+               <span id="contrast-badge" class="inline-block px-3 py-1.5 rounded-lg text-xs font-bold uppercase bg-matte-100 text-matte-600 shadow-sm">Text: WHITE</span>
             </div>
 
             <div class="space-y-4">
                <div class="relative group">
-                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">HEX</label>
+                  <label class="text-[10px] font-bold text-matte-400 uppercase tracking-wide">HEX</label>
                   <div class="flex items-center gap-2 mt-1">
-                     <input type="text" id="val-hex" value="#ec4899" readonly class="flex-1 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-lg font-mono text-base font-bold text-slate-700 dark:text-slate-200 outline-none border border-slate-200 dark:border-slate-700 focus:border-pink-500" />
+                     <input type="text" id="val-hex" value="#ec4899" readonly class="flex-1 bg-matte-50 dark:bg-matte-900 px-3 py-2 rounded-lg font-mono text-base font-bold text-matte-700 dark:text-matte-200 outline-none border border-matte-200 dark:border-matte-700 focus:border-pink-500" />
                      <button class="copy-btn p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-lg transition" data-target="val-hex" title="Copy HEX">
                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                      </button>
@@ -100,9 +100,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                </div>
 
                <div class="relative group">
-                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">RGB</label>
+                  <label class="text-[10px] font-bold text-matte-400 uppercase tracking-wide">RGB</label>
                   <div class="flex items-center gap-2 mt-1">
-                     <input type="text" id="val-rgb" value="236, 72, 153" readonly class="flex-1 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-lg font-mono text-sm font-medium text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700" />
+                     <input type="text" id="val-rgb" value="236, 72, 153" readonly class="flex-1 bg-matte-50 dark:bg-matte-900 px-3 py-2 rounded-lg font-mono text-sm font-medium text-matte-600 dark:text-matte-300 outline-none border border-matte-200 dark:border-matte-700" />
                      <button class="copy-btn p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-lg transition" data-target="val-rgb" title="Copy RGB">
                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                      </button>
@@ -110,9 +110,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                </div>
 
                <div class="relative group">
-                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">HSL</label>
+                  <label class="text-[10px] font-bold text-matte-400 uppercase tracking-wide">HSL</label>
                   <div class="flex items-center gap-2 mt-1">
-                     <input type="text" id="val-hsl" value="330, 81%, 60%" readonly class="flex-1 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-lg font-mono text-sm font-medium text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700" />
+                     <input type="text" id="val-hsl" value="330, 81%, 60%" readonly class="flex-1 bg-matte-50 dark:bg-matte-900 px-3 py-2 rounded-lg font-mono text-sm font-medium text-matte-600 dark:text-matte-300 outline-none border border-matte-200 dark:border-matte-700" />
                      <button class="copy-btn p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-lg transition" data-target="val-hsl" title="Copy HSL">
                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                      </button>
@@ -120,9 +120,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                </div>
 
                <div class="relative group">
-                  <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">CMYK</label>
+                  <label class="text-[10px] font-bold text-matte-400 uppercase tracking-wide">CMYK</label>
                   <div class="flex items-center gap-2 mt-1">
-                     <input type="text" id="val-cmyk" value="0, 69, 35, 7" readonly class="flex-1 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-lg font-mono text-sm font-medium text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700" />
+                     <input type="text" id="val-cmyk" value="0, 69, 35, 7" readonly class="flex-1 bg-matte-50 dark:bg-matte-900 px-3 py-2 rounded-lg font-mono text-sm font-medium text-matte-600 dark:text-matte-300 outline-none border border-matte-200 dark:border-matte-700" />
                      <button class="copy-btn p-2 text-pink-500 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-lg transition" data-target="val-cmyk" title="Copy CMYK">
                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                      </button>
@@ -135,15 +135,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <h4 class="font-bold text-matte-700 dark:text-white mb-4 text-sm uppercase tracking-wide">🎨 Harmonies</h4>
             <div class="space-y-4">
               <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Complementary</p>
+                <p class="text-[10px] font-bold text-matte-400 uppercase mb-1">Complementary</p>
                 <div id="harmony-complementary" class="flex gap-2"></div>
               </div>
               <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Analogous</p>
+                <p class="text-[10px] font-bold text-matte-400 uppercase mb-1">Analogous</p>
                 <div id="harmony-analogous" class="flex gap-2"></div>
               </div>
               <div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Triadic</p>
+                <p class="text-[10px] font-bold text-matte-400 uppercase mb-1">Triadic</p>
                 <div id="harmony-triadic" class="flex gap-2"></div>
               </div>
             </div>
@@ -151,7 +151,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
          <div class="card-base p-6">
             <div class="flex justify-between items-center mb-4">
-              <h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm uppercase tracking-wide">📌 Recent</h4>
+              <h4 class="font-bold text-matte-700 dark:text-matte-200 text-sm uppercase tracking-wide">📌 Recent</h4>
               <button id="clear-history" class="text-xs text-red-500 hover:text-red-600 font-medium">Clear</button>
             </div>
             <div id="history-grid" class="grid grid-cols-5 gap-2"></div>
@@ -350,10 +350,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   function displayPalette(colors) {
     paletteGrid.innerHTML = colors.map(hex => `
       <div class="group cursor-pointer" onclick="updateColor('${hex}')">
-        <div class="w-full h-16 rounded-xl shadow-sm border border-slate-200 dark:border-slate-600 transition-all group-hover:scale-105 group-hover:shadow-md" 
+        <div class="w-full h-16 rounded-xl shadow-sm border border-matte-200 dark:border-matte-600 transition-all group-hover:scale-105 group-hover:shadow-md" 
              style="background-color: ${hex};">
         </div>
-        <p class="text-[10px] font-mono text-center mt-1 text-slate-500">${hex}</p>
+        <p class="text-[10px] font-mono text-center mt-1 text-matte-500">${hex}</p>
       </div>
     `).join('');
   }
@@ -402,7 +402,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   function renderHarmonies(container, hues) {
     container.innerHTML = hues.map(h => {
       const hex = hslToHex(h, 70, 50); // Saturation 70, Lightness 50 for vibrant colors
-      return `<div class="flex-1 h-10 rounded-lg shadow-sm cursor-pointer border border-slate-200 dark:border-slate-600 hover:scale-110 transition" 
+      return `<div class="flex-1 h-10 rounded-lg shadow-sm cursor-pointer border border-matte-200 dark:border-matte-600 hover:scale-110 transition" 
                    style="background-color: ${hex};" 
                    onclick="updateColor('${hex}')" 
                    title="${hex}"></div>`;
@@ -419,7 +419,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   function renderHistory() {
     historyGrid.innerHTML = history.map(c => `
-        <div class="w-full h-8 rounded-md cursor-pointer border border-slate-200 dark:border-slate-600 shadow-sm transition-all hover:scale-110" 
+        <div class="w-full h-8 rounded-md cursor-pointer border border-matte-200 dark:border-matte-600 shadow-sm transition-all hover:scale-110" 
              style="background-color: ${c};" 
              onclick="updateColor('${c}')"
              title="${c}">

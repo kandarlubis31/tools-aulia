@@ -3,14 +3,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="PDF Merger">
-  <div class="min-h-screen bg-slate-50 dark:bg-slate-900 py-8 px-4">
+  <div class="min-h-screen bg-matte-50 dark:bg-matte-900 py-8 px-4">
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
       <div class="text-center mb-8">
         <h1 class="text-3xl md:text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">
           PDF Merger
         </h1>
-        <p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto" data-i18n="header.merge_desc">
+        <p class="text-matte-600 dark:text-matte-400 max-w-2xl mx-auto" data-i18n="header.merge_desc">
           Gabungkan banyak file PDF menjadi satu file urut dan rapi. 100% di browser, file kamu aman!
         </p>
       </div>
@@ -20,36 +20,36 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         
         <!-- Upload Section -->
         <div class="lg:col-span-2">
-          <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden">
+          <div class="bg-white dark:bg-matte-800 rounded-2xl border border-matte-200 dark:border-matte-700 shadow-xl overflow-hidden">
             
             <!-- Upload Area -->
             <div 
               id="drop-zone"
-              class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 cursor-pointer hover:border-red-500 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all group"
+              class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 cursor-pointer hover:border-red-500 hover:bg-matte-50 dark:hover:bg-matte-700/50 transition-all group"
             >
               <div class="flex flex-col items-center gap-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-400 group-hover:text-red-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-matte-400 group-hover:text-red-500 transition-colors">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="12" y1="18" x2="12" y2="12"></line>
                   <line x1="9" y1="15" x2="15" y2="15"></line>
                 </svg>
-                <span class="text-slate-500 dark:text-slate-300 font-medium">Drag & drop file PDF di sini</span>
-                <span class="text-sm text-slate-400">atau klik untuk pilih file (bisa banyak sekaligus)</span>
+                <span class="text-matte-500 dark:text-matte-300 font-medium">Drag & drop file PDF di sini</span>
+                <span class="text-sm text-matte-400">atau klik untuk pilih file (bisa banyak sekaligus)</span>
                 <input type="file" id="file-input" accept="application/pdf" multiple class="hidden" />
               </div>
             </div>
 
             <!-- File List -->
-            <div id="file-list-container" class="hidden p-6 border-t border-slate-200 dark:border-slate-700">
+            <div id="file-list-container" class="hidden p-6 border-t border-matte-200 dark:border-matte-700">
               <div class="flex justify-between items-center mb-4">
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider" data-i18n="common.selected_files">File Terpilih:</h3>
+                <h3 class="text-sm font-bold text-matte-500 uppercase tracking-wider" data-i18n="common.selected_files">File Terpilih:</h3>
                 <div class="flex gap-2">
-                  <button id="sort-btn" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 px-2 py-1 rounded transition-colors">
+                  <button id="sort-btn" class="text-xs bg-matte-100 dark:bg-matte-700 hover:bg-matte-200 dark:hover:bg-matte-600 px-2 py-1 rounded transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                     <span data-i18n="common.sort">Urutkan</span>
                   </button>
-                  <button id="clear-all-btn" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 px-2 py-1 rounded transition-colors" data-i18n="btn.clear_all">
+                  <button id="clear-all-btn" class="text-xs bg-matte-100 dark:bg-matte-700 hover:bg-matte-200 dark:hover:bg-matte-600 px-2 py-1 rounded transition-colors" data-i18n="btn.clear_all">
                     Hapus Semua
                   </button>
                 </div>
@@ -59,24 +59,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 <!-- File items will be added here dynamically -->
               </ul>
 
-              <div class="flex gap-4 justify-center pt-4 border-t border-slate-200 dark:border-slate-700">
+              <div class="flex gap-4 justify-center pt-4 border-t border-matte-200 dark:border-matte-700">
                 <button id="merge-btn" class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-lg font-bold transition-all shadow-lg shadow-red-500/20 active:scale-95 flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
                   <span data-i18n="btn.merge">Gabungkan PDF</span>
                 </button>
-                <button id="reset-btn" class="text-slate-500 dark:text-slate-400 hover:text-red-500 px-4 py-2 transition-colors" data-i18n="btn.reset">
+                <button id="reset-btn" class="text-matte-500 dark:text-matte-400 hover:text-red-500 px-4 py-2 transition-colors" data-i18n="btn.reset">
                   Reset
                 </button>
               </div>
             </div>
 
             <!-- Progress Bar -->
-            <div id="progress-container" class="hidden p-6 border-t border-slate-200 dark:border-slate-700">
+            <div id="progress-container" class="hidden p-6 border-t border-matte-200 dark:border-matte-700">
               <div class="mb-2 flex justify-between text-sm">
-                <span class="text-slate-600 dark:text-slate-400" data-i18n="common.processing">Memproses...</span>
-                <span id="progress-percent" class="text-slate-600 dark:text-slate-400">0%</span>
+                <span class="text-matte-600 dark:text-matte-400" data-i18n="common.processing">Memproses...</span>
+                <span id="progress-percent" class="text-matte-600 dark:text-matte-400">0%</span>
               </div>
-              <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+              <div class="w-full bg-matte-200 dark:bg-matte-700 rounded-full h-2">
                 <div id="progress-bar" class="bg-red-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
               </div>
             </div>
@@ -85,18 +85,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
         <!-- Preview Section -->
         <div class="lg:col-span-1">
-          <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl p-6">
-            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4" data-i18n="common.preview">Preview</h3>
+          <div class="bg-white dark:bg-matte-800 rounded-2xl border border-matte-200 dark:border-matte-700 shadow-xl p-6">
+            <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4" data-i18n="common.preview">Preview</h3>
             
             <div id="preview-container" class="space-y-4">
               <div id="empty-preview" class="text-center py-12">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-300 dark:text-slate-600 mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-matte-300 dark:text-matte-600 mx-auto mb-4">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="12" y1="18" x2="12" y2="12"></line>
                   <line x1="9" y1="15" x2="15" y2="15"></line>
                 </svg>
-                <p class="text-slate-400 dark:text-slate-500" data-i18n="msg.preview_here">Preview file akan muncul di sini</p>
+                <p class="text-matte-400 dark:text-matte-500" data-i18n="msg.preview_here">Preview file akan muncul di sini</p>
               </div>
               
               <div id="preview-list" class="hidden space-y-4">
@@ -106,25 +106,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </div>
 
           <!-- Options Section -->
-          <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl p-6 mt-6">
-            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4" data-i18n="common.options">Opsi</h3>
+          <div class="bg-white dark:bg-matte-800 rounded-2xl border border-matte-200 dark:border-matte-700 shadow-xl p-6 mt-6">
+            <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4" data-i18n="common.options">Opsi</h3>
             
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.output_name">Nama Output File</label>
-                <input type="text" id="output-name" value="merged-document" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                <label class="block text-sm font-medium text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.output_name">Nama Output File</label>
+                <input type="text" id="output-name" value="merged-document" class="w-full px-3 py-2 border border-matte-300 dark:border-matte-600 rounded-lg bg-white dark:bg-matte-700 text-matte-800 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
               </div>
               
               <div>
-                <label for="merge-mode" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2" data-i18n="label.merge_mode">Merge Mode</label>
-                <select id="merge-mode" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                <label for="merge-mode" class="block text-sm font-medium text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.merge_mode">Merge Mode</label>
+                <select id="merge-mode" class="w-full px-3 py-2 border border-matte-300 dark:border-matte-600 rounded-lg bg-white dark:bg-matte-700 text-matte-800 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent">
                   <option value="sequential" data-i18n="common.sequential">Sequential (Gabung Berurutan)</option>
                   <option value="interleave" data-i18n="common.interleave">Interleave (Selang-seling)</option>
                 </select>
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label class="block text-sm font-medium text-matte-700 dark:text-matte-300 mb-2">
                   <input type="checkbox" id="add-bookmarks" class="mr-2">
                   <span data-i18n="common.add_bookmarks">Tambah Bookmark</span>
                 </label>
@@ -215,25 +215,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       selectedFiles.forEach((file, index) => {
         const li = document.createElement('li');
-        li.className = "file-item flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg border border-slate-200 dark:border-slate-600";
+        li.className = "file-item flex items-center justify-between bg-matte-50 dark:bg-matte-700/50 p-3 rounded-lg border border-matte-200 dark:border-matte-600";
         li.dataset.index = index;
         
         li.innerHTML = `
           <div class="flex items-center gap-3 overflow-hidden flex-1">
             <span class="w-6 h-6 bg-red-100 dark:bg-red-900/30 text-red-500 rounded flex items-center justify-center text-xs font-bold">${index + 1}</span>
             <div class="flex-1 min-w-0">
-              <span class="text-sm font-medium truncate text-slate-700 dark:text-slate-200 block">${file.name}</span>
-              <span class="text-xs text-slate-400">${formatFileSize(file.size)} • ${filePreviews[file.name]?.pageCount || '?'} halaman</span>
+              <span class="text-sm font-medium truncate text-matte-700 dark:text-matte-200 block">${file.name}</span>
+              <span class="text-xs text-matte-400">${formatFileSize(file.size)} • ${filePreviews[file.name]?.pageCount || '?'} halaman</span>
             </div>
           </div>
           <div class="flex items-center gap-1">
-            <button class="move-up-btn text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1" data-index="${index}" ${index === 0 ? 'disabled' : ''}>
+            <button class="move-up-btn text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 p-1" data-index="${index}" ${index === 0 ? 'disabled' : ''}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
             </button>
-            <button class="move-down-btn text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1" data-index="${index}" ${index === selectedFiles.length - 1 ? 'disabled' : ''}>
+            <button class="move-down-btn text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 p-1" data-index="${index}" ${index === selectedFiles.length - 1 ? 'disabled' : ''}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
-            <button class="remove-btn text-slate-400 hover:text-red-500 p-1" data-index="${index}">
+            <button class="remove-btn text-matte-400 hover:text-red-500 p-1" data-index="${index}">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
           </div>
@@ -313,7 +313,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         
         // Create preview item (pdf-lib does not support canvas rendering; show icon instead)
         const previewItem = document.createElement('div');
-        previewItem.className = 'border border-slate-200 dark:border-slate-600 rounded-lg p-3';
+        previewItem.className = 'border border-matte-200 dark:border-matte-600 rounded-lg p-3';
         
         previewItem.innerHTML = `
           <div class="flex items-center gap-3">
@@ -321,8 +321,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
             </div>
             <div class="flex-1 min-w-0">
-              <h4 class="font-medium text-sm truncate text-slate-800 dark:text-slate-200">${file.name}</h4>
-              <p class="text-xs text-slate-500">${pageCount} halaman • ${formatFileSize(file.size)}</p>
+              <h4 class="font-medium text-sm truncate text-matte-800 dark:text-matte-200">${file.name}</h4>
+              <p class="text-xs text-matte-500">${pageCount} halaman • ${formatFileSize(file.size)}</p>
             </div>
           </div>
         `;

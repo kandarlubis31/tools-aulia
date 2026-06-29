@@ -35,7 +35,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div class="card-base p-2 flex items-center gap-3 w-full md:w-auto justify-center">
             <span class="text-xs font-bold text-matte-400 uppercase tracking-wider pl-2" data-i18n="label.mode">Mode:</span>
             <button id="mode-toggle" class="relative inline-flex h-8 w-32 items-center rounded-lg transition-colors duration-300 focus:outline-none bg-matte-200 dark:bg-surface-hover">
-                <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out translate-x-1"></span>
+                <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out tranmatte-x-1"></span>
                 <span class="absolute left-0 w-1/2 text-[10px] font-bold text-center text-matte-600 dark:text-matte-300 z-10 pointer-events-none">OFFLINE</span>
                 <span class="absolute right-0 w-1/2 text-[10px] font-bold text-center text-matte-600 dark:text-matte-300 z-10 pointer-events-none">ONLINE</span>
             </button>
@@ -76,7 +76,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </div>
 
       <div class="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button id="translate-btn" class="p-2 rounded-lg bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan">
+          <button id="tranmatte-btn" class="p-2 rounded-lg bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
           </button>
           <button id="copy-btn" class="p-2 rounded-lg bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-cyan-500 transition-colors" title="Copy">
@@ -242,7 +242,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const statusBadge = document.getElementById('status-badge');
   const copyBtn = document.getElementById('copy-btn');
   const shareBtn = document.getElementById('share-btn');
-  const translateBtn = document.getElementById('translate-btn');
+  const translateBtn = document.getElementById('tranmatte-btn');
   const favoriteBtn = document.getElementById('favorite-btn');
   const settingsBtn = document.getElementById('settings-btn');
   const settingsModal = document.getElementById('settings-modal');
@@ -292,13 +292,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           modeIndicator.style.transform = 'translateX(4px)';
           modeIndicator.classList.remove('bg-cyan-400');
           modeIndicator.classList.add('bg-white');
-          statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-matte-400"></span><span class="text-slate-500 dark:text-slate-400">Local Database</span>';
-          statusBadge.className = "absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold uppercase tracking-widest";
+          statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-matte-400"></span><span class="text-matte-500 dark:text-matte-400">Local Database</span>';
+          statusBadge.className = "absolute top-6 left-6 flex items-center gap-2 px-3 py-1 rounded-full bg-matte-100 dark:bg-matte-700 text-[10px] font-bold uppercase tracking-widest";
       }
   }
 
   function applySettings() {
-      setupText.className = `${settings.textSize} font-bold text-slate-800 dark:text-slate-100 leading-relaxed transition-opacity duration-300`;
+      setupText.className = `${settings.textSize} font-bold text-matte-800 dark:text-matte-100 leading-relaxed transition-opacity duration-300`;
       
       if (autoRefreshInterval) clearInterval(autoRefreshInterval);
       if (settings.autoRefresh > 0) autoRefreshInterval = setInterval(getJoke, settings.autoRefresh * 1000);
@@ -338,7 +338,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       // 1. Reset State Translation UI
       isTranslated = false;
       translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
-      translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+      translateBtn.classList.add('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
 
       // 2. Set Button Loading
       generateBtn.disabled = true;
@@ -446,7 +446,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           displayJoke(originalJoke);
           isTranslated = false;
           translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
-          translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+          translateBtn.classList.add('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
           window.showToast(window._tToast ? window._tToast('Kembali ke bahasa asli') : 'Kembali ke bahasa asli', 'info');
       } else {
           // TRANSLATE LOGIC
@@ -490,7 +490,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                   displayJoke(newJoke);
                   isTranslated = true;
                   
-                  translateBtn.classList.remove('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+                  translateBtn.classList.remove('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
                   translateBtn.classList.add('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
                   window.showToast(window._tToast ? window._tToast('Berhasil diterjemahkan') : 'Berhasil diterjemahkan', 'success');
               } else {
@@ -517,11 +517,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (isFavorite) {
       favoriteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-red-500"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
       favoriteBtn.classList.add('text-red-500', 'bg-red-50', 'dark:bg-red-900/30');
-      favoriteBtn.classList.remove('text-slate-500');
+      favoriteBtn.classList.remove('text-matte-500');
     } else {
       favoriteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
       favoriteBtn.classList.remove('text-red-500', 'bg-red-50', 'dark:bg-red-900/30');
-      favoriteBtn.classList.add('text-slate-500');
+      favoriteBtn.classList.add('text-matte-500');
     }
   }
 
@@ -551,7 +551,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   function renderFavorites() {
     if (favorites.length === 0) {
-      favoritesList.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Belum ada joke favorit</p>';
+      favoritesList.innerHTML = '<p class="text-sm text-matte-500 dark:text-matte-400 text-center py-4">Belum ada joke favorit</p>';
       favoritesSection.classList.add('hidden');
       return;
     }
@@ -561,12 +561,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     favoritesList.innerHTML = favorites.map(fav => {
         const content = fav.type === 'single' ? fav.joke : `${fav.setup} ${fav.delivery}`;
         return `
-      <div class="fav-item p-3 bg-slate-50 dark:bg-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors cursor-pointer group flex justify-between items-start" data-id="${fav.id}">
+      <div class="fav-item p-3 bg-matte-50 dark:bg-matte-700 rounded-lg hover:bg-matte-100 dark:hover:bg-matte-600 transition-colors cursor-pointer group flex justify-between items-start" data-id="${fav.id}">
           <div class="flex-1">
-            <p class="text-sm font-medium text-slate-700 dark:text-slate-300 line-clamp-2">"${content}"</p>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase text-[10px] font-bold tracking-wider">${fav.category || 'Misc'}</p>
+            <p class="text-sm font-medium text-matte-700 dark:text-matte-300 line-clamp-2">"${content}"</p>
+            <p class="text-xs text-matte-500 dark:text-matte-400 mt-1 uppercase text-[10px] font-bold tracking-wider">${fav.category || 'Misc'}</p>
           </div>
-          <button class="delete-fav ml-2 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition-colors" data-id="${fav.id}">
+          <button class="delete-fav ml-2 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-matte-400 hover:text-red-500 transition-colors" data-id="${fav.id}">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
       </div>
@@ -580,7 +580,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             if(fav) {
                 isTranslated = false;
                 translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
-                translateBtn.classList.add('text-slate-500', 'bg-slate-100', 'dark:bg-slate-700');
+                translateBtn.classList.add('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
                 
                 // IMPORTANT: Restore original when loading from favs
                 originalJoke = JSON.parse(JSON.stringify(fav)); 

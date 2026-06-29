@@ -1,6 +1,6 @@
 # ToolsAulia — Project Context
 
-> Last updated: June 18, 2026
+> Last updated: June 20, 2026
 > Maintained by: Aulia Iskandar Lubis
 
 ## Domain Language
@@ -85,6 +85,11 @@ src/
 
 The following significant changes are in progress (unstaged):
 
+### Dependency Cleanup ✅
+- Removed unused packages: `@astrojs/react`, `react`, `react-dom`, `@types/react`, `@types/react-dom`, `@imgly/background-removal`
+- Removed orphaned root file: `add-phrases.cjs` (manual utility, unused)
+- Reduced node_modules size and production bundle
+
 ### Design System Refresh ✅
 - **New color palette**: `matte-*` (slate-inspired neutral) and `accent-*` (blue, mint, amber, sky)
 - **ToolCard redesigned**: Monochrome icons → blue accent on hover, 3D tilt effect, gloss overlay, bottom accent line
@@ -117,14 +122,16 @@ All tool pages migrated from old `slate-*` / `indigo-*` / `emerald-*` palette to
 - Hero parallax effect
 
 ### New Tools Added
-- **Persamaan Kata / Synonym Finder** (`/utils/sinonim`) — Uses free dictionary API (freedictionaryapi.dev) via Wiktionary data. Supports ID & EN word lookup, shows synonyms, antonyms, definitions, phonetic. Clickable chips to search related words, autocomplete with 30k+ Indonesian word list, recent searches in localStorage. **Offline cache**: results saved to localStorage (max 50), shown with badge when offline.
+- **Persamaan Kata / Synonym Finder** (`/utils/sinonim`) — Uses free dictionary API (freedictionaryapi.dev) via Wiktionary data with **KBBI Edisi VI offline fallback**. Supports ID & EN word lookup, shows synonyms, antonyms, definitions, phonetic. Clickable chips to search related words, autocomplete with **195k+ Indonesian word list**, recent searches in localStorage. **Offline cache**: results saved to localStorage (max 50), shown with badge when offline. **KBBI thesaurus**: 48,925 entries (17,477 main + 31,448 reverse mappings for derived words like "hematan" → "hemat"), lazy-loaded on API failure, rendered as Definisi + Persamaan Kata + Kata Gabungan sections. Amber "KBBI" badge for fallback results.
 
 ### Word List & Autocomplete ✅
-- `src/data/id-words.ts` — 30,337 Indonesian words (Sastrawi kata-dasar + technical/scientific additions)
+- `src/data/id-words.ts` — **195,193 Indonesian words** (Sastrawi kata-dasar + KBBI Edisi VI from Definisi/kbbi)
 - `scripts/build-words.mjs` — generates id-words.ts from Sastrawi base + additional vocabulary
 - `scripts/check-typos.mjs` — analysis tool to detect typos in the word list
 - Autocomplete on sinonim page with binary search, keyboard navigation (Tab/Arrow/Enter), debounced input
 - Typo fixes applied: `paliative→paliatif`, `akutansi→akuntansi`, `litoster→litosfer`, `mamalogi→mamologi`, removed `intidal` & `defrontasi` (non-words)
+- **KBBI Edisi VI Expansion**: Downloaded 194,692 entries from [Definisi/kbbi](https://github.com/Definisi/kbbi) GitHub repo, merged with existing Sastrawi words → 195,193 unique words total (2.6MB JSON, lazy-loaded on first keystroke)
+- **KBBI Thesaurus**: Built `public/kbbi-sinonim.json` (9.3MB, 48,925 entries) from KBBI dataset — entries with turunan/gabungan as thesaurus data plus reverse mappings for derived words (e.g., "hematan" → root "hemat"). Used as fallback when Wiktionary API fails. Served with Vercel auto-brotli (~1MB over wire). Runtime-cached in PWA (CacheFirst, 30-day expiry) via `astro.config.mjs`.
 
 ### My IP Enhancement ✅
 - Speed test modal with animated gauge needle, real download measurement via CDN files, upload via httpbin
@@ -222,15 +229,15 @@ Array of hrefs ordered newest-first. Index page shows up to 5 from this list.
 ## Known Decisions / Technical Notes
 
 1. **No SSR** — Astro configured as `output: "static"`. All dynamic behavior is client-side JS.
-2. **No React components in use** despite `@astrojs/react` being installed. All UI is vanilla Astro + inline `<script>` tags.
+2. **No React** — `@astrojs/react`, `react`, `react-dom` and `@types/*` removed (unused). All UI is vanilla Astro + inline `<script>` tags.
 3. **i18n approach** is custom-built (not astro-i18n). Uses data attributes + DOM walking with phrase dictionary.
 4. **Search modal** uses debounced client-side filtering on `searchTools` array (passed as JSON script).
 5. **Composables exist** — `src/composables/useToast.ts`, `useClipboard.ts`, `useDebounce.ts`, `useLocalHistory.ts` are created and used in QR, Todo, and PDF tools.
 6. **No tests exist** despite `vitest.config.ts` and `playwright.config.ts` being configured.
-7. **`add-phrases.cjs`** exists at root — used to generate `/public/i18n-phrases.js` from translations.ts.
-8. **`@imgly/background-removal`** is in package.json but not used — candidate for removal.
-9. **`@astrojs/react`** + react/react-dom installed but not used — candidate for removal.
-10. **`src/data/id-words.ts`** — auto-generated word list (30,337 words). Do not edit manually; regenerate via `node scripts/build-words.mjs <path-to-kata-dasar>`.
+7. **`add-phrases.cjs`** ~~exists at root — used to generate `/public/i18n-phrases.js` from translations.ts.~~ ✅ **Removed** — unused manual utility.
+8. ~~`@imgly/background-removal` is in package.json but not used — candidate for removal.~~ ✅ **Removed**
+9. ~~`@astrojs/react` + react/react-dom installed but not used — candidate for removal.~~ ✅ **Removed**
+10. **`src/data/id-words.ts`** — auto-generated word list (195,193 words from Sastrawi + KBBI Edisi VI). Do not edit manually; regenerate via `node scripts/build-words.mjs <path-to-kata-dasar>`.
 11. **`scripts/`** — build/dev tools, gitignored. Contains `build-words.mjs` (word list generator) and `check-typos.mjs` (typo analyzer).
 
 ## Architecture Decisions
@@ -261,6 +268,7 @@ Array of hrefs ordered newest-first. Index page shows up to 5 from this list.
 
 ### 🟢 Nice to Have
 7. **PDF tool cleanup** — Many PDF tools still use old i18n toast pattern (`String.fromCharCode` with icons) instead of the composables pattern (`useToast`). Refactor for consistency.
-8. **More word list sources** — Add KBBI technical terms, regional words, and scientific neologisms to the additional array in `build-words.mjs`.
+8. ~~**More word list sources** — Add KBBI technical terms, regional words, and scientific neologisms.~~ ✅ **Done** — Merged 175,600 new words from KBBI Edisi VI (Definisi/kbbi), bringing total to 195,193 words.
 9. **Autocomplete for multiple tools** — The autocomplete + binary search pattern from sinonim could be reused in other search-heavy tools (word-counter, paste-to-md).
 10. **Keyboard shortcut docs** — Add a `/shortcuts` or tooltip overlay showing available keyboard shortcuts (Tab for autocomplete, etc.).
+11. **Paste to MD — Copy AI button** — Added "Copy AI" button that wraps markdown content in XML `<uploaded_file>` tags + prompt engineering instructions. When pasted into LLMs (Gemini, ChatGPT, Claude), the AI treats it as an uploaded file attachment. Amber-colored button with brain icon.
