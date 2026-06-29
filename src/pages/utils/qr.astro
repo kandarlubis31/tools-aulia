@@ -576,10 +576,18 @@ END:VEVENT`;
   
   // Share
   shareBtn.addEventListener('click', async () => {
-    if (navigator.share) {
+    if (navigator.share && navigator.canShare) {
       try {
         canvas.toBlob(async (blob) => {
+          if (!blob) {
+            window.showToast?.(window._tToast ? window._tToast('Gagal membuat blob untuk share.') : 'Gagal membuat blob untuk share.', 'error');
+            return;
+          }
           const file = new File([blob], 'qrcode.png', { type: 'image/png' });
+          if (!navigator.canShare({ files: [file] })) {
+            window.showToast?.(window._tToast ? window._tToast('Browser tidak support share file.') : 'Browser tidak support share file.', 'error');
+            return;
+          }
           await navigator.share({
             title: 'QR Code',
             text: 'Lihat QR Code yang saya buat',
@@ -587,10 +595,10 @@ END:VEVENT`;
           });
         });
       } catch (err) {
-        window.showToast(window._tToast ? window._tToast('Gagal membagikan QR Code') : 'Gagal membagikan QR Code', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Gagal membagikan QR Code') : 'Gagal membagikan QR Code', 'error');
       }
     } else {
-      window.showToast(window._tToast ? window._tToast('Browser Anda tidak mendukung fitur berbagi') : 'Browser Anda tidak mendukung fitur berbagi', 'error');
+      window.showToast?.(window._tToast ? window._tToast('Browser Anda tidak mendukung fitur berbagi') : 'Browser Anda tidak mendukung fitur berbagi', 'error');
     }
   });
   
@@ -645,7 +653,7 @@ END:VEVENT`;
     // Update QR
     updateQR();
     
-    window.showToast(window._tToast ? window._tToast('Form berhasil direset!') : 'Form berhasil direset!', 'success');
+    window.showToast?.(window._tToast ? window._tToast('Form berhasil direset!') : 'Form berhasil direset!', 'success');
   });
   
   // Clear History
@@ -653,7 +661,7 @@ END:VEVENT`;
     qrHistory = [];
     qrHistoryManager.clear();
     renderHistory();
-    window.showToast(window._tToast ? window._tToast('Riwayat dihapus!') : 'Riwayat dihapus!', 'success');
+    window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus!') : 'Riwayat dihapus!', 'success');
   });
   
   // Add to History (via composable)

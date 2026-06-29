@@ -88,7 +88,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   fileInput?.addEventListener('change', async (e) => {
     if (fileInput.files && fileInput.files[0]) {
       const file = fileInput.files[0];
-      if (file.type !== 'application/pdf') return alert(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!');
+      if (file.type !== 'application/pdf') { window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error'); return; }
       currentFile = file;
       await renderThumbnails(file);
     }
@@ -153,7 +153,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         pagesGrid.appendChild(wrapper);
       }
     } catch (err) {
-      alert(window._tToast ? window._tToast('Gagal memuat PDF.') : 'Gagal memuat PDF.');
+      window.showToast?.(window._tToast ? window._tToast('Gagal memuat PDF.') : 'Gagal memuat PDF.', 'error');
       loading.classList.add('hidden');
       dropZone.classList.remove('hidden');
     }
@@ -223,9 +223,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   splitBtn?.addEventListener('click', async () => {
     if (!currentFile || selectedPages.size === 0) return;
 
-    const originalText = splitBtn.innerHTML;
-    splitBtn.innerHTML = `Memproses...`;
-    splitBtn.disabled = true;
+    const restoreBtn = window.showButtonSpinner(splitBtn, 'Memproses...');
 
     try {
       // Lazy load pdf-lib
@@ -254,10 +252,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.click();
 
     } catch (err) {
-      alert(window._tToast ? window._tToast("Gagal memproses PDF.") : "Gagal memproses PDF.");
+      window.showToast?.(window._tToast ? window._tToast("Gagal memproses PDF.") : "Gagal memproses PDF.", 'error');
     } finally {
-      splitBtn.innerHTML = originalText;
-      splitBtn.disabled = false;
+      restoreBtn();
     }
   });
 </script>

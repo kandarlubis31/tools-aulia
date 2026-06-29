@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import LoadingSpinner from '../../components/LoadingSpinner.astro';
 ---
 
 <BaseLayout pageTitle="Compress PDF">
@@ -87,6 +88,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     </div>
   </div>
+
+  <LoadingSpinner variant="overlay" size="lg" text="Mengompresi PDF..." id="compress-overlay" />
 </BaseLayout>
 
 <script>
@@ -103,15 +106,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const progressContainer = document.getElementById('progress-container');
   const progressBar = document.getElementById('progress-bar');
   const progressText = document.getElementById('progress-text');
+  const compressOverlay = document.getElementById('compress-overlay');
+  const compressOverlayText = compressOverlay?.querySelector('p');
 
   let currentFile: File | null = null;
+  let _overlayTimer = 0; // tracked for race-condition cleanup
 
   dropZone?.addEventListener('click', () => fileInput.click());
 
   fileInput?.addEventListener('change', (e) => {
     if (fileInput.files && fileInput.files[0]) {
       const file = fileInput.files[0];
-      if (file.type !== 'application/pdf') return alert(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!');
+      if (file.type !== 'application/pdf') { window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error'); return; }
       
       currentFile = file;
       if(filename) filename.innerText = file.name;
@@ -140,8 +146,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       PDFDocument = pdfLib.PDFDocument;
     }
 
-    compressBtn.disabled = true;
-    compressBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    clearTimeout(_overlayTimer); // batalkan hide dari kompresi sebelumnya
+    const restoreBtn = window.showButtonSpinner(compressBtn, 'Mengompresi...');
+    compressOverlay?.classList.remove('hidden');
     progressContainer?.classList.remove('hidden');
 
     try {
@@ -157,7 +164,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         // Update Progress
         const percent = Math.round((i / totalPages) * 100);
         if(progressBar) progressBar.style.width = `${percent}%`;
-        if(progressText) progressText.innerText = `Memproses halaman ${i} dari ${totalPages}...`;
+        const pageMsg = `Memproses halaman ${i} dari ${totalPages}...`;
+        if(progressText) progressText.innerText = pageMsg;
+        if(compressOverlayText) compressOverlayText.innerText = pageMsg;
 
         // Render Page ke Canvas
         const page = await pdf.getPage(i);
@@ -191,13 +200,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.click();
 
       if(progressText) progressText.innerText = window._tToast ? window._tToast("Selesai! File sedang didownload.") : "Selesai! File sedang didownload.";
+      if(compressOverlayText) compressOverlayText.innerText = window._tToast ? window._tToast('Selesai!') : 'Selesai!';
 
     } catch (err) {
-      alert(window._tToast ? window._tToast("Gagal mengompresi PDF.") : "Gagal mengompresi PDF.");
+      window.showToast?.(window._tToast ? window._tToast("Gagal mengompresi PDF.") : "Gagal mengompresi PDF.", 'error');
     } finally {
-      compressBtn.disabled = false;
-      compressBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-      setTimeout(() => progressContainer?.classList.add('hidden'), 3000);
+      restoreBtn();
+      _overlayTimer = setTimeout(() => {
+        compressOverlay?.classList.add('hidden');
+        if(compressOverlayText) compressOverlayText.innerText = window._tToast ? window._tToast('Mengompresi PDF...') : 'Mengompresi PDF...';
+        progressContainer?.classList.add('hidden');
+      }, 3000) as unknown as number;
     }
   });
 </script>

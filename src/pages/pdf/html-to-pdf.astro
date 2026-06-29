@@ -65,33 +65,63 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const previewContent = document.getElementById('preview-content');
   const convertBtn = document.getElementById('convert-btn');
 
-  // Live Preview Logic
+  // 1. Live Preview dengan debounce
   function updatePreview() {
     previewContent.innerHTML = htmlInput.value;
   }
 
-  htmlInput.addEventListener('input', updatePreview);
-  
+  let debounceTimer;
+  htmlInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(updatePreview, 500);
+  });
+
   // Init Preview
   updatePreview();
 
-  // Convert Logic
+  // 2. Convert to PDF
+  let _html2pdfRetries = 0;
+  const MAX_RETRIES = 30; // ~3 detik
+
   convertBtn.addEventListener('click', () => {
     const element = document.getElementById('preview-content');
+    if (!element || !element.innerHTML.trim()) {
+      window.showToast?.(window._tToast ? window._tToast('Editor HTML kosong. Tulis kode dulu.') : 'Editor HTML kosong. Tulis kode dulu.', 'warning');
+      return;
+    }
+
+    // Cek html2pdf tersedia
+    if (typeof html2pdf === 'undefined') {
+      if (_html2pdfRetries++ < MAX_RETRIES) {
+        setTimeout(() => convertBtn.click(), 100);
+        return;
+      }
+      _html2pdfRetries = 0;
+      window.showToast?.(window._tToast ? window._tToast('Gagal memuat library html2pdf. Cek koneksi internet.') : 'Gagal memuat library html2pdf. Cek koneksi internet.', 'error');
+      return;
+    }
+    _html2pdfRetries = 0;
+
+    const originalBtnText = convertBtn.innerText;
+    convertBtn.innerText = window._tToast ? window._tToast('Generating...') : 'Generating...';
+    convertBtn.disabled = true;
+
     const opt = {
-      margin:       0, // Margin diatur di CSS container preview
-      filename:     'document.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      margin: 0,
+      filename: 'document.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    convertBtn.innerText = window._tToast ? window._tToast("Generating...") : "Generating...";
-    convertBtn.disabled = true;
     html2pdf().set(opt).from(element).save().then(() => {
-        convertBtn.innerText = window._tToast ? window._tToast("Download PDF") : "Download PDF";
-        convertBtn.disabled = false;
-        window.showToast(window._tToast ? window._tToast("PDF berhasil dibuat!") : "PDF berhasil dibuat!", "success");
+      convertBtn.innerText = originalBtnText;
+      convertBtn.disabled = false;
+      window.showToast?.(window._tToast ? window._tToast('PDF berhasil dibuat!') : 'PDF berhasil dibuat!', 'success');
+    }).catch(() => {
+      convertBtn.innerText = originalBtnText;
+      convertBtn.disabled = false;
+      window.showToast?.(window._tToast ? window._tToast('Gagal membuat PDF. Coba lagi.') : 'Gagal membuat PDF. Coba lagi.', 'error');
     });
   });
 </script>

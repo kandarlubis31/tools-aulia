@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import LoadingSpinner from '../../components/LoadingSpinner.astro';
 ---
 
 <BaseLayout pageTitle="Rotate PDF Pages">
@@ -38,7 +39,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
 
     <div id="loading" class="hidden flex-col items-center justify-center py-20">
-      <div class="animate-spin rounded-full h-12 w-12 border-4 border-matte-200 border-t-blue-600 mb-4"></div>
+      <LoadingSpinner variant="minimal" size="lg" class="mx-auto mb-4" />
       <p class="text-matte-600 dark:text-matte-300 font-semibold animate-pulse" data-i18n="msg.rendering_pdf">Sedang merender halaman PDF...</p>
       <p class="text-xs text-matte-400 mt-2" data-i18n="msg.large_file_wait">Untuk file besar, proses ini memakan waktu beberapa detik.</p>
     </div>
@@ -90,7 +91,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   fileInput?.addEventListener('change', async (e) => {
     if (fileInput.files && fileInput.files[0]) {
       const file = fileInput.files[0];
-      if (file.type !== 'application/pdf') return alert(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!');
+      if (file.type !== 'application/pdf') { window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error'); return; }
       
       currentFile = file;
       await renderThumbnails(file);
@@ -165,7 +166,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
 
     } catch (err) {
-      alert(window._tToast ? window._tToast('Gagal memuat PDF. File mungkin rusak.') : 'Gagal memuat PDF. File mungkin rusak.');
+      window.showToast?.(window._tToast ? window._tToast('Gagal memuat PDF. File mungkin rusak.') : 'Gagal memuat PDF. File mungkin rusak.', 'error');
       loading.classList.add('hidden');
       dropZone.classList.remove('hidden');
     }
@@ -199,12 +200,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       degrees = pdfLib.degrees;
     }
 
-    const originalText = saveBtn.innerHTML;
-    saveBtn.innerHTML = `
-      <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-      Menyimpan...
-    `;
-    saveBtn.classList.add('opacity-75', 'cursor-not-allowed');
+    const restoreBtn = window.showButtonSpinner(saveBtn, 'Menyimpan...');
 
     try {
       const arrayBuffer = await currentFile.arrayBuffer();
@@ -227,10 +223,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.click();
 
     } catch (err) {
-      alert(window._tToast ? window._tToast("Gagal menyimpan PDF.") : "Gagal menyimpan PDF.");
+      window.showToast?.(window._tToast ? window._tToast("Gagal menyimpan PDF.") : "Gagal menyimpan PDF.", 'error');
     } finally {
-      saveBtn.innerHTML = originalText;
-      saveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+      restoreBtn();
     }
   });
 </script>

@@ -567,7 +567,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     // 4. Crop Button (placeholder for future implementation)
     cropBtn.addEventListener('click', () => {
-       alert(window._tToast ? window._tToast('Fitur crop akan segera hadir!') : 'Fitur crop akan segera hadir!');
+       window.showToast?.(window._tToast ? window._tToast('Fitur crop akan segera hadir!') : 'Fitur crop akan segera hadir!', 'info');
     });
 
     // 5. Tabs Switching
@@ -716,10 +716,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
        applyPreset({});
     });
 
-    // 11. Keyboard Shortcuts
-    document.addEventListener('keydown', (e) => {
+    // 11. Keyboard Shortcuts (pakai named function biar bisa di-cleanup)
+    function handleKeydown(e) {
        // Only apply shortcuts when not in input fields
-       if (e.target.tagName === 'INPUT') return;
+       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
        
        // Ctrl/Cmd + Z for undo
        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
@@ -745,88 +745,108 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           e.preventDefault();
           compareBtn.click();
        }
+    }
+    document.addEventListener('keydown', handleKeydown);
+    // Cleanup on Astro page leave (SPA navigation)
+    document.addEventListener('astro:page-leave', () => {
+      document.removeEventListener('keydown', handleKeydown);
     });
 
     // 12. DOWNLOAD (CANVAS RENDERING)
     downloadBtn.addEventListener('click', () => {
-       if (!previewImg.src) return;
+       if (!previewImg || !previewImg.src || !previewImg.naturalWidth) return;
 
-       // Create temporary canvas
-       const canvas = document.createElement('canvas');
-       const ctx = canvas.getContext('2d');
-       
-       // Determine output dimensions
-       let outputWidth, outputHeight;
-       const naturalWidth = previewImg.naturalWidth;
-       const naturalHeight = previewImg.naturalHeight;
-       
-       if (exportSize === 'original') {
-          outputWidth = naturalWidth;
-          outputHeight = naturalHeight;
-       } else if (exportSize === 'half') {
-          outputWidth = Math.floor(naturalWidth / 2);
-          outputHeight = Math.floor(naturalHeight / 2);
-       } else if (exportSize === 'quarter') {
-          outputWidth = Math.floor(naturalWidth / 4);
-          outputHeight = Math.floor(naturalHeight / 4);
-       } else if (exportSize === 'custom') {
-          outputWidth = parseInt(customWidth.value) || naturalWidth;
-          outputHeight = parseInt(customHeight.value) || naturalHeight;
+       const originalHTML = downloadBtn.innerHTML;
+       downloadBtn.innerText = window._tToast ? window._tToast('Menyimpan...') : 'Menyimpan...';
+       downloadBtn.disabled = true;
+
+       try {
+         // Create temporary canvas
+         const canvas = document.createElement('canvas');
+         const ctx = canvas.getContext('2d');
+         if (!ctx) throw new Error('Canvas context gagal');
+         
+         // Determine output dimensions
+         let outputWidth, outputHeight;
+         const naturalWidth = previewImg.naturalWidth;
+         const naturalHeight = previewImg.naturalHeight;
+         
+         if (exportSize === 'original') {
+            outputWidth = naturalWidth;
+            outputHeight = naturalHeight;
+         } else if (exportSize === 'half') {
+            outputWidth = Math.floor(naturalWidth / 2);
+            outputHeight = Math.floor(naturalHeight / 2);
+         } else if (exportSize === 'quarter') {
+            outputWidth = Math.floor(naturalWidth / 4);
+            outputHeight = Math.floor(naturalHeight / 4);
+         } else if (exportSize === 'custom') {
+            outputWidth = parseInt(customWidth.value) || naturalWidth;
+            outputHeight = parseInt(customHeight.value) || naturalHeight;
+         }
+
+         if (!outputWidth || !outputHeight) throw new Error('Dimensi output invalid');
+         
+         // Handle Rotation Dimensions swap
+         const rotationRad = (settings.rotate * Math.PI) / 180;
+         const absCos = Math.abs(Math.cos(rotationRad));
+         const absSin = Math.abs(Math.sin(rotationRad));
+         
+         // Calculate canvas size to fit rotated image
+         const rotatedWidth = naturalWidth * absCos + naturalHeight * absSin;
+         const rotatedHeight = naturalWidth * absSin + naturalHeight * absCos;
+         
+         // Scale to output size while maintaining aspect ratio
+         const scale = Math.min(outputWidth / rotatedWidth, outputHeight / rotatedHeight);
+         
+         canvas.width = outputWidth;
+         canvas.height = outputHeight;
+
+         // Apply Filters to Context
+         ctx.filter = `
+            brightness(${settings.brightness}%) 
+            contrast(${settings.contrast}%) 
+            saturate(${settings.saturate}%) 
+            hue-rotate(${settings.hue}deg)
+            sepia(${settings.sepia}%) 
+            grayscale(${settings.grayscale}%) 
+            blur(${settings.blur}px)
+         `;
+
+         // Apply Transforms (Translate to center, Rotate, Scale, Draw)
+         ctx.translate(canvas.width / 2, canvas.height / 2);
+         ctx.rotate(rotationRad);
+         ctx.scale(settings.flipX * scale, settings.flipY * scale);
+         
+         // Draw image centered
+         ctx.drawImage(previewImg, -naturalWidth / 2, -naturalHeight / 2);
+
+         // Determine output format and quality
+         let mimeType, fileExt;
+         if (exportFormat === 'jpeg') {
+            mimeType = 'image/jpeg';
+            fileExt = 'jpg';
+         } else if (exportFormat === 'webp') {
+            mimeType = 'image/webp';
+            fileExt = 'webp';
+         } else {
+            mimeType = 'image/png';
+            fileExt = 'png';
+         }
+         
+         // Download
+         const link = document.createElement('a');
+         link.download = 'studio-edited-' + Date.now() + '.' + fileExt;
+         link.href = canvas.toDataURL(mimeType, exportQuality);
+         link.click();
+
+         downloadBtn.innerHTML = originalHTML;
+         downloadBtn.disabled = false;
+       } catch (e) {
+         downloadBtn.innerHTML = originalHTML;
+         downloadBtn.disabled = false;
+         window.showToast?.(window._tToast ? window._tToast('Gagal menyimpan gambar.') : 'Gagal menyimpan gambar.', 'error');
        }
-       
-       // Handle Rotation Dimensions swap
-       const rotationRad = (settings.rotate * Math.PI) / 180;
-       const absCos = Math.abs(Math.cos(rotationRad));
-       const absSin = Math.abs(Math.sin(rotationRad));
-       
-       // Calculate canvas size to fit rotated image
-       const rotatedWidth = naturalWidth * absCos + naturalHeight * absSin;
-       const rotatedHeight = naturalWidth * absSin + naturalHeight * absCos;
-       
-       // Scale to output size while maintaining aspect ratio
-       const scale = Math.min(outputWidth / rotatedWidth, outputHeight / rotatedHeight);
-       
-       canvas.width = outputWidth;
-       canvas.height = outputHeight;
-
-       // Apply Filters to Context
-       // Note: Canvas filter syntax is same as CSS
-       ctx.filter = `
-          brightness(${settings.brightness}%) 
-          contrast(${settings.contrast}%) 
-          saturate(${settings.saturate}%) 
-          hue-rotate(${settings.hue}deg)
-          sepia(${settings.sepia}%) 
-          grayscale(${settings.grayscale}%) 
-          blur(${settings.blur}px)
-       `;
-
-       // Apply Transforms (Translate to center, Rotate, Scale, Draw)
-       ctx.translate(canvas.width / 2, canvas.height / 2);
-       ctx.rotate(rotationRad);
-       ctx.scale(settings.flipX * scale, settings.flipY * scale);
-       
-       // Draw image centered
-       ctx.drawImage(previewImg, -naturalWidth / 2, -naturalHeight / 2);
-
-       // Determine output format and quality
-       let mimeType, fileExt;
-       if (exportFormat === 'jpeg') {
-          mimeType = 'image/jpeg';
-          fileExt = 'jpg';
-       } else if (exportFormat === 'webp') {
-          mimeType = 'image/webp';
-          fileExt = 'webp';
-       } else {
-          mimeType = 'image/png';
-          fileExt = 'png';
-       }
-       
-       // Download
-       const link = document.createElement('a');
-       link.download = 'studio-edited-' + Date.now() + '.' + fileExt;
-       link.href = canvas.toDataURL(mimeType, exportQuality);
-       link.click();
     });
 
   });

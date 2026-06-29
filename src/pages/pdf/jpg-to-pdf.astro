@@ -53,9 +53,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   });
 
   convertBtn?.addEventListener('click', async () => {
-    const originalText = convertBtn.innerText;
-    convertBtn.innerText = window._tToast ? window._tToast("Memproses...") : "Memproses...";
-    convertBtn.disabled = true;
+    const restoreBtn = window.showButtonSpinner(convertBtn, window._tToast ? window._tToast('Memproses...') : 'Memproses...');
 
     try {
       if (!PDFDocument) {
@@ -93,10 +91,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.click();
 
     } catch (err) {
-      alert(window._tToast ? window._tToast('Gagal membuat PDF.') : 'Gagal membuat PDF.');
+      window.showToast?.(window._tToast ? window._tToast('Gagal membuat PDF.') : 'Gagal membuat PDF.', 'error');
     } finally {
-      convertBtn.innerText = originalText;
-      convertBtn.disabled = false;
+      restoreBtn();
     }
   });
 </script>

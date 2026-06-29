@@ -252,7 +252,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <div id="preview-content" class="shadow-2xl transition-all duration-300 origin-top"></div>
         </div>
 
-        <div class="p-4 border-t border-matte-200 dark:border-surface-border bg-white dark:bg-surface">
+        <div class="p-4 border-t border-matte-200 dark:border-surface-border bg-white dark:bg-surface space-y-3">
+            <!-- Background Toggle -->
+            <div>
+                <label class="block text-[10px] font-bold text-matte-500 uppercase mb-2">Background Output</label>
+                <div class="flex items-center gap-1 bg-matte-100 dark:bg-matte-800 rounded-lg p-0.5">
+                    <button id="bg-transparent" class="bg-toggle-btn flex-1 py-1.5 text-xs font-bold rounded-md transition-all bg-white dark:bg-surface text-matte-800 dark:text-matte-200 shadow-sm" data-bg="transparent">
+                        🚫 Transparan
+                    </button>
+                    <button id="bg-white" class="bg-toggle-btn flex-1 py-1.5 text-xs font-bold rounded-md transition-all text-matte-500 dark:text-matte-400 hover:text-matte-700 dark:hover:text-matte-200" data-bg="white">
+                        ⬜ Putih
+                    </button>
+                    <button id="bg-custom" class="bg-toggle-btn flex-1 py-1.5 text-xs font-bold rounded-md transition-all text-matte-500 dark:text-matte-400 hover:text-matte-700 dark:hover:text-matte-200" data-bg="custom">
+                        🎨 Custom
+                    </button>
+                </div>
+                <div id="bg-color-row" class="hidden mt-2 flex items-center gap-2">
+                    <input type="color" id="bg-color-picker" value="#6366f1" class="w-8 h-8 rounded cursor-pointer border border-matte-300 dark:border-surface-border bg-white dark:bg-surface p-0.5" />
+                    <input type="text" id="bg-color-hex" value="#6366f1" maxlength="7" class="flex-1 px-2 py-1.5 bg-white dark:bg-surface border border-matte-300 dark:border-surface-border rounded text-matte-800 dark:text-matte-200 text-xs font-mono" placeholder="#HEX" />
+                </div>
+            </div>
+
             <div class="flex gap-3">
                 <button id="download-btn" disabled class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transform hover:-tranmatte-y-0.5 active:tranmatte-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -315,6 +335,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const fullscreenContent = document.getElementById('fullscreen-content');
     const closeFullscreen = document.getElementById('close-fullscreen');
 
+    // 0. CSS Reset constant (shared antara renderPreview & fullscreen)
+    const CSS_RESET = `*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; min-height: 100vh; overflow: hidden; background: transparent; }`;
+
     // 1. Initial Load from Template Script
     const initialTpl = document.getElementById('tpl-card').innerHTML.trim();
     codeInput.value = initialTpl;
@@ -358,50 +381,84 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const doc = iframe.contentWindow.document;
       doc.open();
       // Inject user code + CSS Reset
-      doc.write(`<!DOCTYPE html><html><head><style>* { box-sizing: border-box; } body { margin: 0; padding: 0; min-height: 100vh; overflow: hidden; }</style></head><body>${code}</body></html>`);
+      doc.write(`<!DOCTYPE html><html><head><style>${CSS_RESET}</style></head><body>${code}</body></html>`);
       doc.close();
 
-      iframe.onload = () => {
-          if (height === 'auto') {
-            const bodyHeight = doc.body.scrollHeight;
-            const htmlHeight = doc.documentElement.scrollHeight;
-            const finalHeight = Math.max(bodyHeight, htmlHeight, 400);
-            iframe.style.height = finalHeight + 'px';
-          }
-          downloadBtn.removeAttribute('disabled');
+      // Auto-height: baca scrollHeight setelah doc.close(). scrollHeight memaksa reflow jadi CSS sudah computed.
+      if (height === 'auto' && doc.body) {
+        const bodyHeight = doc.body.scrollHeight;
+        const htmlHeight = doc.documentElement.scrollHeight;
+        const finalHeight = Math.max(bodyHeight, htmlHeight, 400);
+        iframe.style.height = finalHeight + 'px';
+      }
+      downloadBtn.disabled = false;
+    }
+
+    // 3. Background state
+    let bgMode = 'transparent'; // 'transparent' | 'white' | 'custom'
+    let bgColor = '#6366f1'; // hex untuk custom mode
+
+    function getBackgroundColor() {
+      if (bgMode === 'transparent') return null;
+      if (bgMode === 'white') return '#FFFFFF';
+      return bgColor;
+    }
+
+    // 4. Helper: build html2canvas options (shared antara download & share)
+    function getHtml2CanvasOptions(iframe) {
+      if (!iframe || !iframe.contentWindow || !iframe.contentWindow.document) return {};
+      const width = parseInt(widthInput.value) || 800;
+      let height;
+      if (heightInput.value === 'auto') {
+        const doc = iframe.contentWindow.document;
+        height = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight, 400);
+      } else {
+        height = parseInt(heightInput.value) || 400;
+      }
+      return {
+        useCORS: true,
+        scale: 2,
+        logging: false,
+        width: width,
+        windowWidth: width,
+        height: height,
+        windowHeight: height,
+        backgroundColor: getBackgroundColor()
       };
     }
 
-    // 3. GENERATE & DOWNLOAD
+    // 4. GENERATE & DOWNLOAD (dengan retry untuk html2canvas)
+    let _html2canvasRetries = 0;
+    const MAX_HTML2CANVAS_RETRIES = 30; // ~3 detik
+    let _downloadOriginalHTML = '';
     function generateAndDownload() {
       const iframe = previewContent.querySelector('iframe');
       if (!iframe) return;
+      if (!iframe.contentWindow || !iframe.contentWindow.document.body) return;
 
-      const originalBtnText = downloadBtn.innerHTML;
-      downloadBtn.innerText = window._tToast ? window._tToast("⏳ Rendering...") : "⏳ Rendering...";
-      downloadBtn.setAttribute('disabled', 'true');
-
-      const body = iframe.contentWindow.document.body;
-
-      if (typeof html2canvas === 'undefined') {
-          // Poll until library loads
-          setTimeout(generateAndDownload, 100);
-          return;
+      // Capture original button HTML once, sebelum DOM dimodifikasi
+      if (_html2canvasRetries === 0) {
+        _downloadOriginalHTML = downloadBtn.innerHTML;
       }
 
-      const width = parseInt(widthInput.value) || 800;
-      const height = heightInput.value === 'auto' ? iframe.offsetHeight : parseInt(heightInput.value);
+      downloadBtn.innerText = window._tToast ? window._tToast('⏳ Rendering...') : '⏳ Rendering...';
+      downloadBtn.disabled = true;
 
-      html2canvas(body, {
-          useCORS: true,
-          scale: 2, 
-          logging: false,
-          width: width,
-          windowWidth: width,
-          height: height,
-          windowHeight: height,
-          backgroundColor: null
-      }).then(canvas => {
+      if (typeof html2canvas === 'undefined') {
+          if (_html2canvasRetries++ < MAX_HTML2CANVAS_RETRIES) {
+            setTimeout(generateAndDownload, 100);
+          } else {
+            _html2canvasRetries = 0;
+            downloadBtn.innerHTML = _downloadOriginalHTML;
+            downloadBtn.disabled = false;
+            window.showToast?.(window._tToast ? window._tToast('Gagal memuat library html2canvas. Cek koneksi internet.') : 'Gagal memuat library html2canvas. Cek koneksi internet.', 'error');
+          }
+          return;
+      }
+      _html2canvasRetries = 0;
+
+      const body = iframe.contentWindow.document.body;
+      html2canvas(body, getHtml2CanvasOptions(iframe)).then(canvas => {
           const format = formatSelect.value;
           const mime = format === 'png' ? 'image/png' : format === 'jpeg' ? 'image/jpeg' : 'image/webp';
           const quality = format === 'jpeg' || format === 'webp' ? 0.9 : 1.0;
@@ -411,18 +468,75 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           link.href = canvas.toDataURL(mime, quality);
           link.click();
 
-          downloadBtn.innerHTML = originalBtnText;
-          downloadBtn.removeAttribute('disabled');
+          downloadBtn.innerHTML = _downloadOriginalHTML;
+          downloadBtn.disabled = false;
           window.showToast?.(window._tToast ? window._tToast('Gambar berhasil disimpan!') : 'Gambar berhasil disimpan!', 'success');
       }).catch(err => {
-          // console.error(err);
           window.showToast?.(window._tToast ? window._tToast('Gagal render gambar.') : 'Gagal render gambar.', 'error');
-          downloadBtn.innerHTML = originalBtnText;
-          downloadBtn.removeAttribute('disabled');
+          downloadBtn.innerHTML = _downloadOriginalHTML;
+          downloadBtn.disabled = false;
       });
     }
 
-    // 4. Listeners
+    // 6. Background Toggle Listeners
+    const bgToggleBtns = document.querySelectorAll('.bg-toggle-btn');
+    const bgColorRow = document.getElementById('bg-color-row');
+    const bgColorPicker = document.getElementById('bg-color-picker');
+    const bgColorHex = document.getElementById('bg-color-hex');
+
+    function updateBgToggleUI() {
+      bgToggleBtns.forEach(btn => {
+        const isActive = btn.dataset.bg === bgMode;
+        btn.classList.toggle('bg-white', isActive);
+        btn.classList.toggle('dark:bg-surface', isActive);
+        btn.classList.toggle('text-matte-800', isActive);
+        btn.classList.toggle('dark:text-matte-200', isActive);
+        btn.classList.toggle('shadow-sm', isActive);
+        btn.classList.toggle('text-matte-500', !isActive);
+        btn.classList.toggle('dark:text-matte-400', !isActive);
+        // Hapus hover color di active button, kembalikan di inactive
+        btn.classList.toggle('hover:text-matte-700', !isActive);
+        btn.classList.toggle('dark:hover:text-matte-200', !isActive);
+      });
+      bgColorRow.classList.toggle('hidden', bgMode !== 'custom');
+    }
+
+    // Init toggle UI
+    updateBgToggleUI();
+
+    bgToggleBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        bgMode = btn.dataset.bg;
+        updateBgToggleUI();
+      });
+    });
+
+    // Color picker sync
+    bgColorPicker.addEventListener('input', () => {
+      bgColor = bgColorPicker.value;
+      bgColorHex.value = bgColor;
+    });
+    bgColorHex.addEventListener('input', () => {
+      const val = bgColorHex.value.trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+        bgColor = val;
+        bgColorPicker.value = val;
+      }
+    });
+    // Also sync on blur (allow typing without #)
+    bgColorHex.addEventListener('blur', () => {
+      let val = bgColorHex.value.trim();
+      if (!val.startsWith('#')) val = '#' + val;
+      if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+        bgColor = val;
+        bgColorPicker.value = val;
+        bgColorHex.value = val;
+      } else {
+        bgColorHex.value = bgColor; // revert
+      }
+    });
+
+    // 7. Listeners
     let debounceTimer;
     [codeInput, widthInput, heightInput].forEach(input => {
         input.addEventListener('input', () => {
@@ -459,43 +573,59 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     shareBtn.addEventListener('click', async () => {
         const iframe = previewContent.querySelector('iframe');
         if (!iframe) return;
+        if (!iframe.contentWindow || !iframe.contentWindow.document.body) return;
         
-        const originalBtnText = shareBtn.innerHTML;
-        shareBtn.innerText = window._tToast ? window._tToast("⏳") : "⏳";
-        shareBtn.disabled = true;
+        const restoreShare = window.showButtonSpinner(shareBtn, '⏳');
+
+        if (typeof html2canvas === 'undefined') {
+            restoreShare();
+            window.showToast?.(window._tToast ? window._tToast('Library html2canvas belum siap. Coba lagi sebentar.') : 'Library html2canvas belum siap. Coba lagi sebentar.', 'error');
+            return;
+        }
 
         try {
+            const format = formatSelect.value;
+            const mime = format === 'png' ? 'image/png' : format === 'jpeg' ? 'image/jpeg' : 'image/webp';
+
             const body = iframe.contentWindow.document.body;
-            const canvas = await html2canvas(body, { 
-                useCORS: true, scale: 2, logging: false, backgroundColor: null 
-            });
+            const canvas = await html2canvas(body, getHtml2CanvasOptions(iframe));
+
+            const ext = format === 'jpeg' ? 'jpg' : format;
             canvas.toBlob(async (blob) => {
-                const file = new File([blob], "share.png", { type: "image/png" });
+                const file = new File([blob], `share.${ext}`, { type: mime });
                 if (navigator.share && navigator.canShare({ files: [file] })) {
                     await navigator.share({ files: [file], title: "Code Image" });
                     window.showToast?.(window._tToast ? window._tToast('Berhasil dibagikan!') : 'Berhasil dibagikan!', 'success');
                 } else {
                     window.showToast?.(window._tToast ? window._tToast('Browser tidak support share.') : 'Browser tidak support share.', 'error');
                 }
-                shareBtn.innerHTML = originalBtnText;
-                shareBtn.disabled = false;
+                restoreShare();
             });
         } catch (e) {
-            shareBtn.innerHTML = originalBtnText;
-            shareBtn.disabled = false;
+            restoreShare();
         }
     });
 
-    // Fullscreen
+    // Fullscreen - re-render code ke iframe baru (cloneNode tidak preserve iframe content)
     fullscreenBtn.addEventListener('click', () => {
         const iframe = previewContent.querySelector('iframe');
         if (!iframe) return;
+        const code = codeInput.value.trim();
+        if (!code) return;
+
         fullscreenContent.innerHTML = '';
-        const clone = iframe.cloneNode(true);
-        clone.style.transform = 'none';
-        clone.style.width = '100%';
-        clone.style.height = '100%';
-        fullscreenContent.appendChild(clone);
+        const fsIframe = document.createElement('iframe');
+        fsIframe.style.width = '100%';
+        fsIframe.style.height = '100%';
+        fsIframe.style.border = 'none';
+        fsIframe.style.background = 'transparent';
+        fsIframe.scrolling = 'no';
+        fullscreenContent.appendChild(fsIframe);
+
+        const doc = fsIframe.contentWindow.document;
+        doc.open();
+        doc.write(`<!DOCTYPE html><html><head><style>${CSS_RESET}</style></head><body>${code}</body></html>`);
+        doc.close();
         fullscreenModal.classList.remove('hidden');
     });
 

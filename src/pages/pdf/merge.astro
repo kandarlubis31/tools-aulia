@@ -195,9 +195,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           selectedFiles = [...selectedFiles, ...newFiles];
           updateUI();
           generatePreviews();
-          window.showToast(newFiles.length + ' ' + (window._tToast ? window._tToast('file berhasil ditambahkan') : 'file berhasil ditambahkan'));
+          window.showToast?.(newFiles.length + ' ' + (window._tToast ? window._tToast('file berhasil ditambahkan') : 'file berhasil ditambahkan'));
         } else {
-          window.showToast(window._tToast('Hanya file PDF yang diperbolehkan'), 'error');
+          window.showToast?.(window._tToast('Hanya file PDF yang diperbolehkan'), 'error');
         }
       }
     });
@@ -250,7 +250,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           delete filePreviews[removedFile.name];
           updateUI();
           updatePreview();
-          window.showToast(window._tToast('Item dihapus'));
+          window.showToast?.(window._tToast('Item dihapus'));
         });
       });
 
@@ -400,7 +400,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     selectedFiles.sort((a, b) => a.name.localeCompare(b.name));
     updateUI();
     updatePreview();
-    window.showToast(window._tToast('File diurutkan berdasarkan nama'));
+    window.showToast?.(window._tToast('File diurutkan berdasarkan nama'));
   });
 
   // --- 7. CLEAR ALL FILES ---
@@ -413,20 +413,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (fileInput) fileInput.value = '';
       updateUI();
       updatePreview();
-      window.showToast(window._tToast('Semua file dihapus'));
+      window.showToast?.(window._tToast('Semua file dihapus'));
     }
   });
 
   // --- 8. LOGIC MERGE PDF ---
   mergeBtn?.addEventListener('click', async () => {
     if (selectedFiles.length === 0) {
-      window.showToast(window._tToast('Pilih file PDF terlebih dahulu'), 'error');
+      window.showToast?.(window._tToast('Pilih file PDF terlebih dahulu'), 'error');
       return;
     }
 
-    const originalText = mergeBtn.innerText;      mergeBtn.innerText = window._tToast ? window._tToast('Memproses...') : 'Memproses...';
-    mergeBtn.setAttribute('disabled', 'true');
-    mergeBtn.classList.add('opacity-75', 'cursor-not-allowed');
+    const restoreBtn = window.showButtonSpinner(mergeBtn, window._tToast ? window._tToast('Memproses...') : 'Memproses...');
     
     // Show progress
     fileListContainer.classList.add('hidden');
@@ -491,7 +489,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.click();
       
       // Show success message
-      window.showToast(window._tToast('PDF berhasil digabungkan!'));
+      window.showToast?.(window._tToast('PDF berhasil digabungkan!'));
       
       // Reset after successful merge
       setTimeout(() => {
@@ -507,13 +505,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }, 1000);
       
     } catch (error) {
-      window.showToast(window._tToast('Gagal menggabungkan PDF. Pastikan file tidak dipassword atau corrupt.'), 'error');
+      window.showToast?.(window._tToast('Gagal menggabungkan PDF. Pastikan file tidak dipassword atau corrupt.'), 'error');
       fileListContainer.classList.remove('hidden');
       progressContainer.classList.add('hidden');
     } finally {
-      mergeBtn.innerText = originalText;
-      mergeBtn.removeAttribute('disabled');
-      mergeBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+      restoreBtn();
     }
   });
 
@@ -528,7 +524,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     progressContainer.classList.add('hidden');
     progressBar.style.width = '0%';
     progressPercent.textContent = window._tToast ? window._tToast('0%') : '0%';
-    window.showToast(window._tToast('Form direset'));
+    window.showToast?.(window._tToast('Form direset'));
   });
 
   // --- 10. HELPER FUNCTIONS ---

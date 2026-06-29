@@ -163,7 +163,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Batasi ukuran file (15MB)
     const maxSize = 15 * 1024 * 1024; // 15MB
     if (file.size > maxSize) {
-      alert(window._tToast ? window._tToast('File terlalu besar. Maksimal ukuran file adalah 15MB.') : 'File terlalu besar. Maksimal ukuran file adalah 15MB.');
+      window.showToast?.(window._tToast ? window._tToast('File terlalu besar. Maksimal ukuran file adalah 15MB.') : 'File terlalu besar. Maksimal ukuran file adalah 15MB.', 'error');
       return;
     }
     
@@ -209,7 +209,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       setupIntersectionObserver();
       
     } catch (err) {
-      alert(window._tToast ? window._tToast("Gagal memuat PDF. File mungkin rusak atau tidak didukung.") : "Gagal memuat PDF. File mungkin rusak atau tidak didukung.");
+      window.showToast?.(window._tToast ? window._tToast("Gagal memuat PDF. File mungkin rusak atau tidak didukung.") : "Gagal memuat PDF. File mungkin rusak atau tidak didukung.", 'error');
       resetUI();
     }
   }
@@ -368,9 +368,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   deleteBtn?.addEventListener('click', async () => {
     if (!currentFile || pagesToDelete.size === 0) return;
 
-    const originalText = deleteBtn.innerHTML;
-    deleteBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memproses...`;
-    deleteBtn.disabled = true;
+    const restoreBtn = window.showButtonSpinner(deleteBtn, 'Memproses...');
 
     try {
       // Import pdf-lib secara dinamis untuk mengurangi ukuran bundle awal
@@ -401,14 +399,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         URL.revokeObjectURL(url);
       }, 100);
 
-      alert(window._tToast ? window._tToast("Halaman berhasil dihapus!") : "Halaman berhasil dihapus!");
+      window.showToast?.(window._tToast ? window._tToast("Halaman berhasil dihapus!") : "Halaman berhasil dihapus!", 'success');
       resetUI();
 
     } catch (err) {
-      alert(window._tToast ? window._tToast("Gagal menyimpan PDF.") : "Gagal menyimpan PDF.");
+      window.showToast?.(window._tToast ? window._tToast("Gagal menyimpan PDF.") : "Gagal menyimpan PDF.", 'error');
     } finally {
-      deleteBtn.innerHTML = originalText;
-      deleteBtn.disabled = false;
+      restoreBtn();
     }
   });
 

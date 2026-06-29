@@ -672,8 +672,12 @@ if (isPdfTool) {
   <script>
     import { translations, getLang, setLang, t } from '../i18n/translations';
     import { showToast } from '../composables/useToast';
+    import { showButtonSpinner, inlineSpinnerSm, inlineSpinnerMd } from '../composables/useLoading';
     window.i18n = { getLang, setLang, translations, t };
     window.showToast = showToast;
+    window.showButtonSpinner = showButtonSpinner;
+    window.inlineSpinnerSm = inlineSpinnerSm;
+    window.inlineSpinnerMd = inlineSpinnerMd;
 
     // Auto-generate dictionary from translations.ts for all unique tool headings/descriptions
     const dynamicPhrases = Object.values(translations).reduce((acc: Record<string, string>, item: any) => {

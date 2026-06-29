@@ -107,12 +107,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       await pptx.writeFile({ fileName: `converted-${file.name}.pptx` });
       
       statusText.innerText = window._tToast ? window._tToast("Selesai! File terunduh.") : "Selesai! File terunduh.";
-      window.showToast(window._tToast ? window._tToast("Berhasil konversi ke PowerPoint!") : "Berhasil konversi ke PowerPoint!", "success");
+      window.showToast?.(window._tToast ? window._tToast("Berhasil konversi ke PowerPoint!") : "Berhasil konversi ke PowerPoint!", "success");
 
     } catch (err) {
       statusText.innerText = window._tToast ? window._tToast("Gagal memproses file.") : "Gagal memproses file.";
       statusText.classList.add("text-red-500");
-      window.showToast(window._tToast ? window._tToast("Gagal konversi.") : "Gagal konversi.", "error");
+      window.showToast?.(window._tToast ? window._tToast("Gagal konversi.") : "Gagal konversi.", "error");
     }
   }
 </script>

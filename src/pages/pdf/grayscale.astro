@@ -182,8 +182,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   convertBtn.addEventListener('click', async () => {
     if (!currentFile || !pdfDocSource) return;
 
-    convertBtn.disabled = true;
-    convertBtn.classList.add('opacity-50');
+    const restoreBtn = window.showButtonSpinner(convertBtn, 'Memproses...');
     progressContainer.classList.remove('hidden');
 
     try {
@@ -241,13 +240,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.download = `grayscale-${currentFile.name}`;
       link.click();
 
-      window.showToast(window._tToast ? window._tToast("Berhasil! PDF Hitam Putih siap.") : "Berhasil! PDF Hitam Putih siap.", "success");
+      window.showToast?.(window._tToast ? window._tToast("Berhasil! PDF Hitam Putih siap.") : "Berhasil! PDF Hitam Putih siap.", "success");
 
     } catch (err) {
-      window.showToast(window._tToast ? window._tToast("Gagal memproses PDF. Coba file yang lebih kecil.") : "Gagal memproses PDF. Coba file yang lebih kecil.", "error");
+      window.showToast?.(window._tToast ? window._tToast("Gagal memproses PDF. Coba file yang lebih kecil.") : "Gagal memproses PDF. Coba file yang lebih kecil.", "error");
     } finally {
-      convertBtn.disabled = false;
-      convertBtn.classList.remove('opacity-50');
+      restoreBtn();
       statusText.innerText = window._tToast ? window._tToast("Selesai!") : "Selesai!";
       setTimeout(() => {
           progressContainer.classList.add('hidden');

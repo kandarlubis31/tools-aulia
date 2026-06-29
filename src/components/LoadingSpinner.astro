@@ -1,0 +1,50 @@
+---
+/**
+ * Reusable Loading Spinner component.
+ *
+ * @prop size   - 'sm' | 'md' | 'lg' (default 'md')
+ * @prop variant - 'inline' (centered in container) | 'overlay' (full-screen modal) | 'minimal' (just the spinner, no wrapper)
+ * @prop text   - Optional loading text shown below spinner
+ * @prop id     - Optional DOM id for programmatic show/hide
+ * @prop class  - Additional CSS classes
+ */
+export interface Props {
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'inline' | 'overlay' | 'minimal';
+  text?: string;
+  id?: string;
+  class?: string;
+}
+
+const {
+  size = 'md',
+  variant = 'inline',
+  text = '',
+  id = '',
+  class: extraClass = ''
+} = Astro.props;
+
+const sizeMap = {
+  sm: { ring: 'h-6 w-6 border-2', margin: 'mb-2' },
+  md: { ring: 'h-10 w-10 border-[3px]', margin: 'mb-3' },
+  lg: { ring: 'h-16 w-16 border-4', margin: 'mb-4' },
+};
+---
+
+{
+  variant === 'overlay' ? (
+    <div id={id} class={`hidden fixed inset-0 z-50 bg-matte-900/60 backdrop-blur-sm flex items-center justify-center ${extraClass}`}>
+      <div class="bg-white dark:bg-matte-800 p-8 rounded-3xl shadow-2xl text-center max-w-xs w-full mx-4 animate-fade-in">
+        <div class={`${sizeMap[size].ring} border-matte-200 dark:border-matte-700 border-t-accent-blue rounded-full animate-spin mx-auto ${sizeMap[size].margin}`}></div>
+        {text && <p class="font-bold text-matte-700 dark:text-matte-200 text-sm">{text}</p>}
+      </div>
+    </div>
+  ) : variant === 'minimal' ? (
+    <div id={id} class={`${sizeMap[size].ring} border-matte-200 dark:border-matte-700 border-t-accent-blue rounded-full animate-spin ${extraClass}`}></div>
+  ) : (
+    <div id={id} class={`flex flex-col items-center justify-center gap-2 py-8 ${extraClass}`}>
+      <div class={`${sizeMap[size].ring} border-matte-200 dark:border-matte-700 border-t-accent-blue rounded-full animate-spin`}></div>
+      {text && <p class="text-sm text-matte-500 dark:text-matte-400 font-medium animate-pulse">{text}</p>}
+    </div>
+  )
+}

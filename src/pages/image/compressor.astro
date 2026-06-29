@@ -78,8 +78,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const savingsBadge = document.getElementById('savings-badge');
   const savingsVal = document.getElementById('savings-val');
 
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   let originalFile = null;
   let compressedBlob = null;
+  let _compressPending = false; // guard concurrent calls
+  let debounceTimer;
 
   function formatBytes(bytes, decimals = 2) {
     if (!+bytes) return '0 Bytes';
@@ -91,42 +94,49 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   async function compressImage() {
-    if (!originalFile) return;
+    if (!originalFile || _compressPending) return;
 
-    const quality = parseInt(qualityInp.value) / 100;
-    
-    // Create Image Bitmap
-    const img = await createImageBitmap(originalFile);
-    
-    // Create Canvas
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
-    
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
+    _compressPending = true;
+    try {
+      const quality = parseInt(qualityInp.value) / 100;
+      
+      // Create Image Bitmap
+      const img = await createImageBitmap(originalFile);
+      
+      // Create Canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
 
-    // Convert to Blob with quality
-    // Default to JPEG for compression if PNG is huge, or keep original type if supported
-    let mimeType = originalFile.type === 'image/png' ? 'image/jpeg' : originalFile.type;
-    
-    canvas.toBlob((blob) => {
-        compressedBlob = blob;
-        const url = URL.createObjectURL(blob);
-        previewImg.src = url;
-        
-        // Update Stats
-        sizeComp.innerText = formatBytes(blob.size);
-        
-        const saving = ((originalFile.size - blob.size) / originalFile.size) * 100;
-        if (saving > 0) {
-            savingsBadge.classList.remove('hidden');
-            savingsVal.innerText = `${saving.toFixed(1)}%`;
-        } else {
-            savingsBadge.classList.add('hidden');
-        }
-
-    }, mimeType, quality);
+      // Convert to Blob with quality
+      let mimeType = originalFile.type === 'image/png' ? 'image/jpeg' : originalFile.type;
+      
+      canvas.toBlob((blob) => {
+          if (!blob) { _compressPending = false; return; }
+          compressedBlob = blob;
+          const url = URL.createObjectURL(blob);
+          if (previewImg) previewImg.src = url;
+          
+          // Update Stats
+          if (sizeComp) sizeComp.innerText = formatBytes(blob.size);
+          
+          const saving = ((originalFile.size - blob.size) / originalFile.size) * 100;
+          if (savingsBadge && savingsVal) {
+            if (saving > 0) {
+              savingsBadge.classList.remove('hidden');
+              savingsVal.innerText = `${saving.toFixed(1)}%`;
+            } else {
+              savingsBadge.classList.add('hidden');
+            }
+          }
+          _compressPending = false;
+      }, mimeType, quality);
+    } catch (e) {
+      _compressPending = false;
+    }
   }
 
   // Events
@@ -135,31 +145,38 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   fileInput.addEventListener('change', (e) => {
     if (fileInput.files[0]) {
         originalFile = fileInput.files[0];
+        
+        // Validate file size
+        if (originalFile.size > MAX_FILE_SIZE) {
+          window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 5MB.') : 'File terlalu besar! Maksimal 5MB.', 'error');
+          fileInput.value = ''; // reset input
+          return;
+        }
+
         dropZone.classList.add('hidden');
         workspace.classList.remove('hidden');
         workspace.classList.add('grid');
         
-        sizeOri.innerText = formatBytes(originalFile.size);
+        if (sizeOri) sizeOri.innerText = formatBytes(originalFile.size);
         compressImage(); // Initial compress
     }
   });
 
   qualityInp.addEventListener('input', (e) => {
     qualityVal.innerText = `${e.target.value}%`;
-    // Debounce simple
-    compressImage();
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(compressImage, 300);
   });
 
   downloadBtn.addEventListener('click', () => {
     if (!compressedBlob) return;
     const link = document.createElement('a');
     link.href = URL.createObjectURL(compressedBlob);
-    // Ganti ekstensi jika dikonversi ke jpeg
     let ext = originalFile.name.split('.').pop();
     if (compressedBlob.type === 'image/jpeg' && ext !== 'jpg' && ext !== 'jpeg') ext = 'jpg';
     
     link.download = `compressed-${originalFile.name.replace(/\.[^/.]+$/, "")}.${ext}`;
     link.click();
-    window.showToast(window._tToast ? window._tToast("Gambar berhasil diunduh!") : "Gambar berhasil diunduh!", "success");
+    window.showToast?.(window._tToast ? window._tToast("Gambar berhasil diunduh!") : "Gambar berhasil diunduh!", "success");
   });
 </script>

@@ -72,9 +72,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     await waitForPdfLib();
 
-    const originalText = processBtn.innerHTML;
-    processBtn.innerText = window._tToast ? window._tToast("Memproses...") : "Memproses...";
-    processBtn.disabled = true;
+    const restoreBtn = window.showButtonSpinner(processBtn, window._tToast ? window._tToast('Memproses...') : 'Memproses...');
 
     try {
       const { PDFDocument, rgb, StandardFonts } = PDFLib;
@@ -106,13 +104,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.download = `numbered-${currentFile.name}`;
       link.click();
 
-      window.showToast(window._tToast ? window._tToast("Nomor halaman berhasil ditambahkan!") : "Nomor halaman berhasil ditambahkan!", "success");
+      window.showToast?.(window._tToast ? window._tToast("Nomor halaman berhasil ditambahkan!") : "Nomor halaman berhasil ditambahkan!", "success");
 
     } catch (err) {
-      window.showToast(window._tToast ? window._tToast("Gagal memproses PDF.") : "Gagal memproses PDF.", "error");
+      window.showToast?.(window._tToast ? window._tToast("Gagal memproses PDF.") : "Gagal memproses PDF.", "error");
     } finally {
-      processBtn.innerHTML = originalText;
-      processBtn.disabled = false;
+      restoreBtn();
     }
   });
 </script>

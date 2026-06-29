@@ -59,7 +59,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (file && file.type === 'application/pdf') {
       await processPDF(file);
     } else {
-      alert(window._tToast ? window._tToast("Harap upload file PDF!") : "Harap upload file PDF!");
+      window.showToast?.(window._tToast ? window._tToast("Harap upload file PDF!") : "Harap upload file PDF!", 'error');
     }
   });
 
@@ -109,7 +109,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
 
     } catch (err) {
-      alert(window._tToast ? window._tToast("Gagal memproses PDF. File mungkin rusak atau terpassword.") : "Gagal memproses PDF. File mungkin rusak atau terpassword.");
+      window.showToast?.(window._tToast ? window._tToast("Gagal memproses PDF. File mungkin rusak atau terpassword.") : "Gagal memproses PDF. File mungkin rusak atau terpassword.", 'error');
       loadingDiv.classList.add('hidden');
       dropZone.classList.remove('hidden');
     }
