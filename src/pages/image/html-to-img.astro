@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout pageTitle="Code to Image Converter">
+<BaseLayout pageTitle="HTML to Image">
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" async></script>
 
   <script type="text/template" id="tpl-card">
@@ -274,11 +274,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             </div>
 
             <div class="flex gap-3">
-                <button id="download-btn" disabled class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transform hover:-tranmatte-y-0.5 active:tranmatte-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <button id="download-btn" disabled class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     <span data-i18n="btn.download_image">Download Image</span>
                 </button>
-                <button id="share-btn" class="px-6 py-3 bg-white dark:bg-surface-hover text-accent-blue dark:text-accent-blue font-bold rounded-xl shadow-md hover:shadow-lg transform hover:-tranmatte-y-0.5 active:tranmatte-y-0 transition-all flex items-center justify-center gap-2 border border-matte-200 dark:border-surface-border">
+                <button id="share-btn" class="px-6 py-3 bg-white dark:bg-surface-hover text-accent-blue dark:text-accent-blue font-bold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 border border-matte-200 dark:border-surface-border">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                     Share
                 </button>
@@ -302,14 +302,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <style>
-  .checkerboard {
-    background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-  }
-  html.dark .checkerboard {
-    background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%), linear-gradient(-45deg, #1e293b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1e293b 75%), linear-gradient(-45deg, transparent 75%, #1e293b 75%);
-  }
   @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
 </style>
@@ -336,7 +328,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const closeFullscreen = document.getElementById('close-fullscreen');
 
     // 0. CSS Reset constant (shared antara renderPreview & fullscreen)
-    const CSS_RESET = `*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; min-height: 100vh; overflow: hidden; background: transparent; }`;
+    const CSS_RESET = `*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; min-height: 100vh; background: transparent; }`;
 
     // 1. Initial Load from Template Script
     const initialTpl = document.getElementById('tpl-card').innerHTML.trim();
@@ -365,15 +357,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       iframe.style.height = height === 'auto' ? '400px' : height + 'px';
       iframe.style.border = 'none';
       iframe.style.background = 'transparent';
-      iframe.scrolling = 'no'; 
+      iframe.scrolling = 'auto'; 
       
       const containerWidth = previewContent.parentElement.offsetWidth;
+      let appliedScale = 1;
       if(width > containerWidth) {
-         const scale = (containerWidth - 40) / width;
-         iframe.style.transform = `scale(${scale})`;
+         appliedScale = (containerWidth - 40) / width;
+         iframe.style.transform = `scale(${appliedScale})`;
          iframe.style.transformOrigin = 'top center';
       } else {
          iframe.style.transform = 'none';
+         appliedScale = 1;
       }
 
       previewContent.appendChild(iframe);
@@ -384,13 +378,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       doc.write(`<!DOCTYPE html><html><head><style>${CSS_RESET}</style></head><body>${code}</body></html>`);
       doc.close();
 
-      // Auto-height: baca scrollHeight setelah doc.close(). scrollHeight memaksa reflow jadi CSS sudah computed.
+      // Auto-height: baca scrollHeight setelah doc.close().
       if (height === 'auto' && doc.body) {
         const bodyHeight = doc.body.scrollHeight;
         const htmlHeight = doc.documentElement.scrollHeight;
         const finalHeight = Math.max(bodyHeight, htmlHeight, 400);
         iframe.style.height = finalHeight + 'px';
       }
+
+      // Scale: adjust preview-content wrapper height to match visual scale
+      if (appliedScale < 1) {
+        const iframeH = parseInt(iframe.style.height) || 400;
+        previewContent.style.height = (iframeH * appliedScale) + 'px';
+      } else {
+        previewContent.style.height = '';
+      }
+
       downloadBtn.disabled = false;
     }
 
@@ -441,7 +444,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         _downloadOriginalHTML = downloadBtn.innerHTML;
       }
 
-      downloadBtn.innerText = window._tToast ? window._tToast('⏳ Rendering...') : '⏳ Rendering...';
+      downloadBtn.innerHTML = window._tToast ? window._tToast('⏳ Rendering...') : '⏳ Rendering...';
       downloadBtn.disabled = true;
 
       if (typeof html2canvas === 'undefined') {
@@ -563,9 +566,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     refreshBtn.addEventListener('click', renderPreview);
     downloadBtn.addEventListener('click', generateAndDownload);
     
-    copyBtn.addEventListener('click', () => {
-        codeInput.select();
-        document.execCommand('copy');
+    copyBtn.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(codeInput.value);
+        } catch {
+            codeInput.select();
+            document.execCommand('copy');
+        }
         window.showToast?.(window._tToast ? window._tToast('Kode berhasil disalin!') : 'Kode berhasil disalin!', 'success');
     });
 
@@ -618,15 +625,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         fsIframe.style.width = '100%';
         fsIframe.style.height = '100%';
         fsIframe.style.border = 'none';
-        fsIframe.style.background = 'transparent';
-        fsIframe.scrolling = 'no';
-        fullscreenContent.appendChild(fsIframe);
+      const fsBg = getBackgroundColor();
+      fsIframe.style.background = fsBg || 'transparent';
+      fsIframe.scrolling = 'auto';
+      fullscreenContent.appendChild(fsIframe);
 
-        const doc = fsIframe.contentWindow.document;
-        doc.open();
-        doc.write(`<!DOCTYPE html><html><head><style>${CSS_RESET}</style></head><body>${code}</body></html>`);
-        doc.close();
-        fullscreenModal.classList.remove('hidden');
+      const doc = fsIframe.contentWindow.document;
+      doc.open();
+      const bgStyle = fsBg ? `body { background-color: ${fsBg} !important; }` : '';
+      doc.write(`<!DOCTYPE html><html><head><style>${CSS_RESET} ${bgStyle} body { overflow: auto; }</style></head><body>${code}</body></html>`);
+      doc.close();
+      fullscreenModal.classList.remove('hidden');
     });
 
     closeFullscreen.addEventListener('click', () => fullscreenModal.classList.add('hidden'));

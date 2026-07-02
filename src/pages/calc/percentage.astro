@@ -174,10 +174,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const x = parseFloat(p1X.value);
     const y = parseFloat(p1Y.value);
     
-    if(!isNaN(x) && !isNaN(y)) {
+    if(!isNaN(x) && !isNaN(y) && x >= 0 && y >= 0) {
         const result = (x / 100 * y);
         res1.innerText = formatNumber(result);
         addToHistoryDebounced(`${x}% dari ${formatNumber(y)} = ${formatNumber(result)}`, '1', x, y);
+    } else if (!isNaN(x) && x < 0) {
+        res1.innerText = '⚠️';
     } else {
         res1.innerText = window._tToast ? window._tToast("0") : "0";
     }
@@ -188,10 +190,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const x = parseFloat(p2X.value);
     const y = parseFloat(p2Y.value);
     
-    if(!isNaN(x) && !isNaN(y) && y !== 0) {
+    if(!isNaN(x) && !isNaN(y) && y > 0 && x >= 0) {
         const result = (x / y) * 100;
         res2.innerText = `${formatNumber(result)}%`;
         addToHistoryDebounced(`${formatNumber(x)} adalah ${formatNumber(result)}% dari ${formatNumber(y)}`, '2', x, y);
+    } else if (!isNaN(y) && y === 0) {
+        res2.innerText = '⚠️ Nol';
     } else {
         res2.innerText = window._tToast ? window._tToast("0%") : "0%";
     }

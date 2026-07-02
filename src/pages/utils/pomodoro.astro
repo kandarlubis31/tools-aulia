@@ -39,11 +39,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </button>
        </div>
 
+       <div id="session-count" class="mt-4 text-xs font-medium text-matte-400 dark:text-matte-500 hidden"></div>
+
+       <div class="mt-4 flex items-center justify-center gap-2">
+          <button id="notif-btn" class="flex items-center gap-1.5 text-xs font-medium text-matte-500 dark:text-matte-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30" title="Notifikasi browser saat sesi selesai">
+             <svg id="notif-icon-off" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+             <svg id="notif-icon-on" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+             <span id="notif-label">Notifikasi</span>
+          </button>
+       </div>
+
     </div>
   </div>
 </BaseLayout>
 
 <script>
+  document.addEventListener('astro:page-load', () => {
   // --- Color theme mapping (complete strings so Tailwind JIT can see them) ---
   const THEMES = {
     rose: {
@@ -66,6 +77,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   var timer = null;
   var timeLeft = 25 * 60; // seconds
   var isRunning = false;
+  var sessionCount = parseInt(localStorage.getItem('pomodoroSessions') || '0');
   const display = document.getElementById('timer-display');
   const statusText = document.getElementById('status-text');
   const toggleBtn = document.getElementById('toggle-btn');
@@ -74,19 +86,114 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const iconPause = document.getElementById('icon-pause');
   const modeBtns = document.querySelectorAll('.mode-btn');
 
-  // Audio Beep Sederhana
+  // --- Notification System ---
+  var notifEnabled = localStorage.getItem('pomodoroNotif') === 'true';
+  var notifPermission = 'default';
+  if ('Notification' in window) {
+    notifPermission = Notification.permission;
+  }
+
+  function updateNotifUI() {
+    const iconOff = document.getElementById('notif-icon-off');
+    const iconOn = document.getElementById('notif-icon-on');
+    const label = document.getElementById('notif-label');
+    const t = window._tToast;
+
+    if (notifPermission === 'granted' && notifEnabled) {
+      if (iconOff) iconOff.classList.add('hidden');
+      if (iconOn) iconOn.classList.remove('hidden');
+      if (label) label.textContent = t ? t('Notifikasi Aktif') : 'Notifikasi Aktif';
+    } else if (notifPermission === 'granted' && !notifEnabled) {
+      if (iconOff) iconOff.classList.remove('hidden');
+      if (iconOn) iconOn.classList.add('hidden');
+      if (label) label.textContent = t ? t('Notifikasi (Mati)') : 'Notifikasi (Mati)';
+    } else if (notifPermission === 'denied') {
+      if (iconOff) iconOff.classList.remove('hidden');
+      if (iconOn) iconOn.classList.add('hidden');
+      if (label) label.textContent = t ? t('Notifikasi Diblokir') : 'Notifikasi Diblokir';
+      notifEnabled = false;
+      localStorage.setItem('pomodoroNotif', 'false');
+    } else {
+      if (iconOff) iconOff.classList.remove('hidden');
+      if (iconOn) iconOn.classList.add('hidden');
+      if (label) label.textContent = t ? t('Notifikasi') : 'Notifikasi';
+    }
+  }
+
+  async function requestNotifPermission() {
+    if (!('Notification' in window)) {
+      window.showToast?.((window._tToast ? window._tToast('Browser tidak mendukung notifikasi.') : 'Browser tidak mendukung notifikasi.'), 'info');
+      return;
+    }
+    if (notifPermission === 'granted') {
+      notifEnabled = !notifEnabled;
+      localStorage.setItem('pomodoroNotif', notifEnabled);
+      updateNotifUI();
+      window.showToast?.((window._tToast ? window._tToast(notifEnabled ? 'Notifikasi diaktifkan! 🔔' : 'Notifikasi dimatikan.') : (notifEnabled ? 'Notifikasi diaktifkan! 🔔' : 'Notifikasi dimatikan.')), 'info');
+      return;
+    }
+    if (notifPermission === 'denied') {
+      window.showToast?.((window._tToast ? window._tToast('Notifikasi diblokir. Buka pengaturan browser untuk mengizinkan.') : 'Notifikasi diblokir. Buka pengaturan browser untuk mengizinkan.'), 'error');
+      return;
+    }
+    // Request permission
+    try {
+      var result = await Notification.requestPermission();
+      notifPermission = result;
+      if (result === 'granted') {
+        notifEnabled = true;
+        localStorage.setItem('pomodoroNotif', 'true');
+        updateNotifUI();
+        window.showToast?.((window._tToast ? window._tToast('Notifikasi diaktifkan! 🔔') : 'Notifikasi diaktifkan! 🔔'), 'success');
+      } else {
+        updateNotifUI();
+        window.showToast?.((window._tToast ? window._tToast('Notifikasi ditolak. Kamu bisa mengaktifkannya nanti.') : 'Notifikasi ditolak. Kamu bisa mengaktifkannya nanti.'), 'info');
+      }
+    } catch (e) {
+      // Fallback for older browsers
+    }
+  }
+
+  function showEndNotification(label) {
+    // Always play sound first
+    playEndSound();
+    // Try browser notification
+    if (notifEnabled && notifPermission === 'granted' && 'Notification' in window) {
+      try {
+        new Notification('⏰ Pomodoro Selesai!', {
+          body: label + ' — Waktunya istirahat! ☕',
+          icon: '/favicon.svg',
+          tag: 'pomodoro-end',
+          silent: true, // We already play our own sound
+        });
+      } catch (e) { /* ignore */ }
+    }
+    // Show toast as fallback / complement
+    window.showToast?.((window._tToast ? window._tToast('⏰ Waktu Habis! Saatnya istirahat ☕') : '⏰ Waktu Habis! Saatnya istirahat ☕'), 'success');
+  }
+
+  // Audio Beep — melodic end-of-session chime via Web Audio API
   var AudioContextCtor = window.AudioContext || window['webkitAudioContext'];
   var audioCtx = AudioContextCtor ? new AudioContextCtor() : null;
-  function playBeep() {
+  function playEndSound() {
     if (!audioCtx) return;
-    var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.frequency.value = 880; 
-    gain.gain.value = 0.1;
-    osc.start();
-    setTimeout(function() { osc.stop(); }, 500);
+    // Resume context if suspended (browser autoplay policy)
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    // Play a pleasant 3-note ascending chime
+    var notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+    notes.forEach(function(freq, i) {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, audioCtx.currentTime + i * 0.2);
+      gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + i * 0.2 + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.2 + 0.5);
+      osc.start(audioCtx.currentTime + i * 0.2);
+      osc.stop(audioCtx.currentTime + i * 0.2 + 0.5);
+    });
   }
 
   function updateDisplay() {
@@ -114,8 +221,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         } else {
           clearInterval(timer);
           isRunning = false;
-          playBeep();
-          alert((window._tToast) ? window._tToast('Waktu Habis!') : 'Waktu Habis!');
+          var activeBtn = document.querySelector('.mode-btn[class*="bg-white"]');
+          var label = activeBtn ? activeBtn.innerText : 'Fokus';
+          sessionCount++;
+          localStorage.setItem('pomodoroSessions', sessionCount);
+          showEndNotification(label);
           if (iconPlay) iconPlay.classList.remove('hidden');
           if (iconPause) iconPause.classList.add('hidden');
         }
@@ -132,8 +242,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Update UI Colors (via THEMES mapping — NOT template strings)
     const theme = THEMES[color] || THEMES.rose;
     if(display) display.className = theme.display;
-    if(toggleBtn) toggleBtn.className = theme.toggle;
-    if(statusText) statusText.innerText = label;
+    if(toggleBtn) toggleBtn.className = theme.toggle;      if (statusText) statusText.innerText = label;
+    
+    // Update session count display (only show after first session)
+    var sessionDisplay = document.getElementById('session-count');
+    if (sessionDisplay) {
+      if (sessionCount > 0) {
+        sessionDisplay.classList.remove('hidden');
+        sessionDisplay.textContent = (window._tToast ? window._tToast('Sesi Selesai: ') + sessionCount : 'Selesai: ' + sessionCount);
+      }
+    }
     
     if (iconPlay) iconPlay.classList.remove('hidden');
     if (iconPause) iconPause.classList.add('hidden');
@@ -171,5 +289,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       var label = e.target.innerText;
       setMode(mins, color, label);
     });
+  });
+
+  // Notification toggle button
+  var notifBtn = document.getElementById('notif-btn');
+  if (notifBtn) notifBtn.addEventListener('click', requestNotifPermission);
+  updateNotifUI();
+
+  // Cleanup timer on SPA navigation
+  document.addEventListener('astro:page-leave', () => {
+    clearInterval(timer);
+    isRunning = false;
+  });
   });
 </script>

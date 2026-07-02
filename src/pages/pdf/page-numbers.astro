@@ -42,6 +42,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   dropZone?.addEventListener('click', () => fileInput.click());
 
+  // Drag & Drop handlers
+  dropZone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone?.classList.add('border-violet-500', 'bg-violet-50', 'dark:bg-violet-900/10');
+  });
+  dropZone?.addEventListener('dragleave', () => {
+    dropZone?.classList.remove('border-violet-500', 'bg-violet-50', 'dark:bg-violet-900/10');
+  });
+  dropZone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone?.classList.remove('border-violet-500', 'bg-violet-50', 'dark:bg-violet-900/10');
+    const file = e.dataTransfer?.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      currentFile = file;
+      if (filenameDisplay) filenameDisplay.innerText = currentFile.name;
+      dropZone.classList.add('hidden');
+      controlsArea.classList.remove('hidden');
+    }
+  });
+
   fileInput?.addEventListener('change', (e) => {
     if (fileInput.files && fileInput.files[0]) {
       currentFile = fileInput.files[0];

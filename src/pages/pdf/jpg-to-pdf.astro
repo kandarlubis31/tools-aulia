@@ -42,6 +42,30 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   dropZone?.addEventListener('click', () => fileInput.click());
 
+  // Drag & Drop handlers (supports multiple image files)
+  dropZone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone?.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-700/30');
+  });
+  dropZone?.addEventListener('dragleave', () => {
+    dropZone?.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-700/30');
+  });
+  dropZone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone?.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-700/30');
+    if (e.dataTransfer?.files.length > 0) {
+      selectedFiles = Array.from(e.dataTransfer.files).filter(f =>
+        f.type === 'image/jpeg' || f.type === 'image/png'
+      );
+      if (selectedFiles.length > 0) {
+        fileCount.innerText = `${selectedFiles.length} Gambar Dipilih`;
+        fileCount.classList.remove('hidden');
+        convertBtn.classList.remove('hidden');
+        dropZone?.classList.add('border-emerald-500');
+      }
+    }
+  });
+
   fileInput?.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
       selectedFiles = Array.from(e.target.files);

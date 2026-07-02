@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+  <title>Kamu Offline | ToolsAulia</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #fafafa;
+      color: #0d1117;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1.5rem;
+      transition: background 0.3s, color 0.3s;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #010409; color: #fff; }
+      .card { background: #161b22; border-color: #21262d; }
+      .hint { color: #8b949e; }
+      .tool { color: #3b82f6; background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.15); }
+      .tool:hover { background: rgba(59,130,246,0.12); }
+      .retry { background: #fff; color: #0d1117; }
+    }
+    .container { text-align: center; max-width: 520px; width: 100%; }
+    .logo { font-size: 3rem; margin-bottom: 0.5rem; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .title { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .subtitle { font-size: 0.875rem; color: #6e7681; margin-bottom: 2rem; }
+    .card {
+      background: #fff;
+      border: 1px solid #d0d7de;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      text-align: left;
+      margin-bottom: 1.5rem;
+    }
+    .card h3 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #6e7681; margin-bottom: 0.75rem; }
+    .tools { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .tool {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #2563eb;
+      background: rgba(37,99,235,0.06);
+      border: 1px solid rgba(37,99,235,0.15);
+      border-radius: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .tool:hover { background: rgba(37,99,235,0.1); }
+    .actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+    .retry {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: #0d1117;
+      color: #fff;
+      border: none;
+      border-radius: 2rem;
+      font-weight: 700;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .retry:hover { transform: scale(1.03); }
+    .retry-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: transparent;
+      color: #6e7681;
+      border: 1px solid #d0d7de;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .retry-secondary:hover { border-color: #2563eb; color: #2563eb; }
+    @media (prefers-color-scheme: dark) {
+      .retry-secondary { color: #8b949e; border-color: #30363d; }
+      .retry-secondary:hover { border-color: #3b82f6; color: #3b82f6; }
+    }
+    .hint { font-size: 0.75rem; color: #6e7681; margin-top: 1rem; }
+    #status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      margin-right: 4px;
+    }
+    #status-text { font-size: 0.75rem; color: #6e7681; margin-top: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">📡</div>
+    <h1 class="title">Kamu Lagi Offline</h1>
+    <p class="subtitle">Tapi tenang — tools yang pernah kamu buka masih bisa diakses kok.</p>
+
+    <div class="card">
+      <h3>🛠️ Tools yang Tersedia Offline</h3>
+      <div class="tools">
+        <a href="/pdf" class="tool">PDF Tools</a>
+        <a href="/image/editor" class="tool">Photo Editor</a>
+        <a href="/image/remove-bg" class="tool">Remove BG</a>
+        <a href="/utils/qr" class="tool">QR Generator</a>
+        <a href="/utils/pomodoro" class="tool">Pomodoro</a>
+        <a href="/utils/todo" class="tool">Todo List</a>
+        <a href="/utils/stopwatch" class="tool">Stopwatch</a>
+        <a href="/security/password" class="tool">Password Gen</a>
+        <a href="/security/uuid" class="tool">UUID Gen</a>
+        <a href="/dev/base64" class="tool">Base64</a>
+        <a href="/dev/json" class="tool">JSON Tool</a>
+        <a href="/calc/bmi" class="tool">BMI Calc</a>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="retry" onclick="location.reload()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+        Coba Lagi
+      </button>
+      <button class="retry-secondary" onclick="caches.keys().then(names=>Promise.all(names.map(n=>caches.delete(n)))).then(()=>location.reload())">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        Reset Cache
+      </button>
+    </div>
+
+    <p id="status-text"><span id="status-dot"></span> <span id="status-label">Memeriksa koneksi...</span></p>
+    <p class="hint">🌐 Sambungkan internet untuk akses semua 58+ tools.</p>
+  </div>
+
+  <script>
+    // Auto-check connectivity every 5 seconds and auto-reload when back online
+    function updateStatus() {
+      const dot = document.getElementById('status-dot');
+      const label = document.getElementById('status-label');
+      if (navigator.onLine) {
+        dot.style.background = '#22c55e';
+        label.textContent = 'Koneksi terdeteksi! Memuat ulang...';
+        setTimeout(() => location.reload(), 500);
+      } else {
+        dot.style.background = '#ef4444';
+        label.textContent = 'Offline — menunggu koneksi...';
+      }
+    }
+    updateStatus();
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+    setInterval(updateStatus, 5000);
+  </script>
+</body>
+</html>

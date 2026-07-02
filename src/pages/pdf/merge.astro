@@ -337,11 +337,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     generatePreviews();
   }
 
-  // --- 5. MAKE FILE LIST SORTABLE ---
+  // --- 5. MAKE FILE LIST SORTABLE (drag-to-reorder) ---
   function makeFileListSortable() {
     const fileItems = document.querySelectorAll('.file-item');
     let draggedElement = null;
     let draggedIndex = null;
+    let dropIndicator = null;
+
+    // Create drop indicator line
+    if (!document.getElementById('drop-indicator')) {
+      dropIndicator = document.createElement('div');
+      dropIndicator.id = 'drop-indicator';
+      dropIndicator.className = 'absolute left-2 right-2 h-0.5 bg-red-500 rounded-full pointer-events-none transition-all duration-150 opacity-0';
+      dropIndicator.style.boxShadow = '0 0 8px rgba(239,68,68,0.5)';
+      fileList.style.position = 'relative';
+      fileList.appendChild(dropIndicator);
+    } else {
+      dropIndicator = document.getElementById('drop-indicator');
+    }
 
     fileItems.forEach(item => {
       item.draggable = true;
@@ -349,50 +362,72 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       item.addEventListener('dragstart', (e) => {
         draggedElement = item;
         draggedIndex = parseInt(item.dataset.index);
-        item.classList.add('opacity-50');
+        item.classList.add('opacity-50', 'scale-[0.97]');
+        item.style.transition = 'all 0.2s ease';
+        if (dropIndicator) dropIndicator.style.opacity = '1';
       });
       
       item.addEventListener('dragend', (e) => {
-        item.classList.remove('opacity-50');
+        item.classList.remove('opacity-50', 'scale-[0.97]');
+        draggedElement = null;
+        draggedIndex = null;
+        if (dropIndicator) dropIndicator.style.opacity = '0';
+        // Clean up any remaining highlight
+        document.querySelectorAll('.file-item').forEach(el => el.classList.remove('ring-2', 'ring-red-400'));
       });
       
       item.addEventListener('dragover', (e) => {
         e.preventDefault();
-        const afterElement = getDragAfterElement(fileList, e.clientY);
-        if (afterElement == null) {
-          fileList.appendChild(draggedElement);
-        } else {
-          fileList.insertBefore(draggedElement, afterElement);
+        e.dataTransfer.dropEffect = 'move';
+        
+        const rect = item.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        const isBelow = e.clientY > midY;
+        
+        // Show drop indicator
+        if (dropIndicator) {
+          dropIndicator.style.top = isBelow ? `${rect.bottom - fileList.getBoundingClientRect().top}px` : `${rect.top - fileList.getBoundingClientRect().top}px`;
+          dropIndicator.style.opacity = '1';
         }
+        
+        // Highlight target
+        document.querySelectorAll('.file-item').forEach(el => el.classList.remove('ring-2', 'ring-red-400'));
+        if (item !== draggedElement) {
+          item.classList.add('ring-2', 'ring-red-400');
+        }
+      });
+      
+      item.addEventListener('dragleave', (e) => {
+        item.classList.remove('ring-2', 'ring-red-400');
       });
       
       item.addEventListener('drop', (e) => {
         e.preventDefault();
-        const dropIndex = parseInt(item.dataset.index);
+        item.classList.remove('ring-2', 'ring-red-400');
+        if (dropIndicator) dropIndicator.style.opacity = '0';
+        
+        if (draggedIndex === null) return;
+        
+        // Calculate target index from mouse position, not dataset (which may be stale)
+        const rect = item.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        let targetIndex = parseInt(item.dataset.index);
+        if (e.clientY > midY) targetIndex++;
+        
+        // Adjust if dragging downward past itself
+        if (targetIndex > draggedIndex) targetIndex--;
+        
+        if (targetIndex === draggedIndex) return;
         
         // Reorder files array
         const [removed] = selectedFiles.splice(draggedIndex, 1);
-        selectedFiles.splice(dropIndex, 0, removed);
+        selectedFiles.splice(targetIndex, 0, removed);
         
         updateUI();
         updatePreview();
+        window.showToast?.(window._tToast('Urutan file diubah'));
       });
     });
-  }
-
-  function getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.file-item:not(.dragging)')];
-    
-    return draggableElements.reduce((closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      
-      if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child };
-      } else {
-        return closest;
-      }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
   }
 
   // --- 6. SORT FILES ---

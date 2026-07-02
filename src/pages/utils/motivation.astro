@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout pageTitle="Inspiration Generator V4">
+<BaseLayout pageTitle="Motivation Quotes">
   <div class="max-w-4xl mx-auto px-4 min-h-[80vh] flex flex-col justify-center items-center py-10">
     
     <div class="text-center mb-8 animate-on-scroll">
@@ -34,7 +34,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         <div class="flex items-center gap-3 bg-white dark:bg-matte-800 p-2 rounded-xl border border-matte-200 dark:border-matte-700 shadow-sm">
             <span class="text-xs font-bold text-matte-400 uppercase tracking-wider pl-2">Mode:</span>
             <button id="mode-toggle" class="relative inline-flex h-8 w-32 items-center rounded-lg transition-colors duration-300 focus:outline-none bg-matte-200 dark:bg-matte-700">
-                <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out tranmatte-x-1"></span>
+                <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out translate-x-1"></span>
                 <span class="absolute left-0 w-1/2 text-[10px] font-bold text-center text-matte-600 dark:text-matte-300 z-10 pointer-events-none">OFFLINE</span>
                 <span class="absolute right-0 w-1/2 text-[10px] font-bold text-center text-matte-600 dark:text-matte-300 z-10 pointer-events-none">ONLINE</span>
             </button>
@@ -63,7 +63,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </div>
 
       <div class="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button id="tranmatte-btn" class="p-2 rounded-lg bg-matte-100 dark:bg-matte-700 text-matte-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan" data-i18n-attr="title" data-i18n="btn.translate">
+          <button id="translate-btn" class="p-2 rounded-lg bg-matte-100 dark:bg-matte-700 text-matte-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan" data-i18n-attr="title" data-i18n="btn.translate">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
           </button>
           
@@ -133,7 +133,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                     <span class="text-sm font-bold text-matte-700 dark:text-matte-300" data-i18n="label.show_author">Tampilkan Author</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="show-author" class="sr-only peer" checked>
-                        <div class="w-11 h-6 bg-matte-200 peer-focus:outline-none rounded-full peer dark:bg-matte-700 peer-checked:after:tranmatte-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500"></div>
+                        <div class="w-11 h-6 bg-matte-200 peer-focus:outline-none rounded-full peer dark:bg-matte-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-500"></div>
                     </label>
                 </div>
             </div>
@@ -206,7 +206,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const copyBtn = document.getElementById('copy-btn');
   const favoriteBtn = document.getElementById('favorite-btn');
   const shareBtn = document.getElementById('share-btn');
-  const translateBtn = document.getElementById('tranmatte-btn');
+  const translateBtn = document.getElementById('translate-btn');
   const settingsBtn = document.getElementById('settings-btn');
   const settingsModal = document.getElementById('settings-modal');
   const closeSettingsBtn = document.getElementById('close-settings');

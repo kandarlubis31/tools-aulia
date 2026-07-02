@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout pageTitle="Add Watermark PDF (Live Preview)">
+<BaseLayout pageTitle="Add Watermark">
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" async></script>
   <script is:inline async>
     (function waitForPdfjs() {
@@ -88,7 +88,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
            <div id="preview-container" class="relative shadow-2xl mt-6 cursor-crosshair touch-none select-none">
               <canvas id="pdf-render" class="max-w-full h-auto rounded-lg"></canvas>
               
-              <div id="wm-overlay" class="absolute top-1/2 left-1/2 -tranmatte-x-1/2 -tranmatte-y-1/2 border-2 border-dashed border-cyan-500 bg-cyan-500/10 p-2 cursor-move select-none whitespace-nowrap origin-center" style="transform: translate(-50%, -50%) rotate(45deg);">
+              <div id="wm-overlay" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-dashed border-cyan-500 bg-cyan-500/10 p-2 cursor-move select-none whitespace-nowrap origin-center" style="transform: translate(-50%, -50%) rotate(45deg);">
                  <span id="wm-display" class="font-bold">DRAFT</span>
               </div>
            </div>
@@ -135,9 +135,35 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // --- 1. HANDLE UPLOAD & RENDER ---
   dropZone.addEventListener('click', () => fileInput.click());
+
+  // Drag & Drop handlers
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-cyan-500', 'bg-cyan-50', 'dark:bg-cyan-900/10');
+  });
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('border-cyan-500', 'bg-cyan-50', 'dark:bg-cyan-900/10');
+  });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-cyan-500', 'bg-cyan-50', 'dark:bg-cyan-900/10');
+    const file = e.dataTransfer?.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      currentFile = file;
+      dropZone.classList.add('hidden');
+      workspace.classList.remove('hidden');
+      workspace.classList.add('grid');
+      renderPageOne(file);
+    } else {
+      window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error');
+    }
+  });
+
   fileInput.addEventListener('change', async (e) => {
     if (fileInput.files[0]) {
-      currentFile = fileInput.files[0];
+      const file = fileInput.files[0];
+      if (file.type !== 'application/pdf') { window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error'); return; }
+      currentFile = file;
       dropZone.classList.add('hidden');
       workspace.classList.remove('hidden');
       workspace.classList.add('grid'); // Balikin grid display

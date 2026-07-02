@@ -54,6 +54,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // Trigger Input
   dropZone?.addEventListener('click', () => fileInput.click());
 
+  // Drag & Drop handlers
+  dropZone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-700/30');
+  });
+  dropZone?.addEventListener('dragleave', () => {
+    dropZone.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-700/30');
+  });
+  dropZone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-700/30');
+    const file = e.dataTransfer?.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      processPDF(file);
+    } else {
+      window.showToast?.(window._tToast ? window._tToast("Harap upload file PDF!") : "Harap upload file PDF!", 'error');
+    }
+  });
+
   fileInput?.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (file && file.type === 'application/pdf') {

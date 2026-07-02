@@ -45,6 +45,25 @@ body {
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
+/* ========== FOCUS VISIBLE (Accessibility) ========== */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Remove focus ring for mouse clicks, keep for keyboard */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ========== SELECTION ========== */
 ::selection {
   background: rgba(56, 189, 248, 0.2);
@@ -361,6 +380,16 @@ body {
 .dark .new-tools-section {
   border-color: rgba(56, 189, 248, 0.08);
   background: rgba(56, 189, 248, 0.03);
+}
+
+/* ========== CHECKERBOARD BACKGROUND ========== */
+.checkerboard {
+  background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+html.dark .checkerboard {
+  background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%), linear-gradient(-45deg, #1e293b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1e293b 75%), linear-gradient(-45deg, transparent 75%, #1e293b 75%);
 }
 
 /* ========== CARD GRID ========== */

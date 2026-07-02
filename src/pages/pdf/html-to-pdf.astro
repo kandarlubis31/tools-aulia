@@ -5,123 +5,287 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="HTML to PDF">
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" async></script>
 
-  <div class="max-w-6xl mx-auto px-4 min-h-[80vh] flex flex-col">
+  <div class="max-w-7xl mx-auto px-4 min-h-[85vh] flex flex-col">
     <div class="text-center mb-6 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-500" data-i18n="header.html_to_pdf">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl mb-4 shadow-lg shadow-pink-500/30">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <h1 class="text-matte-900 dark:text-white text-4xl font-extrabold mb-3 tracking-tight" data-i18n="header.html_to_pdf">
         HTML to PDF
       </h1>
-      <p class="text-matte-600 dark:text-matte-400" data-i18n="text.write_html_convert_pdf">
+      <p class="text-matte-600 dark:text-matte-400 max-w-2xl mx-auto text-lg" data-i18n="text.write_html_convert_pdf">
         Tulis kode HTML dan ubah menjadi dokumen PDF.
       </p>
     </div>
 
-    <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12 animate-fade-in">
+    <div class="grid lg:grid-cols-2 gap-8 pb-12 animate-fade-in" style="min-height: 520px;">
       
-      <div class="flex flex-col h-full bg-white dark:bg-matte-800 rounded-xl shadow-lg border border-matte-200 dark:border-matte-700 overflow-hidden">
-        <div class="bg-matte-100 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 flex justify-between items-center">
+      <div class="flex flex-col bg-white dark:bg-matte-800 rounded-xl shadow-lg border border-matte-200 dark:border-matte-700 overflow-hidden">
+        <div class="bg-surface-hover dark:bg-matte-900/50 px-4 py-2 border-b border-matte-200 dark:border-matte-700 flex justify-between items-center">
            <span class="text-xs font-bold text-matte-500 uppercase" data-i18n="label.html_editor">Editor HTML</span>
-           <button id="convert-btn" class="bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold py-1.5 px-4 rounded shadow transition-all active:scale-95" data-i18n="btn.download_pdf">
-             Download PDF
-           </button>
+           <div class="flex items-center gap-2">
+             <button id="clear-html-btn" class="text-xs text-matte-500 hover:text-red-500 border border-matte-300 dark:border-surface-border rounded-lg px-2 py-1 transition-colors">Clear</button>
+             <button id="sample-btn" class="text-xs bg-accent-blue hover:bg-blue-600 text-white px-2 py-1 rounded-lg transition-colors">📄 Sample</button>
+           </div>
         </div>
-        <textarea id="html-input" class="flex-1 w-full p-4 font-mono text-sm bg-matte-50 dark:bg-matte-900 text-matte-800 dark:text-matte-200 outline-none resize-none" spellcheck="false">
-<h1>Invoice #1023</h1>
-<p>Tanggal: 05 Januari 2024</p>
-<hr>
-<table style="width: 100%; text-align: left; border-collapse: collapse;">
-  <tr style="background: #f0f0f0;">
-    <th style="padding: 8px;">Item</th>
-    <th style="padding: 8px;">Harga</th>
-  </tr>
-  <tr>
-    <td style="padding: 8px;">Jasa Pembuatan Web</td>
-    <td style="padding: 8px;">Rp 5.000.000</td>
-  </tr>
-  <tr>
-    <td style="padding: 8px;">Domain & Hosting</td>
-    <td style="padding: 8px;">Rp 1.500.000</td>
-  </tr>
-</table>
-<h3 style="text-align: right; margin-top: 20px;">Total: Rp 6.500.000</h3>
-        </textarea>
+        <textarea id="html-input" class="flex-1 w-full p-4 font-mono text-sm bg-white dark:bg-matte-900 text-matte-800 dark:text-matte-200 outline-none resize-none min-h-[400px]" spellcheck="false"></textarea>
       </div>
 
-      <div class="flex flex-col h-full bg-white rounded-xl shadow-lg border border-matte-200 overflow-hidden">
-        <div class="bg-matte-100 px-4 py-2 border-b border-matte-200 flex justify-between items-center">
-           <span class="text-xs font-bold text-matte-500 uppercase" data-i18n="text.live_preview_a4">Live Preview (A4 View)</span>
+      <div class="flex flex-col bg-white dark:bg-matte-800 rounded-xl shadow-lg border border-matte-200 dark:border-matte-700 overflow-hidden">
+        <div class="bg-surface-hover dark:bg-matte-900/50 px-4 py-2 border-b border-matte-200 dark:border-matte-700 flex justify-between items-center">
+           <span class="text-xs font-bold text-matte-500 uppercase" data-i18n="text.live_preview_a4">Live Preview</span>
+           <div class="flex items-center gap-2">
+             <select id="paper-size" class="text-xs bg-white dark:bg-matte-800 border border-matte-300 dark:border-surface-border rounded-lg px-2 py-1 text-matte-600 dark:text-matte-300">
+               <option value="a4">A4</option>
+               <option value="letter">Letter</option>
+               <option value="legal">Legal</option>
+             </select>
+             <select id="orientation" class="text-xs bg-white dark:bg-matte-800 border border-matte-300 dark:border-surface-border rounded-lg px-2 py-1 text-matte-600 dark:text-matte-300">
+               <option value="portrait">Portrait</option>
+               <option value="landscape">Landscape</option>
+             </select>
+           </div>
         </div>
-        <div class="flex-1 p-8 overflow-auto bg-matte-200 flex justify-center">
-           <div id="preview-content" class="bg-white shadow-2xl w-[210mm] min-h-[297mm] p-[20mm] text-black text-base">
-             </div>
+        <div class="flex-1 p-4 overflow-auto bg-matte-200 dark:bg-matte-950 flex justify-center min-h-[400px]">
+           <div id="preview-wrapper" class="bg-white shadow-2xl transition-all duration-300 text-black text-sm">
+             <div id="preview-content"></div>
+           </div>
+        </div>
+        <div class="p-3 border-t border-matte-200 dark:border-matte-700 bg-white dark:bg-surface flex items-center justify-between gap-3">
+          <button id="refresh-preview-btn" class="text-xs text-matte-500 hover:text-accent-blue border border-matte-300 dark:border-surface-border rounded-lg px-3 py-1.5 transition-colors">↻ Refresh</button>
+          <button id="convert-btn" class="flex-1 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" data-i18n="btn.download_pdf">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download PDF</span>
+          </button>
         </div>
       </div>
 
     </div>
   </div>
+
+  <template id="sample-html">
+<h1 style="color: #1e293b; margin: 0 0 8px; font-size: 24px;">Invoice #1023</h1>
+<p style="color: #64748b; margin: 0 0 16px;">Tanggal: 05 Januari 2024</p>
+<hr style="border: none; border-top: 2px solid #e2e8f0; margin: 16px 0;">
+<table style="width: 100%; text-align: left; border-collapse: collapse;">
+  <thead>
+    <tr style="background: #6366f1; color: white;">
+      <th style="padding: 10px 12px;">Item</th>
+      <th style="padding: 10px 12px;">Harga</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom: 1px solid #e2e8f0;">
+      <td style="padding: 10px 12px;">Jasa Pembuatan Web</td>
+      <td style="padding: 10px 12px;">Rp 5.000.000</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #e2e8f0;">
+      <td style="padding: 10px 12px;">Domain &amp; Hosting</td>
+      <td style="padding: 10px 12px;">Rp 1.500.000</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #e2e8f0;">
+      <td style="padding: 10px 12px;">Maintenance 1 Tahun</td>
+      <td style="padding: 10px 12px;">Rp 2.000.000</td>
+    </tr>
+  </tbody>
+</table>
+<div style="text-align: right; margin-top: 24px; padding: 16px; background: #f8fafc; border-radius: 8px;">
+  <p style="font-size: 20px; font-weight: bold; color: #1e293b; margin: 0;">Total: Rp 8.500.000</p>
+  <p style="font-size: 12px; color: #64748b; margin: 4px 0 0;">Terima kasih atas kepercayaan Anda!</p>
+</div>
+  </template>
 </BaseLayout>
 
 <script>
   const htmlInput = document.getElementById('html-input');
   const previewContent = document.getElementById('preview-content');
+  const previewWrapper = document.getElementById('preview-wrapper');
   const convertBtn = document.getElementById('convert-btn');
+  const paperSize = document.getElementById('paper-size');
+  const orientation = document.getElementById('orientation');
+  const clearHtmlBtn = document.getElementById('clear-html-btn');
+  const sampleBtn = document.getElementById('sample-btn');
+  const refreshBtn = document.getElementById('refresh-preview-btn');
 
-  // 1. Live Preview dengan debounce
+  // Paper dimensions in mm (portrait width x height)
+  const PAPER_SIZES = {
+    a4: [210, 297],
+    letter: [216, 279],
+    legal: [216, 356],
+  };
+
+  // Shared base CSS for both preview iframe and PDF generation
+  const PRINT_CSS = `*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; } body { line-height: 1.5; color: #1e293b; } .page-break { page-break-after: always; } .no-break { page-break-inside: avoid; }`;
+
+  const SAMPLE_HTML = document.getElementById('sample-html')?.innerHTML.trim() || '';
+
+  // Init with sample
+  if (SAMPLE_HTML && !sessionStorage.getItem('html2pdf_edited')) {
+    htmlInput.value = SAMPLE_HTML;
+  } else if (sessionStorage.getItem('html2pdf_edited')) {
+    htmlInput.value = sessionStorage.getItem('html2pdf_edited');
+  }
+
+  function getPaperStyle() {
+    const [pw, ph] = PAPER_SIZES[paperSize.value] || PAPER_SIZES.a4;
+    const isLandscape = orientation.value === 'landscape';
+    const w = isLandscape ? ph : pw;
+    const h = isLandscape ? pw : ph;
+    // Scale mm to px (1mm ≈ 3.78px at 96dpi, but we use ~2x for preview fit)
+    const scale = 2.1;
+    return {
+      width: Math.round(w * scale),
+      minHeight: Math.round(h * scale),
+    };
+  }
+
+  function applyPaperStyle() {
+    const { width, minHeight } = getPaperStyle();
+    previewWrapper.style.width = width + 'px';
+    previewWrapper.style.minHeight = minHeight + 'px';
+    previewWrapper.style.padding = Math.round(width * 0.06) + 'px';
+  }
+
+  // 1. Live Preview - uses iframe sandbox for security
+  let previewIframe = null;
+
   function updatePreview() {
-    previewContent.innerHTML = htmlInput.value;
+    const container = previewContent.parentElement;
+    if (!container) return;
+
+    const code = htmlInput.value.trim();
+    if (!code) {
+      if (previewIframe) { previewIframe.remove(); previewIframe = null; }
+      previewContent.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:40px;">Preview kosong</p>';
+      applyPaperStyle();
+      convertBtn.disabled = true;
+      return;
+    }
+
+    convertBtn.disabled = false;
+    applyPaperStyle();
+
+    // Recreate iframe for sandbox safety
+    if (previewIframe) { previewIframe.remove(); previewIframe = null; }
+    previewContent.innerHTML = '';
+
+    previewIframe = document.createElement('iframe');
+    previewIframe.style.width = '100%';
+    previewIframe.style.border = 'none';
+    previewIframe.style.background = 'white';
+    previewIframe.style.display = 'block';
+    previewIframe.scrolling = 'auto';
+    previewContent.appendChild(previewIframe);
+
+    const doc = previewIframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${PRINT_CSS}</style></head><body>${code}</body></html>`);
+    doc.close();
+
+    // Auto-height after render - capture reference to avoid race
+    const curIframe = previewIframe;
+    const curDoc = doc;
+    setTimeout(() => {
+      if (curIframe && curDoc.body && previewIframe === curIframe) {
+        const h = Math.max(curDoc.body.scrollHeight, curDoc.documentElement.scrollHeight, 100);
+        curIframe.style.height = h + 'px';
+      }
+    }, 80);
   }
 
   let debounceTimer;
   htmlInput.addEventListener('input', () => {
+    sessionStorage.setItem('html2pdf_edited', htmlInput.value);
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(updatePreview, 500);
   });
+
+  paperSize.addEventListener('change', updatePreview);
+  orientation.addEventListener('change', updatePreview);
+
+  clearHtmlBtn.addEventListener('click', () => {
+    htmlInput.value = '';
+    sessionStorage.removeItem('html2pdf_edited');
+    updatePreview();
+  });
+
+  sampleBtn.addEventListener('click', () => {
+    htmlInput.value = SAMPLE_HTML;
+    sessionStorage.removeItem('html2pdf_edited');
+    updatePreview();
+  });
+
+  refreshBtn.addEventListener('click', updatePreview);
 
   // Init Preview
   updatePreview();
 
   // 2. Convert to PDF
   let _html2pdfRetries = 0;
-  const MAX_RETRIES = 30; // ~3 detik
+  const MAX_RETRIES = 30;
+  let _convertOriginalHTML = '';
 
   convertBtn.addEventListener('click', () => {
-    const element = document.getElementById('preview-content');
-    if (!element || !element.innerHTML.trim()) {
+    const code = htmlInput.value.trim();
+    if (!code) {
       window.showToast?.(window._tToast ? window._tToast('Editor HTML kosong. Tulis kode dulu.') : 'Editor HTML kosong. Tulis kode dulu.', 'warning');
       return;
     }
 
-    // Cek html2pdf tersedia
+    // Capture original button HTML once — do this BEFORE the retry check
+    if (!_convertOriginalHTML) {
+      _convertOriginalHTML = convertBtn.innerHTML;
+    }
+
     if (typeof html2pdf === 'undefined') {
       if (_html2pdfRetries++ < MAX_RETRIES) {
         setTimeout(() => convertBtn.click(), 100);
         return;
       }
       _html2pdfRetries = 0;
+      convertBtn.innerHTML = _convertOriginalHTML;
+      convertBtn.disabled = false;
       window.showToast?.(window._tToast ? window._tToast('Gagal memuat library html2pdf. Cek koneksi internet.') : 'Gagal memuat library html2pdf. Cek koneksi internet.', 'error');
       return;
     }
     _html2pdfRetries = 0;
 
-    const originalBtnText = convertBtn.innerText;
-    convertBtn.innerText = window._tToast ? window._tToast('Generating...') : 'Generating...';
+    convertBtn.innerHTML = window._tToast ? window._tToast('⏳ Generating PDF...') : '⏳ Generating PDF...';
     convertBtn.disabled = true;
+
+    // Create a temporary element for PDF generation (without preview padding)
+    const tmpDiv = document.createElement('div');
+    tmpDiv.innerHTML = `<style>${PRINT_CSS}</style>${code}`;
+    tmpDiv.style.cssText = 'font-family: system-ui, -apple-system, sans-serif; color: #1e293b; line-height: 1.5; padding: 15mm;';
+    // Hide it offscreen
+    tmpDiv.style.position = 'absolute';
+    tmpDiv.style.left = '-9999px';
+    tmpDiv.style.top = '0';
+    tmpDiv.style.width = '180mm';
+    document.body.appendChild(tmpDiv);
+
+    const paperFormat = paperSize.value;
+    const orient = orientation.value;
 
     const opt = {
       margin: 0,
-      filename: 'document.pdf',
+      filename: `document-${Date.now()}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, logging: false },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      html2canvas: { scale: 2, logging: false, useCORS: true },
+      jsPDF: { unit: 'mm', format: paperFormat, orientation: orient },
+      pagebreak: { mode: ['css', 'legacy'] }
     };
 
-    html2pdf().set(opt).from(element).save().then(() => {
-      convertBtn.innerText = originalBtnText;
+    html2pdf().set(opt).from(tmpDiv).save().then(() => {
+      convertBtn.innerHTML = _convertOriginalHTML;
       convertBtn.disabled = false;
       window.showToast?.(window._tToast ? window._tToast('PDF berhasil dibuat!') : 'PDF berhasil dibuat!', 'success');
+      document.body.removeChild(tmpDiv);
     }).catch(() => {
-      convertBtn.innerText = originalBtnText;
+      convertBtn.innerHTML = _convertOriginalHTML;
       convertBtn.disabled = false;
       window.showToast?.(window._tToast ? window._tToast('Gagal membuat PDF. Coba lagi.') : 'Gagal membuat PDF. Coba lagi.', 'error');
+      if (tmpDiv.parentNode) document.body.removeChild(tmpDiv);
     });
   });
 </script>

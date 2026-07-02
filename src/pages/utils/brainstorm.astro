@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout pageTitle="Ultimate Brainstorm & Facts">
+<BaseLayout pageTitle="Brainstorm Facts">
   <div class="max-w-4xl mx-auto px-4 min-h-[85vh] flex flex-col justify-center items-center py-10">
     
     <div class="text-center mb-8 animate-on-scroll">
@@ -35,7 +35,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <div class="card-base p-2 flex items-center gap-3">
                 <span class="text-xs font-bold text-matte-400 uppercase tracking-wider pl-2" data-i18n="label.mode">Mode:</span>
                 <button id="mode-toggle" class="relative inline-flex h-8 w-32 items-center rounded-lg transition-colors duration-300 focus:outline-none bg-matte-200 dark:bg-surface-hover">
-                    <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out tranmatte-x-1"></span>
+                    <span id="mode-indicator" class="inline-block h-6 w-14 transform rounded-md bg-white shadow-md transition duration-300 ease-in-out translate-x-1"></span>
                     <span class="absolute left-0 w-1/2 text-[10px] font-bold text-center text-matte-600 dark:text-matte-300 z-10 pointer-events-none">OFFLINE</span>
                     <span class="absolute right-0 w-1/2 text-[10px] font-bold text-center text-matte-600 dark:text-matte-300 z-10 pointer-events-none">ONLINE</span>
                 </button>
@@ -65,7 +65,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </div>
 
       <div class="relative z-10 flex justify-center gap-3 mt-8 pt-6 border-t border-matte-200 dark:border-surface-border">
-          <button id="tranmatte-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan">
+          <button id="translate-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
           </button>
           <button id="copy-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-amber-500 transition-colors" title="Copy">
@@ -363,7 +363,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const copyBtn = document.getElementById('copy-btn');
   const shareBtn = document.getElementById('share-btn');
   const favoriteBtn = document.getElementById('favorite-btn');
-  const translateBtn = document.getElementById('tranmatte-btn');
+  const translateBtn = document.getElementById('translate-btn');
   const tabBtns = document.querySelectorAll('.tab-btn');
   const favoritesSection = document.getElementById('favorites-section');
   const favoritesList = document.getElementById('favorites-list');
@@ -483,7 +483,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               }
           } catch (e) {
               result = getRandomItem(offlineFacts); // Fallback
-              if(isOnline) window.showToast?.('Koneksi lambat, menggunakan data lokal', 'info');
+              if(isOnline) window.showToast?.(window._tToast ? window._tToast('Koneksi lambat, menggunakan data lokal') : 'Koneksi lambat, menggunakan data lokal', 'info');
           }
 
           // Update Content
@@ -513,10 +513,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           isTranslated = false;
           translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
           translateBtn.classList.add('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
-          window.showToast?.('Kembali ke asli');
+          window.showToast?.(window._tToast ? window._tToast('Kembali ke asli') : 'Kembali ke asli');
       } else {
           if (!isOnline && !navigator.onLine) {
-              window.showToast?.('Fitur translate butuh internet!', 'error');
+              window.showToast?.(window._tToast ? window._tToast('Fitur translate butuh internet!') : 'Fitur translate butuh internet!', 'error');
               return;
           }
 
@@ -535,12 +535,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                   
                   translateBtn.classList.remove('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
                   translateBtn.classList.add('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
-                  window.showToast?.('Berhasil diterjemahkan', 'success');
+                  window.showToast?.(window._tToast ? window._tToast('Berhasil diterjemahkan') : 'Berhasil diterjemahkan', 'success');
               } else {
                   throw new Error('Limit API');
               }
           } catch(e) {
-              window.showToast?.('Gagal translate', 'error');
+              window.showToast?.(window._tToast ? window._tToast('Gagal translate') : 'Gagal translate', 'error');
           } finally {
               translateBtn.disabled = false;
               translateBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>';
@@ -591,10 +591,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       
       if (favorites.includes(originalContent)) {
           favorites = favorites.filter(f => f !== originalContent);
-          window.showToast?.('Dihapus dari favorit');
+          window.showToast?.(window._tToast ? window._tToast('Dihapus dari favorit') : 'Dihapus dari favorit');
       } else {
           favorites.push(originalContent);
-          window.showToast?.('Disimpan ke favorit!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('Disimpan ke favorit!') : 'Disimpan ke favorit!', 'success');
       }
       localStorage.setItem('brainstormFavs', JSON.stringify(favorites));
       updateFavoriteButton();
@@ -680,7 +680,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   copyBtn.addEventListener('click', () => {
       navigator.clipboard.writeText(currentContent);
-      window.showToast?.('Teks disalin!', 'success');
+      window.showToast?.(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!', 'success');
   });
 
   shareBtn.addEventListener('click', async () => {
@@ -692,12 +692,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           } catch(e) {
               if(e.name !== 'AbortError') {
                   navigator.clipboard.writeText(fullMessage);
-                  window.showToast?.('Link & Teks disalin!');
+                  window.showToast?.(window._tToast ? window._tToast('Link & Teks disalin!') : 'Link & Teks disalin!');
               }
           }
       } else {
           navigator.clipboard.writeText(fullMessage);
-          window.showToast?.('Link & Teks disalin!');
+          window.showToast?.(window._tToast ? window._tToast('Link & Teks disalin!') : 'Link & Teks disalin!');
       }
   });
 
@@ -737,7 +737,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       localStorage.setItem('brainSettings', JSON.stringify(settings));
       applySettings();
       settingsModal.classList.add('hidden');
-      window.showToast?.('Pengaturan disimpan!', 'success');
+      window.showToast?.(window._tToast ? window._tToast('Pengaturan disimpan!') : 'Pengaturan disimpan!', 'success');
   });
 
   clearFavoritesBtn.addEventListener('click', () => {
@@ -746,7 +746,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           localStorage.setItem('brainstormFavs', JSON.stringify(favorites));
           renderFavorites();
           updateFavoriteButton();
-          window.showToast?.('Semua favorit dihapus!');
+          window.showToast?.(window._tToast ? window._tToast('Semua favorit dihapus!') : 'Semua favorit dihapus!');
       }
   });
 
@@ -759,7 +759,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // Export favorites
   document.getElementById('export-favorites').addEventListener('click', () => {
       if (favorites.length === 0) {
-          window.showToast?.('Belum ada favorit untuk di-export', 'warning');
+          window.showToast?.(window._tToast ? window._tToast('Belum ada favorit untuk di-export') : 'Belum ada favorit untuk di-export', 'warning');
           return;
       }
       const blob = new Blob([JSON.stringify(favorites, null, 2)], { type: 'application/json' });
@@ -769,7 +769,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       a.download = `brainstorm-favorites-${new Date().toISOString().slice(0,10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      window.showToast?.('Favorit di-export!', 'success');
+      window.showToast?.(window._tToast ? window._tToast('Favorit di-export!') : 'Favorit di-export!', 'success');
   });
 
   // Import favorites
@@ -787,11 +787,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                   imported = JSON.parse(ev.target.result);
                   if (!Array.isArray(imported)) throw new Error('not array');
               } catch (parseErr) {
-                  window.showToast?.('File JSON tidak valid!', 'error');
+                  window.showToast?.(window._tToast ? window._tToast('File JSON tidak valid!') : 'File JSON tidak valid!', 'error');
                   return;
               }
               if (imported.length === 0) {
-                  window.showToast?.('File kosong atau format salah', 'error');
+                  window.showToast?.(window._tToast ? window._tToast('File kosong atau format salah') : 'File kosong atau format salah', 'error');
                   return;
               }
               // Merge with existing, dedup
@@ -801,7 +801,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               localStorage.setItem('brainstormFavs', JSON.stringify(favorites));
               renderFavorites();
               updateFavoriteButton();
-              window.showToast?.(`${imported.length} favorit di-import!`, 'success');
+              window.showToast?.(window._tToast ? window._tToast(`${imported.length} favorit di-import!`) : `${imported.length} favorit di-import!`, 'success');
           };
           reader.readAsText(file);
       };

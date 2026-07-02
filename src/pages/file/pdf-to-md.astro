@@ -194,9 +194,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         await navigator.clipboard.writeText(outputText.value);
         if (window.showToast) window.showToast(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!');
       } catch {
-        outputText.select();
-        document.execCommand('copy');
-        if (window.showToast) window.showToast(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!');
+        if (window.showToast) window.showToast(window._tToast ? window._tToast('Gagal menyalin!') : 'Gagal menyalin!', 'error');
       }
     });
 

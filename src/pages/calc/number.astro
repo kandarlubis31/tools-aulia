@@ -44,6 +44,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
+  document.addEventListener('astro:page-load', () => {
   const dec = document.getElementById('inp-dec');
   const bin = document.getElementById('inp-bin');
   const hex = document.getElementById('inp-hex');
@@ -79,4 +80,5 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   clearBtn.addEventListener('click', reset);
+  });
 </script>

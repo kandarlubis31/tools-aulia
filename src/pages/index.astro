@@ -25,7 +25,19 @@ const categories = [
 ];
 ---
 
-<BaseLayout pageTitle="Dashboard">
+<BaseLayout pageTitle="Dashboard" description="Koleksi 58+ tools developer & produktivitas gratis. Semua berjalan 100% di browser — tanpa install, data aman.">
+
+  <!-- JSON-LD Structured Data for SEO -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "ToolsAulia",
+    "url": "https://toolsaulia.vercel.app",
+    "description": "Koleksi 58+ tools developer & produktivitas gratis. Semua berjalan 100% di browser — tanpa install, data aman.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, Mac, Linux, Android, iOS",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "IDR" }
+  })} />
 
   <!-- Background — Subtle grid pattern -->
   <div class="fixed inset-0 -z-10 pointer-events-none">
@@ -291,6 +303,14 @@ const categories = [
          recent.unshift({ href, title, color, icon });
          recent = recent.slice(0, 6);
          localStorage.setItem('recentTools', JSON.stringify(recent));
+
+         // Track usage frequency for "Paling Sering Dipake"
+         try {
+           const freq = JSON.parse(localStorage.getItem('toolUsageFreq') || '{}');
+           freq[href] = (freq[href] || 0) + 1;
+           localStorage.setItem('toolUsageFreq', JSON.stringify(freq));
+         } catch {}
+
          updateRecentDisplay();
       }
 

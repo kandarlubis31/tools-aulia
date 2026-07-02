@@ -36,11 +36,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <div class="imperial-input hidden flex gap-3">
                 <div class="relative flex-1">
                     <input type="number" id="height-ft" class="w-full p-3 rounded-xl bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-all" placeholder="5" data-i18n-attr="placeholder" data-i18n="ph.height_ft" />
-                    <span class="absolute right-3 top-1/2 -tranmatte-y-1/2 text-matte-400 text-sm font-bold">ft</span>
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-matte-400 text-sm font-bold">ft</span>
                 </div>
                 <div class="relative flex-1">
                     <input type="number" id="height-in" class="w-full p-3 rounded-xl bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-all" placeholder="7" data-i18n-attr="placeholder" data-i18n="ph.height_in" />
-                    <span class="absolute right-3 top-1/2 -tranmatte-y-1/2 text-matte-400 text-sm font-bold">in</span>
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-matte-400 text-sm font-bold">in</span>
                 </div>
               </div>
             </div>
@@ -96,7 +96,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                   <div class="absolute top-5 left-0 w-full flex justify-between text-[10px] font-bold text-matte-400 px-1">
                       <span>16</span><span>18.5</span><span>25</span><span>30</span><span>35</span><span>40</span>
                   </div>
-                  <div id="bmi-indicator" class="absolute -top-1 w-6 h-6 bg-white dark:bg-matte-800 border-4 border-matte-800 dark:border-white rounded-full shadow-lg transform -tranmatte-x-1/2 transition-all duration-700" style="left: 0%"></div>
+                  <div id="bmi-indicator" class="absolute -top-1 w-6 h-6 bg-white dark:bg-matte-800 border-4 border-matte-800 dark:border-white rounded-full shadow-lg transform -translate-x-1/2 transition-all duration-700" style="left: 0%"></div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -304,14 +304,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       weight = parseFloat(weightInput.value) * 0.453592; // lbs to kg
     }
     
-    if (!height || !weight || height <= 0 || weight <= 0) {
-      showToast(window._tToast ? window._tToast('Masukkan data yang valid!') : 'Masukkan data yang valid!', 'error');
+    const heightEl = document.getElementById(isMetric ? 'height' : 'height-ft');
+    const weightEl = document.getElementById('weight');
+    let hasError = false;
+    if (!height || height <= 0) {
+      showInlineError(heightEl, window._tToast ? window._tToast('Masukkan tinggi yang valid!') : 'Masukkan tinggi yang valid!');
+      hasError = true;
+    }
+    if (!weight || weight <= 0) {
+      showInlineError(weightEl, window._tToast ? window._tToast('Masukkan berat yang valid!') : 'Masukkan berat yang valid!');
+      hasError = true;
+    }
+    if (hasError) {
+      window.showToast(window._tToast ? window._tToast('Lengkapi data dengan benar!') : 'Lengkapi data dengan benar!', 'error');
       return;
     }
     
     const bmi = weight / (height * height);
     const bmiFixed = bmi.toFixed(1);
     
+    clearInlineErrors();
     updateResultUI(bmi, bmiFixed, height, weight);
   });
 
@@ -401,14 +413,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     
     localStorage.setItem('bmiHistory', JSON.stringify(bmiHistory));
     renderHistory();
-    showToast(window._tToast ? window._tToast('Disimpan ke riwayat!') : 'Disimpan ke riwayat!', 'success');
+    window.showToast(window._tToast ? window._tToast('Disimpan ke riwayat!') : 'Disimpan ke riwayat!', 'success');
   });
 
   // Share Function
   shareBtn.addEventListener('click', () => {
     const text = `Skor BMI saya: ${bmiScoreEl.textContent} (${bmiStatusEl.textContent}). Cek kalkulator ini!`;
     if (navigator.share) {
-        navigator.share({ title: 'Hasil BMI', text: text }).catch(() => {});
+        navigator.share({ title: 'Hasil BMI', text: text }).catch(() => {
+            navigator.clipboard.writeText(text);
+            window.showToast(window._tToast ? window._tToast('Hasil disalin ke clipboard!') : 'Hasil disalin ke clipboard!', 'success');
+        });
     } else {
         navigator.clipboard.writeText(text);
         showToast(window._tToast ? window._tToast('Hasil disalin ke clipboard!') : 'Hasil disalin ke clipboard!', 'success');
@@ -445,7 +460,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     bmiHistory = bmiHistory.filter(i => i.id !== id);
     localStorage.setItem('bmiHistory', JSON.stringify(bmiHistory));
     renderHistory();
-    showToast(window._tToast ? window._tToast('Item dihapus') : 'Item dihapus', 'success');
+    window.showToast(window._tToast ? window._tToast('Item dihapus') : 'Item dihapus', 'success');
   };
 
   clearHistoryBtn.addEventListener('click', () => {
@@ -453,27 +468,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         bmiHistory = [];
         localStorage.setItem('bmiHistory', JSON.stringify(bmiHistory));
         renderHistory();
-        showToast(window._tToast ? window._tToast('Riwayat dibersihkan') : 'Riwayat dibersihkan', 'success');
+        window.showToast(window._tToast ? window._tToast('Riwayat dibersihkan') : 'Riwayat dibersihkan', 'success');
     }
   });
 
-  function showToast(msg, type = 'success') {
-    const toast = document.getElementById('toast');
-    const toastMsg = document.getElementById('toast-message');
-    const toastIcon = document.getElementById('toast-icon');
-    
-    const translated = window._tToast ? window._tToast(msg) : msg;
-    toastMsg.innerText = translated;
-    toast.className = `fixed bottom-6 right-6 transform transition-transform duration-300 z-50 px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 font-bold shadow-matte-900/20 ${type === 'error' ? 'bg-red-500 text-white' : 'bg-matte-900 dark:bg-white text-white dark:text-matte-900'}`;
-    
-    if(type === 'error') {
-        toastIcon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
-    } else {
-        toastIcon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+  function showInlineError(el, msg) {
+    if (!el) return;
+    el.classList.add('border-red-500', 'dark:border-red-500');
+    let errEl = el.parentElement?.querySelector('.inline-error');
+    if (!errEl) {
+      errEl = document.createElement('p');
+      errEl.className = 'inline-error text-red-500 text-xs mt-1 font-bold animate-fade-in';
+      el.parentElement?.appendChild(errEl);
     }
+    errEl.textContent = msg;
+  }
 
-    toast.classList.remove('tranmatte-x-[120%]');
-    setTimeout(() => toast.classList.add('tranmatte-x-[120%]'), 3000);
+  function clearInlineErrors() {
+    document.querySelectorAll('.inline-error').forEach(el => el.remove());
+    [heightInput, heightFtInput, heightInInput, weightInput, ageInput].forEach(el => {
+      el?.classList.remove('border-red-500', 'dark:border-red-500');
+    });
   }
 
 </script>

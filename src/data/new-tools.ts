@@ -7,6 +7,7 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  '/image/remove-bg',
   '/utils/sinonim',
   '/utils/paste-to-md',
   '/utils/wa-builder',

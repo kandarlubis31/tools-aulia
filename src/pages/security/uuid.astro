@@ -46,6 +46,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
+  document.addEventListener('astro:page-load', () => {
   const output = document.getElementById('output-area');
   const countInp = document.getElementById('count');
   const genBtn = document.getElementById('generate-btn');
@@ -72,4 +73,5 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // Init
   generate();
+  });
 </script>

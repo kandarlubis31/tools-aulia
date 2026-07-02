@@ -1,0 +1,550 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout pageTitle="Remove Background">
+  <div class="max-w-6xl mx-auto px-4 py-8 min-h-[85vh]">
+    
+    <header class="text-center mb-10 animate-on-scroll">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl mb-4 shadow-lg shadow-violet-500/30">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <h1 class="text-matte-900 dark:text-white text-4xl font-extrabold mb-3 tracking-tight" data-i18n="header.remove_bg">
+        Remove Background
+      </h1>
+      <p class="text-matte-600 dark:text-matte-400 max-w-2xl mx-auto text-lg" data-i18n="header.remove_bg_desc">
+        Hapus background gambar otomatis pakai AI. 100% diproses di browser — gak ada upload ke server.
+      </p>
+      <p class="text-matte-400 dark:text-matte-500 text-xs mt-2 flex items-center justify-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Proses pertama kali perlu download model AI (~5-15MB). Setelah itu offline-ready.
+      </p>
+    </header>
+
+    <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-matte-300 dark:border-matte-600 rounded-3xl p-12 cursor-pointer hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-950/30 transition-all group text-center animate-on-scroll">
+      <div class="w-20 h-20 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <h3 class="text-2xl font-bold text-matte-700 dark:text-matte-200 mb-2">Upload Gambar</h3>
+      <p class="text-sm text-matte-500">JPG, PNG, WEBP (Max 10MB) — hasil auto transparan</p>
+      <input type="file" id="file-input" accept="image/*" class="hidden" />
+      <input type="file" id="bg-image-input" accept="image/*" class="hidden" />
+    </div>
+
+    <div id="workspace" class="hidden mt-8 pb-16 animate-fade-in">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        
+        <div class="card-base p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-matte-700 dark:text-matte-200 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-matte-400"></span>
+              Original
+            </h3>
+            <span id="original-size" class="text-xs text-matte-500"></span>
+          </div>
+          <div class="bg-surface-hover dark:bg-matte-900/50 rounded-xl p-4 flex items-center justify-center min-h-[300px] checkerboard">
+            <img id="original-img" class="max-w-full max-h-[400px] object-contain rounded-lg shadow-md" alt="Original image" loading="lazy" />
+          </div>
+        </div>
+
+        <div class="card-base p-5 border-2 border-violet-300 dark:border-violet-700">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-violet-600 dark:text-violet-400 flex items-center gap-2">
+              <span id="result-dot" class="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></span>
+              Hasil
+            </h3>
+            <span id="result-size" class="text-xs text-violet-500"></span>
+          </div>
+          <div id="result-container" class="bg-surface-hover dark:bg-matte-900/50 rounded-xl p-4 flex items-center justify-center min-h-[300px] checkerboard relative">
+            <div id="result-loading" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-matte-900/60 rounded-xl z-10 backdrop-blur-sm">
+              <div class="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+              <p id="loading-text" class="text-white text-sm font-bold">Memproses...</p>
+              <p class="text-white/60 text-xs mt-1">Download model AI pertama kali ~5-15MB</p>
+            </div>
+            <img id="result-img" class="max-w-full max-h-[400px] object-contain rounded-lg shadow-md" alt="Result image" loading="lazy" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Background Replace Options -->
+      <div id="bg-options" class="hidden card-base p-5 mb-6 animate-fade-in">
+        <h3 class="font-bold text-matte-700 dark:text-matte-200 mb-4 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-violet-500"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+          Background Baru
+        </h3>
+        
+        <div class="flex items-center gap-1 bg-matte-100 dark:bg-matte-800 rounded-lg p-0.5 mb-4">
+          <button class="bg-mode-btn flex-1 py-2 text-xs font-bold rounded-md transition-all bg-white dark:bg-surface text-matte-800 dark:text-matte-200 shadow-sm" data-mode="transparent">
+            🚫 Transparan
+          </button>
+          <button class="bg-mode-btn flex-1 py-2 text-xs font-bold rounded-md transition-all text-matte-500 dark:text-matte-400 hover:text-matte-700 dark:hover:text-matte-200" data-mode="blur">
+            🔮 Blur
+          </button>
+          <button class="bg-mode-btn flex-1 py-2 text-xs font-bold rounded-md transition-all text-matte-500 dark:text-matte-400 hover:text-matte-700 dark:hover:text-matte-200" data-mode="color">
+            🎨 Warna Solid
+          </button>
+          <button class="bg-mode-btn flex-1 py-2 text-xs font-bold rounded-md transition-all text-matte-500 dark:text-matte-400 hover:text-matte-700 dark:hover:text-matte-200" data-mode="image">
+            🖼️ Gambar
+          </button>
+        </div>
+
+        <div id="bg-color-row" class="hidden mb-3">
+          <div class="flex items-center gap-3 flex-wrap">
+            <div class="flex items-center gap-2">
+              <input type="color" id="bg-color-picker" value="#6366f1" class="w-10 h-10 rounded-lg cursor-pointer border border-matte-300 dark:border-surface-border bg-white dark:bg-surface p-1" />
+              <input type="text" id="bg-color-hex" value="#6366f1" maxlength="7" class="w-24 px-2 py-2 bg-white dark:bg-surface border border-matte-300 dark:border-surface-border rounded-lg text-matte-800 dark:text-matte-200 text-xs font-mono" placeholder="#HEX" />
+            </div>
+            <div class="flex gap-1.5">
+              <button class="color-preset w-7 h-7 rounded-full border-2 border-transparent hover:border-violet-400 transition-all" style="background:#ffffff" data-color="#ffffff" title="Putih"></button>
+              <button class="color-preset w-7 h-7 rounded-full border-2 border-transparent hover:border-violet-400 transition-all" style="background:#6366f1" data-color="#6366f1" title="Indigo"></button>
+              <button class="color-preset w-7 h-7 rounded-full border-2 border-transparent hover:border-violet-400 transition-all" style="background:#ec4899" data-color="#ec4899" title="Pink"></button>
+              <button class="color-preset w-7 h-7 rounded-full border-2 border-transparent hover:border-violet-400 transition-all" style="background:#10b981" data-color="#10b981" title="Emerald"></button>
+              <button class="color-preset w-7 h-7 rounded-full border-2 border-transparent hover:border-violet-400 transition-all" style="background:#f59e0b" data-color="#f59e0b" title="Amber"></button>
+              <button class="color-preset w-7 h-7 rounded-full border-2 border-transparent hover:border-violet-400 transition-all" style="background:#ef4444" data-color="#ef4444" title="Red"></button>
+              <button class="color-preset w-7 h-7 rounded-full border-2 border-transparent hover:border-violet-400 transition-all" style="background:#3b82f6" data-color="#3b82f6" title="Blue"></button>
+              <button class="color-preset w-7 h-7 rounded-full border-2 border-transparent hover:border-violet-400 transition-all" style="background:#1e293b" data-color="#1e293b" title="Slate"></button>
+            </div>
+          </div>
+        </div>
+
+        <div id="bg-image-row" class="hidden">
+          <label for="bg-image-input" class="inline-flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-lg cursor-pointer hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-violet-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span id="bg-image-label" class="text-sm font-bold text-violet-600 dark:text-violet-400">Pilih Background Image</span>
+          </label>
+          <p id="bg-image-name" class="text-xs text-matte-500 mt-1 ml-1"></p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button id="download-btn" disabled class="flex-1 max-w-xs px-8 py-3.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold rounded-xl shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Hasil (PNG)
+        </button>
+        <button id="retry-btn" class="hidden flex-1 max-w-xs px-8 py-3.5 bg-white dark:bg-surface-hover text-violet-600 font-bold rounded-xl shadow-md hover:shadow-lg border border-violet-200 dark:border-violet-800 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+          Coba Lagi
+        </button>
+      </div>
+
+      <p class="text-center text-matte-400 dark:text-matte-500 text-xs mt-4">
+        ✨ Proses 100% lokal. Gambar tidak pernah dikirim ke server manapun.
+      </p>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+</style>
+
+<script>
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const bgImageInput = document.getElementById('bg-image-input');
+  const workspace = document.getElementById('workspace');
+  const originalImg = document.getElementById('original-img');
+  const resultImg = document.getElementById('result-img');
+  const resultContainer = document.getElementById('result-container');
+  const resultLoading = document.getElementById('result-loading');
+  const resultDot = document.getElementById('result-dot');
+  const loadingText = document.getElementById('loading-text');
+  const downloadBtn = document.getElementById('download-btn');
+  const retryBtn = document.getElementById('retry-btn');
+  const originalSize = document.getElementById('original-size');
+  const resultSize = document.getElementById('result-size');
+  const bgOptions = document.getElementById('bg-options');
+  const bgModeBtns = document.querySelectorAll('.bg-mode-btn');
+  const bgColorRow = document.getElementById('bg-color-row');
+  const bgImageRow = document.getElementById('bg-image-row');
+  const bgColorPicker = document.getElementById('bg-color-picker');
+  const bgColorHex = document.getElementById('bg-color-hex');
+  const bgImageLabel = document.getElementById('bg-image-label');
+  const bgImageName = document.getElementById('bg-image-name');
+
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  let originalFile: File | null = null;
+  let resultBlob: Blob | null = null;
+  let bgImageFile: File | null = null;
+  let isProcessing = false;
+  let bgMode: 'transparent' | 'color' | 'image' | 'blur' = 'transparent';
+  let bgColor = '#6366f1';
+  let compositedBlob: Blob | null = null;
+
+  function formatBytes(bytes: number): string {
+    if (!bytes) return '0 KB';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+  }
+
+  function showUI() {
+    dropZone.classList.add('hidden');
+    workspace.classList.remove('hidden');
+  }
+
+  function showLoading(text: string) {
+    resultLoading.classList.remove('hidden');
+    loadingText.textContent = text;
+  }
+
+  function hideLoading() {
+    resultLoading.classList.add('hidden');
+    if (resultDot) resultDot.classList.add('animate-pulse');
+  }
+
+  function resetResult() {
+    if (resultImg.src?.startsWith('blob:')) URL.revokeObjectURL(resultImg.src);
+    resultImg.src = '';
+    resultBlob = null;
+    compositedBlob = null;
+    bgImageFile = null;
+    downloadBtn.disabled = true;
+    retryBtn.classList.add('hidden');
+    bgOptions.classList.add('hidden');
+    resultSize.textContent = '';
+    resultContainer.classList.add('checkerboard');
+    resultContainer.classList.remove('blur-bg');
+    resultContainer.style.backgroundColor = '';
+    resultContainer.style.backgroundImage = '';
+    resultContainer.style.filter = '';
+    resultContainer.style.overflow = '';
+    resultContainer.style.position = '';
+  }
+
+  // Composite result image onto a background (color or image)
+  async function compositeResult(): Promise<Blob | null> {
+    if (!resultBlob) return null;
+
+    // Blur mode: render background with strong blur for portrait effect
+    if (bgMode === 'blur') {
+      return resultBlob;
+    }
+
+    const resultBmp = await createImageBitmap(resultBlob);
+    const canvas = document.createElement('canvas');
+    canvas.width = resultBmp.width;
+    canvas.height = resultBmp.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) { resultBmp.close(); return resultBlob; }
+
+    try {
+    if (bgMode === 'color') {
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else if (bgMode === 'image' && bgImageFile) {
+        try {
+          const scale = Math.max(canvas.width / bgBmp.width, canvas.height / bgBmp.height);
+          const dw = bgBmp.width * scale;
+          const dh = bgBmp.height * scale;
+          const dx = (canvas.width - dw) / 2;
+          const dy = (canvas.height - dh) / 2;
+          ctx.drawImage(bgBmp, dx, dy, dw, dh);
+        } finally {
+          bgBmp.close();
+        }
+      }
+
+      ctx.drawImage(resultBmp, 0, 0);
+    } finally {
+      resultBmp.close();
+    }
+
+    return new Promise(resolve => {
+      canvas.toBlob(blob => resolve(blob), 'image/png');
+    });
+  }
+
+  async function updatePreview() {
+    if (!resultBlob) return;
+
+    compositedBlob = await compositeResult();
+
+    // Update preview display
+    if (compositedBlob) {
+      const url = URL.createObjectURL(compositedBlob);
+      if (resultImg.src?.startsWith('blob:')) URL.revokeObjectURL(resultImg.src);
+      resultImg.src = url;
+    }
+
+    // Update checkerboard / background
+    if (bgMode === 'transparent') {
+      resultContainer.classList.add('checkerboard');
+      resultContainer.style.backgroundImage = '';
+      resultContainer.style.backgroundColor = '';
+    } else if (bgMode === 'blur') {
+      resultContainer.classList.remove('checkerboard');
+      resultContainer.style.backgroundColor = '';
+      resultContainer.style.filter = '';
+      // Blur only the background via ::before pseudo (result image stays sharp)
+      resultContainer.style.position = 'relative';
+      resultContainer.style.overflow = 'hidden';
+      if (originalImg.src) {
+        resultContainer.style.backgroundImage = 'none';
+        // Inject a blurred pseudo-element style if not already present
+        if (!document.getElementById('blur-bg-style')) {
+          const style = document.createElement('style');
+          style.id = 'blur-bg-style';
+          style.textContent = `
+            #result-container.blur-bg::before {
+              content: '';
+              position: absolute;
+              inset: 0;
+              background-image: inherit;
+              background-size: cover;
+              background-position: center;
+              background-repeat: no-repeat;
+              filter: blur(20px) brightness(0.7);
+              z-index: 0;
+            }
+            #result-container.blur-bg > * { position: relative; z-index: 1; }
+          `;
+          document.head.appendChild(style);
+        }
+        resultContainer.style.backgroundImage = `url(${originalImg.src})`;
+        resultContainer.style.backgroundSize = 'cover';
+        resultContainer.style.backgroundPosition = 'center';
+        resultContainer.classList.add('blur-bg');
+      }
+    } else if (bgMode === 'color') {
+      resultContainer.classList.remove('checkerboard', 'blur-bg');
+      resultContainer.style.backgroundColor = bgColor;
+      resultContainer.style.backgroundImage = '';
+      resultContainer.style.filter = '';
+      resultContainer.style.overflow = '';
+      resultContainer.style.position = '';
+    } else {
+      resultContainer.classList.remove('checkerboard', 'blur-bg');
+      resultContainer.style.backgroundColor = '';
+      resultContainer.style.backgroundImage = '';
+      resultContainer.style.filter = '';
+    }
+  }
+
+  async function removeBackground() {
+    if (!originalFile || isProcessing) return;
+    isProcessing = true;
+
+    showLoading('Mendownload model AI...');
+    resetResult();
+
+    try {
+      const { default: removeBg } = await import('@imgly/background-removal');
+
+      showLoading('Menghapus background...');
+
+      const startTime = Date.now();
+      resultBlob = await removeBg(originalFile, {
+        progress: (key: string, current: number, total: number) => {
+          const pct = Math.round((current / total) * 100);
+          if (key.includes('download') || key.includes('model') || key === 'init') {
+            loadingText.textContent = `Download model... ${pct}%`;
+          } else {
+            loadingText.textContent = `Memproses... ${pct}%`;
+          }
+        },
+      });
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+      // Show result
+      const url = URL.createObjectURL(resultBlob);
+      if (resultImg.src?.startsWith('blob:')) URL.revokeObjectURL(resultImg.src);
+      resultImg.src = url;
+      
+      hideLoading();
+      downloadBtn.disabled = false;
+      retryBtn.classList.remove('hidden');
+      bgOptions.classList.remove('hidden');
+      resultSize.textContent = `${formatBytes(resultBlob.size)} · ${elapsed}s`;
+
+      window.showToast?.(
+        window._tToast ? window._tToast('Background berhasil dihapus!') : 'Background berhasil dihapus!',
+        'success'
+      );
+
+      // Apply current background mode
+      await updatePreview();
+      updateBgToggleUI();
+    } catch (err: any) {
+      hideLoading();
+      retryBtn.classList.remove('hidden');
+      const msg = err?.message || 'Gagal memproses gambar.';
+      window.showToast?.(
+        window._tToast ? window._tToast(msg) : msg,
+        'error'
+      );
+    } finally {
+      isProcessing = false;
+    }
+  }
+
+  function handleFile(file: File) {
+    if (!file.type.startsWith('image/')) {
+      window.showToast?.(
+        window._tToast ? window._tToast('File harus berupa gambar (JPG, PNG, WEBP).') : 'File harus berupa gambar (JPG, PNG, WEBP).',
+        'error'
+      );
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      window.showToast?.(
+        window._tToast ? window._tToast('File terlalu besar! Maksimal 10MB.') : 'File terlalu besar! Maksimal 10MB.',
+        'error'
+      );
+      return;
+    }
+
+    originalFile = file;
+    originalSize.textContent = formatBytes(file.size);
+
+    const url = URL.createObjectURL(file);
+    if (originalImg.src && originalImg.src.startsWith('blob:')) URL.revokeObjectURL(originalImg.src);
+    originalImg.src = url;
+
+    showUI();
+    resetResult();
+
+    removeBackground();
+  }
+
+  // --- Background mode toggle ---
+  function updateBgToggleUI() {
+    bgModeBtns.forEach(btn => {
+      const isActive = btn.dataset.mode === bgMode;
+      btn.classList.toggle('bg-white', isActive);
+      btn.classList.toggle('dark:bg-surface', isActive);
+      btn.classList.toggle('text-matte-800', isActive);
+      btn.classList.toggle('dark:text-matte-200', isActive);
+      btn.classList.toggle('shadow-sm', isActive);
+      btn.classList.toggle('text-matte-500', !isActive);
+      btn.classList.toggle('dark:text-matte-400', !isActive);
+      btn.classList.toggle('hover:text-matte-700', !isActive);
+      btn.classList.toggle('dark:hover:text-matte-200', !isActive);
+    });
+    bgColorRow.classList.toggle('hidden', bgMode !== 'color');
+    bgImageRow.classList.toggle('hidden', bgMode !== 'image');
+  }
+
+  updateBgToggleUI();
+
+  bgModeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      bgMode = btn.dataset.mode as 'transparent' | 'color' | 'image';
+      updateBgToggleUI();
+      updatePreview();
+    });
+  });
+
+  // Color picker sync
+  bgColorPicker.addEventListener('input', () => {
+    bgColor = bgColorPicker.value;
+    bgColorHex.value = bgColor;
+    updatePreview();
+  });
+  bgColorHex.addEventListener('input', () => {
+    const val = bgColorHex.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      bgColor = val;
+      bgColorPicker.value = val;
+      updatePreview();
+    }
+  });
+  bgColorHex.addEventListener('blur', () => {
+    let val = bgColorHex.value.trim();
+    if (!val.startsWith('#')) val = '#' + val;
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      bgColor = val;
+      bgColorPicker.value = val;
+      bgColorHex.value = val;
+      updatePreview();
+    } else {
+      bgColorHex.value = bgColor;
+    }
+  });
+
+  // Color preset swatches
+  document.querySelectorAll('.color-preset').forEach(preset => {
+    preset.addEventListener('click', () => {
+      const color = (preset as HTMLElement).dataset.color;
+      if (color) {
+        bgColor = color;
+        bgColorPicker.value = color;
+        bgColorHex.value = color;
+        updatePreview();
+      }
+    });
+  });
+
+  // Background image upload
+  bgImageInput.addEventListener('change', (e: Event) => {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      window.showToast?.(window._tToast ? window._tToast('File harus berupa gambar.') : 'File harus berupa gambar.', 'error');
+      return;
+    }
+    bgImageFile = file;
+    bgImageName.textContent = file.name;
+    bgImageLabel.textContent = 'Ganti Background';
+    updatePreview();
+  });
+
+  // --- Download ---
+  downloadBtn.addEventListener('click', () => {
+    const blobToDownload = compositedBlob || resultBlob;
+    if (!blobToDownload) return;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blobToDownload);
+    const baseName = originalFile?.name?.replace(/\.[^/.]+$/, '') || 'image';
+    link.download = `${baseName}-nobg.png`;
+    link.click();
+    window.showToast?.(
+      window._tToast ? window._tToast('Gambar berhasil diunduh!') : 'Gambar berhasil diunduh!',
+      'success'
+    );
+  });
+
+  retryBtn.addEventListener('click', () => {
+    if (originalFile) removeBackground();
+  });
+
+  // --- Drag & drop, paste ---
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    const input = e.target as HTMLInputElement;
+    if (input.files?.[0]) handleFile(input.files[0]);
+  });
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-violet-500', 'bg-violet-50', 'dark:bg-violet-950/30');
+  });
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('border-violet-500', 'bg-violet-50', 'dark:bg-violet-950/30');
+  });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-violet-500', 'bg-violet-50', 'dark:bg-violet-950/30');
+    const file = e.dataTransfer?.files?.[0];
+    if (file) handleFile(file);
+  });
+
+  document.addEventListener('paste', (e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) handleFile(file);
+        break;
+      }
+    }
+  });
+</script>

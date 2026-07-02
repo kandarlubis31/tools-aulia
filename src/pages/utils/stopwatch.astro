@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout pageTitle="Stopwatch Online">
+<BaseLayout pageTitle="Stopwatch">
   <div class="max-w-2xl mx-auto px-4 min-h-[60vh] flex flex-col items-center">
     
     <div class="text-center mb-8 pt-8 animate-on-scroll">
@@ -54,6 +54,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
+  document.addEventListener('astro:page-load', () => {
   let startTime = 0;
   let elapsedTime = 0;
   let timerInterval: any = null;
@@ -155,4 +156,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   btnReset?.addEventListener('click', reset);
   btnLap?.addEventListener('click', logLap);
+
+  // Cleanup interval on SPA navigation
+  document.addEventListener('astro:page-leave', () => {
+    clearInterval(timerInterval);
+    isRunning = false;
+  });
+  });
 </script>

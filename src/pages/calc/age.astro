@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout pageTitle="Age Calculator Ultimate">
+<BaseLayout pageTitle="Age Calculator">
   <div class="max-w-4xl mx-auto px-4 min-h-[85vh] py-10">
     
     <div class="text-center mb-10 animate-on-scroll">
@@ -489,7 +489,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const text = `Saya sudah hidup selama ${formatNumber(currentAgeData.totalDays)} hari (${currentAgeData.years} Tahun)! Hitung umurmu di sini.`;
     
     if (navigator.share) {
-      navigator.share({ title: 'Age Master', text: text }).catch(() => {});
+      navigator.share({ title: 'Age Master', text: text }).catch(() => {
+          navigator.clipboard.writeText(text);
+          window.showToast((window._tToast) ? window._tToast('Teks disalin ke clipboard!') : 'Teks disalin ke clipboard!', 'success');
+      });
     } else {
       navigator.clipboard.writeText(text);
       window.showToast((window._tToast) ? window._tToast('Teks disalin ke clipboard!') : 'Teks disalin ke clipboard!', 'success');
@@ -500,7 +503,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   document.getElementById('clear-age-history')?.addEventListener('click', () => {
     localStorage.removeItem('ageHistory');
     renderAgeHistory();
-    window.showToast('Riwayat dibersihkan!', 'success');
+    window.showToast((window._tToast) ? window._tToast('Riwayat dibersihkan!') : 'Riwayat dibersihkan!', 'success');
   });
 
   // Set Max Date Today

@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout pageTitle="PDF to Text - Ekstrak Teks dari PDF">
+<BaseLayout pageTitle="PDF to Text">
   <div class="max-w-5xl mx-auto px-4 py-12 min-h-[85vh]">
     
     <div class="text-center mb-10">
@@ -194,9 +194,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         await navigator.clipboard.writeText(outputText.value);
         if (window.showToast) window.showToast(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!');
       } catch {
-        outputText.select();
-        document.execCommand('copy');
-        if (window.showToast) window.showToast(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!');
+        if (window.showToast) window.showToast(window._tToast ? window._tToast('Gagal menyalin!') : 'Gagal menyalin!', 'error');
       }
     });
 

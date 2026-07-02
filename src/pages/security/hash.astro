@@ -51,6 +51,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
+  document.addEventListener('astro:page-load', () => {
   const input = document.getElementById('hash-input');
   const outMd5 = document.getElementById('out-md5');
   const outSha1 = document.getElementById('out-sha1');
@@ -85,5 +86,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             window.showToast(window._tToast ? window._tToast("Hash disalin!") : "Hash disalin!", "success");
         }
     });
+  });
   });
 </script>

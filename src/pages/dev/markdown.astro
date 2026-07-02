@@ -68,7 +68,7 @@ Coba ketik sesuatu di sebelah kiri...`;
   });
 
   btnCopyHtml.addEventListener('click', () => {
-    navigator.clipboard.writeText(preview.innerHTML);
+    navigator.clipboard.writeText(preview.textContent || '');
     window.showToast(window._tToast ? window._tToast('HTML Code disalin!') : 'HTML Code disalin!', 'success');
   });
 </script>

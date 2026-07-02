@@ -168,7 +168,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                         </p>
                     </div>
                     <div>
-                        <p class="text-[10px] text-matte-400 uppercase font-bold tracking-wider" data-i18n="label.battery">Baterai</p>
+                        <p class="text-[10px] text-matte-400 uppercase font-bold tracking-wider">Koneksi</p>
                         <p id="dev-battery" class="font-medium text-matte-700 dark:text-matte-200">
                             <span class="inline-block w-16 h-4 bg-matte-200 dark:bg-matte-700 rounded animate-pulse skeleton">&nbsp;</span>
                         </p>
@@ -239,7 +239,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <div class="mt-8 flex justify-center gap-4">
         <button id="toggle-json" class="group flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-matte-800 border border-matte-200 dark:border-matte-700 text-sm font-bold text-matte-500 hover:text-blue-500 transition-all hover:shadow-md">
             <span data-i18n="btn.dev_mode">Mode Developer (JSON)</span>
-            <svg id="arrow-json" class="w-4 h-4 transition-transform group-hover:tranmatte-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            <svg id="arrow-json" class="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </button>
         <button id="save-report" class="group flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-matte-800 border border-matte-200 dark:border-matte-700 text-sm font-bold text-matte-500 hover:text-green-500 transition-all hover:shadow-md">
             <span data-i18n="btn.save_report">Simpan Laporan</span>
@@ -296,7 +296,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                         <line x1="170" y1="44" x2="174" y2="38" stroke="currentColor" stroke-width="1.5" class="text-matte-300 dark:text-matte-600"/>
                     </svg>
                     <!-- Center text overlaid on bottom half -->
-                    <div class="absolute bottom-6 left-1/2 -tranmatte-x-1/2 text-center">
+                    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-center">
                         <div class="text-2xl md:text-3xl font-black text-matte-800 dark:text-white tabular-nums tracking-tight" id="speed-display">0</div>
                         <div class="text-[10px] font-bold uppercase tracking-widest text-matte-400" data-i18n="label.mbps">Mbps</div>
                     </div>
@@ -444,15 +444,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       return { browser, os };
   }
 
-  // Battery API — graceful degrade (API deprecated in some browsers)
-  async function getBatteryInfo() {
-    try {
-      if ('getBattery' in navigator) {
-        const battery = await (navigator as any).getBattery();
-        return `${Math.round(battery.level * 100)}% ${battery.charging ? '⚡' : ''}`;
-      }
-    } catch {}
-    return 'N/A';
+  // Connection type via Network Information API (Battery API removed - deprecated)
+  function getConnectionType(): string {
+    const conn = (navigator as any).connection;
+    if (!conn || !conn.effectiveType) return 'Tidak tersedia';
+    return conn.effectiveType.toUpperCase();
   }
 
   // ================================================================
@@ -908,9 +904,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         document.getElementById('result-upload')!.textContent = estUl + ' Mbps (estimasi)';
         resultsGrid.classList.remove('opacity-0', 'max-h-0');
         resultsGrid.classList.add('opacity-100');
-        window.showToast('Tes CDN gagal. Estimasi dari koneksi.', 'warning');
+        window.showToast(window._tToast ? window._tToast('Tes CDN gagal. Estimasi dari koneksi.') : 'Tes CDN gagal. Estimasi dari koneksi.', 'warning');
       } else {
-        window.showToast('Gagal mengukur kecepatan. Coba lagi.', 'error');
+        window.showToast(window._tToast ? window._tToast('Gagal mengukur kecepatan. Coba lagi.') : 'Gagal mengukur kecepatan. Coba lagi.', 'error');
       }
       phaseEl.textContent = window._tToast ? window._tToast('Tes gagal') : 'Tes gagal';
     }
@@ -1158,21 +1154,20 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       setText('user-agent', navigator.userAgent);
       
       // 11c. Fire everything in parallel — IP race + battery + localIP + connection
-      const [result, battery, localIP, proxyStatus, connectionInfo] = await Promise.allSettled([
+      const [result, localIP, proxyStatus, connectionInfo] = await Promise.allSettled([
         fetchIPData().then(data => { rawNetworkData = data; return data; }),
-        getBatteryInfo(),
         getLocalIP(),
         checkProxy(),
         Promise.resolve(getConnectionInfo())
       ]);
       
-      // Battery
-      if (battery.status === 'fulfilled') setText('dev-battery', battery.value);
+      // Connection type (no longer using deprecated Battery API)
+      setText('dev-battery', getConnectionType());
       
       // Local IP
       if (localIP.status === 'fulfilled') setText('local-ip', localIP.value);
       
-      // Connection info
+      // Connection type (replaces deprecated Battery API)
       if (connectionInfo.status === 'fulfilled') {
         setText('connection-info', connectionInfo.value);
       }

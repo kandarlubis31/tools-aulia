@@ -209,7 +209,7 @@ const getColorClass = (color: string) => {
 
   <!-- Frequently Used — Diperkuat -->
   <section class="max-w-7xl mx-auto px-4 mb-8">
-    <div class="rounded-2xl p-6 border relative overflow-hidden" style="background: linear-gradient(135deg, rgba(244,63,94,0.05), rgba(249,115,22,0.02)); border-color: rgba(244,63,94,0.15);">
+    <div class="rounded-2xl p-6 border relative overflow-hidden bg-gradient-to-br from-rose-500/[0.05] to-orange-500/[0.02] dark:from-rose-500/[0.08] dark:to-orange-500/[0.04] border-rose-500/15 dark:border-rose-500/20">
       <div class="dark:border-rose-800/20 absolute top-[-50%] right-[-50%] w-full h-full bg-[radial-gradient(circle,rgba(244,63,94,0.08),transparent_70%)] pointer-events-none"></div>
       
       <div class="flex items-center gap-3 mb-5 relative">
@@ -228,7 +228,7 @@ const getColorClass = (color: string) => {
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 relative">
         {pdfTools.filter(tool => popularTools.some(popular => tool.href.includes(popular))).map((tool) => (
           <a href={tool.href} 
-             class="tool-card-glow group flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-matte-800/70 border border-matte-200 dark:border-matte-700 hover:border-rose-300 dark:hover:border-rose-700 transition-all duration-300 shadow-sm hover:shadow-md hover:-tranmatte-y-0.5"
+             class="tool-card-glow group flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-matte-800/70 border border-matte-200 dark:border-matte-700 hover:border-rose-300 dark:hover:border-rose-700 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
              style={`--glow-color: ${glowColors[tool.color] || '#f43f5e'}`}>
             <div class={`p-2.5 rounded-lg ${getColorClass(tool.color)} transition-transform group-hover:scale-110`}>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
@@ -345,7 +345,7 @@ const getColorClass = (color: string) => {
     </div>
 
     <!-- Privacy Section -->
-    <div class="mt-16 rounded-2xl p-6 border relative overflow-hidden" style="background: linear-gradient(135deg, rgba(16,185,129,0.05), rgba(20,184,166,0.02)); border-color: rgba(16,185,129,0.15);">
+    <div class="mt-16 rounded-2xl p-6 border relative overflow-hidden bg-gradient-to-br from-emerald-500/[0.05] to-teal-500/[0.02] dark:from-emerald-500/[0.08] dark:to-teal-500/[0.04] border-emerald-500/15 dark:border-emerald-500/20">
       <div class="flex items-center gap-4 relative">
         <div class="p-3 bg-white dark:bg-matte-900 rounded-xl shadow-sm text-emerald-500">
            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>

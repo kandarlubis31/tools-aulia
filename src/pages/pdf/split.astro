@@ -85,6 +85,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   dropZone?.addEventListener('click', () => fileInput.click());
 
+  // Drag & Drop handlers
+  dropZone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone?.classList.add('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10');
+  });
+  dropZone?.addEventListener('dragleave', () => {
+    dropZone?.classList.remove('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10');
+  });
+  dropZone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone?.classList.remove('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10');
+    const file = e.dataTransfer?.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      currentFile = file;
+      renderThumbnails(file);
+    } else {
+      window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error');
+    }
+  });
+
   fileInput?.addEventListener('change', async (e) => {
     if (fileInput.files && fileInput.files[0]) {
       const file = fileInput.files[0];

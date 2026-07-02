@@ -89,7 +89,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         const json = csvToJson(csv);
         output.value = json;
     } catch (e) {
-        alert(window._tToast ? window._tToast("Gagal konversi. Pastikan format CSV benar.") : "Gagal konversi. Pastikan format CSV benar.");
+        window.showToast?.(window._tToast ? window._tToast("Gagal konversi. Pastikan format CSV benar.") : "Gagal konversi. Pastikan format CSV benar.", 'error');
     }
   });
 

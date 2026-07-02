@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout pageTitle="Grayscale PDF (Photocopy Effect) with Preview">
+<BaseLayout pageTitle="Grayscale PDF">
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" async></script>
   <script is:inline async>
     (function waitForPdfjs() {
@@ -115,6 +115,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // --- EVENT LISTENERS ---
   dropZone.addEventListener('click', () => fileInput.click());
+
+  // Drag & Drop handlers
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-gray-500', 'bg-gray-100', 'dark:bg-gray-800/50');
+  });
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('border-gray-500', 'bg-gray-100', 'dark:bg-gray-800/50');
+  });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-gray-500', 'bg-gray-100', 'dark:bg-gray-800/50');
+    const file = e.dataTransfer?.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      currentFile = file;
+      filenameDisplay.innerText = currentFile.name;
+      dropZone.classList.add('hidden');
+      workspace.classList.remove('hidden');
+      loadAndPreviewFirstPage(file);
+    }
+  });
 
   fileInput.addEventListener('change', async (e) => {
     if (fileInput.files[0]) {

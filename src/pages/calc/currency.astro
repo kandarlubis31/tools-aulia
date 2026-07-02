@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout pageTitle="Real-time Currency Converter">
+<BaseLayout pageTitle="Currency Converter">
   <div class="max-w-xl mx-auto px-4 min-h-[60vh]">
     <div class="text-center mb-8 pt-8 animate-fade-in">
       <h1 class="text-3xl font-extrabold mb-2 text-matte-900 dark:text-white" data-i18n="header.currency">
@@ -102,7 +102,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
 
         <p class="text-[10px] text-center text-matte-400" data-i18n="msg.data_source">
-            Sumber data: open.er-api.com. Diperbarui otomatis.
+            Sumber data: open.er-api.com.<br/><span id="last-updated">Diperbarui otomatis.</span>
         </p>
 
       </div>
@@ -196,6 +196,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
         // Kalau tidak ada cache, hitung pakai fallback dulu
         if (!usedCache) calculate();
+        
+        // Show cached timestamp if available
+        if (usedCache) {
+          const cachedTime = new Date(parsed.timestamp);
+          const timeStr = cachedTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          const minsAgo = Math.floor((Date.now() - parsed.timestamp) / 60000);
+          const lastUpdated = document.getElementById('last-updated');
+          if (lastUpdated) {
+            lastUpdated.textContent = 'Diperbarui: ' + timeStr + ' · ' + minsAgo + ' menit lalu';
+          }
+        }
 
         // Fetch Data Terbaru di Background
         try {
@@ -207,10 +218,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 calculate(); // Update UI dengan data live
                 
                 // Simpan cache
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
                 localStorage.setItem('simpleRates', JSON.stringify({
                     rates: data.rates,
                     timestamp: Date.now()
                 }));
+                // Update last-updated display
+                const lastUpdated = document.getElementById('last-updated');
+                if (lastUpdated) {
+                  lastUpdated.textContent = 'Diperbarui: ' + timeStr + ' WIB';
+                }
             }
         } catch (error) {
         } finally {

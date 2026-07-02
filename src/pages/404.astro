@@ -1,5 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { tools } from '../data/tools';
+
+const popularTools = tools.filter(t => t.popular).slice(0, 6);
 ---
 
 <BaseLayout pageTitle="Halaman Tidak Ditemukan">
@@ -18,9 +21,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       Halaman yang kamu cari sepertinya sudah dipindahkan atau tidak ada di server kami.
     </p>
 
-    <a href="/" class="group px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full transition-all hover:scale-105 shadow-lg shadow-indigo-500/30 flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-tranmatte-x-1 transition-transform"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-      <span data-i18n="404.back">Kembali ke Dashboard</span>
-    </a>
+    <!-- Popular Tools -->
+    <div class="mb-8 w-full max-w-lg">
+      <p class="text-xs font-semibold uppercase tracking-wide text-matte-400 mb-3" data-i18n="404.try_these">Mungkin kamu cari ini:</p>
+      <div class="flex flex-wrap justify-center gap-2">
+        {popularTools.map(tool => (
+          <a href={tool.href} class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border hover:border-accent-blue/30 dark:hover:border-accent-blue/30 text-xs font-medium text-matte-600 dark:text-matte-300 hover:text-matte-800 dark:hover:text-white transition-all duration-150">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400" set:html={tool.icon} />
+            {tool.title}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3">
+      <a href="/" class="group px-8 py-3 bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-bold rounded-full transition-all hover:scale-105 shadow-lg flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-1 transition-transform"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        <span data-i18n="404.back">Kembali ke Dashboard</span>
+      </a>
+      <button id="open-search-404" class="px-8 py-3 bg-white dark:bg-surface-elevated text-matte-600 dark:text-matte-300 font-bold rounded-full border border-matte-200 dark:border-surface-border hover:border-matte-300 dark:hover:border-matte-500 transition-all flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <span data-i18n="404.search_tools">Cari Tools</span>
+      </button>
+    </div>
   </div>
 </BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    document.getElementById('open-search-404')?.addEventListener('click', () => {
+      document.getElementById('search-btn')?.click();
+    });
+  });
+</script>

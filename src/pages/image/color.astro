@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout pageTitle="Advanced Color Picker">
+<BaseLayout pageTitle="Color Picker">
   <div class="max-w-7xl mx-auto px-4 min-h-[80vh]">
     <div class="text-center mb-8 pt-8 animate-on-scroll">
       <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white">
@@ -207,7 +207,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             const result = await eyeDropper.open();
             updateColor(result.sRGBHex);
         } catch (e) {
-            console.log("User canceled");
+            // User canceled the eyedropper
         }
     });
   }

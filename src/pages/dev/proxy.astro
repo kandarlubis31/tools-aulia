@@ -94,7 +94,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   sendBtn.addEventListener('click', async () => {
     const url = targetUrlInput.value;
     if(!url) {
-        alert(window._tToast ? window._tToast('Masukkan URL target!') : 'Masukkan URL target!');
+        window.showToast?.(window._tToast ? window._tToast('Masukkan URL target!') : 'Masukkan URL target!', 'error');
         return;
     }
 
