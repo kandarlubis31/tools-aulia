@@ -191,7 +191,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                     loadingEl.style.opacity = '0';
                     setTimeout(() => loadingEl.classList.add('hidden'), 300);
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.debug('Gagal parse cache rates dari localStorage:', e);
+            }
         }
 
         // Kalau tidak ada cache, hitung pakai fallback dulu

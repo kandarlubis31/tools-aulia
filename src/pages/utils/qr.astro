@@ -542,6 +542,7 @@ END:VEVENT`;
     // Create a temporary canvas with white background
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) { window.showToast?.('Gagal render QR JPG', 'error'); return; }
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
     

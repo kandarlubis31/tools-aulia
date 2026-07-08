@@ -522,6 +522,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.href = URL.createObjectURL(blob);
       link.download = `${outputName.value || 'merged-document'}-${Date.now()}.pdf`;
       link.click();
+      URL.revokeObjectURL(link.href);
       
       // Show success message
       window.showToast?.(window._tToast('PDF berhasil digabungkan!'));

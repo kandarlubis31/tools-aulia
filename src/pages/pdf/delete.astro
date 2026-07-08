@@ -3,11 +3,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="Delete PDF Pages">
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" async></script>
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" async></script>
   <script is:inline async>
     (function waitForPdfjs() {
       if (window.pdfjsLib) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
       } else {
         setTimeout(waitForPdfjs, 50);
       }
@@ -253,6 +253,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       // Gunakan canvas yang lebih kecil untuk performa
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
+      if (!context) return;
       
       canvas.height = viewport.height;
       canvas.width = viewport.width;
@@ -372,7 +373,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     try {
       // Import pdf-lib secara dinamis untuk mengurangi ukuran bundle awal
-      const { PDFDocument } = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
+      const { PDFDocument } = await import('pdf-lib');
       
       const arrayBuffer = await currentFile.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);

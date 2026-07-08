@@ -3,11 +3,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="Split PDF Pages">
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" async></script>
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" async></script>
   <script is:inline async>
     (function waitForPdfjs() {
       if (window.pdfjsLib) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
       } else {
         setTimeout(waitForPdfjs, 50);
       }
@@ -140,6 +140,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
+        if (!context) continue;
         canvas.height = viewport.height;
         canvas.width = viewport.width;
         canvas.className = "w-full h-auto pointer-events-none bg-white";
@@ -270,6 +271,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.href = URL.createObjectURL(blob);
       link.download = `split-${currentFile.name}`;
       link.click();
+      URL.revokeObjectURL(link.href);
 
     } catch (err) {
       window.showToast?.(window._tToast ? window._tToast("Gagal memproses PDF.") : "Gagal memproses PDF.", 'error');

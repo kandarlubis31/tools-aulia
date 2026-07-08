@@ -2,7 +2,8 @@
 
 > Created: July 2, 2026
 > Last audit: July 2, 2026 (Deep scan #5 — +error swallowing, +PWA gaps, +performance, +SEO meta)
-> Status: 🟢 Phase 1-6 Complete · 🟡 Phase 7 In Progress · ⬜ Phase 8-15 Planned
+> Status: 🟢 Phase 1-6 Complete · 🟡 Phase 7 In Progress · ⬜ Phase 8-18 Planned
+> **Last audit**: July 5, 2026 (Deep scan #6 — +dead deps, +getContext null, +innerHTML XSS)
 
 ---
 
@@ -500,6 +501,74 @@ Sitemap: https://toolsaulia.vercel.app/sitemap-index.xml
 
 ---
 
+## 📋 Phase 17: 🔴 — Dead Dependencies & Bundle Audit
+
+**Audit Date**: July 5, 2026
+
+### 17.1 Dead npm Dependencies
+
+| Package | Size | Status | Detail |
+|---------|------|--------|--------|
+| `qrcode` ^1.5.4 | ~120KB | 🔴 **DEAD** | Not imported in any source file. CDN `qrious` used for QR generation. |
+| `mammoth` ^1.12.0 | ~400KB | 🔴 **DEAD** | Not imported anywhere. No .docx conversion feature exists. |
+| `js-tiktoken` ^1.0.21 | ~3MB | 🟡 Low | Only `paste-to-md.astro` for GPT token count. Lazy-load candidate. |
+| `pdf-lib` ^1.17.1 | ~300KB | 🟡 Duplicated | npm + CDN (unpkg in 3 files, cdnjs in 2). Consolidate. |
+
+### 17.2 Public Assets Bloat
+
+| Asset | Size | Issue |
+|-------|------|-------|
+| `kbbi-sinonim.json` | 9.4MB | 93% of PWA cache limit |
+| `id-words.json` | 2.6MB | Loaded by sinonim only |
+| `sounds/*.mp3` (11 files) | ~8MB | Jokowi/Prabowo meme sounds — downloaded by ALL users |
+| `img/ngamuk.gif` | ~500KB | Animated GIF on countdown page |
+
+| # | Task | Est |
+|---|------|-----|
+| 17.1 | Remove `qrcode` + `mammoth` from package.json | 5m |
+| 17.2 | Consolidate pdf-lib (remove CDN, use npm only) | 15m |
+| 17.3 | Lazy-load countdown sound assets | 10m |
+
+---
+
+## 📋 Phase 18: 🔴 — Canvas `getContext('2d')` Null Safety
+
+**Audit Date**: July 5, 2026
+**Finding**: **21 usages** across 16 files. **ZERO null checks.** If GPU OOM or canvas not in DOM → `Cannot read properties of null` crash.
+
+| File | Lines |
+|------|-------|
+| `image/remove-bg.astro`, `image/editor.astro` (2), `image/converter.astro`, `image/compressor.astro`, `image/color.astro` | 6 |
+| `pdf/watermark.astro`, `pdf/grayscale.astro` (2), `pdf/to-ppt.astro`, `pdf/extract.astro`, `pdf/to-jpg.astro` | 6 |
+| `pdf/delete.astro`, `pdf/split.astro`, `pdf/compress.astro`, `pdf/sign.astro` (2), `pdf/rotate.astro`, `pdf/reorder.astro` | 7 |
+| `utils/qr.astro`, `utils/prabowo-countdown.astro` | 2 |
+
+**Fix Pattern**:
+```js
+const ctx = canvas.getContext('2d');
+if (!ctx) { window.showToast?.('Gagal render: context tidak tersedia', 'error'); return; }
+```
+
+| # | Task | Est |
+|---|------|-----|
+| 18.1 | Add null guard to all 21 getContext('2d') calls | 20m |
+
+---
+
+## 🔴 Part 2+3 — New Findings (Previously Undocumented)
+
+| # | Finding | Severity | Detail |
+|---|---------|----------|--------|
+| **N13** | **`qrcode` npm dead dep** | 🟡 | 0 imports. CDN `qrious` used instead. |
+| **N14** | **`mammoth` npm dead dep** | 🟡 | 0 imports. No .docx feature. |
+| **N15** | **21× getContext('2d') no null check** | 🔴 | 16 files crash silently on GPU OOM. |
+| **N16** | **11 MP3s (8MB) in public/** | 🟡 | Meme sounds downloaded by all users. |
+| **N17** | **pdf-lib npm + CDN duplicated** | 🟡 | 5 files use CDN despite npm installed. |
+| **N18** | **`target="_blank"` all secure** | ✅ | All have `rel="noopener noreferrer"`. |
+| **N19** | **`innerHTML +=` only 1 instance** | ✅ | `lorem.astro:108` — minimal perf concern. |
+| **N20** | **63 `innerHTML` usages** | 🔴 | ~50% inject user/API data (XSS risk). |
+| **N21** | **3 test files, no test script** | 🟡 | vitest tests exist but no `test` script in package.json. |
+
 ## 📋 Phase 16: 🔴 CRITICAL — Drag & Drop Audit & Fix
 
 **Audit Date**: July 2, 2026
@@ -585,9 +654,11 @@ dropZone.addEventListener('drop', (e) => {
 | Phase 14: PWA Hardening | 5 tasks | 🟡 High | ~1h | ⬜ |
 | Phase 15: 🔥 SEO Domination | 15 tasks | 🔴 Critical | ~5.5h | ⬜ |
 | Phase 16: Drag & Drop Fixes | 5 tasks | 🔴 Critical | ~40m | ✅ Complete |
+| Phase 17: Dead Deps & Bundle | 3 tasks | 🟡 High | ~30m | ⬜ |
+| Phase 18: getContext Null Safety | 1 task | 🔴 Critical | ~20m | ⬜ |
 | Quick Wins | 6 tasks | 🔴 Critical | ~1h | ✅ Complete |
 
-**Total: 62 remaining tasks, ~18.5 jam**
+**Total: 66 remaining tasks, ~19.3 jam**
 
 ---
 
@@ -626,30 +697,39 @@ dropZone.addEventListener('drop', (e) => {
 
 ---
 
-## 📝 Audit Metadata (Fresh Scan — July 2, 2026)
+## 📝 Audit Metadata (Fresh Scan — July 5, 2026)
 
 | Metric | Count | Notes |
 |--------|-------|-------|
 | Total `.astro` files | 58 | All pages + layouts + components |
-| `innerHTML` assignments | 141 | 95% safe (static/template); ~5% user-content (paste-to-md, wa-builder, sinonim) |
+| `innerHTML` assignments | 63 | ~50% user-content (search, filenames, API data) — **XSS risk** |
+| `innerHTML +=` accumulator | 1 | `lorem.astro:108` — minimal perf concern |
 | `addEventListener` calls | 224 | Including element-level (buttons, inputs) |
 | **Document-level listeners** | **29** | **mousemove: 10, mouseup: 8, touchmove: 8, touchend: 8, keydown: 7, scroll: 1** |
 | Files with doc listeners | 13 | editor.astro (8) > watermark.astro (4) = sign.astro (4) |
 | Files with proper cleanup | 3 | prabowo-countdown (keydown), editor (keydown), BaseLayout (pwa scroll) |
+| `getContext('2d')` usages | 21 | **ZERO null checks** across 16 files — crashes on GPU OOM |
 | `any` type casts | 48 | my-ip.astro (19) > age.astro (5) > paste-to-md.astro (4) |
 | `@ts-ignore` directives | 8 | All in prabowo-countdown.astro |
 | `alert()` calls | 3 | csv-json (1), proxy (1), converter (1) |
 | `is:inline` scripts | 42 | CDN libs (pdf.js, html2canvas, etc.) + inline page scripts |
-| Files with `astro:page-load` | 24 | 22 tool pages + 2 BaseLayout — 8 tool pages still missing it |
+| CDN providers | 3 | cdnjs + jsdelivr + unpkg — **NO `integrity` hash** |
+| Files with `astro:page-load` | 24 | 22 tool pages + 2 BaseLayout — 8 still missing |
 | Files importing composables | 6 | BaseLayout + only 5 tool pages (8.6% adoption) |
+| Dead npm dependencies | 2 | `qrcode` (0 imports), `mammoth` (0 imports) |
+| `URL.revokeObjectURL` leaks | 12 | PDF/image tools create object URLs without releasing |
+| Silent error swallows | 19 | 13 `.catch(() => {})` + 6 empty `catch(e) {}` |
 | `aria-label` attributes | 8 | 6 in BaseLayout, 1 in todo, 1 in prabowo |
 | `role` attributes | 1 | `role="button"` on prabowo mascot container |
 | `execCommand('copy')` remaining | 1 | html-to-img.astro fallback path |
 | `console.log` in production | 0 | ✅ All removed |
 | `eval` / `new Function` | 0 | ✅ Clean |
+| `target="_blank"` without `rel` | 0 | ✅ All secure |
 | `text-slate-` / `bg-slate-` | 0 | ✅ Palette migration complete |
 | TODO / FIXME / HACK | 0 | ✅ Clean |
-| Largest bundle chunk | 5.6 MB | `id-words.ts` (195k Indonesian words) — needs lazy-load |
+| Test files | 3 | vitest (clipboard, debounce, toast) — no `test` script |
+| Largest bundle chunk | 5.6 MB | `id-words.ts` — needs lazy-load |
+| PWA cache limit | 15 MB | KBBI 9.4MB + id-words 2.6MB + sounds 8MB = 20MB total assets |
 
 ---
 

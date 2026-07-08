@@ -567,22 +567,36 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     downloadBtn.addEventListener('click', generateAndDownload);
     
     copyBtn.addEventListener('click', async () => {
+        let ok = false;
         try {
             await navigator.clipboard.writeText(codeInput.value);
+            ok = true;
         } catch {
-            codeInput.select();
-            document.execCommand('copy');
+            // fallback: select text + deprecated execCommand (last resort for old browsers)
+            try {
+                codeInput.select();
+                codeInput.setSelectionRange(0, 99999);
+                ok = document.execCommand('copy');
+            } catch {
+                // both methods failed
+            }
         }
-        window.showToast?.(window._tToast ? window._tToast('Kode berhasil disalin!') : 'Kode berhasil disalin!', 'success');
+        window.showToast?.(
+            window._tToast
+                ? (ok ? window._tToast('Kode berhasil disalin!') : window._tToast('Gagal menyalin kode.'))
+                : (ok ? 'Kode berhasil disalin!' : 'Gagal menyalin kode.'),
+            ok ? 'success' : 'error'
+        );
     });
 
     // Share API
     shareBtn.addEventListener('click', async () => {
+        if (!shareBtn) return;
         const iframe = previewContent.querySelector('iframe');
         if (!iframe) return;
         if (!iframe.contentWindow || !iframe.contentWindow.document.body) return;
         
-        const restoreShare = window.showButtonSpinner(shareBtn, '⏳');
+        const restoreShare = window.showButtonSpinner(shareBtn as HTMLButtonElement, '⏳');
 
         if (typeof html2canvas === 'undefined') {
             restoreShare();
@@ -598,18 +612,31 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             const canvas = await html2canvas(body, getHtml2CanvasOptions(iframe));
 
             const ext = format === 'jpeg' ? 'jpg' : format;
-            canvas.toBlob(async (blob) => {
-                const file = new File([blob], `share.${ext}`, { type: mime });
-                if (navigator.share && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: "Code Image" });
-                    window.showToast?.(window._tToast ? window._tToast('Berhasil dibagikan!') : 'Berhasil dibagikan!', 'success');
-                } else {
-                    window.showToast?.(window._tToast ? window._tToast('Browser tidak support share.') : 'Browser tidak support share.', 'error');
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    restoreShare();
+                    window.showToast?.(window._tToast ? window._tToast('Gagal membuat blob gambar.') : 'Gagal membuat blob gambar.', 'error');
+                    return;
                 }
-                restoreShare();
+                (async () => {
+                    try {
+                        const file = new File([blob], `share.${ext}`, { type: mime });
+                        if (navigator.share && navigator.canShare({ files: [file] })) {
+                            await navigator.share({ files: [file], title: "Code Image" });
+                            window.showToast?.(window._tToast ? window._tToast('Berhasil dibagikan!') : 'Berhasil dibagikan!', 'success');
+                        } else {
+                            window.showToast?.(window._tToast ? window._tToast('Browser tidak support share.') : 'Browser tidak support share.', 'error');
+                        }
+                    } catch {
+                        window.showToast?.(window._tToast ? window._tToast('Gagal membagikan gambar.') : 'Gagal membagikan gambar.', 'error');
+                    } finally {
+                        restoreShare();
+                    }
+                })();
             });
         } catch (e) {
             restoreShare();
+            window.showToast?.(window._tToast ? window._tToast('Gagal render gambar untuk share.') : 'Gagal render gambar untuk share.', 'error');
         }
     });
 

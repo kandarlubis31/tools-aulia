@@ -3,7 +3,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="Add Page Numbers">
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" async></script>
 
   <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
     <div class="text-center mb-10 pt-8 animate-on-scroll">
@@ -74,28 +73,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   processBtn?.addEventListener('click', async () => {
     if (!currentFile) return;
 
-    // Helper: wait for pdf-lib
-    function waitForPdfLib() {
-      return new Promise((resolve) => {
-        if (typeof PDFDocument !== 'undefined') {
-          resolve();
-          return;
-        }
-        const check = setInterval(() => {
-          if (typeof PDFDocument !== 'undefined') {
-            clearInterval(check);
-            resolve();
-          }
-        }, 50);
-      });
-    }
-
-    await waitForPdfLib();
+    // Lazy load pdf-lib via npm (no CDN)
+    const { PDFDocument, rgb, StandardFonts } = await import('pdf-lib');
 
     const restoreBtn = window.showButtonSpinner(processBtn, window._tToast ? window._tToast('Memproses...') : 'Memproses...');
 
     try {
-      const { PDFDocument, rgb, StandardFonts } = PDFLib;
       const arrayBuffer = await currentFile.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -123,6 +106,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.href = URL.createObjectURL(blob);
       link.download = `numbered-${currentFile.name}`;
       link.click();
+      URL.revokeObjectURL(link.href);
 
       window.showToast?.(window._tToast ? window._tToast("Nomor halaman berhasil ditambahkan!") : "Nomor halaman berhasil ditambahkan!", "success");
 

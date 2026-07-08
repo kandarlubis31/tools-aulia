@@ -109,6 +109,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       canvas.height = img.height;
       
       const ctx = canvas.getContext('2d');
+      if (!ctx) { img.close(); _compressPending = false; return; }
       ctx.drawImage(img, 0, 0);
 
       // Convert to Blob with quality
@@ -118,7 +119,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           if (!blob) { _compressPending = false; return; }
           compressedBlob = blob;
           const url = URL.createObjectURL(blob);
-          if (previewImg) previewImg.src = url;
+          if (previewImg) {
+            if (previewImg.src?.startsWith('blob:')) URL.revokeObjectURL(previewImg.src);
+            previewImg.src = url;
+          }
           
           // Update Stats
           if (sizeComp) sizeComp.innerText = formatBytes(blob.size);
@@ -202,6 +206,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     
     link.download = `compressed-${originalFile.name.replace(/\.[^/.]+$/, "")}.${ext}`;
     link.click();
+    URL.revokeObjectURL(link.href);
     window.showToast?.(window._tToast ? window._tToast("Gambar berhasil diunduh!") : "Gambar berhasil diunduh!", "success");
   });
 </script>

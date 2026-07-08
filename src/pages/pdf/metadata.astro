@@ -3,8 +3,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="Edit PDF Metadata">
-  <script type="module" src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-
   <div class="max-w-4xl mx-auto px-4 min-h-[80vh]">
     <div class="text-center mb-8 pt-8 animate-on-scroll">
       <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500">
@@ -57,7 +55,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script type="module">
-  const { PDFDocument } = await import('https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.esm.js');
+  const { PDFDocument } = await import('pdf-lib');
 
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('file-input');
@@ -138,6 +136,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         link.href = URL.createObjectURL(blob);
         link.download = `metadata-${currentFile.name}`;
         link.click();
+        URL.revokeObjectURL(link.href);
         
         window.showToast?.(window._tToast ? window._tToast("Metadata berhasil diperbarui!") : "Metadata berhasil diperbarui!", "success");
 

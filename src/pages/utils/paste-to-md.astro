@@ -303,7 +303,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         gptEncoder = getEncoding('cl100k_base');
         return gptEncoder;
       })
-      .catch(() => null);
+      .catch((err) => { console.error('Gagal memuat tokenizer GPT:', err); return null; });
     return gptEncoderPromise;
   }
 
@@ -334,7 +334,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           }
         } catch {}
       }
-    }).catch(() => {});
+    })      .catch((err) => { console.debug('Background GPT token count failed:', err); });
     return estimate;
   }
 
@@ -356,6 +356,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // ==================== File Upload Helpers ====================
 
+  // File size limit (50MB)
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+  // Supported file extensions for conversion
+  const SUPPORTED_EXTENSIONS = ['txt', 'md', 'html', 'htm', 'csv', 'json', 'xml', 'docx', 'rtf', 'pdf'];
+  // Image extensions that cannot be converted to text/markdown
+  const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'avif', 'heic', 'heif', 'tiff', 'tif'];
+
   // File type detection by extension
   function getFileType(filename: string): string {
     const ext = filename.split('.').pop()?.toLowerCase() || '';
@@ -371,7 +379,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       'rtf': 'rtf',
       'pdf': 'pdf',
     };
-    return typeMap[ext] || 'text';
+    if (typeMap[ext]) return typeMap[ext];
+    if (IMAGE_EXTENSIONS.includes(ext)) return 'image';
+    return 'unsupported';
   }
 
   // Format file size
@@ -540,40 +550,83 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   async function convertSingleFile(file: File): Promise<{ original: string; markdown: string; error?: string }> {
     const fileType = getFileType(file.name);
 
+    // 🚫 Reject unsupported file types early — prevents binary data freeze
+    if (fileType === 'image') {
+      throw new Error(`File gambar (.${file.name.split('.').pop()}) tidak bisa dikonversi ke teks. Gunakan tool Image di menu atas.`);
+    }
+    if (fileType === 'unsupported') {
+      throw new Error(`Format file .${file.name.split('.').pop()} tidak didukung. Format yang didukung: ${SUPPORTED_EXTENSIONS.join(', ')}`);
+    }
+
+    // 📏 Size check — reject files over 50MB before processing
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error(`File terlalu besar (${formatFileSize(file.size)}). Maksimum ${formatFileSize(MAX_FILE_SIZE)}.`);
+    }
+
     let textContent: string;
     let contentForMd: string;
 
     if (fileType === 'docx') {
-      const mammoth = await import('mammoth');
-      const arrayBuffer = await file.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer });
-      textContent = result.value;
-      contentForMd = htmlToMarkdown(textContent);
-    } else if (fileType === 'pdf') {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdfjsLib = await new Promise<any>((resolve, reject) => {
-        if ((window as any).pdfjsLib) { resolve((window as any).pdfjsLib); return; }
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-        script.onload = () => {
-          (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-          resolve((window as any).pdfjsLib);
-        };
-        script.onerror = () => reject(new Error('Gagal memuat PDF.js'));
-        document.head.appendChild(script);
-      });
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, useWorkerFetch: false, isEvalSupported: false }).promise;
-      let extracted = '';
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const tc = await page.getTextContent();
-        extracted += tc.items.map((item: any) => item.str).join(' ') + '\n\n';
+      try {
+        const mammoth = await import('mammoth');
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        textContent = result.value;
+        contentForMd = htmlToMarkdown(textContent);
+      } catch (err) {
+        throw new Error(`Gagal membaca file DOCX: ${err instanceof Error ? err.message : 'Format tidak valid atau rusak.'}`);
       }
-      textContent = extracted;
-      contentForMd = textToMarkdown(extracted);
+    } else if (fileType === 'pdf') {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        // Load PDF.js with 15s timeout — prevents infinite hang on network error
+        const pdfjsLib = await new Promise<any>((resolve, reject) => {
+            if ((window as any).pdfjsLib) { resolve((window as any).pdfjsLib); return; }
+            const script = document.createElement('script');
+            let resolved = false;
+            const timeoutId = setTimeout(() => {
+              if (!resolved) {
+                // Clean up the dangling script tag on timeout
+                if (script.parentNode) script.remove();
+                reject(new Error('Timeout memuat PDF.js — koneksi lambat atau CDN tidak tersedia.'));
+              }
+            }, 15000);
+            script.onload = () => {
+              resolved = true;
+              clearTimeout(timeoutId);
+              (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+              resolve((window as any).pdfjsLib);
+            };
+            script.onerror = () => {
+              resolved = true;
+              clearTimeout(timeoutId);
+              if (script.parentNode) script.remove();
+              reject(new Error('Gagal memuat PDF.js — periksa koneksi internet.'));
+            };
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+            document.head.appendChild(script);
+          });
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, useWorkerFetch: false, isEvalSupported: false }).promise;
+        let extracted = '';
+        const maxPages = Math.min(pdf.numPages, 100); // Safety: cap at 100 pages
+        for (let i = 1; i <= maxPages; i++) {
+          const page = await pdf.getPage(i);
+          const tc = await page.getTextContent();
+          extracted += tc.items.map((item: any) => item.str).join(' ') + '\n\n';
+        }
+        if (pdf.numPages > 100) extracted += `\n\n*...dan ${pdf.numPages - 100} halaman lainnya (dipotong)*\n`;
+        textContent = extracted;
+        contentForMd = textToMarkdown(extracted);
+      } catch (err) {
+        throw new Error(`Gagal membaca PDF: ${err instanceof Error ? err.message : 'File rusak atau terproteksi.'}`);
+      }
     } else {
-      textContent = await file.text();
-      contentForMd = convertFileContent(textContent, fileType);
+      try {
+        textContent = await file.text();
+        contentForMd = convertFileContent(textContent, fileType);
+      } catch (err) {
+        throw new Error(`Gagal membaca file: ${err instanceof Error ? err.message : 'Encoding tidak dikenal atau file rusak.'}`);
+      }
     }
 
     const compressed = compressMarkdown(contentForMd, currentMode);
@@ -645,13 +698,56 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // Add files to queue
   function addFilesToQueue(files: FileList | File[]) {
+    // 🛡️ Guard: don't add files while batch is processing
+    if (batchProcessing) return;
+
+    let skippedCount = 0;
+    let skippedReasons: string[] = [];
+
     for (const file of Array.from(files)) {
       const qf = file as QueueFile;
-      if (!fileQueue.some(f => f.name === qf.name && f.size === qf.size)) {
-        qf._status = null;
-        fileQueue.push(qf);
+
+      // 🚫 Skip duplicate files
+      if (fileQueue.some(f => f.name === qf.name && f.size === qf.size)) continue;
+
+      // 🚫 Pre-validate: reject unsupported types before adding to queue
+      const ft = getFileType(qf.name);
+      if (ft === 'image') {
+        skippedCount++;
+        skippedReasons.push(`${qf.name}: file gambar`);
+        continue;
       }
+      if (ft === 'unsupported') {
+        skippedCount++;
+        skippedReasons.push(`${qf.name}: format tidak didukung`);
+        continue;
+      }
+
+      // 📏 Pre-validate: reject oversized files
+      if (qf.size > MAX_FILE_SIZE) {
+        skippedCount++;
+        skippedReasons.push(`${qf.name}: terlalu besar (${formatFileSize(qf.size)})`);
+        continue;
+      }
+
+      qf._status = null;
+      fileQueue.push(qf);
     }
+
+    // Show toast for skipped files
+    if (skippedCount > 0) {
+      const msg = skippedCount === 1
+        ? `1 file dilewati: ${skippedReasons[0]}`
+        : `${skippedCount} file dilewati (format tidak didukung/terlalu besar)`;
+      window.showToast?.(msg, 'warning');
+    }
+
+    // If all files were skipped, don't proceed
+    if (fileQueue.length === 0) {
+      resetAll();
+      return;
+    }
+
     renderFileQueue();
     if (fileUploadDefault) {
       fileUploadDefault.classList.add('hidden');
@@ -1383,7 +1479,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         navigator.clipboard.readText().then(async text => {
           if (inputArea) inputArea.textContent = text;
           await processInput();
-        }).catch(() => {});
+        }).catch((err) => { console.debug('Clipboard read (Ctrl+Shift+V) failed:', err); });
       }
     });
   }

@@ -769,6 +769,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       canvas.height = cropData.h * scaleY;
       
       const ctx = canvas.getContext('2d');
+      if (!ctx) { exitCropMode(true); window.showToast?.('Gagal render: context tidak tersedia', 'error'); return; }
       ctx.drawImage(
         previewImg,
         cropData.x * scaleX, cropData.y * scaleY,

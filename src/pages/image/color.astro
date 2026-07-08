@@ -234,6 +234,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
                 canvas.width = w;
                 canvas.height = h;
+                if (!ctx) { window.showToast?.('Gagal render: context tidak tersedia', 'error'); return; }
                 ctx.drawImage(img, 0, 0, w, h);
                 
                 canvas.classList.remove('hidden');
@@ -252,6 +253,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // Magnifier Logic
   canvas.addEventListener('mousemove', (e) => {
+    if (!magCtx) return;
     const rect = canvas.getBoundingClientRect();
     
     // Scale coordinate (in case CSS resizes canvas)
@@ -293,6 +295,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   });
 
   canvas.addEventListener('click', (e) => {
+    if (!ctx) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -315,6 +318,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   });
 
   function extractDominantColors(count = 5) {
+    if (!ctx) return [];
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = imageData.data;
     const colorMap = new Map();

@@ -128,7 +128,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 const jsonObj = JSON.parse(textData);
                 textData = JSON.stringify(jsonObj, null, 2);
                 responseBody.className = 'whitespace-pre-wrap break-all min-h-[200px] max-h-[500px] overflow-y-auto custom-scrollbar text-emerald-400 font-bold';
-            } catch(e) {}
+            } catch(e) {
+                console.error('Gagal parse JSON response:', e);
+                responseBody.className = 'whitespace-pre-wrap break-all min-h-[200px] max-h-[500px] overflow-y-auto custom-scrollbar text-matte-200';
+            }
         } else {
              responseBody.className = 'whitespace-pre-wrap break-all min-h-[200px] max-h-[500px] overflow-y-auto custom-scrollbar text-matte-200';
         }

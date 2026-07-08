@@ -459,7 +459,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         try {
           const pc = new RTCPeerConnection({iceServers: []});
           pc.createDataChannel('');
-          pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => {});
+          pc.createOffer().then(o => pc.setLocalDescription(o)).catch((err) => { console.debug('WebRTC createOffer gagal (IP lokal tidak tersedia):', err); });
           let resolved = false;
           pc.onicecandidate = e => {
               if (e.candidate && !resolved) {

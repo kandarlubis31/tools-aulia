@@ -4,11 +4,11 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
 ---
 
 <BaseLayout pageTitle="Compress PDF">
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" async></script>
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" async></script>
   <script is:inline async>
     (function waitForPdfjs() {
       if (window.pdfjsLib) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
       } else {
         setTimeout(waitForPdfjs, 50);
       }
@@ -194,8 +194,13 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
         const viewport = page.getViewport({ scale: 1.5 }); // Scale standar biar kebaca
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
+        if (!context) continue;
         canvas.height = viewport.height;
         canvas.width = viewport.width;
+
+        // Isi background putih sebelum render (hindari warna hitam di JPEG)
+        context.fillStyle = '#FFFFFF';
+        context.fillRect(0, 0, canvas.width, canvas.height);
 
         await page.render({ canvasContext: context, viewport: viewport }).promise;
 
@@ -219,6 +224,7 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
       link.href = URL.createObjectURL(blob);
       link.download = `compressed-${currentFile.name}`;
       link.click();
+      URL.revokeObjectURL(link.href);
 
       if(progressText) progressText.innerText = window._tToast ? window._tToast("Selesai! File sedang didownload.") : "Selesai! File sedang didownload.";
       if(compressOverlayText) compressOverlayText.innerText = window._tToast ? window._tToast('Selesai!') : 'Selesai!';

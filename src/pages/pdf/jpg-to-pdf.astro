@@ -113,6 +113,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       link.href = URL.createObjectURL(blob);
       link.download = `images-to-pdf-${Date.now()}.pdf`;
       link.click();
+      URL.revokeObjectURL(link.href);
 
     } catch (err) {
       window.showToast?.(window._tToast ? window._tToast('Gagal membuat PDF.') : 'Gagal membuat PDF.', 'error');

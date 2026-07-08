@@ -540,19 +540,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     audio.currentTime = 0;
     const wasPlayingBacksound = backsoundAudio && !backsoundMuted && backsoundStarted && !backsoundAudio.paused;
     if (wasPlayingBacksound) backsoundAudio.pause();
-    audio.play().catch(() => {});
+    audio.play().catch((err) => { console.debug('Audio autoplay dicegah browser:', err); });
 
     audio.onended = () => {
       if (resumeSafetyTimer) { clearTimeout(resumeSafetyTimer); resumeSafetyTimer = null; }
       if (backsoundAudio && !backsoundMuted && backsoundStarted && wasPlayingBacksound) {
-        backsoundAudio.play().catch(() => {});
+        backsoundAudio.play().catch((err) => { console.debug('Audio autoplay dicegah browser:', err); });
       }
       if (currentClickAudio === audio) currentClickAudio = null;
     };
 
     resumeSafetyTimer = setTimeout(() => {
       if (backsoundAudio && !backsoundMuted && backsoundStarted && wasPlayingBacksound) {
-        backsoundAudio.play().catch(() => {});
+        backsoundAudio.play().catch((err) => { console.debug('Audio autoplay dicegah browser:', err); });
       }
       if (currentClickAudio === audio) currentClickAudio = null;
       resumeSafetyTimer = null;
@@ -563,7 +563,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (backsoundStarted) return;
     backsoundStarted = true;
     if (backsoundAudio && !backsoundMuted) {
-      backsoundAudio.play().catch(() => {});
+      backsoundAudio.play().catch((err) => { console.debug('Audio autoplay dicegah browser:', err); });
     }
   }
 
@@ -574,7 +574,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (backsoundMuted) {
       if (backsoundAudio) backsoundAudio.pause();
     } else {
-      if (backsoundAudio && backsoundStarted) backsoundAudio.play().catch(() => {});
+      if (backsoundAudio && backsoundStarted) backsoundAudio.play().catch((err) => { console.debug('Audio autoplay dicegah browser:', err); });
     }
   }
 
@@ -589,7 +589,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     backsoundAudio = backsoundAudios[currentBacksoundIndex];
     if (wasPlaying && backsoundStarted) {
       backsoundAudio.currentTime = 0;
-      backsoundAudio.play().catch(() => {});
+      backsoundAudio.play().catch((err) => { console.debug('Audio autoplay dicegah browser:', err); });
     }
     updateMuteButton();
   }

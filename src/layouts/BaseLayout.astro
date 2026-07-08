@@ -1,6 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-import { tools } from '../data/tools';
+import { tools, getToolByHref } from '../data/tools';
 import '../styles/global.css';
 
 // Derive search-friendly tool list from shared data
@@ -22,7 +22,7 @@ interface Props {
 
 const { 
   pageTitle, 
-  description = `${pageTitle} — gunakan gratis, 100% di browser tanpa upload data. Cepat, aman, dan tanpa iklan.`,
+  description: propDescription,
   ogImage = "/og-image.png",
   canonicalUrl,
   noIndex = false
@@ -34,6 +34,18 @@ const currentPath = pathname.endsWith('/') && pathname.length > 1 ? pathname.sli
 const isHome = currentPath === '/';
 const isPdfRoot = currentPath === '/pdf';
 const isPdfTool = currentPath.startsWith('/pdf/');
+
+// Auto-derive SEO title & description from tools.ts for the current page
+const matchedTool = getToolByHref(currentPath);
+const seoTitle = matchedTool?.seoTitle;
+const seoDesc = matchedTool?.seoDesc;
+const defaultDescription = `${pageTitle} — gunakan gratis, 100% di browser tanpa upload data. Cepat, aman, dan tanpa iklan.`;
+const description = propDescription ?? seoDesc ?? defaultDescription;
+const titleSuffix = isHome ? 'Koleksi 58+ Tools Developer & Produktivitas Gratis | ToolsAulia' : 'Gratis & Offline | ToolsAulia';
+const fullTitle = isHome ? titleSuffix : (seoTitle ?? `${pageTitle} — ${titleSuffix}`);
+
+// hreflang alternates — self-referencing since site uses client-side i18n (same URL, localStorage-based language toggle)
+const pageUrl = Astro.url.href;
 
 let showBackBtn = !isHome;
 let backLink = '/';
@@ -56,24 +68,45 @@ if (isPdfTool) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
-  <title>{pageTitle} — Gratis & Offline | ToolsAulia</title>
+  <title>{fullTitle}</title>
   <meta name="original-title" content={pageTitle} />
   <meta name="description" content={description} />
   <meta name="generator" content={Astro.generator} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   
   <link rel="canonical" href={canonicalUrl || Astro.url.href} />
-  <meta property="og:title" content={`${pageTitle} — Gratis & Offline | ToolsAulia`} />
+  <meta property="og:title" content={fullTitle} />
   <meta property="og:description" content={description} />
   <meta property="og:image" content={new URL(ogImage, Astro.url.origin).href} />
   <meta property="og:url" content={Astro.url.href} />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="id_ID" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content={`${pageTitle} — Gratis & Offline | ToolsAulia`} />
+  <meta name="twitter:title" content={fullTitle} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={new URL(ogImage, Astro.url.origin).href} />
   {noIndex && <meta name="robots" content="noindex, nofollow" />}
+  
+  <!-- hreflang tags for multilingual SEO (self-referencing — client-side i18n via localStorage) -->
+  <link rel="alternate" hreflang="id" href={pageUrl} />
+  <link rel="alternate" hreflang="en" href={pageUrl} />
+  <link rel="alternate" hreflang="x-default" href={pageUrl} />
+  
+  <!-- Structured Data: WebApplication (Homepage only) -->
+  {isHome && (
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "ToolsAulia",
+      "url": "https://toolsaulia.vercel.app",
+      "description": "Koleksi 58+ tools developer & produktivitas gratis. Semua tools berjalan 100% offline di browser — tidak ada data yang dikirim ke server.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": { "@type": "Person", "name": "Aulia Iskandar Lubis", "url": "https://paklubis.my.id" },
+      "browserRequirements": "Requires JavaScript"
+    })} />
+  )}
   
   <!-- Structured Data: BreadcrumbList -->
   <script type="application/ld+json" set:html={JSON.stringify({
@@ -599,18 +632,18 @@ if (isPdfTool) {
         var confirmMsg = (window.i18n && window.i18n.t) ? window.i18n.t('confirm.clear_cache', 'Bersihkan cache dan reload halaman?') : 'Bersihkan cache dan reload halaman?';
         if (!confirm(confirmMsg)) return;
         // Clear localStorage
-        try { localStorage.clear(); } catch(e) {}
+        try { localStorage.clear(); } catch(e) { console.debug('localStorage.clear gagal:', e); }
         // Unregister service workers + clear caches, then reload
         var promises = [];
         if (navigator.serviceWorker) {
           promises.push(navigator.serviceWorker.getRegistrations().then(function(regs) {
             return Promise.all(regs.map(function(r) { return r.unregister(); }));
-          }).catch(function() {}));
+          }).catch(function(err) { console.debug('Service worker unregister gagal:', err); }));
         }
         if (window.caches) {
           promises.push(caches.keys().then(function(names) {
             return Promise.all(names.map(function(n) { return caches.delete(n); }));
-          }).catch(function() {}));
+          }).catch(function(err) { console.debug('Cache delete gagal:', err); }));
         }
         Promise.all(promises).then(function() {
           window.location.reload();
