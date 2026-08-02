@@ -1,149 +1,197 @@
 # ToolsAulia
 
-> Koleksi tools developer dan produktivitas lengkap yang berjalan 100% di browser (Client-Side). Aman, cepat, dan tanpa upload data ke server.
+<div align="center">
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg)
+**58+ Tools Developer & Produktivitas · 100% Client-Side · Gratis Selamanya**
+
+[🇮🇩 Indonesia](#indonesia) · [🇬🇧 English](#english)
+
 ![Astro](https://img.shields.io/badge/astro-5.x-purple.svg)
+![Tailwind](https://img.shields.io/badge/tailwind-3.x-06B6D4.svg)
+![TypeScript](https://img.shields.io/badge/typescript-5.x-3178C6.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![PWA](https://img.shields.io/badge/PWA-ready-5A0FC8.svg)
 
-## ✨ Features
-
-- **🆓 100% Free & Open Source** - Tidak ada biaya, tidak ada batas penggunaan
-- **🔒 Privasi Aman** - Semua proses dilakukan di browser, file tidak pernah di-upload ke server
-- **⚡ Cepat & Ringan** - Built dengan Astro untuk performa optimal
-- **📱 PWA Ready** - Bisa diinstall sebagai aplikasi di HP/laptop
-- **🌙 Dark Mode** - Dukungan dark mode otomatis sesuai sistem
-- **🌍 Multi Bahasa** - Interface dalam Bahasa Indonesia
-- **📊 40+ Tools** - Dari PDF manipulation sampai developer utilities
-
-## 🚀 Quick Start
-
-```bash
-# Clone repository
-git clone https://github.com/kandarlubis31/tools-aulia.git
-cd tools-aulia
-
-# Install dependencies (pnpm recommended)
-pnpm install
-
-# Development server
-pnpm dev
-
-# Build untuk production
-pnpm build
-
-# Preview production build
-pnpm preview
-```
-
-## 📂 Tools Categories
-
-### PDF Tools (16 tools)
-- Merge, Split, Compress PDF
-- Rotate, Reorder, Delete Pages
-- Extract Pages, Add Page Numbers
-- PDF to JPG, JPG to PDF
-- HTML to PDF, PDF to PPT
-- Sign PDF, Watermark, Grayscale
-- Edit Metadata
-
-### Image Tools (5 tools)
-- Studio Editor (crop, filter, rotate)
-- Image Compressor
-- Image Converter (PNG/JPG/WEBP)
-- Color Picker
-- HTML to Image
-
-### Developer Tools (10 tools)
-- JSON Formatter
-- Base64 Encoder/Decoder
-- URL Encoder
-- Cron Generator
-- Diff Checker
-- Markdown Editor
-- Timestamp Converter
-- CSS Shadow Generator
-- My IP Address
-- CORS Proxy
-
-### Security Tools (3 tools)
-- Password Generator
-- Hash Generator (MD5, SHA-1, SHA-256, etc)
-- UUID Generator
-
-### Calculator Tools (5 tools)
-- Currency Converter (live rates)
-- Age Calculator
-- BMI Calculator
-- Unit Converter
-- Number Base Converter
-
-### Utility Tools (8 tools)
-- WA Link Builder
-- QR Generator
-- Dev Jokes
-- Brainstorm Facts
-- Pomodoro Timer
-- Todo List
-- Word Counter
-- Stopwatch
-
-### File Tools (2 tools)
-- CSV to JSON
-- PDF to Markdown
-
-## 🛠️ Tech Stack
-
-- **Framework:** [Astro](https://astro.build) 5.x
-- **Styling:** [Tailwind CSS](https://tailwindcss.com)
-- **Icons:** [Tailwind CSS](https://tailwindcss.com) + Custom SVG
-- **PDF Processing:** [pdf.js](https://mozilla.github.io/pdf.js/), [pdf-lib](https://pdf-lib.org/)
-- **Image Processing:** [html2canvas](https://html2canvas.hertzen.com/)
-- **Encryption:** [CryptoJS](https://cryptojs.gitbook.io/)
-- **QR Codes:** [QRCode.js](https://davidshimjs.github.io/qrcodejs/), [QRious](https://github.com/nicklockwood/QRious)
-- **Diff:** [jsdiff](https://github.com/kpdecker/jsdiff)
-- **PWA:** [Vite PWA](https://vite-pwa.dev/)
-
-## 📦 Deploy to Vercel
-
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
-
-# Or push to GitHub and connect to Vercel
-```
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/kandarlubis31/tools-aulia)
-
-## 🤝 Contributing
-
-Contributions are welcome! Silakan buat issue atau pull request.
-
-1. Fork repository ini
-2. Buat branch baru (`git checkout -b feature/new-tool`)
-3. Commit perubahan (`git commit -m 'Add new tool'`)
-4. Push ke branch (`git push origin feature/new-tool`)
-5. Buat Pull Request
-
-## 📄 License
-
-MIT License - lihat file [LICENSE](LICENSE) untuk detail.
-
-## 🙏 Acknowledgments
-
-- [Astro](https://astro.build) - The web framework
-- [Tailwind CSS](https://tailwindcss.com) - Utility-first CSS
-- [Mozilla pdf.js](https://mozilla.github.io/pdf.js/) - PDF processing
-- All open source libraries used in this project
-
-## 📧 Contact
-
-- **GitHub:** [kandarlubis31](https://github.com/kandarlubis31)
-- **Website:** [paklubis.my.id](https://paklubis.my.id)
+</div>
 
 ---
 
-Made with ❤️ by **Aulia Iskandar Lubis**
+<a name="indonesia"></a>
+## 🇮🇩 Indonesia
+
+### Tentang
+
+**ToolsAulia** adalah koleksi 58+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
+
+### ✨ Kenapa ToolsAulia?
+
+- 🔒 **Privasi Utama** — File tidak pernah di-upload ke server. Semua diproses di browser kamu.
+- ⚡ **Cepat & Ringan** — Built dengan Astro 5 + Tailwind CSS. Skor Lighthouse 95+.
+- 📱 **PWA Ready** — Install sebagai aplikasi di HP/laptop, akses offline.
+- 🌙 **Dark Mode** — Otomatis mengikuti sistem.
+- 🌍 **Bilingual** — Bahasa Indonesia & English (client-side i18n).
+- ♿ **Accessible** — Skip-to-content, 22+ aria-labels, keyboard shortcuts.
+
+### 🧰 Kategori Tools
+
+| Kategori | Jumlah | Highlight |
+|----------|--------|-----------|
+| **PDF Tools** | 16 | Merge, Split, Compress, Rotate, Sign, Watermark, Grayscale, Extract, Reorder, Delete, Page Numbers, PDF→JPG, JPG→PDF, HTML→PDF, PDF→PPT, Metadata |
+| **Image Tools** | 6 | Studio Editor, Compressor, Converter (PNG/JPG/WEBP), Color Picker, HTML→Image, Remove Background |
+| **Developer** | 10 | JSON, Base64, URL Encoder, Cron, Diff, Markdown, Timestamp, CSS Shadow, My IP, CORS Proxy |
+| **Calculator** | 6 | Currency (live rates), Age, BMI, Unit, Number Base, Percentage |
+| **Security** | 3 | Password, Hash (MD5/SHA), UUID Generator |
+| **Utility** | 13 | QR, WA Builder, Pomodoro, Todo, Stopwatch, Word Counter, Sinonim, Jokes, Brainstorm, Motivation, Lorem, Paste→MD, Prabowo Countdown |
+| **File** | 2 | CSV→JSON, PDF→Markdown |
+
+### 🚀 Quick Start
+
+```bash
+git clone https://github.com/kandarlubis31/tools-aulia.git
+cd tools-aulia
+pnpm install
+pnpm dev        # → http://localhost:4321
+pnpm build      # Production build
+```
+
+### 🛠️ Tech Stack
+
+| Layer | Tech |
+|-------|------|
+| Framework | [Astro 5](https://astro.build) |
+| Styling | [Tailwind CSS 3](https://tailwindcss.com) |
+| Language | TypeScript 5 |
+| PDF | pdf.js 3.11, pdf-lib |
+| Image | html2canvas, canvas API |
+| Crypto | crypto-js, Web Crypto API |
+| QR | qrious, qrcodejs |
+| Diff | jsdiff |
+| i18n | Custom client-side (ID/EN) |
+| PWA | vite-pwa (NetworkFirst, 25MB cache) |
+| Hosting | Vercel (SSG) |
+
+### 📁 Struktur Project
+
+```
+tools-aulia/
+├── src/
+│   ├── pages/          # 58+ tool pages (Astro)
+│   ├── components/     # Shared UI components
+│   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading
+│   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
+│   ├── data/           # tools.ts (58 tools metadata)
+│   ├── i18n/           # translations.ts
+│   └── styles/         # global.css
+├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json
+├── docs/
+│   ├── agents/         # Agent config references
+│   └── archive/        # Old plans & architecture docs
+└── package.json
+```
+
+### 🤝 Kontribusi
+
+1. Fork repository ini
+2. Buat branch: `git checkout -b feature/nama-tool`
+3. Commit: `git commit -m 'feat: tambah tool X'`
+4. Push: `git push origin feature/nama-tool`
+5. Buat Pull Request
+
+### 📄 Lisensi
+
+[MIT License](LICENSE) © Aulia Iskandar Lubis
+
+---
+
+<a name="english"></a>
+## 🇬🇧 English
+
+### About
+
+**ToolsAulia** is a collection of 58+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
+
+### ✨ Why ToolsAulia?
+
+- 🔒 **Privacy First** — Files never leave your browser. Everything is processed locally.
+- ⚡ **Fast & Lightweight** — Built with Astro 5 + Tailwind CSS. Lighthouse score 95+.
+- 📱 **PWA Ready** — Install as an app on mobile/desktop, works offline.
+- 🌙 **Dark Mode** — Auto-detects system preference.
+- 🌍 **Bilingual** — Indonesian & English (client-side i18n).
+- ♿ **Accessible** — Skip-to-content, 22+ aria-labels, keyboard shortcuts.
+
+### 🧰 Tool Categories
+
+| Category | Count | Highlights |
+|----------|-------|------------|
+| **PDF Tools** | 16 | Merge, Split, Compress, Rotate, Sign, Watermark, Grayscale, Extract, Reorder, Delete, Page Numbers, PDF→JPG, JPG→PDF, HTML→PDF, PDF→PPT, Metadata |
+| **Image Tools** | 6 | Studio Editor, Compressor, Converter (PNG/JPG/WEBP), Color Picker, HTML→Image, Remove Background |
+| **Developer** | 10 | JSON, Base64, URL Encoder, Cron, Diff, Markdown, Timestamp, CSS Shadow, My IP, CORS Proxy |
+| **Calculator** | 6 | Currency (live rates), Age, BMI, Unit, Number Base, Percentage |
+| **Security** | 3 | Password, Hash (MD5/SHA), UUID Generator |
+| **Utility** | 13 | QR, WA Builder, Pomodoro, Todo, Stopwatch, Word Counter, Sinonim, Jokes, Brainstorm, Motivation, Lorem, Paste→MD, Prabowo Countdown |
+| **File** | 2 | CSV→JSON, PDF→Markdown |
+
+### 🚀 Quick Start
+
+```bash
+git clone https://github.com/kandarlubis31/tools-aulia.git
+cd tools-aulia
+pnpm install
+pnpm dev        # → http://localhost:4321
+pnpm build      # Production build
+```
+
+### 🛠️ Tech Stack
+
+| Layer | Tech |
+|-------|------|
+| Framework | [Astro 5](https://astro.build) |
+| Styling | [Tailwind CSS 3](https://tailwindcss.com) |
+| Language | TypeScript 5 |
+| PDF | pdf.js 3.11, pdf-lib |
+| Image | html2canvas, canvas API |
+| Crypto | crypto-js, Web Crypto API |
+| QR | qrious, qrcodejs |
+| Diff | jsdiff |
+| i18n | Custom client-side (ID/EN) |
+| PWA | vite-pwa (NetworkFirst, 25MB cache) |
+| Hosting | Vercel (SSG) |
+
+### 📁 Project Structure
+
+```
+tools-aulia/
+├── src/
+│   ├── pages/          # 58+ tool pages (Astro)
+│   ├── components/     # Shared UI components
+│   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading
+│   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
+│   ├── data/           # tools.ts (58 tools metadata)
+│   ├── i18n/           # translations.ts
+│   └── styles/         # global.css
+├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json
+├── docs/
+│   ├── agents/         # Agent config references
+│   └── archive/        # Old plans & architecture docs
+└── package.json
+```
+
+### 🤝 Contributing
+
+1. Fork this repository
+2. Create branch: `git checkout -b feature/tool-name`
+3. Commit: `git commit -m 'feat: add X tool'`
+4. Push: `git push origin feature/tool-name`
+5. Open Pull Request
+
+### 📄 License
+
+[MIT License](LICENSE) © Aulia Iskandar Lubis
+
+---
+
+<div align="center">
+
+**Made with ❤️ by [Kandar Lubis](https://github.com/kandarlubis31)** · [paklubis.my.id](https://paklubis.my.id)
+
+</div>

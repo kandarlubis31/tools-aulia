@@ -18,6 +18,7 @@ interface Props {
   ogImage?: string;
   canonicalUrl?: string;
   noIndex?: boolean;
+  pdfJs?: boolean;
 }
 
 const { 
@@ -25,7 +26,8 @@ const {
   description: propDescription,
   ogImage = "/og-image.png",
   canonicalUrl,
-  noIndex = false
+  noIndex = false,
+  pdfJs = false
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
@@ -98,7 +100,7 @@ if (isPdfTool) {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "ToolsAulia",
-      "url": "https://toolsaulia.vercel.app",
+      "url": "https://tools.paklubis.my.id",
       "description": "Koleksi 58+ tools developer & produktivitas gratis. Semua tools berjalan 100% offline di browser — tidak ada data yang dikirim ke server.",
       "applicationCategory": "DeveloperApplication",
       "operatingSystem": "Any",
@@ -108,6 +110,22 @@ if (isPdfTool) {
     })} />
   )}
   
+  <!-- Structured Data: SoftwareApplication (Tool pages only) -->
+  {matchedTool && (
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": matchedTool.seoTitle || `${matchedTool.title} — Gratis & Offline | ToolsAulia`,
+      "url": canonicalUrl || Astro.url.href,
+      "description": matchedTool.seoDesc || matchedTool.desc,
+      "applicationCategory": "WebApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": { "@type": "Person", "name": "Aulia Iskandar Lubis", "url": "https://paklubis.my.id" },
+      "browserRequirements": "Requires JavaScript"
+    })} />
+  )}
+
   <!-- Structured Data: BreadcrumbList -->
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
@@ -162,6 +180,11 @@ if (isPdfTool) {
   <!-- PWA registration handled automatically by @vite-pwa/astro with registerType: autoUpdate -->
 </head>  <body class="antialiased bg-[#fafafa] dark:bg-matte-950 text-matte-800 dark:text-white min-h-screen flex flex-col font-sans">
   
+  <!-- Skip to content -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-accent-blue focus:text-white focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg focus:outline-none">
+    Lewati ke konten
+  </a>
+
   <div id="toast-container" class="fixed top-24 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
   <!-- Scroll Progress Bar -->
   <div id="scroll-progress" aria-hidden="true">
@@ -266,11 +289,11 @@ if (isPdfTool) {
           <svg id="moon-icon" class="block dark:hidden w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         </button>
         
-        <button id="lang-toggle-desktop" class="w-8 h-8 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all duration-150">
+        <button id="lang-toggle-desktop" class="w-8 h-8 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all duration-150" aria-label="Ganti bahasa">
           <span id="lang-label-desktop" class="text-2xs font-bold uppercase tracking-wide-2">ID</span>
         </button>
         
-        <button id="install-pwa-btn" class="hidden w-8 h-8 flex items-center justify-center rounded-lg text-accent-blue hover:text-accent-blue/80 hover:bg-accent-blue/5 transition-all duration-150">
+        <button id="install-pwa-btn" class="hidden w-8 h-8 flex items-center justify-center rounded-lg text-accent-blue hover:text-accent-blue/80 hover:bg-accent-blue/5 transition-all duration-150" aria-label="Install aplikasi">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </button>
       </nav>
@@ -315,12 +338,12 @@ if (isPdfTool) {
       <!-- Settings -->
       <div class="border-t border-matte-100 dark:border-surface-border px-3 py-3 space-y-2">
         <div class="flex items-center justify-between gap-2">
-          <button id="theme-toggle-mobile" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-200 dark:hover:bg-matte-600 transition-all duration-150">
+          <button id="theme-toggle-mobile" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-200 dark:hover:bg-matte-600 transition-all duration-150" aria-label="Ganti tema">
             <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
             <span class="dark:hidden" data-i18n="nav.mobile_theme_dark">Gelap</span>
             <span class="hidden dark:inline" data-i18n="nav.mobile_theme_light">Terang</span>
           </button>
-          <button id="lang-toggle-mobile" class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-200 dark:hover:bg-matte-600 transition-all duration-150">
+          <button id="lang-toggle-mobile" class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-200 dark:hover:bg-matte-600 transition-all duration-150" aria-label="Ganti bahasa">
             <span id="lang-label-mobile" class="font-bold uppercase tracking-wide-2">ID</span>
           </button>
         </div>
@@ -329,7 +352,7 @@ if (isPdfTool) {
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Install App
         </button>
-        <button id="cache-clear-mobile" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-500 dark:text-matte-300 text-xs font-medium hover:bg-matte-200 dark:hover:bg-matte-600 hover:text-rose-500 transition-all duration-150">
+        <button id="cache-clear-mobile" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-500 dark:text-matte-300 text-xs font-medium hover:bg-matte-200 dark:hover:bg-matte-600 hover:text-rose-500 transition-all duration-150" aria-label="Bersihkan cache">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
           <span data-i18n="nav.clear_cache">Bersihkan Cache</span>
         </button>
@@ -355,7 +378,7 @@ if (isPdfTool) {
     </div>
   </div>
 
-  <main id="main-content" class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+  <main id="main-content" role="main" class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
     { showBackBtn && (
       <div class="mb-6 animate-fade-in-down">
         <a id="back-btn" href={backLink} class="inline-flex items-center gap-2 text-xs font-medium text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors px-3 py-2 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-elevated">
@@ -367,7 +390,7 @@ if (isPdfTool) {
     <slot />
   </main>
 
-  <footer class="border-t border-matte-200 dark:border-surface-border bg-white dark:bg-matte-900 mt-auto pb-safe">
+  <footer class="border-t border-matte-200 dark:border-surface-border bg-white dark:bg-matte-900 mt-auto pb-safe" role="contentinfo" aria-label="Footer">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
       <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-5">
         <div>
@@ -379,7 +402,7 @@ if (isPdfTool) {
         <div class="flex gap-4">
           <a href="https://github.com/kandarlubis31" target="_blank" rel="noopener noreferrer" class="text-xs text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors">Github</a>
           <a href="https://paklubis.my.id" target="_blank" rel="noopener noreferrer" class="text-xs text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors">Website</a>
-          <button id="cache-clear-btn" class="text-xs flex items-center gap-1 text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors" title="Clear cache & reload">
+          <button id="cache-clear-btn" class="text-xs flex items-center gap-1 text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors" title="Clear cache & reload" aria-label="Bersihkan cache dan muat ulang">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
             <span data-i18n="nav.clear_cache">Cache</span>
           </button>
@@ -1080,5 +1103,20 @@ if (isPdfTool) {
       document.getElementById('lang-toggle-mobile')?.addEventListener('click', toggleLang);
     });
   </script>
+
+  {pdfJs && (
+    <>
+      <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" async></script>
+      <script is:inline async>
+        (function waitForPdfjs() {
+          if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          } else {
+            setTimeout(waitForPdfjs, 50);
+          }
+        })();
+      </script>
+    </>
+  )}
 </body>
 </html>

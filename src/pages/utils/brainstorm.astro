@@ -722,11 +722,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   });
 
   // Escape key
-  document.addEventListener('keydown', (e) => {
+  const _bsEscapeKeydown = (e) => {
       if (e.key === 'Escape' && !settingsModal.classList.contains('hidden')) {
           closeSettingsModal();
       }
-  });
+  };
+  document.addEventListener('keydown', _bsEscapeKeydown);
 
   saveSettingsBtn.addEventListener('click', () => {
       settings = {
@@ -808,7 +809,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       input.click();
   });
 
-  document.addEventListener('keydown', (e) => {
+  const _bsSpaceKeydown = (e) => {
       if (e.code === 'Space' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
           e.preventDefault();
           generateContent();
@@ -817,7 +818,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         e.preventDefault();
         settingsBtn.click();
       }
-  });
+  };
+  document.addEventListener('keydown', _bsSpaceKeydown);
+  document.addEventListener('astro:page-leave', () => {
+    document.removeEventListener('keydown', _bsEscapeKeydown);
+    document.removeEventListener('keydown', _bsSpaceKeydown);
+  }, { once: true });
 
   // Init
   document.addEventListener('astro:page-load', () => {

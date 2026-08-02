@@ -488,6 +488,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
        }
     }
 
+    // --- Compare slider handlers (named for cleanup) ---
+    let _compareMouseMove = null;
+    let _compareMouseUp = null;
+    let _compareTouchMove = null;
+    let _compareTouchEnd = null;
+
     function setupCompareSlider() {
        let startX = 0;
        let currentX = 50; // percentage
@@ -507,14 +513,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           e.preventDefault();
        });
        
-       document.addEventListener('mousemove', (e) => {
+       _compareMouseMove = (e) => {
           if (!isDraggingCompare) return;
           updateSliderPosition(e.clientX);
-       });
+       };
+       document.addEventListener('mousemove', _compareMouseMove);
        
-       document.addEventListener('mouseup', () => {
-          isDraggingCompare = false;
-       });
+       _compareMouseUp = () => { isDraggingCompare = false; };
+       document.addEventListener('mouseup', _compareMouseUp);
        
        // Touch events for mobile
        compareHandle.addEventListener('touchstart', (e) => {
@@ -523,14 +529,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           e.preventDefault();
        });
        
-       document.addEventListener('touchmove', (e) => {
+       _compareTouchMove = (e) => {
           if (!isDraggingCompare) return;
           updateSliderPosition(e.touches[0].clientX);
-       });
+       };
+       document.addEventListener('touchmove', _compareTouchMove);
        
-       document.addEventListener('touchend', () => {
-          isDraggingCompare = false;
-       });
+       _compareTouchEnd = () => { isDraggingCompare = false; };
+       document.addEventListener('touchend', _compareTouchEnd);
     }
 
     // --- EVENT LISTENERS ---
@@ -677,7 +683,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       cropBox.style.display = 'none';
     });
 
-    document.addEventListener('mousemove', (e) => {
+    const _cropMouseMove = (e) => {
       if (!isCropping || !cropDragMode) return;
       const coords = getImageCoords(e.clientX, e.clientY);
       
@@ -703,16 +709,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         cropData = { ...clamped };
         updateCropBox();
       }
-    });
+    };
+    document.addEventListener('mousemove', _cropMouseMove);
 
-    document.addEventListener('mouseup', () => {
+    const _cropMouseUp = () => {
       if (cropDragMode) {
         cropDragMode = null;
         if (cropData.w > 2 && cropData.h > 2) {
           cropActions.style.display = 'flex';
         }
       }
-    });
+    };
+    document.addEventListener('mouseup', _cropMouseUp);
 
     // Handle resize handles
     cropOverlay.addEventListener('mousedown', (e) => {
@@ -736,7 +744,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       cropBox.style.display = 'none';
     });
 
-    document.addEventListener('touchmove', (e) => {
+    const _cropTouchMove = (e) => {
       if (!isCropping || !cropDragMode) return;
       const touch = e.touches[0];
       const coords = getImageCoords(touch.clientX, touch.clientY);
@@ -748,14 +756,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         cropData = clampCropToImage(cropData.x, cropData.y, cropData.w, cropData.h);
         updateCropBox();
       }
-    });
+    };
+    document.addEventListener('touchmove', _cropTouchMove);
 
-    document.addEventListener('touchend', () => {
+    const _cropTouchEnd = () => {
       if (cropDragMode && cropData.w > 2 && cropData.h > 2) {
         cropActions.style.display = 'flex';
       }
       cropDragMode = null;
-    });
+    };
+    document.addEventListener('touchend', _cropTouchEnd);
 
     cropApplyBtn.addEventListener('click', () => {
       if (!cropData.w || !cropData.h) return;
@@ -980,7 +990,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Cleanup on Astro page leave (SPA navigation)
     document.addEventListener('astro:page-leave', () => {
       document.removeEventListener('keydown', handleKeydown);
-      // Reset crop and compare states to prevent leaked listeners from firing
+      // Compare slider handlers
+      if (_compareMouseMove) document.removeEventListener('mousemove', _compareMouseMove);
+      if (_compareMouseUp) document.removeEventListener('mouseup', _compareMouseUp);
+      if (_compareTouchMove) document.removeEventListener('touchmove', _compareTouchMove);
+      if (_compareTouchEnd) document.removeEventListener('touchend', _compareTouchEnd);
+      // Crop handlers
+      if (_cropMouseMove) document.removeEventListener('mousemove', _cropMouseMove);
+      if (_cropMouseUp) document.removeEventListener('mouseup', _cropMouseUp);
+      if (_cropTouchMove) document.removeEventListener('touchmove', _cropTouchMove);
+      if (_cropTouchEnd) document.removeEventListener('touchend', _cropTouchEnd);
+      // Reset states
       isCropping = false;
       isDraggingCompare = false;
       cropDragMode = null;

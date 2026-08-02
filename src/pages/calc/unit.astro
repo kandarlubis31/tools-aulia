@@ -645,7 +645,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   });
 
   // Shortcuts
-  document.addEventListener('keydown', (e) => {
+  const _unitKeydown = (e) => {
     if (e.ctrlKey || e.metaKey) {
       if (e.key === 's') { e.preventDefault(); swapBtn.click(); }
       if (e.key === 'r') { e.preventDefault(); reverseBtn.click(); }
@@ -654,5 +654,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         e.preventDefault(); copyBtn.click(); 
       }
     }
-  });
+  };
+  document.addEventListener('keydown', _unitKeydown);
+  document.addEventListener('astro:page-leave', () => { document.removeEventListener('keydown', _unitKeydown); }, { once: true });
 </script>

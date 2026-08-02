@@ -688,7 +688,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
   });
 
-  document.addEventListener('keydown', (e) => {
+  const _jokeKeydown = (e) => {
       if (e.code === 'Space' && document.activeElement.tagName !== 'BUTTON' && document.activeElement.tagName !== 'SELECT' && document.activeElement.tagName !== 'INPUT') {
           e.preventDefault();
           getJoke();
@@ -697,7 +697,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         e.preventDefault();
         settingsBtn.click();
       }
-  });
+  };
+  document.addEventListener('keydown', _jokeKeydown);
+  document.addEventListener('astro:page-leave', () => { document.removeEventListener('keydown', _jokeKeydown); }, { once: true });
 
   // Init
   window.addEventListener('online', updateNetworkStatus);

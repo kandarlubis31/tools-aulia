@@ -5,7 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="UUID Generator">
   <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
     <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white" data-i18n="header.uuid">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-teal-600" data-i18n="header.uuid">
         UUID Generator
       </h1>
       <p class="text-matte-400 dark:text-matte-300">
@@ -18,12 +18,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="flex flex-wrap gap-4 items-center justify-between mb-6">
          <div class="flex items-center gap-3">
             <span class="text-sm font-semibold text-matte-700 dark:text-white">Jumlah:</span>
-            <input type="number" id="count" min="1" max="50" value="5" class="w-20 p-2 text-center rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            <div class="flex items-center gap-1">
+              <button id="count-minus" class="w-8 h-8 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-500 hover:text-matte-700 dark:hover:text-white font-bold transition">−</button>
+              <input type="number" id="count" min="1" max="100" value="5" class="w-16 p-2 text-center rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-green-500 font-mono" autocomplete="off" />
+              <button id="count-plus" class="w-8 h-8 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-500 hover:text-matte-700 dark:hover:text-white font-bold transition">+</button>
+            </div>
          </div>
          
          <div class="flex gap-2">
-            <button id="copy-btn" class="px-4 py-2 text-sm font-bold text-matte-500 dark:text-matte-300 bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 rounded-lg transition" data-i18n="btn.copy_all">Copy All</button>
-            <button id="generate-btn" class="px-6 py-2 text-sm font-bold text-white dark:text-matte-900 bg-matte-900 dark:bg-white rounded-lg transition active:scale-95 flex items-center gap-2" data-i18n="btn.regenerate">
+            <button id="copy-btn" class="px-4 py-2 text-sm font-bold text-matte-500 dark:text-matte-300 bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 rounded-lg transition" data-i18n="btn.copy_all">📋 Copy All</button>
+            <button id="generate-btn" class="px-6 py-2 text-sm font-bold text-white dark:text-matte-900 bg-matte-900 dark:bg-white rounded-lg transition active:scale-95 flex items-center gap-2 hover:opacity-90">
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
                Regenerate
             </button>
@@ -32,14 +36,34 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       <div class="bg-matte-100 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border overflow-hidden">
          <div class="flex justify-between items-center px-4 py-2 border-b border-matte-200 dark:border-surface-border">
-             <span class="section-title" data-i18n="label.generated_uuids">Generated UUIDs</span>
+             <span class="section-title flex items-center gap-2">
+               <span class="w-2 h-2 rounded-full bg-green-500"></span>
+               <span data-i18n="label.generated_uuids">Generated UUIDs</span>
+               <span id="uuid-count" class="text-2xs text-matte-400">(5)</span>
+             </span>
          </div>
-         <textarea id="output-area" readonly class="w-full h-64 p-4 font-mono text-sm bg-transparent text-matte-700 dark:text-white outline-none resize-none"></textarea>
+         <div id="uuid-list" class="max-h-80 overflow-y-auto custom-scrollbar">
+         </div>
       </div>
       
-      <p class="text-center text-xs text-matte-400 mt-4">
-         UUID v4 digenerate secara kriptografis menggunakan <code>crypto.randomUUID()</code> browser.
-      </p>
+      <div class="flex items-center justify-between mt-4">
+        <p class="text-xs text-matte-400">
+           UUID v4 — <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded text-green-600 dark:text-green-400">crypto.randomUUID()</code>
+        </p>
+        <button id="history-btn" class="text-xs font-medium text-matte-400 hover:text-green-500 transition flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Riwayat
+        </button>
+      </div>
+
+      <!-- History Panel -->
+      <div id="history-panel" class="hidden mt-4 card-base p-4 animate-fade-in">
+        <div class="flex justify-between items-center mb-3">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-matte-400">📜 Riwayat Generate</h4>
+          <button id="clear-history" class="text-2xs text-rose-500 hover:text-rose-600">Hapus</button>
+        </div>
+        <div id="history-list" class="text-xs text-matte-500 space-y-1 max-h-40 overflow-y-auto"></div>
+      </div>
 
     </div>
   </div>
@@ -47,31 +71,136 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 <script>
   document.addEventListener('astro:page-load', () => {
-  const output = document.getElementById('output-area');
-  const countInp = document.getElementById('count');
+  const countInp = document.getElementById('count') as HTMLInputElement;
   const genBtn = document.getElementById('generate-btn');
   const copyBtn = document.getElementById('copy-btn');
+  const uuidList = document.getElementById('uuid-list');
+  const uuidCount = document.getElementById('uuid-count');
+  const countMinus = document.getElementById('count-minus');
+  const countPlus = document.getElementById('count-plus');
+  const historyBtn = document.getElementById('history-btn');
+  const historyPanel = document.getElementById('history-panel');
+  const historyList = document.getElementById('history-list');
+  const clearHistory = document.getElementById('clear-history');
+
+  const HISTORY_KEY = 'uuid_history';
+  const MAX_HISTORY = 10;
+  let currentUuids: string[] = [];
+
+  function getHistory(): { uuids: string[]; time: string; count: number }[] {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+    catch { return []; }
+  }
+
+  function saveHistory(uuids: string[]) {
+    const history = getHistory();
+    history.unshift({
+      uuids,
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      count: uuids.length
+    });
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const history = getHistory();
+    if (!historyList) return;
+    if (history.length === 0) {
+      historyList.innerHTML = '<p class="text-matte-400 italic">Belum ada riwayat</p>';
+      return;
+    }
+    historyList.innerHTML = history.map((h, i) => `
+      <div class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-matte-100 dark:hover:bg-surface-hover transition cursor-pointer group restore-history" data-index="${i}">
+        <span class="text-matte-400">${h.time}</span>
+        <span class="font-mono text-green-600 dark:text-green-400">${h.count} UUID</span>
+        <span class="text-matte-400 opacity-0 group-hover:opacity-100 text-2xs">↩ Pulihkan</span>
+      </div>
+    `).join('');
+
+    historyList.querySelectorAll('.restore-history').forEach(item => {
+      item.addEventListener('click', () => {
+        const idx = parseInt((item as HTMLElement).dataset.index || '0');
+        const hist = getHistory();
+        if (hist[idx]) {
+          currentUuids = hist[idx].uuids;
+          countInp.value = String(hist[idx].uuids.length);
+          renderUuids();
+        }
+      });
+    });
+  }
 
   function generate() {
     const count = Math.min(Math.max(parseInt(countInp.value) || 1, 1), 100);
-    const uuids = [];
-    
-    for(let i=0; i<count; i++) {
+    countInp.value = String(count);
+    const uuids: string[] = [];
+    for(let i = 0; i < count; i++) {
         uuids.push(crypto.randomUUID());
     }
-    
-    output.value = uuids.join('\n');
+    currentUuids = uuids;
+    renderUuids();
+    saveHistory(uuids);
   }
 
-  genBtn.addEventListener('click', generate);
+  function renderUuids() {
+    if (uuidCount) uuidCount.textContent = `(${currentUuids.length})`;
+    if (!uuidList) return;
+
+    uuidList.innerHTML = currentUuids.map((u, i) => `
+      <div class="uuid-row flex items-center justify-between px-4 py-2.5 border-b border-matte-100 dark:border-surface-border last:border-0 hover:bg-matte-50 dark:hover:bg-matte-800/50 transition group">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="text-2xs text-matte-400 font-mono w-6 shrink-0">#${i + 1}</span>
+          <code class="text-sm font-mono text-matte-700 dark:text-matte-300 truncate">${u}</code>
+        </div>
+        <button class="copy-uuid shrink-0 ml-2 p-1.5 rounded-lg text-matte-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition opacity-0 group-hover:opacity-100" data-uuid="${u}" title="Copy UUID ini">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+      </div>
+    `).join('');
+
+    // Copy individual UUID
+    uuidList.querySelectorAll('.copy-uuid').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const uuid = (btn as HTMLElement).dataset.uuid || '';
+        navigator.clipboard.writeText(uuid);
+        window.showToast(window._tToast ? window._tToast('UUID disalin!') : 'UUID disalin!', 'success');
+      });
+    });
+  }
+
+  genBtn?.addEventListener('click', generate);
   
-  copyBtn.addEventListener('click', () => {
-    if(!output.value) return;
-    navigator.clipboard.writeText(output.value);
+  copyBtn?.addEventListener('click', () => {
+    if(currentUuids.length === 0) return;
+    navigator.clipboard.writeText(currentUuids.join('\n'));
     window.showToast(window._tToast ? window._tToast("Semua UUID disalin!") : "Semua UUID disalin!", "success");
+  });
+
+  // +/- buttons
+  countMinus?.addEventListener('click', () => {
+    const v = Math.max(1, (parseInt(countInp.value) || 5) - 1);
+    countInp.value = String(v);
+  });
+  countPlus?.addEventListener('click', () => {
+    const v = Math.min(100, (parseInt(countInp.value) || 5) + 1);
+    countInp.value = String(v);
+  });
+
+  // History toggle
+  historyBtn?.addEventListener('click', () => {
+    historyPanel?.classList.toggle('hidden');
+    renderHistory();
+  });
+
+  clearHistory?.addEventListener('click', () => {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
   });
 
   // Init
   generate();
+  renderHistory();
   });
 </script>

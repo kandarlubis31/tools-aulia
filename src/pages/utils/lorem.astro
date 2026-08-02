@@ -5,7 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="Lorem Ipsum Generator">
   <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
     <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white" data-i18n="header.lorem">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-slate-500 to-slate-700 dark:from-slate-300 dark:to-slate-500" data-i18n="header.lorem">
         Lorem Ipsum Generator
       </h1>
       <p class="text-matte-400 dark:text-matte-300">
@@ -15,45 +15,69 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fade-in">
       
-      <div class="md:col-span-1 card-base p-6 h-fit">
-         <div class="mb-4">
+      <div class="md:col-span-1 card-base p-6 h-fit space-y-5">
+         <div>
             <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.amount">Jumlah</label>
-            <input type="number" id="count" value="3" min="1" max="100" class="w-full p-3 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            <div class="flex items-center gap-1">
+              <button id="count-minus" class="w-8 h-8 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-500 hover:text-matte-700 font-bold transition">−</button>
+              <input type="number" id="count" value="3" min="1" max="100" class="w-full p-2 text-center rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-slate-500 font-mono" autocomplete="off" />
+              <button id="count-plus" class="w-8 h-8 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-500 hover:text-matte-700 font-bold transition">+</button>
+            </div>
          </div>
 
-         <div class="mb-6">
+         <div>
             <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.unit">Satuan</label>
             <div class="flex flex-col gap-2">
                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="type" value="paragraphs" checked class="accent-matte-600" />
-                  <span class="text-matte-400 dark:text-matte-300" data-i18n="label.paragraphs">Paragraf</span>
+                  <input type="radio" name="type" value="paragraphs" checked class="accent-slate-600" />
+                  <span class="text-matte-400 dark:text-matte-300" data-i18n="label.paragraphs">📝 Paragraf</span>
                </label>
                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="type" value="sentences" class="accent-matte-600" />
-                  <span class="text-matte-400 dark:text-matte-300" data-i18n="label.sentences">Kalimat</span>
+                  <input type="radio" name="type" value="sentences" class="accent-slate-600" />
+                  <span class="text-matte-400 dark:text-matte-300" data-i18n="label.sentences">📄 Kalimat</span>
                </label>
                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="type" value="words" class="accent-matte-600" />
-                  <span class="text-matte-400 dark:text-matte-300" data-i18n="label.words">Kata</span>
+                  <input type="radio" name="type" value="words" class="accent-slate-600" />
+                  <span class="text-matte-400 dark:text-matte-300" data-i18n="label.words">🔤 Kata</span>
                </label>
             </div>
          </div>
 
-         <button id="gen-btn" class="w-full bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-bold py-3 px-6 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2" data-i18n="btn.generate_text">
-            Generate Text
+         <div>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="html-mode" class="accent-slate-600 rounded" />
+              <span class="text-sm font-bold text-matte-700 dark:text-matte-300">HTML Output</span>
+            </label>
+            <p class="text-2xs text-matte-400 mt-1">Bungkus paragraf dengan tag &lt;p&gt;</p>
+         </div>
+
+         <button id="gen-btn" class="w-full bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-bold py-3 px-6 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 hover:opacity-90" data-i18n="btn.generate_text">
+            ✨ Generate
          </button>
+
+         <div class="pt-2 border-t border-matte-200 dark:border-surface-border">
+           <p class="text-2xs text-matte-400 mb-2 font-bold uppercase">Quick Presets</p>
+           <div class="flex flex-wrap gap-1.5">
+             <button class="preset-btn text-2xs px-2 py-1 rounded bg-matte-100 dark:bg-surface-hover text-matte-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-count="1" data-type="paragraphs">1 Paragraf</button>
+             <button class="preset-btn text-2xs px-2 py-1 rounded bg-matte-100 dark:bg-surface-hover text-matte-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-count="3" data-type="paragraphs">3 Paragraf</button>
+             <button class="preset-btn text-2xs px-2 py-1 rounded bg-matte-100 dark:bg-surface-hover text-matte-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-count="5" data-type="sentences">5 Kalimat</button>
+             <button class="preset-btn text-2xs px-2 py-1 rounded bg-matte-100 dark:bg-surface-hover text-matte-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-count="50" data-type="words">50 Kata</button>
+           </div>
+         </div>
       </div>
 
       <div class="md:col-span-2 flex flex-col card-base overflow-hidden">
          <div class="bg-matte-100 dark:bg-surface-hover px-4 py-3 border-b border-matte-200 dark:border-surface-border flex justify-between items-center">
             <span class="section-title" data-i18n="common.result">Result</span>
-            <button id="copy-btn" class="text-xs font-bold text-matte-500 hover:text-accent-blue flex items-center gap-1" data-i18n="common.copy">
-               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-               Copy
-            </button>
+            <div class="flex items-center gap-3">
+              <span id="output-stats" class="text-2xs text-matte-400"></span>
+              <button id="copy-btn" class="text-xs font-bold text-matte-500 hover:text-slate-600 flex items-center gap-1 transition" data-i18n="common.copy">
+                 📋 Copy
+              </button>
+            </div>
          </div>
          <div id="output" class="flex-1 p-6 font-serif text-lg leading-relaxed text-matte-700 dark:text-white overflow-y-auto max-h-[500px]">
-            </div>
+         </div>
       </div>
 
     </div>
@@ -62,11 +86,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 <script>
   document.addEventListener('astro:page-load', () => {
-  const output = document.getElementById('output');
-  const countInp = document.getElementById('count');
+  const output = document.getElementById('output') as HTMLDivElement;
+  const countInp = document.getElementById('count') as HTMLInputElement;
   const genBtn = document.getElementById('gen-btn');
   const copyBtn = document.getElementById('copy-btn');
-  const radios = document.getElementsByName('type');
+  const countMinus = document.getElementById('count-minus');
+  const countPlus = document.getElementById('count-plus');
+  const htmlMode = document.getElementById('html-mode') as HTMLInputElement;
+  const outputStats = document.getElementById('output-stats');
+  const radios = document.getElementsByName('type') as NodeListOf<HTMLInputElement>;
 
   const lorem = "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur Excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum".split(" ");
 
@@ -75,48 +103,90 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   function genSentence() {
-    const len = Math.floor(Math.random() * 10) + 5; // 5-15 kata
-    let sentence = [];
-    for(let i=0; i<len; i++) sentence.push(randomWord());
-    // Capitalize first & add dot
+    const len = Math.floor(Math.random() * 10) + 5;
+    const sentence = [];
+    for(let i = 0; i < len; i++) sentence.push(randomWord());
     const str = sentence.join(" ");
     return str.charAt(0).toUpperCase() + str.slice(1) + ".";
   }
 
   function genParagraph() {
-    const len = Math.floor(Math.random() * 5) + 3; // 3-8 kalimat
-    let para = [];
-    for(let i=0; i<len; i++) para.push(genSentence());
+    const len = Math.floor(Math.random() * 5) + 3;
+    const para = [];
+    for(let i = 0; i < len; i++) para.push(genSentence());
     return para.join(" ");
   }
 
   function generate() {
-    let count = parseInt(countInp.value) || 1;
+    let count = Math.min(Math.max(parseInt(countInp.value) || 1, 1), 100);
+    countInp.value = String(count);
     let type = 'paragraphs';
     for(const r of radios) if(r.checked) type = r.value;
+    const useHtml = htmlMode?.checked || false;
 
-    let res = [];
+    let res = '';
     
     if (type === 'words') {
-       for(let i=0; i<count; i++) res.push(randomWord());
-       output.innerHTML = `<p>${res.join(" ")}</p>`;
+       const words = [];
+       for(let i = 0; i < count; i++) words.push(randomWord());
+       const text = words.join(' ');
+       res = useHtml ? `<p>${text}</p>` : text;
     } else if (type === 'sentences') {
-       for(let i=0; i<count; i++) res.push(genSentence());
-       output.innerHTML = `<p>${res.join(" ")}</p>`;
+       const sentences = [];
+       for(let i = 0; i < count; i++) sentences.push(genSentence());
+       const text = sentences.join(' ');
+       res = useHtml ? `<p>${text}</p>` : text;
     } else {
-       for(let i=0; i<count; i++) {
-          output.innerHTML += `<p class="mb-4">${genParagraph()}</p>`;
+       const paragraphs = [];
+       for(let i = 0; i < count; i++) {
+         paragraphs.push(genParagraph());
        }
-       // Reset dulu baru isi ulang biar bersih
-       output.innerHTML = res.map(p => `<p class="mb-4">${genParagraph()}</p>`).join("");
+       res = useHtml 
+         ? paragraphs.map(p => `<p>${p}</p>`).join('\n')
+         : paragraphs.join('\n\n');
     }
+
+    if (useHtml) {
+      output.innerHTML = res;
+    } else {
+      output.innerHTML = res.split('\n\n').map(p => `<p class="mb-4">${p}</p>`).join('');
+    }
+    
+    // Stats
+    const textOnly = output.textContent || '';
+    const wordCount = textOnly.trim().split(/\s+/).filter(w => w).length;
+    const charCount = textOnly.length;
+    if (outputStats) outputStats.textContent = `${wordCount} kata · ${charCount} karakter`;
   }
 
-  genBtn.addEventListener('click', generate);
+  genBtn?.addEventListener('click', generate);
   
-  copyBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(output.innerText);
-    window.showToast(window._tToast ? window._tToast("Teks disalin!") : "Teks disalin!", "success");
+  // +/- buttons
+  countMinus?.addEventListener('click', () => {
+    countInp.value = String(Math.max(1, (parseInt(countInp.value) || 3) - 1));
+  });
+  countPlus?.addEventListener('click', () => {
+    countInp.value = String(Math.min(100, (parseInt(countInp.value) || 3) + 1));
+  });
+
+  // Presets
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = (btn as HTMLElement).dataset.count;
+      const t = (btn as HTMLElement).dataset.type;
+      if (c) countInp.value = c;
+      if (t) {
+        for (const r of radios) r.checked = r.value === t;
+      }
+      generate();
+    });
+  });
+
+  copyBtn?.addEventListener('click', () => {
+    const text = output.textContent || '';
+    if (!text.trim()) return;
+    navigator.clipboard.writeText(text);
+    window.showToast(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!', 'success');
   });
 
   // Init

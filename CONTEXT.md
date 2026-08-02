@@ -1,6 +1,6 @@
 # ToolsAulia — Project Context
 
-> Last updated: July 2, 2026
+> Last updated: August 2, 2026
 > Maintained by: Aulia Iskandar Lubis
 
 ## Domain Language
@@ -82,6 +82,8 @@ src/
 - **My IP & Network** (`/dev/my-ip`) — Public IP, speed test, network info, IP history
 - **Persamaan Kata** (`/utils/sinonim`) — Synonym finder using Wiktionary API + KBBI offline fallback (195k+ Indonesian words)
 - **Paste to Markdown** (`/utils/paste-to-md`) — Clean Markdown converter for AI prompts with compression modes
+- **PDF to PPT** (`/pdf/to-ppt`) — Konversi halaman PDF ke slide PowerPoint secara client-side.
+- **JPG to PDF** (`/pdf/jpg-to-pdf`) — Konversi gambar ke PDF dengan preview grid, drag-to-reorder, page size (A4/Letter/Legal/Original), fit mode (Contain/Cover/Stretch), output mode (gabung/pisah), dan WEBP support. Fully client-side dengan pdf-lib.
 - **Countdown 2029** (`/utils/prabowo-countdown`) — Satirical countdown timer with leaderboard and rage meter
 
 ## Design System
@@ -186,15 +188,21 @@ Each tool follows a consistent pattern:
 7. **@imgly/background-removal** — ONNX + WASM AI model, ~5-15MB download on first use, cached by browser + PWA.
 8. **`src/data/id-words.ts`** — auto-generated word list (195,193 words from Sastrawi + KBBI Edisi VI). Do not edit manually.
 9. **`scripts/`** — build/dev tools, gitignored. Contains `build-words.mjs` and `check-typos.mjs`.
+10. **`mammoth` npm dep** — used by `paste-to-md.astro` for DOCX file conversion via dynamic `import()`. Previously misidentified as dead dep.
+11. **`global.d.ts`** — window type declarations for shared helpers (`showToast`, `_tToast`, `showButtonSpinner`, `_staleIntervals`, etc.). Import-free type safety for inline scripts.
 
 ## Known Bugs / Limitations
 
-- [ ] My IP page uses deprecated Battery API (may stop working in some browsers)
+- [ ] My IP page uses deprecated Battery API (may stop working in some browsers) — partially mitigated: replaced with connection type
 - [ ] WebRTC local IP detection often returns "Diproteksi" in modern browsers
 - [ ] Speed test upload uses httpbin.org which may rate-limit
 - [ ] Some tools lack responsive design on very small mobile screens
 - [ ] No error boundaries — JS errors on tool pages may break SPA navigation
 - [ ] `id-words.ts` has pre-existing TypeScript syntax errors (unterminated strings)
+- [x] ~~8 `@ts-ignore` in prabowo-countdown~~ → Fixed: global.d.ts declarations + `_staleIntervals`
+- [x] ~~Editor crop & compare listener leaks~~ → Fixed: 8 handlers converted to named functions with `astro:page-leave` cleanup
+- [x] ~~22× getContext('2d') without null guards~~ → Fixed: null checks added to all canvas contexts
+- [x] ~~JPG to PDF bare minimum~~ → Upgraded: preview grid, drag-to-reorder, page size, fit mode, output mode toggle, WEBP support
 
 ## Recommended Next Steps
 
@@ -206,7 +214,8 @@ Each tool follows a consistent pattern:
 ### Medium Priority
 4. **Responsive audit** — Review remaining tools for very small mobile screens (<360px).
 5. **PDF tool cleanup** — Many PDF tools use old i18n toast pattern instead of composables pattern (`useToast`).
-6. **Offline cache indicator** — Show toast or badge when results are served from cache.
+6. **Offline cache indicator** — Show toast or badge when results are served from cache. 
+7. **SPA Navigation Hardening** — 21 remaining document-level event listeners need cleanup across ~13 files. Editor fixed; others pending.
 
 ### Nice to Have
 7. **Autocomplete for multiple tools** — The autocomplete + binary search pattern from sinonim could be reused.

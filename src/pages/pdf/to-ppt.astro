@@ -2,17 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout pageTitle="PDF to PowerPoint">
-  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" async></script>
-  <script is:inline async>
-    (function waitForPdfjs() {
-      if (window.pdfjsLib) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      } else {
-        setTimeout(waitForPdfjs, 50);
-      }
-    })();
-  </script>
+<BaseLayout pageTitle="PDF to PowerPoint" pdfJs={true}>
   <script is:inline src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 
   <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">

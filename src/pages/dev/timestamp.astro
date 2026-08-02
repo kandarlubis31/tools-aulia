@@ -11,27 +11,78 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     <div class="bg-white dark:bg-matte-800 p-8 rounded-2xl shadow-xl border border-matte-200 dark:border-matte-700 animate-fade-in grid gap-8">
       
+      <!-- Live Clock -->
       <div class="text-center p-4 bg-matte-100 dark:bg-matte-900 rounded-xl">
-         <p class="text-xs font-bold text-matte-500 uppercase mb-1">Saat Ini (Unix)</p>
-         <div id="current-ts" class="text-3xl font-mono font-bold text-violet-600 dark:text-violet-400">...</div>
+         <p class="text-xs font-bold text-matte-500 uppercase mb-1">Saat Ini</p>
+         <div class="flex items-center justify-center gap-4 flex-wrap">
+           <div class="text-2xl font-mono font-bold text-violet-600 dark:text-violet-400"><span id="current-ts">...</span></div>
+           <button class="copy-ts text-2xs font-medium text-matte-400 hover:text-violet-500 transition px-2 py-1 rounded hover:bg-violet-50 dark:hover:bg-violet-900/20" data-target="current-ts">📋 Copy</button>
+         </div>
+         <div id="current-human" class="text-xs text-matte-500 mt-1 font-mono"></div>
       </div>
 
+      <!-- Timestamp → Date -->
       <div>
-         <label class="block text-xs font-bold text-matte-500 uppercase mb-1">Timestamp to Date</label>
+         <label class="block text-xs font-bold text-matte-500 uppercase mb-1">Timestamp → Date</label>
          <div class="flex gap-2">
-            <input type="number" id="ts-input" class="flex-1 p-3 rounded-lg bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 outline-none font-mono" placeholder="1678900000" />
-            <button id="ts-btn" class="px-6 bg-violet-600 text-white rounded-lg font-bold">Convert</button>
+            <input type="text" id="ts-input" class="flex-1 p-3 rounded-lg bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 outline-none font-mono focus:border-violet-500 transition-colors" placeholder="1678900000" autocomplete="off" />
+            <button id="ts-btn" class="px-6 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-bold transition active:scale-95">Convert</button>
          </div>
-         <div id="ts-result" class="mt-2 text-sm font-mono text-matte-700 dark:text-matte-300"></div>
+         <div id="ts-result" class="mt-3 space-y-2 hidden">
+           <div class="flex items-center justify-between p-2 bg-matte-50 dark:bg-matte-900 rounded-lg">
+             <span class="text-2xs font-bold text-matte-400 uppercase">UTC</span>
+             <div class="flex items-center gap-2">
+               <code id="ts-gmt" class="text-sm font-mono text-matte-700 dark:text-matte-300"></code>
+               <button class="copy-result text-2xs text-matte-400 hover:text-violet-500" data-target="ts-gmt">📋</button>
+             </div>
+           </div>
+           <div class="flex items-center justify-between p-2 bg-matte-50 dark:bg-matte-900 rounded-lg">
+             <span class="text-2xs font-bold text-matte-400 uppercase">Local</span>
+             <div class="flex items-center gap-2">
+               <code id="ts-local" class="text-sm font-mono text-matte-700 dark:text-matte-300"></code>
+               <button class="copy-result text-2xs text-matte-400 hover:text-violet-500" data-target="ts-local">📋</button>
+             </div>
+           </div>
+           <div class="flex items-center justify-between p-2 bg-matte-50 dark:bg-matte-900 rounded-lg">
+             <span class="text-2xs font-bold text-matte-400 uppercase">ISO 8601</span>
+             <div class="flex items-center gap-2">
+               <code id="ts-iso" class="text-sm font-mono text-matte-700 dark:text-matte-300"></code>
+               <button class="copy-result text-2xs text-matte-400 hover:text-violet-500" data-target="ts-iso">📋</button>
+             </div>
+           </div>
+           <div class="flex items-center justify-between p-2 bg-matte-50 dark:bg-matte-900 rounded-lg">
+             <span class="text-2xs font-bold text-matte-400 uppercase">Relative</span>
+             <div class="flex items-center gap-2">
+               <code id="ts-relative" class="text-sm font-mono text-matte-700 dark:text-matte-300"></code>
+             </div>
+           </div>
+         </div>
       </div>
 
+      <!-- Date → Timestamp -->
       <div>
-         <label class="block text-xs font-bold text-matte-500 uppercase mb-1">Date to Timestamp</label>
-         <div class="flex gap-2">
-            <input type="datetime-local" id="date-input" class="flex-1 p-3 rounded-lg bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 outline-none" />
-            <button id="date-btn" class="px-6 bg-violet-600 text-white rounded-lg font-bold">Convert</button>
+         <label class="block text-xs font-bold text-matte-500 uppercase mb-1">Date → Timestamp</label>
+         <div class="flex gap-2 flex-wrap">
+            <input type="datetime-local" id="date-input" class="flex-1 p-3 rounded-lg bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600 outline-none focus:border-violet-500 transition-colors min-w-[200px]" />
+            <button id="date-btn" class="px-6 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-bold transition active:scale-95">Convert</button>
+            <button id="now-btn" class="px-4 bg-matte-200 dark:bg-matte-700 hover:bg-matte-300 dark:hover:bg-matte-600 text-matte-600 dark:text-matte-300 rounded-lg font-bold text-sm transition">Now</button>
          </div>
-         <div id="date-result" class="mt-2 text-sm font-mono text-matte-700 dark:text-matte-300"></div>
+         <div id="date-result" class="mt-3 hidden">
+           <div class="flex items-center justify-between p-2 bg-matte-50 dark:bg-matte-900 rounded-lg">
+             <span class="text-2xs font-bold text-matte-400 uppercase">Seconds</span>
+             <div class="flex items-center gap-2">
+               <code id="date-ts" class="text-sm font-mono text-violet-600 dark:text-violet-400 font-bold"></code>
+               <button class="copy-result text-2xs text-matte-400 hover:text-violet-500" data-target="date-ts">📋</button>
+             </div>
+           </div>
+           <div class="flex items-center justify-between p-2 bg-matte-50 dark:bg-matte-900 rounded-lg">
+             <span class="text-2xs font-bold text-matte-400 uppercase">Milliseconds</span>
+             <div class="flex items-center gap-2">
+               <code id="date-ms" class="text-sm font-mono text-matte-700 dark:text-matte-300"></code>
+               <button class="copy-result text-2xs text-matte-400 hover:text-violet-500" data-target="date-ms">📋</button>
+             </div>
+           </div>
+         </div>
       </div>
 
     </div>
@@ -39,21 +90,99 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
-  setInterval(() => {
-    document.getElementById('current-ts')!.innerText = Math.floor(Date.now() / 1000).toString();
-  }, 1000);
+  document.addEventListener('astro:page-load', () => {
+  const currentTs = document.getElementById('current-ts');
+  const currentHuman = document.getElementById('current-human');
+  const tsResult = document.getElementById('ts-result');
+  const dateResult = document.getElementById('date-result');
 
+  function liveClock() {
+    const now = Date.now();
+    if (currentTs) currentTs.innerText = Math.floor(now / 1000).toString();
+    if (currentHuman) currentHuman.textContent = new Date().toLocaleString();
+  }
+  liveClock();
+  const clockInterval = setInterval(liveClock, 1000);
+  document.addEventListener('astro:page-leave', () => clearInterval(clockInterval));
+
+  // Timestamp → Date
   document.getElementById('ts-btn')?.addEventListener('click', () => {
-    const val = (document.getElementById('ts-input') as HTMLInputElement).value;
+    const val = (document.getElementById('ts-input') as HTMLInputElement).value.trim();
     if(!val) return;
-    const date = new Date(parseInt(val) * 1000); // Assume seconds
-    document.getElementById('ts-result')!.innerText = `GMT: ${date.toUTCString()} \nLocal: ${date.toLocaleString()}`;
+    const ts = parseInt(val);
+    if (isNaN(ts)) { window.showToast?.('Timestamp tidak valid!', 'error'); return; }
+    // Auto-detect seconds vs milliseconds
+    const ms = ts > 9999999999 ? ts : ts * 1000;
+    const date = new Date(ms);
+    
+    const elGmt = document.getElementById('ts-gmt');
+    const elLocal = document.getElementById('ts-local');
+    const elIso = document.getElementById('ts-iso');
+    const elRelative = document.getElementById('ts-relative');
+    
+    if (elGmt) elGmt.textContent = date.toUTCString();
+    if (elLocal) elLocal.textContent = date.toLocaleString();
+    if (elIso) elIso.textContent = date.toISOString();
+    if (elRelative) elRelative.textContent = getRelativeTime(ms);
+    tsResult?.classList.remove('hidden');
   });
 
+  // Date → Timestamp
   document.getElementById('date-btn')?.addEventListener('click', () => {
     const val = (document.getElementById('date-input') as HTMLInputElement).value;
     if(!val) return;
     const ts = Math.floor(new Date(val).getTime() / 1000);
-    document.getElementById('date-result')!.innerText = `Timestamp: ${ts}`;
+    const ms = new Date(val).getTime();
+    
+    const elTs = document.getElementById('date-ts');
+    const elMs = document.getElementById('date-ms');
+    if (elTs) elTs.textContent = String(ts);
+    if (elMs) elMs.textContent = String(ms);
+    dateResult?.classList.remove('hidden');
+  });
+
+  // Now button
+  document.getElementById('now-btn')?.addEventListener('click', () => {
+    const now = new Date();
+    const dateInput = document.getElementById('date-input') as HTMLInputElement;
+    if (dateInput) {
+      // Format: YYYY-MM-DDTHH:MM
+      dateInput.value = now.toISOString().slice(0, 16);
+    }
+  });
+
+  // Copy helpers
+  document.querySelectorAll('.copy-ts, .copy-result').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = (btn as HTMLElement).dataset.target;
+      if (!targetId) return;
+      const el = document.getElementById(targetId);
+      if (!el?.textContent) return;
+      navigator.clipboard.writeText(el.textContent);
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✅';
+      setTimeout(() => { btn.innerHTML = orig; }, 1200);
+    });
+  });
+
+  // Enter key in timestamp input
+  document.getElementById('ts-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('ts-btn')?.click();
+  });
+
+  function getRelativeTime(ms: number): string {
+    const now = Date.now();
+    const diff = now - ms;
+    const abs = Math.abs(diff);
+    const isPast = diff > 0;
+    
+    if (abs < 60000) return isPast ? 'Baru saja' : 'Sebentar lagi';
+    if (abs < 3600000) { const m = Math.floor(abs / 60000); return isPast ? `${m} menit lalu` : `Dalam ${m} menit`; }
+    if (abs < 86400000) { const h = Math.floor(abs / 3600000); return isPast ? `${h} jam lalu` : `Dalam ${h} jam`; }
+    if (abs < 2592000000) { const d = Math.floor(abs / 86400000); return isPast ? `${d} hari lalu` : `Dalam ${d} hari`; }
+    if (abs < 31536000000) { const m = Math.floor(abs / 2592000000); return isPast ? `${m} bulan lalu` : `Dalam ${m} bulan`; }
+    const y = Math.floor(abs / 31536000000);
+    return isPast ? `${y} tahun lalu` : `Dalam ${y} tahun`;
+  }
   });
 </script>

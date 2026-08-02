@@ -6,7 +6,7 @@ import AstroPWA from '@vite-pwa/astro';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://toolsaulia.vercel.app',
+  site: 'https://tools.paklubis.my.id',
   output: "static",
   adapter: vercel(),
   integrations: [tailwind(), AstroPWA({
@@ -98,5 +98,27 @@ export default defineConfig({
     devOptions: {
       enabled: true
     },
-  }), sitemap()],
+  }), sitemap({
+    filter: (page) => !page.includes('/api/'),
+    changefreq: 'weekly',
+    priority: 1.0,
+    lastmod: new Date(),
+    serialize(item) {
+      // Homepage
+      if (item.url === 'https://tools.paklubis.my.id/' || item.url === 'https://tools.paklubis.my.id') {
+        return { ...item, priority: 1.0, changefreq: 'daily', lastmod: new Date() };
+      }
+      // PDF hub
+      if (item.url.endsWith('/pdf') || item.url.endsWith('/pdf/')) {
+        return { ...item, priority: 0.9, changefreq: 'weekly' };
+      }
+      // Popular tools
+      const popularPaths = ['/image/editor', '/image/compressor', '/image/remove-bg', '/dev/my-ip', '/calc/currency', '/calc/age', '/calc/bmi', '/security/password', '/utils/wa-builder', '/utils/qr', '/utils/sinonim', '/utils/paste-to-md', '/utils/prabowo-countdown', '/file/pdf-to-md'];
+      if (popularPaths.some(p => item.url.endsWith(p) || item.url.endsWith(p + '/'))) {
+        return { ...item, priority: 0.8, changefreq: 'weekly' };
+      }
+      // Regular tool pages
+      return { ...item, priority: 0.6, changefreq: 'monthly' };
+    }
+  })],
 });

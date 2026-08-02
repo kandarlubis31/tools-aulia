@@ -5,7 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="Number Base Converter">
   <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
     <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white" data-i18n="header.number">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600" data-i18n="header.number">
         Base Converter
       </h1>
       <p class="text-matte-400 dark:text-matte-300" data-i18n="header.number_desc">
@@ -13,72 +13,170 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </p>
     </div>
 
-    <div class="card-base p-8 animate-fade-in space-y-6">
+    <div class="card-base p-8 animate-fade-in space-y-5">
       
       <div>
-         <label class="section-title mb-1" data-i18n="label.decimal">Decimal (10)</label>
-         <input type="text" id="inp-dec" class="base-input w-full p-3 font-mono text-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg outline-none focus:border-accent-blue transition-colors" placeholder="0-9" data-i18n-attr="placeholder" data-i18n="ph.decimal" />
+         <div class="flex items-center justify-between mb-1">
+           <label class="section-title flex items-center gap-2">
+             <span class="w-6 h-6 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-2xs font-bold flex items-center justify-center">10</span>
+             <span data-i18n="label.decimal">Decimal</span>
+           </label>
+           <button class="copy-field text-2xs font-medium text-matte-400 hover:text-amber-500 transition" data-target="inp-dec">📋 Copy</button>
+         </div>
+         <input type="text" id="inp-dec" class="base-input w-full p-3 font-mono text-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg outline-none focus:border-amber-500 transition-colors" placeholder="0-9" data-i18n-attr="placeholder" data-i18n="ph.decimal" autocomplete="off" />
+         <p class="text-2xs text-matte-400 mt-1 hidden error-hint" id="err-dec">Masukkan angka desimal yang valid (0-9)</p>
       </div>
 
       <div>
-         <label class="section-title mb-1" data-i18n="label.binary">Binary (2)</label>
-         <input type="text" id="inp-bin" class="base-input w-full p-3 font-mono text-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg outline-none focus:border-accent-blue transition-colors" placeholder="0-1" data-i18n-attr="placeholder" data-i18n="ph.binary" />
+         <div class="flex items-center justify-between mb-1">
+           <label class="section-title flex items-center gap-2">
+             <span class="w-6 h-6 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-2xs font-bold flex items-center justify-center">2</span>
+             <span data-i18n="label.binary">Binary</span>
+           </label>
+           <button class="copy-field text-2xs font-medium text-matte-400 hover:text-emerald-500 transition" data-target="inp-bin">📋 Copy</button>
+         </div>
+         <input type="text" id="inp-bin" class="base-input w-full p-3 font-mono text-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg outline-none focus:border-emerald-500 transition-colors" placeholder="0-1" data-i18n-attr="placeholder" data-i18n="ph.binary" autocomplete="off" />
+         <p class="text-2xs text-matte-400 mt-1 hidden error-hint" id="err-bin">Masukkan angka biner yang valid (0-1)</p>
       </div>
 
       <div>
-         <label class="section-title mb-1" data-i18n="label.hex">Hexadecimal (16)</label>
-         <input type="text" id="inp-hex" class="base-input w-full p-3 font-mono text-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg outline-none focus:border-accent-blue transition-colors uppercase" placeholder="0-9, A-F" data-i18n-attr="placeholder" data-i18n="ph.hex" />
+         <div class="flex items-center justify-between mb-1">
+           <label class="section-title flex items-center gap-2">
+             <span class="w-6 h-6 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-2xs font-bold flex items-center justify-center">16</span>
+             <span data-i18n="label.hex">Hexadecimal</span>
+           </label>
+           <button class="copy-field text-2xs font-medium text-matte-400 hover:text-blue-500 transition" data-target="inp-hex">📋 Copy</button>
+         </div>
+         <input type="text" id="inp-hex" class="base-input w-full p-3 font-mono text-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg outline-none focus:border-blue-500 transition-colors uppercase" placeholder="0-9, A-F" data-i18n-attr="placeholder" data-i18n="ph.hex" autocomplete="off" />
+         <p class="text-2xs text-matte-400 mt-1 hidden error-hint" id="err-hex">Masukkan angka hex yang valid (0-9, A-F)</p>
       </div>
 
       <div>
-         <label class="section-title mb-1" data-i18n="label.octal">Octal (8)</label>
-         <input type="text" id="inp-oct" class="base-input w-full p-3 font-mono text-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg outline-none focus:border-accent-blue transition-colors" placeholder="0-7" data-i18n-attr="placeholder" data-i18n="ph.octal" />
+         <div class="flex items-center justify-between mb-1">
+           <label class="section-title flex items-center gap-2">
+             <span class="w-6 h-6 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-2xs font-bold flex items-center justify-center">8</span>
+             <span data-i18n="label.octal">Octal</span>
+           </label>
+           <button class="copy-field text-2xs font-medium text-matte-400 hover:text-purple-500 transition" data-target="inp-oct">📋 Copy</button>
+         </div>
+         <input type="text" id="inp-oct" class="base-input w-full p-3 font-mono text-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg outline-none focus:border-purple-500 transition-colors" placeholder="0-7" data-i18n-attr="placeholder" data-i18n="ph.octal" autocomplete="off" />
+         <p class="text-2xs text-matte-400 mt-1 hidden error-hint" id="err-oct">Masukkan angka oktal yang valid (0-7)</p>
       </div>
 
-      <div class="flex justify-end pt-4">
-         <button id="clear-btn" class="text-sm font-bold text-rose-500 hover:text-rose-600 px-4 py-2 hover:bg-matte-100 dark:hover:bg-surface-hover rounded-lg transition" data-i18n="btn.reset">Reset</button>
+      <div class="flex items-center justify-between pt-4 border-t border-matte-200 dark:border-surface-border">
+         <span id="last-active" class="text-2xs text-matte-400 italic"></span>
+         <button id="clear-btn" class="text-sm font-bold text-rose-500 hover:text-rose-600 px-4 py-2 hover:bg-matte-100 dark:hover:bg-surface-hover rounded-lg transition" data-i18n="btn.reset">🔄 Reset</button>
       </div>
 
+    </div>
+
+    <!-- Quick Reference -->
+    <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3 animate-fade-in">
+      <div class="card-base p-3 text-center">
+        <div class="text-2xs uppercase font-bold text-amber-500 mb-1">Decimal</div>
+        <div class="text-xs text-matte-500 dark:text-matte-400">Basis 10 · 0-9</div>
+      </div>
+      <div class="card-base p-3 text-center">
+        <div class="text-2xs uppercase font-bold text-emerald-500 mb-1">Binary</div>
+        <div class="text-xs text-matte-500 dark:text-matte-400">Basis 2 · 0-1</div>
+      </div>
+      <div class="card-base p-3 text-center">
+        <div class="text-2xs uppercase font-bold text-blue-500 mb-1">Hex</div>
+        <div class="text-xs text-matte-500 dark:text-matte-400">Basis 16 · 0-9, A-F</div>
+      </div>
+      <div class="card-base p-3 text-center">
+        <div class="text-2xs uppercase font-bold text-purple-500 mb-1">Octal</div>
+        <div class="text-xs text-matte-500 dark:text-matte-400">Basis 8 · 0-7</div>
+      </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
   document.addEventListener('astro:page-load', () => {
-  const dec = document.getElementById('inp-dec');
-  const bin = document.getElementById('inp-bin');
-  const hex = document.getElementById('inp-hex');
-  const oct = document.getElementById('inp-oct');
+  const dec = document.getElementById('inp-dec') as HTMLInputElement;
+  const bin = document.getElementById('inp-bin') as HTMLInputElement;
+  const hex = document.getElementById('inp-hex') as HTMLInputElement;
+  const oct = document.getElementById('inp-oct') as HTMLInputElement;
   const clearBtn = document.getElementById('clear-btn');
+  const lastActive = document.getElementById('last-active');
 
-  function update(val, radix) {
-    if (val === '') {
+  const fields = { dec, bin, hex, oct };
+  const errorHints: Record<string, HTMLElement | null> = {
+    dec: document.getElementById('err-dec'),
+    bin: document.getElementById('err-bin'),
+    hex: document.getElementById('err-hex'),
+    oct: document.getElementById('err-oct'),
+  };
+  const radixMap: Record<string, number> = { dec: 10, bin: 2, hex: 16, oct: 8 };
+
+  let lastSource: string | null = null;
+
+  function hideAllErrors() {
+    Object.values(errorHints).forEach(el => el?.classList.add('hidden'));
+    Object.values(fields).forEach(el => el?.classList.remove('border-rose-500', 'dark:border-rose-500'));
+  }
+
+  function showError(fieldName: string) {
+    hideAllErrors();
+    const el = fields[fieldName as keyof typeof fields];
+    const hint = errorHints[fieldName];
+    if (el) el.classList.add('border-rose-500', 'dark:border-rose-500');
+    if (hint) hint.classList.remove('hidden');
+  }
+
+  function update(val: string, radix: number, sourceField: string) {
+    hideAllErrors();
+    lastSource = sourceField;
+    if (lastActive) lastActive.textContent = `Sumber: ${sourceField.toUpperCase()}`;
+
+    if (val === '' || val.trim() === '') {
         reset();
         return;
     }
     
-    // Parse int dari basis asal
     const num = parseInt(val, radix);
     
-    if (isNaN(num)) return; // Stop jika input invalid
+    if (isNaN(num)) {
+      showError(sourceField);
+      return;
+    }
 
-    // Update field lain (jangan update field sumber agar kursor gak lompat)
-    if (radix !== 10) dec.value = num.toString(10);
-    if (radix !== 2) bin.value = num.toString(2);
-    if (radix !== 16) hex.value = num.toString(16).toUpperCase();
-    if (radix !== 8) oct.value = num.toString(8);
+    // Update all other fields
+    if (sourceField !== 'dec') dec.value = num.toString(10);
+    if (sourceField !== 'bin') bin.value = num.toString(2);
+    if (sourceField !== 'hex') hex.value = num.toString(16).toUpperCase();
+    if (sourceField !== 'oct') oct.value = num.toString(8);
   }
 
-  // Event Listeners
-  dec.addEventListener('input', (e) => update(e.target.value, 10));
-  bin.addEventListener('input', (e) => update(e.target.value, 2));
-  hex.addEventListener('input', (e) => update(e.target.value, 16));
-  oct.addEventListener('input', (e) => update(e.target.value, 8));
+  dec.addEventListener('input', (e) => update((e.target as HTMLInputElement).value, 10, 'dec'));
+  bin.addEventListener('input', (e) => update((e.target as HTMLInputElement).value, 2, 'bin'));
+  hex.addEventListener('input', (e) => update((e.target as HTMLInputElement).value, 16, 'hex'));
+  oct.addEventListener('input', (e) => update((e.target as HTMLInputElement).value, 8, 'oct'));
 
   function reset() {
     [dec, bin, hex, oct].forEach(el => el.value = '');
+    hideAllErrors();
+    lastSource = null;
+    if (lastActive) lastActive.textContent = '';
   }
 
-  clearBtn.addEventListener('click', reset);
+  clearBtn?.addEventListener('click', reset);
+
+  // Copy per field
+  document.querySelectorAll('.copy-field').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = (btn as HTMLElement).dataset.target;
+      if (!targetId) return;
+      const input = document.getElementById(targetId) as HTMLInputElement;
+      if (!input || !input.value) return;
+      navigator.clipboard.writeText(input.value);
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✅';
+      setTimeout(() => { btn.innerHTML = orig; }, 1200);
+    });
+  });
+
+  // Keyboard: Tab cycles through fields naturally
   });
 </script>

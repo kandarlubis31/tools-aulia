@@ -57,6 +57,8 @@ declare global {
     JsDiff?: { diffWords: (a: string, b: string) => Array<{ added?: boolean; removed?: boolean; value: string }> };
     /** QRious (loaded from CDN) */
     QRious?: new (options: Record<string, unknown>) => { toDataURL: () => string };
+    /** Interval IDs for SPA cleanup (prabowo-countdown) */
+    _staleIntervals?: number[];
   }
 
   // pdf.js types

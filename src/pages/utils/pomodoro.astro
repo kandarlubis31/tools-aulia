@@ -39,7 +39,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           </button>
        </div>
 
-       <div id="session-count" class="mt-4 text-xs font-medium text-matte-400 dark:text-matte-500 hidden"></div>
+       <div id="session-count" class="mt-4 text-xs font-medium text-matte-400 dark:text-matte-500">
+         <span>🍅 Sesi Selesai: <strong id="session-count-value" class="text-rose-500 dark:text-rose-400">0</strong></span>
+       </div>
 
        <div class="mt-4 flex items-center justify-center gap-2">
           <button id="notif-btn" class="flex items-center gap-1.5 text-xs font-medium text-matte-500 dark:text-matte-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30" title="Notifikasi browser saat sesi selesai">
@@ -244,13 +246,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if(display) display.className = theme.display;
     if(toggleBtn) toggleBtn.className = theme.toggle;      if (statusText) statusText.innerText = label;
     
-    // Update session count display (only show after first session)
-    var sessionDisplay = document.getElementById('session-count');
-    if (sessionDisplay) {
-      if (sessionCount > 0) {
-        sessionDisplay.classList.remove('hidden');
-        sessionDisplay.textContent = (window._tToast ? window._tToast('Sesi Selesai: ') + sessionCount : 'Selesai: ' + sessionCount);
-      }
+    // Update session count display
+    var countEl = document.getElementById('session-count-value');
+    if (countEl) {
+      countEl.textContent = String(sessionCount);
     }
     
     if (iconPlay) iconPlay.classList.remove('hidden');

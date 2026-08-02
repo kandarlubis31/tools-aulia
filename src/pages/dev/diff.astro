@@ -15,18 +15,36 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </p>
     </div>
 
+    <div class="flex justify-center gap-3 mb-4 animate-fade-in">
+      <button id="mode-chars" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-orange-500 text-white transition">Word Diff</button>
+      <button id="mode-lines" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 hover:bg-matte-200 transition">Line Diff</button>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 animate-fade-in">
       <div class="flex flex-col h-64 bg-white dark:bg-matte-800 rounded-xl shadow border border-matte-200 dark:border-matte-700 overflow-hidden">
-         <div class="bg-matte-50 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 font-bold text-matte-500 text-xs uppercase" data-i18n="label.original_text">Original Text</div>
+         <div class="bg-matte-50 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 font-bold text-matte-500 text-xs uppercase flex justify-between">
+            <span data-i18n="label.original_text">Original Text</span>
+            <button class="clear-field text-2xs text-rose-500 hover:text-rose-600" data-target="text-original">Clear</button>
+         </div>
          <textarea id="text-original" class="flex-1 w-full p-4 font-mono text-sm bg-transparent outline-none resize-none dark:text-matte-200" placeholder="Paste original text here..."></textarea>
       </div>
       <div class="flex flex-col h-64 bg-white dark:bg-matte-800 rounded-xl shadow border border-matte-200 dark:border-matte-700 overflow-hidden">
-         <div class="bg-matte-50 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 font-bold text-matte-500 text-xs uppercase" data-i18n="label.modified_text">Modified Text</div>
+         <div class="bg-matte-50 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 font-bold text-matte-500 text-xs uppercase flex justify-between">
+            <span data-i18n="label.modified_text">Modified Text</span>
+            <button class="clear-field text-2xs text-rose-500 hover:text-rose-600" data-target="text-modified">Clear</button>
+         </div>
          <textarea id="text-modified" class="flex-1 w-full p-4 font-mono text-sm bg-transparent outline-none resize-none dark:text-matte-200" placeholder="Paste modified text here..."></textarea>
       </div>
     </div>
 
-    <div class="flex justify-center mb-8 animate-fade-in">
+    <div class="flex justify-center gap-3 mb-8 animate-fade-in flex-wrap">
+       <button id="swap-btn" class="bg-matte-200 dark:bg-matte-700 hover:bg-matte-300 dark:hover:bg-matte-600 text-matte-600 dark:text-matte-300 font-bold py-2 px-4 rounded-lg text-sm transition flex items-center gap-1.5 active:scale-95" title="Swap texts">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          Swap
+       </button>
+       <button id="sample-btn" class="bg-matte-200 dark:bg-matte-700 hover:bg-matte-300 dark:hover:bg-matte-600 text-matte-600 dark:text-matte-300 font-bold py-2 px-4 rounded-lg text-sm transition active:scale-95">
+          📋 Sample
+       </button>
        <button id="compare-btn" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform active:scale-95 flex items-center gap-2" data-i18n="btn.compare_diff">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l5 5"/><path d="M4 4l5 5"/></svg>
           <span data-i18n="btn.compare">Bandingkan</span>
@@ -35,39 +53,70 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     <div class="flex-1 bg-white dark:bg-matte-800 rounded-xl shadow-lg border border-matte-200 dark:border-matte-700 overflow-hidden animate-fade-in mb-12">
        <div class="bg-matte-50 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 flex justify-between items-center">
-          <span class="font-bold text-matte-500 text-xs uppercase" data-i18n="text.result_comparison">Result Comparison</span>
+          <span class="font-bold text-matte-500 text-xs uppercase flex items-center gap-2">
+            <span data-i18n="text.result_comparison">Result</span>
+            <span id="diff-stats" class="text-2xs text-matte-400"></span>
+          </span>
           <div class="flex gap-4 text-xs font-bold">
              <span class="text-red-500 flex items-center gap-1"><span class="w-2 h-2 bg-red-500 rounded-full"></span> <span data-i18n="text.removed">Removed</span></span>
              <span class="text-green-500 flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full"></span> <span data-i18n="text.added">Added</span></span>
           </div>
        </div>
-       <div id="diff-output" class="p-6 font-mono text-sm leading-relaxed whitespace-pre-wrap dark:text-matte-300 min-h-[200px]"></div>
+       <div id="diff-output" class="p-6 font-mono text-sm leading-relaxed whitespace-pre-wrap dark:text-matte-300 min-h-[200px] max-h-[500px] overflow-y-auto"></div>
     </div>
 
   </div>
 </BaseLayout>
 
 <script>
-  const original = document.getElementById('text-original');
-  const modified = document.getElementById('text-modified');
+  document.addEventListener('astro:page-load', () => {
+  const original = document.getElementById('text-original') as HTMLTextAreaElement;
+  const modified = document.getElementById('text-modified') as HTMLTextAreaElement;
   const btn = document.getElementById('compare-btn');
   const output = document.getElementById('diff-output');
+  const diffStats = document.getElementById('diff-stats');
+  const modeChars = document.getElementById('mode-chars');
+  const modeLines = document.getElementById('mode-lines');
 
-  btn.addEventListener('click', () => {
-    const text1 = original.value;
-    const text2 = modified.value;
+  let mode: 'words' | 'lines' = 'words';
 
-    if (!text1 && !text2) return;
+  function setMode(m: 'words' | 'lines') {
+    mode = m;
+    if (modeChars && modeLines) {
+      if (m === 'words') {
+        modeChars.className = 'px-4 py-1.5 rounded-lg text-xs font-bold bg-orange-500 text-white transition';
+        modeLines.className = 'px-4 py-1.5 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 hover:bg-matte-200 transition';
+      } else {
+        modeLines.className = 'px-4 py-1.5 rounded-lg text-xs font-bold bg-orange-500 text-white transition';
+        modeChars.className = 'px-4 py-1.5 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 hover:bg-matte-200 transition';
+      }
+    }
+    compare();
+  }
 
-    // Gunakan library jsdiff
-    const diff = Diff.diffWords(text1, text2);
-    
+  modeChars?.addEventListener('click', () => setMode('words'));
+  modeLines?.addEventListener('click', () => setMode('lines'));
+
+  function compare() {
+    const text1 = original?.value || '';
+    const text2 = modified?.value || '';
+    if (!text1 && !text2) { output && (output.innerHTML = '<p class="text-matte-400">Masukkan teks untuk dibandingkan.</p>'); return; }
+
+    let diffs;
+    if (mode === 'lines') {
+      diffs = Diff.diffLines(text1, text2);
+    } else {
+      diffs = Diff.diffWords(text1, text2);
+    }
+
+    let added = 0, removed = 0;
     const fragment = document.createDocumentFragment();
-
-    diff.forEach((part) => {
-      // Tentukan warna: Merah (hapus), Hijau (tambah), Abu (tetap)
+    diffs.forEach((part: any) => {
+      if (part.added) added += part.count || part.value.length;
+      if (part.removed) removed += part.count || part.value.length;
+      
       const color = part.added ? 'bg-green-200 dark:bg-green-900 text-green-800 dark:text-green-200 px-1 rounded' :
-                    part.removed ? 'bg-red-200 dark:bg-red-900 text-red-800 dark:text-red-200 px-1 rounded line-through decoration-red-500' : 
+                    part.removed ? 'bg-red-200 dark:bg-red-900 text-red-800 dark:text-red-200 px-1 rounded line-through' : 
                     'text-matte-600 dark:text-matte-400';
       
       const span = document.createElement('span');
@@ -76,8 +125,44 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       fragment.appendChild(span);
     });
 
-    output.innerHTML = '';
-    output.appendChild(fragment);
-    window.showToast(window._tToast ? window._tToast('Perbandingan selesai!') : 'Perbandingan selesai!', 'success');
+    if (output) {
+      output.innerHTML = '';
+      output.appendChild(fragment);
+    }
+    if (diffStats) diffStats.textContent = `${removed} removed · ${added} added`;
+  }
+
+  btn?.addEventListener('click', compare);
+
+  // Swap
+  document.getElementById('swap-btn')?.addEventListener('click', () => {
+    const tmp = original.value;
+    original.value = modified.value;
+    modified.value = tmp;
+    compare();
+  });
+
+  // Sample
+  document.getElementById('sample-btn')?.addEventListener('click', () => {
+    original.value = 'The quick brown fox\njumps over the lazy dog.\nHello World!';
+    modified.value = 'The quick brown cat\njumps over the lazy dog.\nHello Universe!';
+    compare();
+  });
+
+  // Clear per field
+  document.querySelectorAll('.clear-field').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = (btn as HTMLElement).dataset.target;
+      const el = document.getElementById(targetId || '') as HTMLTextAreaElement;
+      if (el) { el.value = ''; compare(); }
+    });
+  });
+
+  // Ctrl+Enter to compare
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      if (document.activeElement === original || document.activeElement === modified) compare();
+    }
+  });
   });
 </script>

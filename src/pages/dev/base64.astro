@@ -13,9 +13,20 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </p>
     </div>
 
-    <div class="bg-white dark:bg-matte-800 p-1 rounded-xl inline-flex mb-8 border border-matte-200 dark:border-matte-700 animate-fade-in mx-auto relative left-1/2 -translate-x-1/2">
-       <button id="mode-encode" class="px-6 py-2 rounded-lg text-sm font-bold bg-amber-500 text-white shadow-md transition-all" data-i18n="btn.encoder">Encoder</button>
-       <button id="mode-decode" class="px-6 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all" data-i18n="btn.decoder">Decoder</button>
+    <div class="flex flex-wrap justify-center gap-4 mb-6 animate-fade-in">
+      <div class="bg-white dark:bg-matte-800 p-1 rounded-xl inline-flex border border-matte-200 dark:border-matte-700">
+         <button id="mode-encode" class="px-6 py-2 rounded-lg text-sm font-bold bg-amber-500 text-white shadow-md transition-all" data-i18n="btn.encoder">Encoder</button>
+         <button id="mode-decode" class="px-6 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all" data-i18n="btn.decoder">Decoder</button>
+      </div>
+      
+      <!-- File Upload (encode mode only) -->
+      <div id="file-upload-area" class="flex items-center gap-2">
+         <label class="px-4 py-2 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 hover:bg-matte-200 dark:hover:bg-surface-hover transition cursor-pointer flex items-center gap-1.5">
+            📁 Upload File
+            <input type="file" id="file-input" class="hidden" />
+         </label>
+         <span id="file-name" class="text-xs text-matte-400 hidden"></span>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
@@ -23,17 +34,33 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <div class="flex flex-col h-full bg-white dark:bg-matte-800 rounded-xl shadow-lg border border-matte-200 dark:border-matte-700 overflow-hidden">
          <div class="bg-matte-100 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 flex justify-between items-center">
             <span id="label-input" class="text-xs font-bold text-matte-500 uppercase" data-i18n="label.input_text">Input Text</span>
-            <button id="clear-btn" class="text-xs font-bold text-red-500 hover:text-red-600" data-i18n="btn.clear">Clear</button>
+            <div class="flex gap-2">
+              <button id="clear-btn" class="text-xs font-bold text-red-500 hover:text-red-600" data-i18n="btn.clear">Clear</button>
+            </div>
          </div>
          <textarea id="input-text" class="flex-1 w-full p-4 font-mono text-sm bg-matte-50 dark:bg-matte-900 text-matte-800 dark:text-matte-200 outline-none resize-none min-h-[250px]" placeholder="Ketik di sini..." data-i18n-attr="placeholder" data-i18n="ph.type_here"></textarea>
+         <div class="px-4 py-1.5 bg-matte-50 dark:bg-matte-900 border-t border-matte-200 dark:border-matte-700">
+           <span id="input-stats" class="text-2xs text-matte-400"></span>
+         </div>
       </div>
 
       <div class="flex flex-col h-full bg-white dark:bg-matte-800 rounded-xl shadow-lg border border-matte-200 dark:border-matte-700 overflow-hidden">
          <div class="bg-matte-100 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 flex justify-between items-center">
             <span id="label-output" class="text-xs font-bold text-matte-500 uppercase" data-i18n="label.output_base64">Output Base64</span>
-            <button id="copy-btn" class="text-xs font-bold text-amber-600 hover:text-amber-700" data-i18n="btn.copy_result">Copy Result</button>
+            <div class="flex gap-2">
+              <button id="download-btn" class="hidden text-xs font-bold text-emerald-500 hover:text-emerald-600">⬇ Download</button>
+              <button id="copy-btn" class="text-xs font-bold text-amber-600 hover:text-amber-700" data-i18n="btn.copy_result">📋 Copy</button>
+            </div>
          </div>
          <textarea id="output-text" readonly class="flex-1 w-full p-4 font-mono text-sm bg-matte-50 dark:bg-matte-900 text-matte-800 dark:text-matte-200 outline-none resize-none min-h-[250px]" placeholder="Hasil..." data-i18n-attr="placeholder" data-i18n="ph.result"></textarea>
+         <!-- Image Preview -->
+         <div id="img-preview-container" class="hidden p-3 bg-matte-50 dark:bg-matte-900 border-t border-matte-200 dark:border-matte-700">
+           <p class="text-2xs text-matte-400 mb-2">Image Preview:</p>
+           <img id="img-preview" class="max-h-48 rounded-lg border border-matte-200 dark:border-matte-700 object-contain bg-checkerboard" alt="Preview" />
+         </div>
+         <div class="px-4 py-1.5 bg-matte-50 dark:bg-matte-900 border-t border-matte-200 dark:border-matte-700">
+           <span id="output-stats" class="text-2xs text-matte-400"></span>
+         </div>
       </div>
 
     </div>
@@ -41,74 +68,178 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
-  const input = document.getElementById('input-text');
-  const output = document.getElementById('output-text');
+  document.addEventListener('astro:page-load', () => {
+  const input = document.getElementById('input-text') as HTMLTextAreaElement;
+  const output = document.getElementById('output-text') as HTMLTextAreaElement;
   const modeEncode = document.getElementById('mode-encode');
   const modeDecode = document.getElementById('mode-decode');
   const labelInput = document.getElementById('label-input');
   const labelOutput = document.getElementById('label-output');
   const clearBtn = document.getElementById('clear-btn');
   const copyBtn = document.getElementById('copy-btn');
+  const downloadBtn = document.getElementById('download-btn');
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const fileName = document.getElementById('file-name');
+  const fileUploadArea = document.getElementById('file-upload-area');
+  const imgPreview = document.getElementById('img-preview') as HTMLImageElement;
+  const imgContainer = document.getElementById('img-preview-container');
+  const inputStats = document.getElementById('input-stats');
+  const outputStats = document.getElementById('output-stats');
 
   let isEncode = true;
+  let decodedMime = '';
 
   function process() {
     const val = input.value;
     if(!val) {
-        output.value = "";
+        output.value = '';
+        updateStats();
+        hidePreview();
         return;
     }
 
     try {
         if (isEncode) {
-            // Encode (mendukung utf-8 character)
             output.value = btoa(unescape(encodeURIComponent(val)));
-            input.classList.remove('border-red-500', 'border-2');
+            input.classList.remove('border-red-500');
+            hidePreview();
         } else {
             // Decode
-            output.value = decodeURIComponent(escape(atob(val)));
-            input.classList.remove('border-red-500', 'border-2');
+            let decoded: string;
+            try {
+              decoded = decodeURIComponent(escape(atob(val)));
+            } catch {
+              decoded = atob(val); // fallback for binary data
+            }
+            output.value = decoded;
+            input.classList.remove('border-red-500');
+            
+            // Try show image preview if it's a data URI
+            showImagePreview(val);
         }
+        updateStats();
     } catch (e) {
-        output.value = "Error: Invalid Input format";
-        if(!isEncode) input.classList.add('border-red-500', 'border-2');
+        output.value = 'Error: Input tidak valid';
+        if(!isEncode) input.classList.add('border-red-500');
+        hidePreview();
     }
   }
 
-  function setMode(encode) {
+  function updateStats() {
+    if (inputStats) {
+      const bytes = new Blob([input.value]).size;
+      inputStats.textContent = input.value ? `${bytes.toLocaleString()} bytes · ${input.value.length} chars` : '';
+    }
+    if (outputStats) {
+      const bytes = new Blob([output.value]).size;
+      outputStats.textContent = output.value ? `${bytes.toLocaleString()} bytes · ${output.value.length} chars` : '';
+    }
+  }
+
+  function hidePreview() {
+    imgContainer?.classList.add('hidden');
+    downloadBtn?.classList.add('hidden');
+    decodedMime = '';
+  }
+
+  function showImagePreview(val: string) {
+    // Check if it's a data URI with image
+    const match = val.match(/^data:(image\/\w+);base64,/);
+    if (!match) { hidePreview(); return; }
+    
+    decodedMime = match[1];
+    if (imgPreview) {
+      imgPreview.src = val;
+      imgContainer?.classList.remove('hidden');
+    }
+    downloadBtn?.classList.remove('hidden');
+  }
+
+  function setMode(encode: boolean) {
     isEncode = encode;
-    input.value = "";
-    output.value = "";
-    const t = window.i18n?.t || ((k, fb) => fb);
+    input.value = '';
+    output.value = '';
+    hidePreview();
+    updateStats();
+    
+    const t = window.i18n?.t || ((k: string, fb: string) => fb);
 
     if (encode) {
-        modeEncode.className = "px-6 py-2 rounded-lg text-sm font-bold bg-amber-500 text-white shadow-md transition-all";
-        modeDecode.className = "px-6 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all";
-        labelInput.innerText = t('label.input_text', 'Input Text');
-        labelOutput.innerText = t('label.output_base64', 'Output Base64');
+        modeEncode!.className = 'px-6 py-2 rounded-lg text-sm font-bold bg-amber-500 text-white shadow-md transition-all';
+        modeDecode!.className = 'px-6 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all';
+        labelInput!.innerText = t('label.input_text', 'Input Text');
+        labelOutput!.innerText = t('label.output_base64', 'Output Base64');
         input.placeholder = t('ph.plain_text', 'Ketik teks biasa...');
+        fileUploadArea?.classList.remove('hidden');
     } else {
-        modeDecode.className = "px-6 py-2 rounded-lg text-sm font-bold bg-amber-500 text-white shadow-md transition-all";
-        modeEncode.className = "px-6 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all";
-        labelInput.innerText = t('label.input_base64', 'Input Base64');
-        labelOutput.innerText = t('label.output_text', 'Output Text');
+        modeDecode!.className = 'px-6 py-2 rounded-lg text-sm font-bold bg-amber-500 text-white shadow-md transition-all';
+        modeEncode!.className = 'px-6 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all';
+        labelInput!.innerText = t('label.input_base64', 'Input Base64');
+        labelOutput!.innerText = t('label.output_text', 'Output Text');
         input.placeholder = t('ph.paste_base64', 'Tempel kode Base64...');
+        fileUploadArea?.classList.add('hidden');
     }
   }
 
-  modeEncode.addEventListener('click', () => setMode(true));
-  modeDecode.addEventListener('click', () => setMode(false));
+  modeEncode?.addEventListener('click', () => setMode(true));
+  modeDecode?.addEventListener('click', () => setMode(false));
   input.addEventListener('input', process);
   
-  clearBtn.addEventListener('click', () => {
-    input.value = "";
-    output.value = "";
+  clearBtn?.addEventListener('click', () => {
+    input.value = '';
+    output.value = '';
+    hidePreview();
+    updateStats();
     input.focus();
+    if (fileName) { fileName.classList.add('hidden'); fileName.textContent = ''; }
+    if (fileInput) fileInput.value = '';
   });
 
-  copyBtn.addEventListener('click', () => {
+  copyBtn?.addEventListener('click', () => {
     if(!output.value) return;
     navigator.clipboard.writeText(output.value);
-    window.showToast(window._tToast ? window._tToast("Hasil disalin!") : "Hasil disalin!", "success");
+    window.showToast(window._tToast ? window._tToast('Hasil disalin!') : 'Hasil disalin!', 'success');
+  });
+
+  // Download decoded file
+  downloadBtn?.addEventListener('click', () => {
+    const val = isEncode ? output.value : input.value;
+    if (!val) return;
+    
+    // Create blob from base64
+    const byteStr = atob(val.replace(/^data:[^;]+;base64,/, ''));
+    const bytes = new Uint8Array(byteStr.length);
+    for (let i = 0; i < byteStr.length; i++) bytes[i] = byteStr.charCodeAt(i);
+    const blob = new Blob([bytes], { type: decodedMime || 'application/octet-stream' });
+    const ext = decodedMime?.split('/')[1] || 'bin';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `decoded.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // File upload → encode to base64
+  fileInput?.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    
+    if (fileName) {
+      fileName.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      fileName.classList.remove('hidden');
+    }
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUri = reader.result as string;
+      const base64Part = dataUri.split(',')[1] || dataUri;
+      input.value = dataUri;
+      output.value = base64Part;
+      showImagePreview(dataUri);
+      updateStats();
+    };
+    reader.readAsDataURL(file);
+  });
   });
 </script>

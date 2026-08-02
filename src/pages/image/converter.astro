@@ -105,6 +105,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
+    if (!ctx) { window.showToast?.('Gagal render: context tidak tersedia', 'error'); return; }
     const img = new Image();
 
     img.onload = () => {

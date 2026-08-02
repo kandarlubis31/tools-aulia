@@ -175,6 +175,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const magnifier = document.getElementById('magnifier');
   const magCanvas = document.getElementById('mag-canvas') as HTMLCanvasElement;
   const magCtx = magCanvas.getContext('2d');
+  if (!magCtx) { window.showToast?.('Gagal render magnifier', 'error'); }
 
   const paletteSection = document.getElementById('palette-section');
   const extractPaletteBtn = document.getElementById('extract-palette-btn');

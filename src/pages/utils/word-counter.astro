@@ -5,96 +5,206 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="Word Counter">
   <div class="max-w-4xl mx-auto px-4 min-h-[80vh] flex flex-col">
     <div class="text-center mb-8 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white" data-i18n="header.word_counter">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-500" data-i18n="header.word_counter">
         Word Counter
       </h1>
       <p class="text-matte-400 dark:text-matte-300">
-        Analisis teks secara real-time: jumlah kata, karakter, dan waktu baca.
+        Analisis teks real-time: kata, karakter, paragraf, dan frekuensi kata.
       </p>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 animate-fade-in">
-      <div class="card-base p-4 text-center">
-         <div id="stat-words" class="text-3xl font-bold text-pink-600 dark:text-pink-400">0</div>
-         <div class="text-xs font-bold text-matte-500 uppercase mt-1" data-i18n="label.words">Kata</div>
+    <!-- Primary Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4 animate-fade-in">
+      <div class="card-base p-3 text-center group hover:border-pink-300 dark:hover:border-pink-700 transition-colors">
+         <div id="stat-words" class="text-2xl md:text-3xl font-bold text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform">0</div>
+         <div class="text-[10px] font-bold text-matte-400 uppercase mt-1" data-i18n="label.words">Kata</div>
       </div>
-      <div class="card-base p-4 text-center">
-         <div id="stat-chars" class="text-3xl font-bold text-pink-600 dark:text-pink-400">0</div>
-         <div class="text-xs font-bold text-matte-500 uppercase mt-1" data-i18n="label.characters">Karakter</div>
+      <div class="card-base p-3 text-center group hover:border-pink-300 dark:hover:border-pink-700 transition-colors">
+         <div id="stat-chars" class="text-2xl md:text-3xl font-bold text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">0</div>
+         <div class="text-[10px] font-bold text-matte-400 uppercase mt-1" data-i18n="label.characters">Karakter</div>
       </div>
-      <div class="card-base p-4 text-center">
-         <div id="stat-paragraphs" class="text-3xl font-bold text-pink-600 dark:text-pink-400">0</div>
-         <div class="text-xs font-bold text-matte-500 uppercase mt-1" data-i18n="label.paragraphs">Paragraf</div>
+      <div class="card-base p-3 text-center group hover:border-pink-300 dark:hover:border-pink-700 transition-colors">
+         <div id="stat-unique" class="text-2xl md:text-3xl font-bold text-violet-600 dark:text-violet-400 group-hover:scale-110 transition-transform">0</div>
+         <div class="text-[10px] font-bold text-matte-400 uppercase mt-1">Unik</div>
       </div>
-      <div class="card-base p-4 text-center">
-         <div id="stat-time" class="text-3xl font-bold text-pink-600 dark:text-pink-400">0s</div>
-         <div class="text-xs font-bold text-matte-500 uppercase mt-1">Waktu Baca</div>
+      <div class="card-base p-3 text-center group hover:border-pink-300 dark:hover:border-pink-700 transition-colors">
+         <div id="stat-paragraphs" class="text-2xl md:text-3xl font-bold text-fuchsia-600 dark:text-fuchsia-400 group-hover:scale-110 transition-transform">0</div>
+         <div class="text-[10px] font-bold text-matte-400 uppercase mt-1" data-i18n="label.paragraphs">Paragraf</div>
+      </div>
+      <div class="card-base p-3 text-center group hover:border-pink-300 dark:hover:border-pink-700 transition-colors">
+         <div id="stat-time" class="text-2xl md:text-3xl font-bold text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform">0s</div>
+         <div class="text-[10px] font-bold text-matte-400 uppercase mt-1">Waktu Baca</div>
       </div>
     </div>
 
-    <div class="flex-1 flex flex-col card-base overflow-hidden mb-12 animate-fade-in">
-       <div class="bg-matte-100 dark:bg-surface-hover px-4 py-2 border-b border-matte-200 dark:border-surface-border flex justify-between items-center">
-          <span class="section-title">Input Teks</span>
-          <button id="clear-btn" class="text-xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-matte-100 dark:hover:bg-surface-hover transition" data-i18n="btn.clear_text">
-             Clear Text
-          </button>
-       </div>
-       <textarea id="text-input" class="flex-1 w-full p-6 font-sans text-base leading-relaxed bg-matte-100 dark:bg-surface-hover text-matte-800 dark:text-white outline-none resize-none" placeholder="Ketik atau tempel teks di sini..." spellcheck="false"></textarea>
-       
-       <div class="bg-matte-100 dark:bg-surface-hover px-4 py-2 border-t border-matte-200 dark:border-surface-border text-xs text-matte-400 flex justify-between">
-          <span id="stat-sentences" data-i18n="label.sentences">0 Kalimat</span>
-          <span id="stat-chars-no-space">0 Karakter (no space)</span>
-       </div>
-    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 mb-12 animate-fade-in">
+      
+      <!-- Main Editor -->
+      <div class="md:col-span-2 flex flex-col card-base overflow-hidden min-h-[400px]">
+         <div class="bg-matte-100 dark:bg-surface-hover px-4 py-2 border-b border-matte-200 dark:border-surface-border flex justify-between items-center">
+            <span class="font-bold text-matte-400 text-xs uppercase">Input Teks</span>
+            <div class="flex gap-2">
+              <button id="sample-btn" class="text-[10px] font-bold text-accent-blue hover:opacity-80">📋 Sample</button>
+              <button id="clear-btn" class="text-[10px] font-bold text-rose-500 hover:text-rose-600 px-2 py-0.5 rounded hover:bg-matte-100 dark:hover:bg-surface-hover transition" data-i18n="btn.clear_text">
+                 ✕ Clear
+              </button>
+            </div>
+         </div>
+         <textarea id="text-input" class="flex-1 w-full p-4 font-sans text-base leading-relaxed bg-matte-100 dark:bg-surface-hover text-matte-800 dark:text-white outline-none resize-none" placeholder="Ketik atau tempel teks di sini..." spellcheck="false"></textarea>
+         
+         <!-- Char Breakdown Footer -->
+         <div class="bg-matte-100 dark:bg-surface-hover px-4 py-2 border-t border-matte-200 dark:border-surface-border text-[10px] text-matte-400 flex flex-wrap justify-between gap-x-4 gap-y-0.5">
+            <span id="stat-sentences" data-i18n="label.sentences">0 Kalimat</span>
+            <span id="stat-chars-no-space">0 Karakter (no space)</span>
+            <span>Huruf: <b id="stat-letters" class="text-matte-600 dark:text-matte-300">0</b></span>
+            <span>Angka: <b id="stat-digits" class="text-matte-600 dark:text-matte-300">0</b></span>
+            <span>Spasi: <b id="stat-spaces" class="text-matte-600 dark:text-matte-300">0</b></span>
+            <span>Rata²: <b id="stat-avg-len" class="text-matte-600 dark:text-matte-300">0</b></span>
+         </div>
+      </div>
 
+      <!-- Word Frequency Sidebar -->
+      <div class="flex flex-col card-base overflow-hidden min-h-[400px]">
+        <div class="bg-matte-50 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700">
+          <span class="font-bold text-matte-500 text-xs uppercase flex items-center gap-1.5">
+            🔥 Top Words
+          </span>
+        </div>
+        <div id="freq-empty" class="flex-1 flex items-center justify-center text-matte-300 dark:text-matte-600 text-sm">
+          <div class="text-center">
+            <div class="text-3xl mb-2">📝</div>
+            <p>Tulis teks untuk<br/>melihat frekuensi kata</p>
+          </div>
+        </div>
+        <div id="freq-list" class="hidden flex-1 overflow-y-auto p-3 space-y-1.5"></div>
+        <div id="freq-footer" class="hidden bg-matte-50 dark:bg-matte-900 px-3 py-2 border-t border-matte-200 dark:border-matte-700 text-[9px] text-matte-400">
+          <span id="stat-longest"></span>
+        </div>
+      </div>
+
+    </div>
   </div>
 </BaseLayout>
 
 <script>
   const input = document.getElementById('text-input') as HTMLTextAreaElement;
   const clearBtn = document.getElementById('clear-btn');
+  const sampleBtn = document.getElementById('sample-btn');
   
   // Stats Elements
   const elWords = document.getElementById('stat-words');
   const elChars = document.getElementById('stat-chars');
+  const elUnique = document.getElementById('stat-unique');
   const elParagraphs = document.getElementById('stat-paragraphs');
   const elTime = document.getElementById('stat-time');
   const elSentences = document.getElementById('stat-sentences');
   const elCharsNoSpace = document.getElementById('stat-chars-no-space');
+  const elLetters = document.getElementById('stat-letters');
+  const elDigits = document.getElementById('stat-digits');
+  const elSpaces = document.getElementById('stat-spaces');
+  const elAvgLen = document.getElementById('stat-avg-len');
+  const elLongest = document.getElementById('stat-longest');
+  const freqList = document.getElementById('freq-list');
+  const freqEmpty = document.getElementById('freq-empty');
+  const freqFooter = document.getElementById('freq-footer');
+
+  const STOP_WORDS = new Set([
+    'dan', 'yang', 'di', 'ke', 'dari', 'pada', 'untuk', 'dengan', 'ini', 'itu',
+    'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+    'should', 'may', 'might', 'can', 'shall', 'of', 'in', 'to', 'for',
+    'with', 'on', 'at', 'by', 'or', 'and', 'not', 'no', 'but', 'if',
+    'so', 'as', 'we', 'they', 'he', 'she', 'it', 'his', 'her', 'their',
+    'my', 'your', 'our', 'its', 'all', 'just', 'about', 'also', 'very',
+    'then', 'than', 'more', 'some', 'these', 'those', 'this', 'that',
+    'ada', 'saya', 'kamu', 'dia', 'mereka', 'kami', 'kita', 'akan',
+    'telah', 'sudah', 'sedang', 'bisa', 'dapat', 'harus', 'perlu',
+    'saja', 'juga', 'lain', 'para', 'atas', 'bawah', 'antara'
+  ]);
 
   function analyze() {
     const text = input.value;
+    const hasContent = text.trim().length > 0;
     
-    // 1. Karakter
+    // Characters breakdown
     const chars = text.length;
     const charsNoSpace = text.replace(/\s/g, '').length;
+    const letters = (text.match(/[a-zA-Z]/g) || []).length;
+    const digits = (text.match(/[0-9]/g) || []).length;
+    const spaces = (text.match(/\s/g) || []).length;
 
-    // 2. Kata (Hanya hitung yg bukan spasi kosong)
-    // Regex: Pisahkan berdasarkan spasi/newline, filter yg kosong
+    // Words
     const wordsArr = text.trim().split(/\s+/).filter(w => w.length > 0);
     const words = text.trim() === '' ? 0 : wordsArr.length;
+    const uniqueWords = new Set(wordsArr.map(w => w.toLowerCase().replace(/[^a-z0-9]/gi, '')).filter(w => w.length > 0)).size;
 
-    // 3. Paragraf (Pisahkan double newline)
+    // Word frequency (exclude stop words and short words)
+    const freq: Record<string, number> = {};
+    for (const w of wordsArr) {
+      const clean = w.toLowerCase().replace(/[^a-z0-9]/gi, '');
+      if (clean.length < 3 || STOP_WORDS.has(clean)) continue;
+      freq[clean] = (freq[clean] || 0) + 1;
+    }
+    const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+    // Word stats
+    const wordLengths = wordsArr.map(w => w.replace(/[^a-zA-Z0-9]/g, '').length).filter(l => l > 0);
+    const avgLen = wordLengths.length > 0 ? (wordLengths.reduce((a, b) => a + b, 0) / wordLengths.length).toFixed(1) : '0';
+    const longestWord = wordLengths.length > 0 ? wordsArr.reduce((a, b) => a.replace(/[^a-zA-Z0-9]/g, '').length > b.replace(/[^a-zA-Z0-9]/g, '').length ? a : b).replace(/[^a-zA-Z0-9]/g, '') : '—';
+
+    // Paragraphs
     const paragraphs = text.split(/\n\n+/).filter(p => p.trim().length > 0).length;
 
-    // 4. Kalimat (Pisahkan . ! ?)
+    // Sentences
     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
 
-    // 5. Reading Time (Avg: 200 kata/menit)
-    const totalSeconds = Math.ceil(words / 3.33); // 200 words / 60 sec = 3.33 words/sec
+    // Reading time (200 wpm → 3.33 words/sec)
+    const totalSeconds = Math.ceil(words / 3.33);
     let timeStr = `${totalSeconds}s`;
     if (totalSeconds > 60) {
         timeStr = `${Math.floor(totalSeconds / 60)}m ${totalSeconds % 60}s`;
     }
 
-    // Update DOM
+    // Update primary stats
     if(elChars) elChars.innerText = chars.toLocaleString();
     if(elWords) elWords.innerText = words.toLocaleString();
+    if(elUnique) elUnique.innerText = uniqueWords.toLocaleString();
     if(elParagraphs) elParagraphs.innerText = paragraphs.toLocaleString();
     if(elTime) elTime.innerText = timeStr;
     
+    // Update footer stats
     if(elSentences) elSentences.innerText = `${sentences} Kalimat`;
-    if(elCharsNoSpace) elCharsNoSpace.innerText = `${charsNoSpace.toLocaleString()} Karakter (tanpa spasi)`;
+    if(elCharsNoSpace) elCharsNoSpace.innerText = `${charsNoSpace.toLocaleString()} Karakter (no space)`;
+    if(elLetters) elLetters.innerText = letters.toLocaleString();
+    if(elDigits) elDigits.innerText = digits.toLocaleString();
+    if(elSpaces) elSpaces.innerText = spaces.toLocaleString();
+    if(elAvgLen) elAvgLen.innerText = avgLen;
+    if(elLongest) elLongest.innerText = `Kata terpanjang: "${longestWord}"`;
+
+    // Update frequency list
+    if (sorted.length > 0 && hasContent) {
+      freqEmpty?.classList.add('hidden');
+      freqList?.classList.remove('hidden');
+      freqFooter?.classList.remove('hidden');
+      const maxFreq = sorted[0][1];
+      freqList!.innerHTML = sorted.map(([word, count], i) => {
+        const barWidth = Math.max((count / maxFreq) * 100, 8);
+        const colors = ['bg-pink-500','bg-rose-500','bg-fuchsia-500','bg-violet-500','bg-purple-500','bg-indigo-500','bg-blue-500','bg-sky-500','bg-teal-500','bg-emerald-500'];
+        return `
+          <div class="flex items-center gap-2 group/item">
+            <span class="text-[10px] font-bold text-matte-300 w-4 text-right tabular-nums shrink-0">${i + 1}</span>
+            <span class="text-xs font-mono text-matte-700 dark:text-matte-200 w-20 truncate shrink-0 group-hover/item:text-pink-500 dark:group-hover/item:text-pink-400 transition-colors">${word}</span>
+            <div class="flex-1 h-1.5 bg-matte-100 dark:bg-matte-700 rounded-full overflow-hidden">
+              <div class="h-full ${colors[i] || 'bg-pink-500'} rounded-full transition-all duration-500" style="width:${barWidth}%"></div>
+            </div>
+            <span class="text-[10px] font-bold text-matte-400 tabular-nums w-5 shrink-0">${count}</span>
+          </div>`;
+      }).join('');
+    } else {
+      freqEmpty?.classList.remove('hidden');
+      freqList?.classList.add('hidden');
+      freqFooter?.classList.add('hidden');
+    }
   }
 
   input?.addEventListener('input', analyze);
@@ -104,4 +214,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     analyze();
     input.focus();
   });
+
+  sampleBtn?.addEventListener('click', () => {
+    input.value = `Teknologi digital telah mengubah cara manusia berkomunikasi secara fundamental. Di era modern ini, smartphone dan internet menjadi kebutuhan primer bagi miliaran orang di seluruh dunia. Media sosial seperti Instagram, TikTok, dan Twitter memungkinkan kita terhubung dengan siapa saja dalam hitungan detik.
+
+Namun, di balik kemudahan tersebut, muncul tantangan baru seperti kecanduan digital, penyebaran informasi palsu, dan masalah privasi data. Para ahli merekomendasikan penggunaan teknologi secara bijak dan seimbang. Digital detox, yaitu mengurangi penggunaan gadget secara berkala, menjadi tren yang semakin populer di kalangan masyarakat urban.
+
+Yang menarik, teknologi juga membuka peluang besar di bidang pendidikan dan kesehatan. Platform belajar online memungkinkan akses pendidikan berkualitas dari mana saja. Sementara itu, telemedicine membantu pasien di daerah terpencil mendapatkan konsultasi dokter tanpa harus bepergian jauh.
+
+Kesimpulannya, teknologi adalah pedang bermata dua. Di satu sisi memberikan kemudahan luar biasa, di sisi lain menuntut tanggung jawab dan kesadaran dalam penggunaannya.`;
+    analyze();
+    window.showToast?.('📋 Sample teks dimuat!', 'info');
+  });
+
+  // Init
+  analyze();
 </script>

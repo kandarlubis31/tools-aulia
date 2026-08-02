@@ -718,14 +718,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const SPEED_HISTORY_KEY = 'speed_test_history';
   const MAX_SPEED_HISTORY = 10;
 
-  function getSpeedHistory(): any[] {
+  interface SpeedEntry { download: number; upload: number; ping: number; jitter: number; timestamp: number; }
+  function getSpeedHistory(): SpeedEntry[] {
     try {
       const raw = localStorage.getItem(SPEED_HISTORY_KEY);
       return raw ? JSON.parse(raw) : [];
     } catch { return []; }
   }
 
-  function saveSpeedTest(result: any) {
+  function saveSpeedTest(result: Omit<SpeedEntry, 'timestamp'>) {
     try {
       let history = getSpeedHistory();
       history.unshift({ ...result, timestamp: Date.now() });
@@ -747,7 +748,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
     section.classList.remove('hidden');
     clearBtn.classList.remove('hidden');
-    list.innerHTML = history.map((h: any, i: number) => {
+    list.innerHTML = history.map((h: SpeedEntry & { timestamp: number }, i: number) => {
       const timeAgo = getTimeAgo(h.timestamp);
       const dlColor = h.download >= 50 ? 'text-emerald-500' : h.download >= 10 ? 'text-amber-500' : 'text-red-500';
       return `<div class="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-matte-50 dark:bg-matte-900/40 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all cursor-pointer text-xs" title="${new Date(h.timestamp).toLocaleString()}">
@@ -972,14 +973,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const CACHE_KEY = 'myip_cache';
   const CACHE_MAX_AGE = 30 * 60 * 1000; // 30 menit
 
-  function saveCachedIPData(data: any) {
+  interface IPCacheData { ip: string; country_name?: string; country_code?: string; city?: string; region?: string; timezone?: string; latitude?: number; longitude?: number; org?: string; asn?: string; version?: string; _proxy?: boolean; _hosting?: boolean; }
+
+  function saveCachedIPData(data: IPCacheData) {
     try {
       const cache = { data, timestamp: Date.now() };
       localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
     } catch {}
   }
 
-  function loadCachedIPData(): any | null {
+  function loadCachedIPData(): IPCacheData | null {
     try {
       const raw = localStorage.getItem(CACHE_KEY);
       if (!raw) return null;
@@ -994,7 +997,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     } catch { return null; }
   }
 
-  function applyIPData(data: any, isFresh: boolean) {
+  function applyIPData(data: IPCacheData, isFresh: boolean) {
     if (data.ip) {
       setText('ip-display', isFresh ? data.ip : '🔄 ' + data.ip);
     }
@@ -1046,14 +1049,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const HISTORY_KEY = 'myip_history';
   const MAX_HISTORY = 10;
 
-  function getIPHistory(): any[] {
+  interface IPHistoryEntry { ip: string; timestamp: number; city?: string; country?: string; }
+  function getIPHistory(): IPHistoryEntry[] {
     try {
       const raw = localStorage.getItem(HISTORY_KEY);
       return raw ? JSON.parse(raw) : [];
     } catch { return []; }
   }
 
-  function saveToIPHistory(data: any) {
+  function saveToIPHistory(data: IPCacheData) {
     try {
       let history = getIPHistory();
       // Hapus duplikat IP yang sama
@@ -1091,7 +1095,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     count.textContent = history.length.toString();
     clearBtn.classList.remove('hidden');
     
-    list.innerHTML = history.map((h: any, i: number) => {
+    list.innerHTML = history.map((h: IPHistoryEntry, i: number) => {
       const timeAgo = getTimeAgo(h.timestamp);
       const flagSrc = h.country_code ? `https://flagcdn.com/w20/${h.country_code.toLowerCase()}.png` : '';
       const location = [h.city, h.country].filter(Boolean).join(', ') || '-';
@@ -1133,7 +1137,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // ================================================================
   // 12. MAIN FETCH — parallel race + cache
   // ================================================================
-  let rawNetworkData: any = {};
+  let rawNetworkData: IPCacheData = {};
   let isRefreshing = false;
 
   async function fetchNetworkInfo() {
@@ -1370,12 +1374,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       };
 
       // Close modal with Escape key
-      document.addEventListener('keydown', (e: KeyboardEvent) => {
+      const _ipKeydown = (e: KeyboardEvent) => {
         if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
           modal.classList.add('hidden');
           modal.classList.remove('flex');
         }
-      });
+      };
+      document.addEventListener('keydown', _ipKeydown);
+      document.addEventListener('astro:page-leave', () => {
+        document.removeEventListener('keydown', _ipKeydown);
+      }, { once: true });
   });
 
   window.addEventListener('online', updateNetworkStatus);

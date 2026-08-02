@@ -13,21 +13,29 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </p>
     </div>
 
-    <div class="flex flex-wrap gap-2 mb-4 justify-end animate-fade-in">
-      <button id="format-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
-        Beautify
-      </button>
-      <button id="minify-btn" class="bg-matte-700 hover:bg-matte-800 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-        Minify
-      </button>
-      <button id="copy-btn" class="bg-matte-200 dark:bg-matte-700 hover:bg-matte-300 dark:hover:bg-matte-600 text-matte-700 dark:text-matte-200 font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95">
-        Copy
-      </button>
-      <button id="clear-btn" class="bg-red-100 hover:bg-red-200 text-red-600 font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95">
-        Clear
-      </button>
+    <div class="flex flex-wrap gap-2 mb-4 justify-between items-center animate-fade-in">
+      <div class="flex items-center gap-2">
+        <span id="json-stats" class="text-2xs text-matte-400 hidden"></span>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <button id="auto-format-toggle" class="bg-matte-200 dark:bg-matte-700 hover:bg-matte-300 dark:hover:bg-matte-600 text-matte-600 dark:text-matte-300 font-bold py-2 px-3 rounded-lg text-xs transition flex items-center gap-1.5" title="Auto-format saat mengetik">
+          ⚡ Auto
+        </button>
+        <button id="format-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+          Beautify
+        </button>
+        <button id="minify-btn" class="bg-matte-700 hover:bg-matte-800 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          Minify
+        </button>
+        <button id="copy-btn" class="bg-matte-200 dark:bg-matte-700 hover:bg-matte-300 dark:hover:bg-matte-600 text-matte-700 dark:text-matte-200 font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95">
+          📋 Copy
+        </button>
+        <button id="clear-btn" class="bg-red-100 hover:bg-red-200 text-red-600 font-bold py-2 px-4 rounded-lg shadow-sm transition-all active:scale-95">
+          🗑 Clear
+        </button>
+      </div>
     </div>
 
     <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 pb-12 animate-fade-in">
@@ -42,7 +50,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
        <div class="flex flex-col h-full bg-white dark:bg-matte-800 rounded-xl shadow-lg border border-matte-200 dark:border-matte-700 overflow-hidden">
           <div class="bg-matte-100 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 flex justify-between">
              <span class="text-xs font-bold text-matte-500 uppercase" data-i18n="common.result">Result</span>
-             <span id="status" class="text-xs font-bold text-emerald-500 hidden" data-i18n="text.valid_json">Valid JSON</span>
+             <span id="status" class="text-xs font-bold text-emerald-500 hidden" data-i18n="text.valid_json">✓ Valid</span>
           </div>
           <textarea id="json-output" readonly class="flex-1 w-full p-4 font-mono text-sm bg-matte-50 dark:bg-matte-900 text-matte-800 dark:text-matte-200 outline-none resize-none" placeholder="Hasil akan muncul di sini..."></textarea>
        </div>
@@ -52,50 +60,115 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
-  const input = document.getElementById('json-input');
-  const output = document.getElementById('json-output');
+  document.addEventListener('astro:page-load', () => {
+  const input = document.getElementById('json-input') as HTMLTextAreaElement;
+  const output = document.getElementById('json-output') as HTMLTextAreaElement;
   const status = document.getElementById('status');
+  const jsonStats = document.getElementById('json-stats');
   const formatBtn = document.getElementById('format-btn');
   const minifyBtn = document.getElementById('minify-btn');
   const copyBtn = document.getElementById('copy-btn');
   const clearBtn = document.getElementById('clear-btn');
+  const autoToggle = document.getElementById('auto-format-toggle');
+
+  let autoFormat = false;
+  let flashTimer: ReturnType<typeof setTimeout>;
+
+  function getStats(obj: any): string {
+    const jsonStr = JSON.stringify(obj);
+    const bytes = new Blob([jsonStr]).size;
+    const keys = countKeys(obj);
+    return `${bytes.toLocaleString()} bytes · ${keys} keys`;
+  }
+
+  function countKeys(obj: any): number {
+    if (typeof obj !== 'object' || obj === null) return 0;
+    let count = 0;
+    if (Array.isArray(obj)) {
+      obj.forEach(item => { count += countKeys(item); });
+      return count;
+    }
+    for (const key of Object.keys(obj)) {
+      count++;
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        count += countKeys(obj[key]);
+      }
+    }
+    return count;
+  }
 
   function processJSON(minify = false) {
     const raw = input.value.trim();
-    if (!raw) return;
+    if (!raw) {
+      output.value = '';
+      status?.classList.add('hidden');
+      jsonStats?.classList.add('hidden');
+      return;
+    }
 
     try {
         const obj = JSON.parse(raw);
         const res = JSON.stringify(obj, null, minify ? 0 : 4);
         output.value = res;
         
-        status.innerText = window._tToast ? window._tToast('Valid JSON') : 'Valid JSON';
-        status.className = "text-xs font-bold text-emerald-500";
-        status.classList.remove('hidden');
-        input.classList.remove('border-red-500');
-    } catch (err) {
+        if (status) {
+          status.innerText = '✓ Valid';
+          status.className = 'text-xs font-bold text-emerald-500';
+          status.classList.remove('hidden');
+        }
+        input.classList.remove('border-red-500', 'dark:border-red-500');
+        input.classList.add('border-emerald-500', 'dark:border-emerald-500');
+        clearTimeout(flashTimer);
+        flashTimer = setTimeout(() => input.classList.remove('border-emerald-500', 'dark:border-emerald-500'), 1500);
+        
+        if (jsonStats) {
+          jsonStats.textContent = getStats(obj);
+          jsonStats.classList.remove('hidden');
+        }
+    } catch (err: any) {
         output.value = err.message;
-        status.innerText = window._tToast ? window._tToast('Invalid JSON') : 'Invalid JSON';
-        status.className = "text-xs font-bold text-red-500";
-        status.classList.remove('hidden');
-        window.showToast(window._tToast ? window._tToast('Format JSON salah!') : 'Format JSON salah!', 'error');
+        if (status) {
+          status.innerText = '✗ Invalid';
+          status.className = 'text-xs font-bold text-red-500';
+          status.classList.remove('hidden');
+        }
+        input.classList.add('border-red-500', 'dark:border-red-500');
+        jsonStats?.classList.add('hidden');
     }
   }
 
-  formatBtn.addEventListener('click', () => processJSON(false));
-  formatBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg> ${window.i18n?.t ? window.i18n.t('btn.beautify', 'Beautify') : 'Beautify'}`;
-  minifyBtn.addEventListener('click', () => processJSON(true));
-  minifyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg> ${window.i18n?.t ? window.i18n.t('btn.minify', 'Minify') : 'Minify'}`;
+  formatBtn?.addEventListener('click', () => processJSON(false));
+  minifyBtn?.addEventListener('click', () => processJSON(true));
   
-  copyBtn.addEventListener('click', () => {
+  // Auto-format toggle
+  autoToggle?.addEventListener('click', () => {
+    autoFormat = !autoFormat;
+    autoToggle.className = autoFormat 
+      ? 'bg-amber-500 text-white font-bold py-2 px-3 rounded-lg text-xs transition flex items-center gap-1.5'
+      : 'bg-matte-200 dark:bg-matte-700 hover:bg-matte-300 dark:hover:bg-matte-600 text-matte-600 dark:text-matte-300 font-bold py-2 px-3 rounded-lg text-xs transition flex items-center gap-1.5';
+    if (autoFormat) processJSON(false);
+  });
+
+  let autoTimer: ReturnType<typeof setTimeout>;
+  input?.addEventListener('input', () => {
+    if (!autoFormat) return;
+    clearTimeout(autoTimer);
+    autoTimer = setTimeout(() => processJSON(false), 400);
+  });
+
+  copyBtn?.addEventListener('click', () => {
     if (!output.value) return;
     navigator.clipboard.writeText(output.value);
     window.showToast(window._tToast ? window._tToast('JSON disalin!') : 'JSON disalin!', 'success');
   });
 
-  clearBtn.addEventListener('click', () => {
+  clearBtn?.addEventListener('click', () => {
     input.value = '';
     output.value = '';
-    status.classList.add('hidden');
+    status?.classList.add('hidden');
+    jsonStats?.classList.add('hidden');
+    input.classList.remove('border-red-500', 'dark:border-red-500', 'border-emerald-500', 'dark:border-emerald-500');
+    input.focus();
+  });
   });
 </script>

@@ -848,12 +848,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     });
 
     // Close autocomplete on outside click
-    document.addEventListener('click', (e: MouseEvent) => {
+    const _synClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (autocompleteDropdown && !target.closest('#autocomplete-dropdown') && target !== searchInput) {
         closeAutocomplete();
       }
-    });
+    };
+    document.addEventListener('click', _synClick);
+    document.addEventListener('astro:page-leave', () => { document.removeEventListener('click', _synClick); }, { once: true });
 
     // Focus in - reopen suggestions if input has value
     searchInput?.addEventListener('focus', async () => {

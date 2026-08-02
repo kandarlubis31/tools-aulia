@@ -32,65 +32,87 @@ const categories = [
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "ToolsAulia",
-    "url": "https://toolsaulia.vercel.app",
+    "url": "https://tools.paklubis.my.id",
     "description": "Koleksi 58+ tools developer & produktivitas gratis. Semua berjalan 100% di browser — tanpa install, data aman.",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Windows, Mac, Linux, Android, iOS",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "IDR" }
   })} />
 
-  <!-- Background — Subtle grid pattern -->
-  <div class="fixed inset-0 -z-10 pointer-events-none">
+  <!-- Background — Subtle grid pattern + floating blobs -->
+  <div class="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
     <div class="absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.03)_1px,transparent_1px)] bg-[length:64px_64px]"></div>
+    <!-- Floating decorative blobs -->
+    <div class="absolute -top-40 -right-40 w-96 h-96 bg-accent-blue/5 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute top-60 -left-32 w-80 h-80 bg-violet-500/5 rounded-full blur-3xl" style="animation: floatBlob 8s ease-in-out infinite;"></div>
+    <div class="absolute bottom-20 right-10 w-72 h-72 bg-amber-500/5 rounded-full blur-3xl" style="animation: floatBlob 10s ease-in-out infinite 2s;"></div>
   </div>
 
+  <style>
+    @keyframes floatBlob {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -20px) scale(1.05); }
+      66% { transform: translate(-20px, 15px) scale(0.95); }
+    }
+  </style>
+
   <!-- Hero Section (Clean, Professional) -->
-  <section class="text-center pt-14 pb-10 px-4 animate-fade-in-down" id="hero-section">
-    <div class="badge-accent mb-5 mx-auto w-fit">
-      <span data-i18n="index.badge">Productivity Booster</span>
+  <section class="text-center pt-16 pb-10 px-4 animate-fade-in-down relative overflow-hidden" id="hero-section">
+    <div class="badge-accent mb-5 mx-auto w-fit animate-fade-in-up">
+      <span class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent-blue animate-pulse"></span>
+        <span data-i18n="index.badge">Productivity Booster</span>
+      </span>
     </div>
     
-    <h1 class="text-3xl md:text-5xl font-bold mb-5 tracking-tight leading-tight text-matte-900 dark:text-white">
-      My <span class="text-accent-blue">Toolbox</span>
+    <h1 class="text-4xl md:text-6xl font-extrabold mb-5 tracking-tight leading-tight text-matte-900 dark:text-white">
+      My <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue via-sky-400 to-accent-blue animate-pulse">Toolbox</span>
     </h1>
     
-    <p class="text-sm text-matte-400 dark:text-matte-300 max-w-xl mx-auto leading-relaxed mb-7 tracking-wide">
-      <span data-i18n="index.subtitle_start">Koleksi</span> {tools.length}+ <span data-i18n="index.subtitle_end">tools ringan untuk kebutuhan harian. Semuanya berjalan di browser,</span> <span class="font-semibold text-matte-700 dark:text-white" data-i18n="index.subtitle_safe">tanpa install, data aman.</span>
+    <p class="text-sm md:text-base text-matte-400 dark:text-matte-300 max-w-xl mx-auto leading-relaxed mb-8 tracking-wide">
+      <span data-i18n="index.subtitle_start">Koleksi</span> <strong class="text-matte-700 dark:text-white font-bold">{tools.length}+</strong> <span data-i18n="index.subtitle_end">tools ringan untuk kebutuhan harian. Semuanya berjalan di browser,</span> <span class="font-semibold text-accent-blue">tanpa install, data aman.</span>
     </p>
 
-    <!-- Total Tools Stats -->
-    <div class="flex items-center justify-center gap-2 mb-7 text-xs flex-wrap">
-      <div class="stat-pill-default">
-        <span class="font-bold text-matte-700 dark:text-white">{tools.length}</span>
-        <span data-i18n="index.tools_count_label">Tools</span>
+    <!-- Total Tools Stats — with animated counters -->
+    <div class="flex items-center justify-center gap-3 mb-8 text-xs flex-wrap">
+      <div class="stat-pill-default group hover:border-accent-blue/30 transition-all duration-300">
+        <span class="font-bold text-lg text-matte-800 dark:text-white tabular-nums" id="counter-tools">{tools.length}</span>
+        <span class="text-matte-400" data-i18n="index.tools_count_label">Tools</span>
       </div>
-      <div class="stat-pill-default">
-        <span class="font-bold text-matte-700 dark:text-white">{categoryIds.length}</span>
-        <span data-i18n="index.categories_count_label">Kategori</span>
+      <div class="stat-pill-default group hover:border-accent-blue/30 transition-all duration-300">
+        <span class="font-bold text-lg text-matte-800 dark:text-white tabular-nums" id="counter-cats">{categoryIds.length}</span>
+        <span class="text-matte-400" data-i18n="index.categories_count_label">Kategori</span>
       </div>
-      <div class="stat-pill-default">
-        <span class="font-bold text-matte-700 dark:text-white">100%</span>
-        <span data-i18n="index.client_side_label">Client-Side</span>
+      <div class="stat-pill-default group hover:border-accent-blue/30 transition-all duration-300">
+        <span class="font-bold text-lg text-matte-800 dark:text-white">100%</span>
+        <span class="text-matte-400" data-i18n="index.client_side_label">Client-Side</span>
       </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row gap-2.5 justify-center">
-       <button id="explore-btn" class="px-5 py-2 bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold text-sm rounded-lg hover:opacity-90 transition-all duration-150" data-i18n="index.explore">
-         Jelajahi Tools
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+       <button id="explore-btn" class="px-6 py-2.5 bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold text-sm rounded-xl hover:shadow-lg hover:shadow-matte-900/20 dark:hover:shadow-white/20 hover:-translate-y-0.5 transition-all duration-200">
+         <span data-i18n="index.explore">Jelajahi Tools</span>
+         <span class="ml-2 text-xs opacity-60">↓</span>
        </button>
-       <button id="random-tool-btn" class="px-5 py-2 bg-white dark:bg-surface-elevated text-matte-600 dark:text-matte-300 font-medium text-sm rounded-lg border border-matte-200 dark:border-surface-border hover:border-matte-300 dark:hover:border-matte-500 transition-all duration-150 flex items-center justify-center gap-2" data-i18n="index.random">
+       <button id="random-tool-btn" class="px-5 py-2.5 bg-white dark:bg-surface-elevated text-matte-600 dark:text-matte-300 font-medium text-sm rounded-xl border border-matte-200 dark:border-surface-border hover:border-accent-blue/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2">
          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-         Random Tool
+         <span data-i18n="index.random">Random Tool</span>
        </button>
     </div>
   </section>
 
   <!-- Newly Added Tools -->
-  <section id="new-tools-section" class="max-w-7xl mx-auto px-4 mb-8">
+  <section id="new-tools-section" class="max-w-7xl mx-auto px-4 mb-8 animate-fade-in-up">
     <div class="new-tools-section">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2.5">
-          <span class="section-title" data-i18n="index.new_title">Baru Ditambahkan</span>
+          <div class="flex items-center gap-1.5">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-blue opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-accent-blue"></span>
+            </span>
+            <span class="section-title" data-i18n="index.new_title">Baru Ditambahkan</span>
+          </div>
           <span class="badge-accent text-2xs">{newTools.length} tools</span>
         </div>
       </div>
@@ -98,14 +120,31 @@ const categories = [
         {newTools.map((tool) => (
           <a 
             href={tool.href}
-            class="group inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border hover:border-accent-blue/30 dark:hover:border-accent-blue/30 transition-all duration-150"
+            class="group inline-flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border hover:border-accent-blue/40 dark:hover:border-accent-blue/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
           >
-            <div class="icon-mono w-5 h-5">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
+            <div class="icon-mono w-6 h-6">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
             </div>
-            <span class="text-xs font-medium text-matte-600 dark:text-matte-300 transition-colors duration-150">{tool.title}</span>
+            <div>
+              <span class="text-sm font-semibold text-matte-700 dark:text-matte-200 transition-colors duration-150 group-hover:text-accent-blue">{tool.title}</span>
+            </div>
+            <span class="text-2xs text-accent-blue font-bold opacity-0 group-hover:opacity-100 transition-opacity">→</span>
           </a>
         ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Frequently Used -->
+  <section id="frequent-section" class="max-w-7xl mx-auto px-4 mb-4 hidden">
+    <div class="card-base p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="section-title flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>Paling Sering Dipake</span>
+        </h2>
+      </div>
+      <div id="frequent-tools" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
       </div>
     </div>
   </section>
@@ -178,8 +217,11 @@ const categories = [
                 type="text" 
                 id="search-input" 
                 placeholder="Cari tools..." data-i18n-attr="placeholder" data-i18n="search.placeholder"
-                class="w-full pl-8 pr-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 outline-none text-xs transition-all text-matte-800 dark:text-white placeholder:text-matte-400" 
+                class="w-full pl-8 pr-12 py-2 rounded-lg bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 outline-none text-xs transition-all text-matte-800 dark:text-white placeholder:text-matte-400" 
               />
+              <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold rounded bg-matte-200 dark:bg-matte-700 text-matte-400 dark:text-matte-500">Ctrl+K</kbd>
+              </div>
            </div>
        </div>
 
@@ -264,6 +306,36 @@ const categories = [
         } catch(e) { return []; }
       }
 
+      const frequentSection = document.getElementById('frequent-section');
+      const frequentToolsContainer = document.getElementById('frequent-tools');
+
+      function updateFrequentDisplay() {
+        if (!frequentSection || !frequentToolsContainer) return;
+        try {
+          const freq = JSON.parse(localStorage.getItem('toolUsageFreq') || '{}');
+          const entries = Object.entries(freq) as [string, number][];
+          if (entries.length === 0) { frequentSection.classList.add('hidden'); return; }
+          entries.sort((a, b) => b[1] - a[1]);
+          const top5 = entries.slice(0, 5);
+          frequentSection.classList.remove('hidden');
+          frequentToolsContainer.innerHTML = top5.map(([href, count]) => {
+            const toolEl = Array.from(tools).find(t => t.querySelector('a')?.getAttribute('href')?.split('?')[0] === href);
+            const title = toolEl ? toolEl.getAttribute('data-title') : href;
+            const color = toolEl ? toolEl.getAttribute('data-color') || 'indigo' : 'indigo';
+            const icon = toolEl ? toolEl.getAttribute('data-icon') || '' : '';
+            return `
+            <a href="${href}" class="group flex flex-col items-center justify-center p-2.5 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 border border-amber-200 dark:border-amber-800 hover:border-amber-400 dark:hover:border-amber-600 transition-all duration-150">
+                <div class="icon-mono w-6 h-6 mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
+                </div>
+                <span class="text-2xs font-medium text-matte-500 dark:text-matte-300 text-center leading-tight line-clamp-2">${title}</span>
+                <span class="text-2xs text-amber-500 font-bold mt-0.5">${count}×</span>
+            </a>
+            `;
+          }).join('');
+        } catch { frequentSection.classList.add('hidden'); }
+      }
+
       function updateRecentDisplay() {
         const recent = getRecentTools();
         if (!recentSection || !recentToolsContainer) return;
@@ -309,9 +381,8 @@ const categories = [
            const freq = JSON.parse(localStorage.getItem('toolUsageFreq') || '{}');
            freq[href] = (freq[href] || 0) + 1;
            localStorage.setItem('toolUsageFreq', JSON.stringify(freq));
-         } catch {}
-
-         updateRecentDisplay();
+         } catch {}          updateRecentDisplay();
+          updateFrequentDisplay();
       }
 
       tools.forEach(tool => {
@@ -325,12 +396,12 @@ const categories = [
                 if(href && title) saveToRecent(href, title, color, icon);
             });
          }
-      });
-
-      clearRecentBtn?.addEventListener('click', () => {
+      });       clearRecentBtn?.addEventListener('click', () => {
          localStorage.removeItem('recentTools');
+         localStorage.removeItem('toolUsageFreq');
          updateRecentDisplay();
-      });
+         updateFrequentDisplay();
+       });
 
       const updateLinkParams = (activeCat) => {
          const cat = activeCat === 'popular' ? '' : activeCat;
@@ -479,7 +550,7 @@ const categories = [
          }
       });
 
-      document.addEventListener('keydown', (e) => {
+      const _idxKeydown = (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
           e.preventDefault();
           searchInput?.focus();
@@ -489,7 +560,11 @@ const categories = [
              currentSearch = '';
              renderTools();
         }
-      });
+      };
+      document.addEventListener('keydown', _idxKeydown);
+      document.addEventListener('astro:page-leave', () => {
+        document.removeEventListener('keydown', _idxKeydown);
+      }, { once: true });
 
       // ====== 3D CARD TILT ======
       if (!window._tiltInit) {
@@ -580,6 +655,7 @@ const categories = [
       }
 
       updateRecentDisplay();
+      updateFrequentDisplay();
       setActiveFilter(currentFilter);
   });
 </script>

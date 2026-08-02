@@ -969,7 +969,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     createConfetti();
 
     setTimeout(() => {
-      // @ts-ignore
       if (window.showToast) window.showToast(window._tToast ? window._tToast('🏆 EASTER EGG: 100 CLICKS! Lu legend!') : '🏆 EASTER EGG: 100 CLICKS! Lu legend!', 'success');
     }, 300);
 
@@ -1165,7 +1164,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         leaderboardData = [];
         localStorage.removeItem('prabowoLeaderboard');
         renderLeaderboard();
-        // @ts-ignore
         if (window.showToast) window.showToast(window._tToast ? window._tToast('Leaderboard direset!') : 'Leaderboard direset!', 'info');
       }
     });
@@ -1182,16 +1180,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         try {
           await navigator.share({ title: 'Countdown Presiden Baru 2029', text: shareText });
         } catch (err) {
-          // @ts-ignore
-          if (err.name !== 'AbortError') {
+          if ((err as Error).name !== 'AbortError') {
             navigator.clipboard.writeText(shareText);
-            // @ts-ignore
             if (window.showToast) window.showToast(window._tToast ? window._tToast('Link disalin! Share ke teman-teman') : 'Link disalin! Share ke teman-teman', 'success');
           }
         }
       } else {
         navigator.clipboard.writeText(shareText);
-        // @ts-ignore
         if (window.showToast) window.showToast(window._tToast ? window._tToast('Link disalin! Share ke teman-teman') : 'Link disalin! Share ke teman-teman', 'success');
       }
     });
@@ -1360,7 +1355,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         a.download = `countdown-2029-${d}-hari-lagi.png`;
         a.click();
         URL.revokeObjectURL(url);
-        // @ts-ignore
         if (window.showToast) window.showToast(window._tToast ? window._tToast('🖼️ Gambar berhasil diunduh! Share ke teman-teman ya!') : '🖼️ Gambar berhasil diunduh! Share ke teman-teman ya!', 'success');
       }, 'image/png');
     }
@@ -1395,12 +1389,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     startFactRotation();
 
     // Store references for accurate teardown on swap
-    // @ts-ignore
     window._staleIntervals = [countdownInterval, quoteInterval];
   });
   
   document.addEventListener('astro:before-swap', () => {
-    // @ts-ignore
     if (window._staleIntervals) window._staleIntervals.forEach(clearInterval);
     document.removeEventListener('keydown', globalKeydownHandler);
     if (factRotationTimer) { clearInterval(factRotationTimer); factRotationTimer = null; }

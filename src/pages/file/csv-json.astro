@@ -4,44 +4,87 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 <BaseLayout pageTitle="CSV to JSON Converter">
   <div class="max-w-6xl mx-auto px-4 min-h-[80vh] flex flex-col">
-    <div class="text-center mb-8 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white" data-i18n="header.csv_json">
+    <div class="text-center mb-6 pt-8 animate-on-scroll">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500" data-i18n="header.csv_json">
         CSV to JSON
       </h1>
       <p class="text-matte-400 dark:text-matte-300" data-i18n="header.csv_json_desc">
-        Konversi data CSV (Excel) menjadi format JSON untuk developer.
+        Konversi data CSV menjadi format JSON dengan auto-deteksi delimiter.
       </p>
     </div>
 
-    <div class="flex justify-between items-center mb-4 animate-fade-in">
-        <label class="bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 px-4 py-2 rounded-lg text-sm font-bold cursor-pointer transition" data-i18n="btn.upload_csv">
-            📂 Upload CSV
-            <input type="file" id="file-csv" accept=".csv" class="hidden" />
-        </label>
+    <!-- Toolbar -->
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-4 animate-fade-in">
+        <div class="flex gap-2 flex-wrap">
+            <label class="bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 px-4 py-2 rounded-lg text-sm font-bold cursor-pointer transition active:scale-95 flex items-center gap-1.5" data-i18n="btn.upload_csv">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload CSV
+                <input type="file" id="file-csv" accept=".csv,.tsv,.txt" class="hidden" />
+            </label>
+            <span id="file-name" class="hidden items-center gap-1 px-3 py-2 text-xs font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+              <span id="file-name-text"></span>
+              <button id="clear-file-btn" class="ml-1 text-emerald-400 hover:text-red-500 transition" title="Hapus file">&times;</button>
+            </span>
+        </div>
         
         <div class="flex gap-2">
-            <button id="convert-btn" class="bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-bold py-2 px-6 rounded-lg transition active:scale-95 flex items-center gap-2" data-i18n="btn.convert">
+            <button id="convert-btn" class="bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-bold py-2 px-6 rounded-lg transition active:scale-95 flex items-center gap-2 hover:shadow-lg" data-i18n="btn.convert">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
-                Convert
+                <span id="convert-btn-text">Convert</span>
+                <span id="convert-spinner" class="hidden w-4 h-4 border-2 border-white dark:border-matte-900 border-t-transparent rounded-full animate-spin"></span>
             </button>
         </div>
     </div>
 
+    <!-- Stats Bar -->
+    <div id="stats-bar" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 animate-fade-in">
+      <div class="card-base p-3 text-center">
+        <div id="stat-rows" class="text-xl font-bold text-emerald-600 dark:text-emerald-400">0</div>
+        <div class="text-[10px] font-bold text-matte-400 uppercase">Baris Data</div>
+      </div>
+      <div class="card-base p-3 text-center">
+        <div id="stat-cols" class="text-xl font-bold text-teal-600 dark:text-teal-400">0</div>
+        <div class="text-[10px] font-bold text-matte-400 uppercase">Kolom</div>
+      </div>
+      <div class="card-base p-3 text-center">
+        <div id="stat-delimiter" class="text-xl font-bold text-violet-600 dark:text-violet-400">,</div>
+        <div class="text-[10px] font-bold text-matte-400 uppercase">Delimiter</div>
+      </div>
+      <div class="card-base p-3 text-center">
+        <div id="stat-size" class="text-xl font-bold text-amber-600 dark:text-amber-400">0 KB</div>
+        <div class="text-[10px] font-bold text-matte-400 uppercase">Ukuran</div>
+      </div>
+    </div>
+
+    <!-- Editor Panels -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 mb-12 animate-fade-in h-[500px]">
         
         <div class="flex flex-col card-base overflow-hidden">
-            <div class="bg-matte-100 dark:bg-surface-hover px-4 py-2 border-b border-matte-200 dark:border-surface-border font-bold text-matte-400 text-xs uppercase" data-i18n="label.csv_input">
-                CSV Input
+            <div class="bg-matte-100 dark:bg-surface-hover px-4 py-2 border-b border-matte-200 dark:border-surface-border flex justify-between items-center">
+                <span class="font-bold text-matte-400 text-xs uppercase" data-i18n="label.csv_input">CSV Input</span>
+                <button id="sample-btn" class="text-[10px] font-bold text-accent-blue hover:opacity-80">📋 Sample Data</button>
             </div>
-            <textarea id="input-csv" class="flex-1 w-full p-4 font-mono text-sm bg-transparent outline-none resize-none dark:text-matte-200 whitespace-pre" placeholder="id,name,age&#10;1,John Doe,25&#10;2,Jane Smith,30" data-i18n-attr="placeholder" data-i18n="ph.csv_input"></textarea>
+            <textarea id="input-csv" class="flex-1 w-full p-4 font-mono text-sm bg-transparent outline-none resize-none dark:text-matte-200 whitespace-pre" placeholder="id,name,age&#10;1,John Doe,25&#10;2,Jane Smith,30&#10;3,Bob,35" data-i18n-attr="placeholder" data-i18n="ph.csv_input" spellcheck="false"></textarea>
         </div>
 
         <div class="flex flex-col card-base overflow-hidden">
             <div class="bg-matte-50 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 flex justify-between items-center">
                 <span class="font-bold text-matte-500 text-xs uppercase" data-i18n="label.json_output">JSON Output</span>
-                <button id="copy-btn" class="text-xs font-bold text-accent-blue hover:opacity-80" data-i18n="btn.copy_json">Copy JSON</button>
+                <div class="flex gap-2">
+                    <button id="copy-btn" class="text-xs font-bold text-accent-blue hover:opacity-80 transition" data-i18n="btn.copy_json">📋 Copy</button>
+                    <button id="download-btn" class="hidden text-xs font-bold text-emerald-500 hover:opacity-80 transition">📥 Download</button>
+                </div>
             </div>
-            <textarea id="output-json" readonly class="flex-1 w-full p-4 font-mono text-sm bg-transparent outline-none resize-none dark:text-matte-200" placeholder="Result will appear here..." data-i18n-attr="placeholder" data-i18n="ph.json_output"></textarea>
+            <!-- Loading overlay -->
+            <div class="relative flex-1">
+              <div id="output-loading" class="hidden absolute inset-0 flex items-center justify-center bg-matte-50/80 dark:bg-matte-900/80 z-10 backdrop-blur-sm">
+                <div class="text-center">
+                  <div class="w-10 h-10 border-4 border-matte-200 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3"></div>
+                  <p class="text-sm font-bold text-matte-500">Memproses data...</p>
+                </div>
+              </div>
+              <textarea id="output-json" readonly class="w-full h-full p-4 font-mono text-sm bg-transparent outline-none resize-none dark:text-matte-200" placeholder="Result will appear here..." data-i18n-attr="placeholder" data-i18n="ph.json_output" spellcheck="false"></textarea>
+            </div>
         </div>
 
     </div>
@@ -52,61 +95,196 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const input = document.getElementById('input-csv') as HTMLTextAreaElement;
   const output = document.getElementById('output-json') as HTMLTextAreaElement;
   const convertBtn = document.getElementById('convert-btn');
+  const convertBtnText = document.getElementById('convert-btn-text');
+  const convertSpinner = document.getElementById('convert-spinner');
   const fileInput = document.getElementById('file-csv');
   const copyBtn = document.getElementById('copy-btn');
+  const downloadBtn = document.getElementById('download-btn');
+  const sampleBtn = document.getElementById('sample-btn');
+  const outputLoading = document.getElementById('output-loading');
+  const statsBar = document.getElementById('stats-bar');
+  const fileName = document.getElementById('file-name');
+  const fileNameText = document.getElementById('file-name-text');
+  const clearFileBtn = document.getElementById('clear-file-btn');
 
-  // Simple CSV Parser
+  let currentFileName = '';
+
+  function detectDelimiter(csv: string): string {
+    const firstLine = csv.split('\n')[0] || '';
+    const counts: Record<string, number> = { ',': 0, ';': 0, '\t': 0, '|': 0 };
+    for (const char of firstLine) {
+      if (char in counts) counts[char]++;
+    }
+    const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    return best[1] > 0 ? best[0] : ',';
+  }
+
   function csvToJson(csv: string) {
+    const delimiter = detectDelimiter(csv);
     const lines = csv.trim().split('\n');
+    if (lines.length < 2) throw new Error('CSV harus memiliki header dan minimal 1 baris data');
+    
+    const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
+    if (headers.length === 0 || headers.every(h => !h)) throw new Error('Header CSV tidak valid');
+
     const result = [];
-    // Pisahkan header dengan koma (asumsi delimiter koma)
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    // Build regex once based on delimiter
+    const delimEscaped = delimiter === '\t' ? '\\t' : delimiter === '|' ? '\\|' : delimiter;
+    const splitter = new RegExp(`${delimEscaped}(?=(?:(?:[^"]*"){2})*[^"]*$)`);
 
     for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
-        const obj: any = {};
-        // Handle value dengan koma di dalamnya sedikit tricky tanpa library, 
-        // tapi ini pendekatan sederhana untuk format standar
-        const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Regex split by comma ignoring quotes
+        const obj: Record<string, any> = {};
+        const currentline = lines[i].split(splitter);
 
         for (let j = 0; j < headers.length; j++) {
             let val = currentline[j] ? currentline[j].trim() : "";
-            // Remove quotes if exists
             val = val.replace(/^"|"$/g, '');
-            // Auto convert number
             if (!isNaN(Number(val)) && val !== "") val = Number(val);
+            else if (val === 'true') val = true;
+            else if (val === 'false') val = false;
+            else if (val === 'null' || val === '') val = null;
             obj[headers[j]] = val;
         }
         result.push(obj);
     }
-    return JSON.stringify(result, null, 4); // Pretty print
+    
+    return { json: JSON.stringify(result, null, 2), rows: result.length, cols: headers.length, delimiter, headers };
   }
 
-  convertBtn?.addEventListener('click', () => {
-    try {
-        const csv = input.value;
-        if (!csv) return;
-        const json = csvToJson(csv);
+  function setLoading(loading: boolean) {
+    if (loading) {
+      convertSpinner.classList.remove('hidden');
+      convertBtnText.textContent = 'Converting...';
+      (convertBtn as HTMLButtonElement).disabled = true;
+      convertBtn.classList.add('opacity-70', 'cursor-not-allowed');
+      outputLoading?.classList.remove('hidden');
+    } else {
+      convertSpinner.classList.add('hidden');
+      convertBtnText.textContent = 'Convert';
+      (convertBtn as HTMLButtonElement).disabled = false;
+      convertBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+      outputLoading?.classList.add('hidden');
+    }
+  }
+
+  function updateStats(rows: number, cols: number, delimiter: string, sizeBytes?: number) {
+    statsBar?.classList.remove('hidden');
+    document.getElementById('stat-rows')!.textContent = rows.toLocaleString();
+    document.getElementById('stat-cols')!.textContent = cols.toString();
+    const delimDisplay = delimiter === '\t' ? 'TAB' : delimiter === '|' ? 'pipe' : delimiter;
+    document.getElementById('stat-delimiter')!.textContent = delimDisplay;
+    if (sizeBytes !== undefined) {
+      const kb = sizeBytes / 1024;
+      document.getElementById('stat-size')!.textContent = kb < 1 ? `${sizeBytes} B` : kb < 1024 ? `${kb.toFixed(1)} KB` : `${(kb / 1024).toFixed(1)} MB`;
+    }
+  }
+
+  function doConvert() {
+    const csv = input.value;
+    if (!csv.trim()) {
+      window.showToast?.('Masukkan data CSV terlebih dahulu!', 'error');
+      return;
+    }
+    
+    setLoading(true);
+
+    // Use setTimeout(0) instead of rAF so finally runs after callback
+    setTimeout(() => {
+      try {
+        const { json, rows, cols, delimiter } = csvToJson(csv);
         output.value = json;
-    } catch (e) {
-        window.showToast?.(window._tToast ? window._tToast("Gagal konversi. Pastikan format CSV benar.") : "Gagal konversi. Pastikan format CSV benar.", 'error');
+        downloadBtn?.classList.remove('hidden');
+        updateStats(rows, cols, delimiter, new Blob([csv]).size);
+        window.showToast?.(`✅ ${rows} baris data berhasil dikonversi!`, 'success');
+      } catch (e: any) {
+        output.value = '';
+        downloadBtn?.classList.add('hidden');
+        statsBar?.classList.add('hidden');
+        window.showToast?.(`❌ ${e.message || 'Gagal konversi. Periksa format CSV.'}`, 'error');
+      } finally {
+        setLoading(false);
+      }
+    }, 0);
+  }
+
+  convertBtn?.addEventListener('click', doConvert);
+
+  // Auto-convert on Ctrl+Enter
+  input?.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      doConvert();
     }
   });
 
-  fileInput?.addEventListener('change', (e: any) => {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            input.value = evt.target?.result as string;
-        };
-        reader.readAsText(file);
-    }
+  // File upload with loading feedback
+  fileInput?.addEventListener('change', (e: Event) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    
+    currentFileName = file.name;
+    const sizeStr = file.size < 1024 ? `${file.size} B` : file.size < 1048576 ? `${(file.size / 1024).toFixed(1)} KB` : `${(file.size / 1048576).toFixed(1)} MB`;
+    
+    fileNameText!.textContent = `${file.name} (${sizeStr})`;
+    fileName?.classList.remove('hidden');
+    
+    input.value = 'Memuat file...';
+    input.classList.add('text-matte-400');
+    
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+        input.value = evt.target?.result as string;
+        input.classList.remove('text-matte-400');
+        window.showToast?.(`📂 ${file.name} dimuat`, 'info');
+    };
+    reader.onerror = () => {
+        input.value = '';
+        input.classList.remove('text-matte-400');
+        window.showToast?.('Gagal membaca file!', 'error');
+    };
+    reader.readAsText(file);
   });
 
-  copyBtn?.addEventListener('click', () => {
+  clearFileBtn?.addEventListener('click', () => {
+    input.value = '';
+    currentFileName = '';
+    fileName?.classList.add('hidden');
+    fileInput.value = '';
+    output.value = '';
+    downloadBtn?.classList.add('hidden');
+    statsBar?.classList.add('hidden');
+  });
+
+  copyBtn?.addEventListener('click', async () => {
     if (!output.value) return;
-    navigator.clipboard.writeText(output.value);
-    window.showToast(window._tToast ? window._tToast('JSON disalin!') : 'JSON disalin!', "success");
+    try {
+      await navigator.clipboard.writeText(output.value);
+      const orig = copyBtn.textContent;
+      copyBtn.textContent = '✅ Copied!';
+      setTimeout(() => { copyBtn.textContent = orig; }, 1500);
+      window.showToast?.('JSON disalin ke clipboard!', 'success');
+    } catch {
+      window.showToast?.('Gagal menyalin!', 'error');
+    }
+  });
+
+  downloadBtn?.addEventListener('click', () => {
+    if (!output.value) return;
+    const blob = new Blob([output.value], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const baseName = currentFileName ? currentFileName.replace(/\.(csv|tsv|txt)$/i, '') : 'data';
+    a.download = `${baseName}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    window.showToast?.('✅ File JSON didownload!', 'success');
+  });
+
+  // Sample data button
+  sampleBtn?.addEventListener('click', () => {
+    input.value = `id,nama,usia,kota,aktif\n1,"John Doe",28,"Jakarta",true\n2,"Jane Smith",34,"Bandung",true\n3,"Bob Marley",45,"Surabaya",false\n4,"Alice Wonder",22,"Medan",true\n5,"Charlie Brown",31,"Yogyakarta",true`;
+    window.showToast?.('📋 Sample data dimuat. Klik Convert!', 'info');
   });
 </script>
