@@ -6,10 +6,10 @@
 
 | File | Purpose |
 |------|---------|
-| `CONTEXT.md` (repo root) | Project-wide domain language, architecture overview, and key conventions |
+| `docs/CONTEXT.md` | Project-wide domain language, architecture overview, and key conventions |
 | `docs/adr/` | Architectural Decision Records — past decisions and their rationale |
 | `ARCHITECTURE.md` | Detailed architecture documentation (already exists) |
-| `AGENTS.md` | Agent skills configuration (this file points here) |
+| `docs/AGENTS.md` | Agent skills configuration (this file points here) |
 
 ## Consumer rules
 

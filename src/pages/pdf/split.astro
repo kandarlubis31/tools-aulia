@@ -73,36 +73,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let selectedPages = new Set<number>(); 
   let totalPages = 0;
 
-  dropZone?.addEventListener('click', () => fileInput.click());
+  // Drop zone via composable — handles drag/drop, click, file validation
+  const handleFile = async (file: File) => {
+    currentFile = file;
+    await renderThumbnails(file);
+  };
 
-  // Drag & Drop handlers
-  dropZone?.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone?.classList.add('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10');
+  const cleanupDropZone = window.usePdfDropZone('drop-zone', 'file-input', {
+    accentColor: 'orange',
+    onFile: handleFile,
   });
-  dropZone?.addEventListener('dragleave', () => {
-    dropZone?.classList.remove('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10');
-  });
-  dropZone?.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone?.classList.remove('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10');
-    const file = e.dataTransfer?.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      currentFile = file;
-      renderThumbnails(file);
-    } else {
-      window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error');
-    }
-  });
-
-  fileInput?.addEventListener('change', async (e) => {
-    if (fileInput.files && fileInput.files[0]) {
-      const file = fileInput.files[0];
-      if (file.type !== 'application/pdf') { window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error'); return; }
-      currentFile = file;
-      await renderThumbnails(file);
-    }
-  });
+  document.addEventListener('astro:page-leave', () => cleanupDropZone(), { once: true });
 
   async function renderThumbnails(file: File) {
     if(!dropZone || !loading || !editorArea || !pagesGrid) return;
@@ -126,16 +107,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       for (let i = 1; i <= totalPages; i++) {
         const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 0.8 }); // Scale cukup 0.8 buat thumbnail
-
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        if (!context) continue;
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
+        const canvas = await window.renderPageToCanvas(page, 0.8, false);
+        if (!canvas) continue;
         canvas.className = "w-full h-auto pointer-events-none bg-white";
-
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
 
         // Wrapper
         const wrapper = document.createElement('div');
@@ -256,12 +230,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       copiedPages.forEach((page) => newPdf.addPage(page));
 
       const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `split-${currentFile.name}`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+      window.downloadBytes(pdfBytes, `split-${currentFile.name}`, 'application/pdf');
 
     } catch (err) {
       window.showToast?.(window._tToast ? window._tToast("Gagal memproses PDF.") : "Gagal memproses PDF.", 'error');

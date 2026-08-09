@@ -12,7 +12,7 @@ This repo uses the default five-role label vocabulary. See `docs/agents/triage-l
 
 ### Domain docs
 
-Single-context layout: `CONTEXT.md` at the repo root + `docs/adr/` for architectural decisions. See `docs/agents/domain.md`.
+Single-context layout: `docs/CONTEXT.md` + `docs/adr/` for architectural decisions. See `docs/agents/domain.md`.
 
 ### Project overview
 

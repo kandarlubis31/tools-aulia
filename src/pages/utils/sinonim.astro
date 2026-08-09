@@ -242,10 +242,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // --- Word list for autocomplete (loaded dynamically from public/id-words.json) ---
     let idWordsPromise: Promise<string[]> | null = null;
     let idWordsCache: string[] | null = null;
+    let idWordsLoading = false;
 
     async function loadIdWords(): Promise<string[]> {
       if (idWordsCache) return idWordsCache;
       if (idWordsPromise) return idWordsPromise;
+      idWordsLoading = true;
+      updateAutocompleteLoading();
       idWordsPromise = fetch('/id-words.json')
         .then(res => {
           if (!res.ok) throw new Error('Failed to load word list');
@@ -254,14 +257,34 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         .then(words => {
           idWordsCache = words;
           idWordsPromise = null;
+          idWordsLoading = false;
+          updateAutocompleteLoading();
           return words;
         })
         .catch(err => {
-          idWordsPromise = null; // Allow retry on next keystroke
+          idWordsPromise = null;
+          idWordsLoading = false;
+          updateAutocompleteLoading();
           console.warn('Word list load failed, autocomplete unavailable', err);
-          return []; // Return empty array so autocomplete gracefully shows no results
+          return [];
         });
       return idWordsPromise;
+    }
+
+    function updateAutocompleteLoading() {
+      if (!autocompleteDropdown || currentSuggestions.length > 0) return;
+      if (idWordsLoading && searchInput && searchInput.value.length >= 1) {
+        autocompleteDropdown.classList.remove('hidden');
+        autocompleteDropdown.innerHTML = `
+          <div class="flex items-center gap-2 px-3.5 py-3 text-xs text-matte-400">
+            <svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Memuat daftar kata...
+          </div>
+        `;
+      }
     }
 
     // --- Autocomplete ---

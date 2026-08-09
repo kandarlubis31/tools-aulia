@@ -110,7 +110,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const val = (document.getElementById('ts-input') as HTMLInputElement).value.trim();
     if(!val) return;
     const ts = parseInt(val);
-    if (isNaN(ts)) { window.showToast?.('Timestamp tidak valid!', 'error'); return; }
+    if (isNaN(ts)) { window.showToast?.(window._tToast ? window._tToast('Timestamp tidak valid!') : 'Timestamp tidak valid!', 'error'); return; }
     // Auto-detect seconds vs milliseconds
     const ms = ts > 9999999999 ? ts : ts * 1000;
     const date = new Date(ms);

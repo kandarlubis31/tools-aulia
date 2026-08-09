@@ -44,8 +44,7 @@ git clone https://github.com/kandarlubis31/tools-aulia.git
 cd tools-aulia
 pnpm install
 
-# Copy environment file (if needed)
-cp .env.example .env
+
 ```
 
 ### Development Commands
@@ -57,19 +56,18 @@ cp .env.example .env
 | `pnpm preview` | Preview production build |
 | `pnpm typecheck` | Run TypeScript type checking |
 | `pnpm test` | Run Vitest unit tests |
-| `pnpm test:e2e` | Run Playwright E2E tests |
-| `pnpm lint` | Run ESLint |
+
 
 ## 📁 Project Structure
 
 ```
 tools-aulia/
 ├── src/
-│   ├── components/       # Astro components (ToolCard, etc.)
-│   ├── composables/      # Reusable logic (useToast, useFileHandler, etc.)
+│   ├── components/       # Astro components (ToolCard, LoadingSpinner)
+│   ├── composables/      # Reusable logic (useToast, usePdfDropZone, useLoading, etc.)
+│   ├── data/             # Tool registry (tools.ts, new-tools.ts)
 │   ├── i18n/             # Translation files
-│   ├── layouts/          # BaseLayout and other layouts
-│   ├── lib/              # Registry and utilities
+│   ├── layouts/          # BaseLayout
 │   ├── pages/            # Tool pages organized by category
 │   │   ├── calc/         # Calculator tools (age, BMI, currency, etc.)
 │   │   ├── dev/          # Developer tools (JSON, base64, cron, etc.)
@@ -79,14 +77,13 @@ tools-aulia/
 │   │   ├── security/     # Security tools (hash, password, UUID)
 │   │   └── utils/        # Utility tools (QR, stopwatch, todo, etc.)
 │   ├── styles/           # Global CSS styles
-│   ├── tests/            # Unit tests
 │   └── types/            # TypeScript type definitions
-├── e2e/                  # Playwright E2E tests
-├── public/               # Static assets
+├── public/               # Static assets, PWA icons, i18n-phrases.js
+├── docs/                 # Documentation (ADR, audit plan, context)
+├── scripts/              # Tool scaffold script (new-tool.mjs)
 ├── astro.config.mjs      # Astro configuration
 ├── tailwind.config.mjs   # Tailwind CSS configuration
-├── vitest.config.ts      # Vitest configuration
-└── playwright.config.ts  # Playwright configuration
+└── vitest.config.ts      # Vitest configuration
 ```
 
 ## 🎨 Making Changes
@@ -110,19 +107,23 @@ tools-aulia/
    ```
 
 2. **Use the composables** for common functionality:
-   ```astro
-   <script>
-     import { useToast } from '../../composables/useToast';
-     import { useFileHandler } from '../../composables/useFileHandler';
-     
-     const toast = useToast();
-     const { createDropZone } = useFileHandler();
-   </script>
+   ```javascript
+   // Drop zone (replaces ~30 lines of drag/drop boilerplate)
+   const cleanup = window.usePdfDropZone('drop-zone', 'file-input', {
+     accentColor: 'blue',
+     onFile: (file) => processFile(file),
+   });
+   document.addEventListener('astro:page-leave', () => cleanup(), { once: true });
    ```
 
 3. **Add i18n translations** in `src/i18n/translations.ts`
 
-4. **Add to tool registry** in `src/lib/registry.ts`
+4. **Add to tool registry** in `src/data/tools.ts`
+
+5. **Use the scaffold script** for quick setup:
+   ```bash
+   node scripts/new-tool.mjs <category> <slug> "<Title>" "<Description>"
+   ```
 
 ### Coding Standards
 
@@ -146,25 +147,14 @@ pnpm test:ui
 pnpm test:watch
 ```
 
-Tests are located in `src/tests/composables/` and should follow the pattern:
+Tests are located in `src/composables/` alongside their source files and follow the pattern:
 - `useToast.test.ts`
 - `useClipboard.test.ts`
-- `useFileHandler.test.ts`
+- `useLoading.test.ts`
 
 ### E2E Tests (Playwright)
 
-```bash
-# Install browsers (first time only)
-pnpm playwright install
-
-# Run E2E tests
-pnpm test:e2e
-
-# Open Playwright UI
-pnpm playwright test --ui
-```
-
-E2E tests are in `e2e/` directory.
+Playwright E2E tests are planned but not yet implemented. See `docs/audit-plan.md` item #4.
 
 ## 📝 Commit Guidelines
 

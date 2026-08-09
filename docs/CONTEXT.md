@@ -1,6 +1,6 @@
 # ToolsAulia — Project Context
 
-> Last updated: August 2, 2026
+> Last updated: August 10, 2026
 > Maintained by: Aulia Iskandar Lubis
 
 ## Domain Language
@@ -186,7 +186,7 @@ Each tool follows a consistent pattern:
 5. **Dynamic imports** used for heavy libraries (`@imgly/background-removal`, `html2canvas`, `html2pdf.js`) — only loaded when the tool page is used.
 6. **CDN dependencies** (html2canvas, html2pdf.js) loaded via `is:inline` scripts with retry logic.
 7. **@imgly/background-removal** — ONNX + WASM AI model, ~5-15MB download on first use, cached by browser + PWA.
-8. **`src/data/id-words.ts`** — auto-generated word list (195,193 words from Sastrawi + KBBI Edisi VI). Do not edit manually.
+8. **`public/id-words.json`** — auto-generated word list (195,193 words from Sastrawi + KBBI Edisi VI). Do not edit manually. Served via dynamic `fetch()` only on sinonim page.
 9. **`scripts/`** — build/dev tools, gitignored. Contains `build-words.mjs` and `check-typos.mjs`.
 10. **`mammoth` npm dep** — used by `paste-to-md.astro` for DOCX file conversion via dynamic `import()`. Previously misidentified as dead dep.
 11. **`global.d.ts`** — window type declarations for shared helpers (`showToast`, `_tToast`, `showButtonSpinner`, `_staleIntervals`, etc.). Import-free type safety for inline scripts.
@@ -198,7 +198,7 @@ Each tool follows a consistent pattern:
 - [ ] Speed test upload uses httpbin.org which may rate-limit
 - [ ] Some tools lack responsive design on very small mobile screens
 - [ ] No error boundaries — JS errors on tool pages may break SPA navigation
-- [ ] `id-words.ts` has pre-existing TypeScript syntax errors (unterminated strings)
+- [x] ~~`id-words.ts` 5.6MB chunk~~ → Fixed: deleted, replaced by `public/id-words.json` via dynamic fetch
 - [x] ~~8 `@ts-ignore` in prabowo-countdown~~ → Fixed: global.d.ts declarations + `_staleIntervals`
 - [x] ~~Editor crop & compare listener leaks~~ → Fixed: 8 handlers converted to named functions with `astro:page-leave` cleanup
 - [x] ~~22× getContext('2d') without null guards~~ → Fixed: null checks added to all canvas contexts
@@ -207,15 +207,14 @@ Each tool follows a consistent pattern:
 ## Recommended Next Steps
 
 ### High Priority
-1. **Chunk size optimization** — Build warning: one chunk is 5.6 MB (2.5 MB gzipped). This is the word list (`id-words.ts`). Consider dynamic import only on the sinonim page.
+1. **PWA cache optimization** — `kbbi-sinonim.json` (9.8MB) + `id-words.json` (2.7MB) are runtime-cached on first visit to sinonim page. Consider showing a loading indicator when these download.
 2. **Add smoke tests** — Vitest & Playwright configured but 0 tests exist. At minimum: homepage loads, key tools render.
-3. **Fix id-words.ts syntax errors** — Unterminated string literals prevent `npx tsc --noEmit` from passing.
+3. **Responsive audit** — Review remaining tools for very small mobile screens (<360px).
 
 ### Medium Priority
 4. **Responsive audit** — Review remaining tools for very small mobile screens (<360px).
 5. **PDF tool cleanup** — Many PDF tools use old i18n toast pattern instead of composables pattern (`useToast`).
-6. **Offline cache indicator** — Show toast or badge when results are served from cache. 
-7. **SPA Navigation Hardening** — 21 remaining document-level event listeners need cleanup across ~13 files. Editor fixed; others pending.
+6. **SPA Navigation Hardening** — 21 remaining document-level event listeners need cleanup across ~13 files. Editor fixed; others pending.
 
 ### Nice to Have
 7. **Autocomplete for multiple tools** — The autocomplete + binary search pattern from sinonim could be reused.

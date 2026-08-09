@@ -162,46 +162,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let selectedFiles = [];
   let filePreviews = {};
 
-  // --- 1. HANDLING INPUT FILES ---
-  if (dropZone && fileInput) {
-    dropZone.addEventListener('click', () => fileInput.click());
-    
-    fileInput.addEventListener('change', (e) => {
-      if (fileInput.files && fileInput.files.length > 0) {
-        const newFiles = Array.from(fileInput.files).filter(f => f.type === 'application/pdf');
-        selectedFiles = [...selectedFiles, ...newFiles];
-        updateUI();
-        generatePreviews();
-      }
-    });
+  // --- 1. HANDLING INPUT FILES (via composable) ---
+  const handleFile = (file: File) => {
+    selectedFiles = [...selectedFiles, file];
+    updateUI();
+    generatePreviews();
+  };
 
-    // Drag & Drop
-    dropZone.addEventListener('dragover', (e) => { 
-      e.preventDefault(); 
-      dropZone.classList.add('border-red-500', 'bg-red-50/20', 'dark:bg-red-900/10'); 
-    });
-    
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('border-red-500', 'bg-red-50/20', 'dark:bg-red-900/10');
-    });
-    
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-red-500', 'bg-red-50/20', 'dark:bg-red-900/10');
-      
-      if (e.dataTransfer?.files) {
-        const newFiles = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
-        if (newFiles.length > 0) {
-          selectedFiles = [...selectedFiles, ...newFiles];
-          updateUI();
-          generatePreviews();
-          window.showToast?.(newFiles.length + ' ' + (window._tToast ? window._tToast('file berhasil ditambahkan') : 'file berhasil ditambahkan'));
-        } else {
-          window.showToast?.(window._tToast('Hanya file PDF yang diperbolehkan'), 'error');
-        }
-      }
-    });
-  }
+  const cleanupDropZone = window.usePdfDropZone('drop-zone', 'file-input', {
+    accentColor: 'red',
+    multiple: true,
+    onFile: handleFile,
+  });
+  document.addEventListener('astro:page-leave', () => cleanupDropZone(), { once: true });
 
   // --- 2. UPDATE UI LIST ---
   function updateUI() {
@@ -515,14 +488,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       // Save merged PDF
       const pdfBytes = await mergedPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      
-      // Create download link
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `${outputName.value || 'merged-document'}-${Date.now()}.pdf`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+      window.downloadBytes(pdfBytes, `${outputName.value || 'merged-document'}-${Date.now()}.pdf`, 'application/pdf');
       
       // Show success message
       window.showToast?.(window._tToast('PDF berhasil digabungkan!'));

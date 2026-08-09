@@ -59,6 +59,15 @@ declare global {
     QRious?: new (options: Record<string, unknown>) => { toDataURL: () => string };
     /** Interval IDs for SPA cleanup (prabowo-countdown) */
     _staleIntervals?: number[];
+    /** usePdfDropZone — reusable PDF drop zone (src/composables/usePdfDropZone.ts) */
+    usePdfDropZone?: typeof import('../composables/usePdfDropZone').usePdfDropZone;
+    /** usePdfRenderer helpers (src/composables/usePdfRenderer.ts) */
+    loadPdf?: typeof import('../composables/usePdfRenderer').loadPdf;
+    renderPageToCanvas?: typeof import('../composables/usePdfRenderer').renderPageToCanvas;
+    renderAllPagesToCanvases?: typeof import('../composables/usePdfRenderer').renderAllPagesToCanvases;
+    /** usePdfDownload helpers (src/composables/usePdfDownload.ts) */
+    downloadBlob?: typeof import('../composables/usePdfDownload').downloadBlob;
+    downloadBytes?: typeof import('../composables/usePdfDownload').downloadBytes;
   }
 
   // pdf.js types

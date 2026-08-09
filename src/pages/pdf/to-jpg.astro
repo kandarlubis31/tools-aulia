@@ -11,12 +11,36 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </h1>
       <p class="text-matte-600 dark:text-matte-400 mb-6" data-i18n="header.pdf_to_image_desc">Ubah halaman PDF menjadi gambar JPG atau PNG. Pilih format sesuai kebutuhan.</p>
 
-      <!-- Format Selector -->
-      <div class="flex items-center justify-center gap-2 mb-6">
-        <span class="text-sm font-semibold text-matte-600 dark:text-matte-400 mr-2" data-i18n="label.output_format">Format Output</span>
-        <div class="inline-flex bg-matte-100 dark:bg-matte-700 rounded-lg p-1 border border-matte-200 dark:border-matte-600">
-          <button id="fmt-jpg" class="px-4 py-2 rounded-md text-sm font-bold transition-all bg-red-500 text-white shadow">JPG</button>
-          <button id="fmt-png" class="px-4 py-2 rounded-md text-sm font-bold transition-all text-matte-500 dark:text-matte-400 hover:text-matte-700 dark:hover:text-matte-200">PNG</button>
+      <!-- Settings Row: Format + Scale -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+        <!-- Format Selector -->
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-semibold text-matte-600 dark:text-matte-400" data-i18n="label.output_format">Format Output</span>
+          <div class="inline-flex bg-matte-100 dark:bg-matte-700 rounded-lg p-1 border border-matte-200 dark:border-matte-600">
+            <button id="fmt-jpg" class="px-3 py-2 rounded-md text-sm font-bold transition-all bg-red-500 text-white shadow">JPG</button>
+            <button id="fmt-png" class="px-3 py-2 rounded-md text-sm font-bold transition-all text-matte-500 dark:text-matte-400 hover:text-matte-700 dark:hover:text-matte-200">PNG</button>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="hidden sm:block w-px h-6 bg-matte-200 dark:bg-matte-600"></div>
+
+        <!-- Scale / Quality Slider -->
+        <div class="flex items-center gap-3">
+          <span class="text-sm font-semibold text-matte-600 dark:text-matte-400 whitespace-nowrap" data-i18n="label.quality_scale">Kualitas</span>
+          <div class="relative flex items-center gap-2">
+            <input 
+              type="range" 
+              id="scale-slider" 
+              min="0.5" 
+              max="3" 
+              step="0.25" 
+              value="1.5"
+              class="w-28 h-2 bg-matte-200 dark:bg-matte-600 rounded-lg appearance-none cursor-pointer accent-red-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-500 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110"
+            />
+            <span id="scale-label" class="text-sm font-bold text-red-500 min-w-[42px] text-left">1.5x</span>
+          </div>
+          <span id="res-estimate" class="hidden sm:inline text-xs text-matte-400 whitespace-nowrap"></span>
         </div>
       </div>
 
@@ -31,7 +55,21 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <div id="results" class="hidden mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Batch Download Bar -->
+      <div id="batch-bar" class="hidden mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 bg-matte-50 dark:bg-matte-700/50 p-4 rounded-xl border border-matte-200 dark:border-matte-600">
+        <div class="flex items-center gap-3">
+          <span class="text-sm font-semibold text-matte-700 dark:text-matte-200">
+            <span id="page-count">0</span> <span data-i18n="text.total_pages">halaman siap</span>
+          </span>
+          <span id="size-estimate" class="text-xs text-matte-400"></span>
+        </div>
+        <button id="download-all-btn" class="px-6 py-2.5 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white text-sm font-bold rounded-lg shadow-lg shadow-red-500/20 transition-all active:scale-95 flex items-center gap-2" data-i18n="btn.download_all_zip">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          📦 Download Semua (ZIP)
+        </button>
+      </div>
+
+      <div id="results" class="hidden mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         </div>
       
       <div id="loading" class="hidden mt-8 text-red-500 font-bold animate-pulse" data-i18n="text.processing_pdf_pages">
@@ -43,6 +81,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   </div>
 </BaseLayout>
 
+<!-- JSZip CDN for batch download -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" defer></script>
+
 <script>
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('file-input');
@@ -51,9 +92,48 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const resetBtn = document.getElementById('reset-btn');
   const fmtJpg = document.getElementById('fmt-jpg');
   const fmtPng = document.getElementById('fmt-png');
+  const batchBar = document.getElementById('batch-bar');
+  const downloadAllBtn = document.getElementById('download-all-btn');
+  const pageCountSpan = document.getElementById('page-count');
+  const sizeEstimateSpan = document.getElementById('size-estimate');
+  const scaleSlider = document.getElementById('scale-slider');
+  const scaleLabel = document.getElementById('scale-label');
+  const resEstimate = document.getElementById('res-estimate');
 
   // State: 'jpg' or 'png'
   let outputFormat = 'jpg';
+  // Render scale: 0.5x – 3x (default 1.5x)
+  let renderScale = 1.5;
+  // Store image data for batch download: { dataUrl, ext, pageNum }
+  let imageStore = [];
+  // Guard against race conditions during batch download
+  let isDownloading = false;
+
+  // --- PDF Drop Zone (composable) ---
+  const dropZoneCleanup = window.usePdfDropZone?.('drop-zone', 'file-input', {
+    accentColor: 'red',
+    onFile: (file: File) => processPDF(file),
+  });
+  document.addEventListener('astro:page-leave', () => dropZoneCleanup?.(), { once: true });
+
+  // Scale slider handler
+  function updateScaleDisplay() {
+    if (!scaleSlider) return;
+    renderScale = parseFloat(scaleSlider.value);
+    // Strip trailing zeros: 1.5 stays "1.5x", 2 becomes "2x"
+    scaleLabel.textContent = parseFloat(renderScale.toFixed(2)) + 'x';
+    
+    // Estimate resolution for a typical Letter PDF page at this scale
+    const baseW = 612; const baseH = 792;
+    const estW = Math.round(baseW * renderScale);
+    const estH = Math.round(baseH * renderScale);
+    const lowQ = renderScale <= 0.75 ? ' ' + (window._tToast ? window._tToast('(kecil)') : '(kecil)') : '';
+    resEstimate.classList.remove('hidden');
+    resEstimate.textContent = `~${estW}×${estH}px${lowQ}`;
+  }
+
+  scaleSlider?.addEventListener('input', updateScaleDisplay);
+  if (scaleSlider) updateScaleDisplay();
 
   // Format toggle
   function setFormat(fmt) {
@@ -70,77 +150,52 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   fmtJpg?.addEventListener('click', () => setFormat('jpg'));
   fmtPng?.addEventListener('click', () => setFormat('png'));
 
-  // Trigger Input
-  dropZone?.addEventListener('click', () => fileInput.click());
-
-  // Drag & Drop handlers
-  dropZone?.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-700/30');
-  });
-  dropZone?.addEventListener('dragleave', () => {
-    dropZone.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-700/30');
-  });
-  dropZone?.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-700/30');
-    const file = e.dataTransfer?.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      processPDF(file);
-    } else {
-      window.showToast?.(window._tToast ? window._tToast("Harap upload file PDF!") : "Harap upload file PDF!", 'error');
-    }
-  });
-
-  fileInput?.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      await processPDF(file);
-    } else {
-      window.showToast?.(window._tToast ? window._tToast("Harap upload file PDF!") : "Harap upload file PDF!", 'error');
-    }
-  });
+  // Trigger Input (fallback — composable handles this)
+  // dropZone click already handled by usePdfDropZone composable
+  // drag/drop + file input change also handled by composable
 
   async function processPDF(file) {
     dropZone.classList.add('hidden');
     loadingDiv.classList.remove('hidden');
     resultsDiv.innerHTML = '';
+    imageStore = [];
+    batchBar.classList.add('hidden');
     
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+      const pdf = await window.loadPdf!(arrayBuffer);
       
       loadingDiv.classList.add('hidden');
       resultsDiv.classList.remove('hidden');
       resetBtn.classList.remove('hidden');
+      batchBar.classList.remove('hidden');
+      
+      // Show page count immediately
+      pageCountSpan.textContent = pdf.numPages;
+      updateSizeEstimate();
+      
+      // Warn for large PDFs (memory concern on mobile)
+      if (pdf.numPages > 40) {
+        window.showToast?.(
+          window._tToast ? window._tToast('⚠️ PDF besar terdeteksi. Download ZIP mungkin lambat di HP.') : '⚠️ PDF besar terdeteksi. Download ZIP mungkin lambat di HP.',
+          'warning'
+        );
+      }
 
-      // Loop setiap halaman
+      // Loop setiap halaman — use composable renderer
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1.5 }); // Scale 1.5 biar tajem
-        
-        // Buat Canvas
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        if (!context) continue;
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        // Isi background putih hanya untuk JPG (PNG biarkan transparan)
-        if (outputFormat === 'jpg') {
-          context.fillStyle = '#FFFFFF';
-          context.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        // Render Page ke Canvas
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
+        const bgWhite = outputFormat === 'jpg';
+        const canvas = await window.renderPageToCanvas!(page, renderScale, bgWhite);
 
         // Convert Canvas ke Image (JPG dengan kompresi, PNG lossless + transparansi)
-        const mimeType = outputFormat === 'png' ? 'image/png' : 'image/jpeg';
         const imgUrl = outputFormat === 'png' ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.8);
+        const ext = outputFormat === 'png' ? 'png' : 'jpg';
+        
+        // Store untuk batch download
+        imageStore.push({ dataUrl: imgUrl, ext, pageNum: i });
         
         // Buat Card Tampilan
-        const ext = outputFormat === 'png' ? 'png' : 'jpg';
         const labelKey = outputFormat === 'png' ? 'btn.download_png' : 'btn.download_jpg';
         const downloadLabel = outputFormat === 'png' ? 'Download PNG' : 'Download JPG';
         
@@ -148,7 +203,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         card.className = "bg-matte-50 dark:bg-matte-700 p-3 rounded-xl border border-matte-200 dark:border-matte-600 shadow-sm flex flex-col gap-3";
         card.innerHTML = `
           <div class="relative overflow-hidden rounded-lg border border-matte-200" style="${outputFormat === 'png' ? 'background-image: repeating-conic-gradient(#e5e7eb 0% 25%, transparent 0% 50%) 50% / 20px 20px;' : ''}">
-            <img src="${imgUrl}" class="w-full h-auto" alt="Converted PDF page" />
+            <img src="${imgUrl}" class="w-full h-auto" alt="Converted PDF page" loading="lazy" />
             <span class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded"><span data-i18n="text.page_x">Halaman</span> ${i}</span>
           </div>
           <a href="${imgUrl}" download="page-${i}.${ext}" class="w-full bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-2 rounded-lg text-center transition-colors" data-i18n="${labelKey}">
@@ -157,19 +212,136 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         `;
         resultsDiv.appendChild(card);
       }
+      
+      // Update batch bar after all pages processed
+      updateSizeEstimate();
 
     } catch (err) {
       window.showToast?.(window._tToast ? window._tToast("Gagal memproses PDF. File mungkin rusak atau terpassword.") : "Gagal memproses PDF. File mungkin rusak atau terpassword.", 'error');
       loadingDiv.classList.add('hidden');
       dropZone.classList.remove('hidden');
+      imageStore = [];
     }
   }
 
+  // Estimate zip size based on data URLs (rough estimate: base64 → binary ~75%)
+  function updateSizeEstimate() {
+    if (imageStore.length === 0) {
+      sizeEstimateSpan.textContent = '';
+      return;
+    }
+    let totalBytes = 0;
+    for (const img of imageStore) {
+      // data URL: data:image/...;base64,XXXX — base64 part is ~4/3 of binary
+      const base64 = img.dataUrl.split(',')[1] || '';
+      totalBytes += Math.round(base64.length * 0.75);
+    }
+    const sizeMB = totalBytes / (1024 * 1024);
+    if (sizeMB >= 1) {
+      sizeEstimateSpan.textContent = `(~${sizeMB.toFixed(1)} MB)`;
+    } else {
+      sizeEstimateSpan.textContent = `(~${Math.round(totalBytes / 1024)} KB)`;
+    }
+  }
+
+  // Batch download all images as ZIP
+  async function downloadAllAsZip() {
+    if (imageStore.length === 0) return;
+    if (isDownloading) return;
+    
+    // Check JSZip availability
+    if (typeof JSZip === 'undefined') {
+      window.showToast?.(
+        window._tToast ? window._tToast("JSZip sedang dimuat, coba lagi sebentar...") : "JSZip sedang dimuat, coba lagi sebentar...",
+        'error'
+      );
+      return;
+    }
+
+    const originalHTML = downloadAllBtn.innerHTML;
+    const originalDisabled = downloadAllBtn.disabled;
+    downloadAllBtn.innerHTML = `
+      <svg class="animate-spin h-4 w-4 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span data-i18n="btn.preparing_zip">Menyiapkan ZIP...</span>
+    `;
+    downloadAllBtn.disabled = true;
+    downloadAllBtn.classList.add('opacity-75', 'cursor-not-allowed');
+    isDownloading = true;
+
+    try {
+      const zip = new JSZip();
+      
+      // Process images — use direct base64 decode (faster than fetch)
+      for (let i = 0; i < imageStore.length; i++) {
+        const img = imageStore[i];
+        // Decode base64 data URL to binary blob
+        const parts = img.dataUrl.split(',');
+        const mime = parts[0].split(':')[1]?.split(';')[0] || 'application/octet-stream';
+        const binary = atob(parts[1]);
+        const bytes = new Uint8Array(binary.length);
+        for (let j = 0; j < binary.length; j++) {
+          bytes[j] = binary.charCodeAt(j);
+        }
+        zip.file(`page-${img.pageNum}.${img.ext}`, new Blob([bytes], { type: mime }));
+        
+        // Update progress
+        const pct = Math.round(((i + 1) / imageStore.length) * 100);
+        const span = downloadAllBtn.querySelector('span');
+        if (span) span.textContent = `Menyiapkan ZIP... ${pct}%`;
+        
+        // Yield to main thread every 5 pages to keep UI responsive
+        if (i % 5 === 0) {
+          await new Promise(r => setTimeout(r, 0));
+        }
+      }
+
+      // Generate ZIP blob
+      const zipBlob = await zip.generateAsync({ 
+        type: 'blob',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 6 }
+      });
+
+      // Download via composable
+      window.downloadBlob!(zipBlob, `pdf-pages-${outputFormat}.zip`);
+
+      window.showToast?.(
+        window._tToast ? window._tToast(`✅ ${imageStore.length} halaman berhasil di-download sebagai ZIP!`) : `✅ ${imageStore.length} halaman berhasil di-download sebagai ZIP!`,
+        'success'
+      );
+    } catch (err) {
+      console.error('Batch download gagal:', err);
+      window.showToast?.(
+        window._tToast ? window._tToast("Gagal membuat ZIP. File mungkin terlalu besar.") : "Gagal membuat ZIP. File mungkin terlalu besar.",
+        'error'
+      );
+    } finally {
+      downloadAllBtn.innerHTML = originalHTML;
+      downloadAllBtn.disabled = originalDisabled;
+      downloadAllBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+      isDownloading = false;
+    }
+  }
+
+  downloadAllBtn?.addEventListener('click', downloadAllAsZip);
+
   resetBtn?.addEventListener('click', () => {
+    if (isDownloading) {
+      window.showToast?.(
+        window._tToast ? window._tToast('Tunggu download selesai dulu...') : 'Tunggu download selesai dulu...',
+        'warning'
+      );
+      return;
+    }
     fileInput.value = '';
     resultsDiv.classList.add('hidden');
     resultsDiv.innerHTML = '';
     resetBtn.classList.add('hidden');
+    batchBar.classList.add('hidden');
+    imageStore = [];
     dropZone.classList.remove('hidden');
   });
 </script>

@@ -102,42 +102,20 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
   let currentFile: File | null = null;
   let _overlayTimer = 0; // tracked for race-condition cleanup
 
-  dropZone?.addEventListener('click', () => fileInput.click());
-
-  // Drag & Drop handlers
-  dropZone?.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone?.classList.add('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/10');
-  });
-  dropZone?.addEventListener('dragleave', () => {
-    dropZone?.classList.remove('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/10');
-  });
-  dropZone?.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone?.classList.remove('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/10');
-    const file = e.dataTransfer?.files?.[0];
-    if (!file) return;
-    if (file.type !== 'application/pdf') { window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error'); return; }
+  // Drop zone via composable — handles drag/drop, click, file validation
+  const handleFile = (file: File) => {
     currentFile = file;
     if(filename) filename.innerText = file.name;
     if(filesize) filesize.innerText = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
     dropZone?.classList.add('hidden');
     controlsArea?.classList.remove('hidden');
-  });
+  };
 
-  fileInput?.addEventListener('change', (e) => {
-    if (fileInput.files && fileInput.files[0]) {
-      const file = fileInput.files[0];
-      if (file.type !== 'application/pdf') { window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error'); return; }
-      
-      currentFile = file;
-      if(filename) filename.innerText = file.name;
-      if(filesize) filesize.innerText = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
-      
-      dropZone?.classList.add('hidden');
-      controlsArea?.classList.remove('hidden');
-    }
+  const cleanupDropZone = window.usePdfDropZone('drop-zone', 'file-input', {
+    accentColor: 'emerald',
+    onFile: handleFile,
   });
+  document.addEventListener('astro:page-leave', () => cleanupDropZone(), { once: true });
 
   qualityRange?.addEventListener('input', (e) => {
     const val = (e.target as HTMLInputElement).value;
@@ -179,20 +157,10 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
         if(progressText) progressText.innerText = pageMsg;
         if(compressOverlayText) compressOverlayText.innerText = pageMsg;
 
-        // Render Page ke Canvas
+        // Render Page ke Canvas via composable (handles viewport, white bg, context check)
         const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1.5 }); // Scale standar biar kebaca
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        if (!context) continue;
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        // Isi background putih sebelum render (hindari warna hitam di JPEG)
-        context.fillStyle = '#FFFFFF';
-        context.fillRect(0, 0, canvas.width, canvas.height);
-
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
+        const canvas = await window.renderPageToCanvas(page, 1.5, true);
+        if (!canvas) continue;
 
         // Convert Canvas ke JPG (Kompresi terjadi di sini)
         const imgUrl = canvas.toDataURL('image/jpeg', quality);
@@ -209,12 +177,7 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
       }
 
       const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `compressed-${currentFile.name}`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+      window.downloadBytes(pdfBytes, `compressed-${currentFile.name}`, 'application/pdf');
 
       if(progressText) progressText.innerText = window._tToast ? window._tToast("Selesai! File sedang didownload.") : "Selesai! File sedang didownload.";
       if(compressOverlayText) compressOverlayText.innerText = window._tToast ? window._tToast('Selesai!') : 'Selesai!';

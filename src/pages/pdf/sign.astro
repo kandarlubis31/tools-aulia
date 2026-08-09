@@ -35,7 +35,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <div class="border-2 border-matte-200 dark:border-matte-600 rounded-xl overflow-hidden bg-white touch-none relative h-40">
                <canvas id="pad-canvas" class="w-full h-full cursor-crosshair"></canvas>
                <div class="absolute top-2 right-2 flex gap-1">
-                 <button id="clear-pad" class="p-1 bg-matte-200 hover:bg-red-100 text-matte-500 hover:text-red-500 rounded" title="Hapus"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                 <button id="clear-pad" class="p-1 bg-matte-200 hover:bg-red-100 text-matte-500 hover:text-red-500 rounded" title="Hapus" aria-label="Hapus tanda tangan"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
                </div>
             </div>
             
@@ -90,7 +90,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
               <canvas id="pdf-render" class="block bg-white"></canvas>
               
               <div id="sig-overlay" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-move group border border-dashed border-blue-400 hover:bg-blue-500/10 transition-colors" style="width: 150px; height: auto;">
-                 <img id="sig-image" src="" class="w-full h-full object-contain pointer-events-none" />
+                 <img id="sig-image" src="" class="w-full h-full object-contain pointer-events-none" loading="lazy" />
                  
                  <button id="remove-sig" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 hidden group-hover:block transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>

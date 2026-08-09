@@ -109,7 +109,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             </div>
             <div class="space-y-4">
                 <div class="flex items-center gap-3">
-                    <img id="flag-img" src="" alt="Flag" class="w-10 h-auto rounded shadow-sm hidden border border-matte-100 dark:border-matte-600">
+                    <img id="flag-img" src="" alt="Flag" class="w-10 h-auto rounded shadow-sm hidden border border-matte-100 dark:border-matte-600" loading="lazy">
                     <div>
                         <p class="text-[10px] text-matte-400 uppercase font-bold tracking-wider" data-i18n="label.country">Negara</p>
                         <p id="loc-country" class="font-medium text-matte-700 dark:text-matte-200">
@@ -257,7 +257,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     </div>
 
     <!-- Speed Test Modal -->
-    <div id="speed-test-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+    <div id="speed-test-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity" role="dialog" aria-modal="true" aria-label="Speed Test">
         <div class="bg-white dark:bg-matte-800 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-matte-200 dark:border-matte-700 transform transition-all overflow-y-auto max-h-[95vh]">
             <!-- Header -->
             <div class="flex justify-between items-center mb-4">

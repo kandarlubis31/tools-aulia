@@ -183,7 +183,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   function doConvert() {
     const csv = input.value;
     if (!csv.trim()) {
-      window.showToast?.('Masukkan data CSV terlebih dahulu!', 'error');
+      window.showToast?.(window._tToast ? window._tToast('Masukkan data CSV terlebih dahulu!') : 'Masukkan data CSV terlebih dahulu!', 'error');
       return;
     }
     
@@ -196,12 +196,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         output.value = json;
         downloadBtn?.classList.remove('hidden');
         updateStats(rows, cols, delimiter, new Blob([csv]).size);
-        window.showToast?.(`✅ ${rows} baris data berhasil dikonversi!`, 'success');
+        window.showToast?.(window._tToast ? window._tToast(`✅ ${rows} baris data berhasil dikonversi!`) : `✅ ${rows} baris data berhasil dikonversi!`, 'success');
       } catch (e: any) {
         output.value = '';
         downloadBtn?.classList.add('hidden');
         statsBar?.classList.add('hidden');
-        window.showToast?.(`❌ ${e.message || 'Gagal konversi. Periksa format CSV.'}`, 'error');
+        window.showToast?.(window._tToast ? window._tToast(`❌ ${e.message || 'Gagal konversi. Periksa format CSV.'}`) : `❌ ${e.message || 'Gagal konversi. Periksa format CSV.'}`, 'error');
       } finally {
         setLoading(false);
       }
@@ -236,12 +236,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     reader.onload = (evt) => {
         input.value = evt.target?.result as string;
         input.classList.remove('text-matte-400');
-        window.showToast?.(`📂 ${file.name} dimuat`, 'info');
+        window.showToast?.(window._tToast ? window._tToast(`📂 ${file.name} dimuat`) : `📂 ${file.name} dimuat`, 'info');
     };
     reader.onerror = () => {
         input.value = '';
         input.classList.remove('text-matte-400');
-        window.showToast?.('Gagal membaca file!', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Gagal membaca file!') : 'Gagal membaca file!', 'error');
     };
     reader.readAsText(file);
   });
@@ -263,9 +263,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const orig = copyBtn.textContent;
       copyBtn.textContent = '✅ Copied!';
       setTimeout(() => { copyBtn.textContent = orig; }, 1500);
-      window.showToast?.('JSON disalin ke clipboard!', 'success');
+      window.showToast?.(window._tToast ? window._tToast('JSON disalin ke clipboard!') : 'JSON disalin ke clipboard!', 'success');
     } catch {
-      window.showToast?.('Gagal menyalin!', 'error');
+      window.showToast?.(window._tToast ? window._tToast('Gagal menyalin!') : 'Gagal menyalin!', 'error');
     }
   });
 
@@ -279,12 +279,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     a.download = `${baseName}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    window.showToast?.('✅ File JSON didownload!', 'success');
+    window.showToast?.(window._tToast ? window._tToast('✅ File JSON didownload!') : '✅ File JSON didownload!', 'success');
   });
 
   // Sample data button
   sampleBtn?.addEventListener('click', () => {
     input.value = `id,nama,usia,kota,aktif\n1,"John Doe",28,"Jakarta",true\n2,"Jane Smith",34,"Bandung",true\n3,"Bob Marley",45,"Surabaya",false\n4,"Alice Wonder",22,"Medan",true\n5,"Charlie Brown",31,"Yogyakarta",true`;
-    window.showToast?.('📋 Sample data dimuat. Klik Convert!', 'info');
+    window.showToast?.(window._tToast ? window._tToast('📋 Sample data dimuat. Klik Convert!') : '📋 Sample data dimuat. Klik Convert!', 'info');
   });
 </script>
