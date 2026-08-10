@@ -2,11 +2,15 @@
   "name": "tools-aulia",
   "type": "module",
   "version": "0.0.1",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20.3.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "prebuild": "npm run check:client-side",
+    "prebuild": "node scripts/check-client-side.mjs",
     "preview": "astro preview",
     "check:client-side": "node scripts/check-client-side.mjs",
     "test": "vitest run",

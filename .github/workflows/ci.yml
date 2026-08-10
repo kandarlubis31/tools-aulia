@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+# Batalkan run lama yang sudah obsolete saat ada push baru ke branch yang sama
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     name: Typecheck, Test & Build
@@ -15,13 +20,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Versi pnpm otomatis mengikuti field "packageManager" di package.json
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22   # LTS — sesuai engines.node (>=20.3.0)
           cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
@@ -32,5 +36,6 @@ jobs:
       - name: Unit tests
         run: pnpm vitest run
 
+      # prebuild hook otomatis menjalankan scripts/check-client-side.mjs (guardrail G1)
       - name: Build
         run: pnpm build
