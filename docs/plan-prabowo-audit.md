@@ -3,13 +3,13 @@
 > Created: August 10, 2026
 > Tool: `src/pages/utils/prabowo-countdown.astro` (~1.400+ baris)
 > Live: https://tools.paklubis.my.id/utils/prabowo-countdown
-> Status: ✅ **PC1-PC2 SELESAI dieksekusi** (build 130 entries, tests 43/43)
+> Status: ⚠️ **PC1 REVERTED (keputusan user) — PC2 SELESAI** (build ✅)
 
 ## ✅ Execution Log
 
 | Item | Status | Detail |
 |------|--------|--------|
-| PC1 | ✅ | Backsound preload 'auto'→'none' + hapus initBacksound dari page-load → 2.5MB hanya dimuat saat gesture pertama (klik maskot). Click sounds (~1MB) juga preload 'none' → total ~3.5MB bandwidth/page-load dihemat |
+| PC1 | ⏪ **REVERTED** | Awalnya: preload 'auto'→'none' + hapus initBacksound dari page-load (hemat 3.5MB/page-load). **User menolak** — backsound adalah fitur (auto-play di page-load), bukan bug. Perilaku asli dipulihkan: `preload='auto'` + `initBacksound()` di page-load. |
 | PC2 | ✅ | 9 string JS diwrap `_tToast` fallback (Zzz gaskah, boredTexts, click count, LEGEND, 100 klik ×2, SUDAH SAMPAI, AKHIRNYA, target end) |
 | PC3 | ⏭️ **BATAL** | Stubs `#progress-label`/`#progress-bar` ternyata DIPAKAI (line 1023-1024, 1058-1059) — bukan dead code. Tidak dihapus. |
 
@@ -103,6 +103,6 @@ Phase 3 (Cleanup): PC3  hidden stubs hapus                       5 menit
 
 | Metric | Before | After |
 |--------|--------|-------|
-| Audio download saat page-load | ~3.5MB (2.5MB backsound + 1MB click sounds) | **0 bytes** — semua on-demand |
-| Backsound dimuat saat | page-load (preload auto) | **gesture pertama user** (klik maskot) |
-| String ID hardcoded di JS | 9+ | **0** ✅ |
+| Audio download saat page-load | ~3.5MB (2.5MB backsound + 1MB click sounds) | **~3.5MB (dipertahankan)** — fitur auto-play, bukan bug |
+| Backsound dimuat saat | page-load (preload auto) | **page-load (preload auto)** — dipertahankan sesuai desain |
+| String ID hardcoded di JS | 9+ | **0** ✅ (PC2 tetap) |

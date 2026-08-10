@@ -511,17 +511,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   function preloadAudios() {
     soundAudios = SOUND_FILES.map(url => {
       const a = new Audio(url);
-      // preload 'none' — click sounds (~1MB total) di-fetch on-demand saat playNextSound(),
-      // bukan saat page-load. play() otomatis memuat file.
-      a.preload = 'none';
+      a.preload = 'auto';
       a.volume = 1.0;
       return a;
     });
     backsoundAudios = BACKSOUND_FILES.map(bs => {
       const a = new Audio(bs.path);
-      // preload 'none' — backsound (2.5MB) hanya di-download saat user pertama kali klik maskot,
-      // bukan saat page-load. Hindari boros bandwidth 2.5MB untuk semua pengunjung.
-      a.preload = 'none';
+      a.preload = 'auto';
       a.loop = true;
       a.volume = 0.45;
       return a;
@@ -1127,8 +1123,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   document.addEventListener('astro:page-load', () => {
     preloadAudios();
-    // initBacksound TIDAK dipanggil di sini — backsound 2.5MB hanya dimuat & diputar
-    // saat user gesture pertama (klik maskot) → hemat bandwidth 2.5MB per kunjungan.
+    initBacksound();
     updateCountdown();
     const countdownInterval = setInterval(updateCountdown, 1000);
     
