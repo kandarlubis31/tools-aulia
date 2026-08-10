@@ -9,7 +9,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         CORS Proxy & API Tester
       </h1>
       <p class="text-matte-600 dark:text-matte-400">
-        Bypass CORS policy dan test API endpoint langsung dari browser.
+        Bypass CORS policy untuk API publik yang diizinkan. Demo ini memakai allowlist domain (proteksi SSRF).
       </p>
     </div>
 
@@ -65,7 +65,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 const res = await fetch('/api/proxy?url=' + targetUrl);
             </code>
             <p class="text-xs text-blue-600 dark:text-blue-400 mt-3 leading-relaxed">
-                Gunakan endpoint internal ini di aplikasi front-end kamu untuk menghindari error CORS saat mengambil data dari API publik.
+                ⚠️ Endpoint ini <b>hanya mengizinkan domain tertentu</b> (allowlist): <code>exchangerate-api.com</code>, <code>open.er-api.com</code>, <code>frankfurter.app</code>, <code>wttr.in</code>, <code>ipify.org</code>, <code>ipapi.co</code> — domain lain akan ditolak (403). Gunakan di aplikasi front-end kamu untuk menghindari error CORS pada API-API tersebut.
             </p>
         </div>
       </div>

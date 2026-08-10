@@ -246,8 +246,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   };
 
   let currentCat = 'length';
-  let conversionHistory = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
-  let favorites = JSON.parse(localStorage.getItem('conversionFavorites') || '[]');
+  // safeJSON — localStorage corrupt = jangan matikan seluruh tool
+  function safeJSON(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; } catch { return fallback; }
+  }
+  let conversionHistory = safeJSON('conversionHistory', []);
+  let favorites = safeJSON('conversionFavorites', []);
 
   // Elements
   const tabs = document.querySelectorAll('.tab-btn');

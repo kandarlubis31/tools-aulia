@@ -662,6 +662,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     fullscreenModal.addEventListener('click', (e) => {
         if(e.target === fullscreenModal) fullscreenModal.classList.add('hidden');
     });
+    // Escape key untuk tutup fullscreen (a11y — WCAG 2.1.1)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && fullscreenModal && !fullscreenModal.classList.contains('hidden')) {
+            fullscreenModal.classList.add('hidden');
+        }
+    });
 
     // Initial
     renderPreview();

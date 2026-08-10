@@ -11,6 +11,7 @@
 ![TypeScript](https://img.shields.io/badge/typescript-5.x-3178C6.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![PWA](https://img.shields.io/badge/PWA-ready-5A0FC8.svg)
+![Client-Side](https://img.shields.io/badge/Client--Side-100%25-16a34a.svg)
 
 </div>
 

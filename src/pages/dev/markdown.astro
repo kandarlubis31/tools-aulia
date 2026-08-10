@@ -3,7 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout pageTitle="Markdown Editor">
-  <script is:inline src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
 
   <div class="max-w-7xl mx-auto px-4 min-h-[80vh] flex flex-col">
     <div class="text-center mb-6 pt-8 animate-on-scroll">
@@ -38,7 +39,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const btnCopyMd = document.getElementById('copy-md');
 
   // Default Content
-  const defaultText = `# " + (window._t ? window._t("Selamat Datang!") : "Selamat Datang!");
+  const defaultText = `# ${window.i18n && window.i18n.t ? window.i18n.t('header.selamat_datang', 'Selamat Datang!') : 'Selamat Datang!'};
 
 Ini adalah **Markdown Editor** sederhana. 
 Kamu bisa menulis:
@@ -53,7 +54,9 @@ Coba ketik sesuatu di sebelah kiri...`;
 
   function render() {
     const text = editor.value;
-    preview.innerHTML = marked.parse(text);
+    // DOMPurify sanitize — marked gak sanitize HTML (XSS guard)
+    const html = marked.parse(text);
+    preview.innerHTML = (window.DOMPurify ? window.DOMPurify.sanitize(html) : html);
   }
 
   editor.addEventListener('input', render);

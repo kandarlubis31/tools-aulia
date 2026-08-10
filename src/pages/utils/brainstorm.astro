@@ -351,9 +351,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let originalContent = ""; // Backup for translation
   let isTranslated = false;
   let isOnline = localStorage.getItem('brainMode') === 'online';
-  let favorites = JSON.parse(localStorage.getItem('brainstormFavs') || '[]');
-  let userStats = JSON.parse(localStorage.getItem('brainStats') || '{"total": 0, "catCounts": {}, "lastDate": null, "streak": 0}');
-  let settings = JSON.parse(localStorage.getItem('brainSettings') || '{"autoRefresh": 0, "textSize": "text-2xl", "targetLang": "id"}');
+  // safeJSON + escapeHtml — localStorage corrupt / konten API jangan sampai matikan tool atau jadi XSS
+  function safeJSON(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; } catch { return fallback; }
+  }
+  const _htmlEntities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, (c) => _htmlEntities[c]);
+  }
+  let favorites = safeJSON('brainstormFavs', []);
+  let userStats = safeJSON('brainStats', { total: 0, catCounts: {}, lastDate: null, streak: 0 });
+  let settings = safeJSON('brainSettings', { autoRefresh: 0, textSize: 'text-2xl', targetLang: 'id' });
   let autoRefreshInterval = null;
 
   // --- 3. ELEMENTS ---
@@ -622,7 +630,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       
       favoritesList.innerHTML = filtered.map((text, i) => `
           <div class="fav-item p-3 bg-matte-50 dark:bg-matte-700 rounded-lg flex justify-between items-start group hover:bg-matte-100 dark:hover:bg-matte-600 transition-colors mb-2" data-fav-index="${favorites.indexOf(text)}">
-              <p class="text-sm text-matte-700 dark:text-matte-200 line-clamp-2 cursor-pointer flex-1 fav-text">${text}</p>
+              <p class="text-sm text-matte-700 dark:text-matte-200 line-clamp-2 cursor-pointer flex-1 fav-text">${escapeHtml(text)}</p>
               <button class="fav-remove ml-2 text-matte-400 hover:text-red-500 transition-colors" data-fav-index="${favorites.indexOf(text)}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
@@ -823,6 +831,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   document.addEventListener('astro:page-leave', () => {
     document.removeEventListener('keydown', _bsEscapeKeydown);
     document.removeEventListener('keydown', _bsSpaceKeydown);
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
   }, { once: true });
 
   // Init

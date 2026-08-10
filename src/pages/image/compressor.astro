@@ -109,14 +109,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       canvas.height = img.height;
       
       const ctx = canvas.getContext('2d');
-      if (!ctx) { img.close(); _compressPending = false; return; }
+      if (!ctx) { img.close(); _compressPending = false; window.showToast?.(window._tToast ? window._tToast('Gagal mengompres gambar.') : 'Gagal mengompres gambar.', 'error'); return; }
       ctx.drawImage(img, 0, 0);
 
       // Convert to Blob with quality
       let mimeType = originalFile.type === 'image/png' ? 'image/jpeg' : originalFile.type;
       
       canvas.toBlob((blob) => {
-          if (!blob) { _compressPending = false; return; }
+          if (!blob) { _compressPending = false; window.showToast?.(window._tToast ? window._tToast('Gagal mengompres gambar.') : 'Gagal mengompres gambar.', 'error'); return; }
           compressedBlob = blob;
           const url = URL.createObjectURL(blob);
           if (previewImg) {
@@ -140,6 +140,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }, mimeType, quality);
     } catch (e) {
       _compressPending = false;
+      window.showToast?.(window._tToast ? window._tToast('Gagal mengompres gambar.') : 'Gagal mengompres gambar.', 'error');
     }
   }
 
@@ -159,6 +160,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     dropZone.classList.remove('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/10');
     const file = e.dataTransfer?.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      window.showToast?.(window._tToast ? window._tToast('File harus berupa gambar.') : 'File harus berupa gambar.', 'error');
+      return;
+    }
     if (file.size > MAX_FILE_SIZE) {
       window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 5MB.') : 'File terlalu besar! Maksimal 5MB.', 'error');
       return;
@@ -206,7 +211,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     
     link.download = `compressed-${originalFile.name.replace(/\.[^/.]+$/, "")}.${ext}`;
     link.click();
-    URL.revokeObjectURL(link.href);
+    // Delay revoke — langsung revoke bisa abort download di Firefox
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     window.showToast?.(window._tToast ? window._tToast("Gambar berhasil diunduh!") : "Gambar berhasil diunduh!", "success");
   });
 </script>

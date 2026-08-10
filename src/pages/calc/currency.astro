@@ -178,6 +178,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         // Cek Cache LocalStorage
         const cached = localStorage.getItem('simpleRates');
         let usedCache = false;
+        let cachedTimestamp = 0; // hoisted — `parsed` dulu out-of-scope di blok bawah (ReferenceError)
 
         if (cached) {
             try {
@@ -185,6 +186,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
                 // Validasi umur cache (24 jam)
                 if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
                     rates = parsed.rates;
+                    cachedTimestamp = parsed.timestamp;
                     calculate();
                     usedCache = true;
                     // Hilangkan loading segera jika ada cache
@@ -201,9 +203,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         
         // Show cached timestamp if available
         if (usedCache) {
-          const cachedTime = new Date(parsed.timestamp);
+          const cachedTime = new Date(cachedTimestamp);
           const timeStr = cachedTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          const minsAgo = Math.floor((Date.now() - parsed.timestamp) / 60000);
+          const minsAgo = Math.floor((Date.now() - cachedTimestamp) / 60000);
           const lastUpdated = document.getElementById('last-updated');
           if (lastUpdated) {
             lastUpdated.textContent = 'Diperbarui: ' + timeStr + ' · ' + minsAgo + ' menit lalu';

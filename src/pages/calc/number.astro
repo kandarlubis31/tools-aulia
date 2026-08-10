@@ -125,6 +125,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (hint) hint.classList.remove('hidden');
   }
 
+  // Validasi strict per-basis — parseInt partial-parse bisa lolos char invalid ('1102' biner → 6 silent)
+  const VALID_PATTERNS: Record<number, RegExp> = {
+    2: /^[01]+$/,
+    8: /^[0-7]+$/,
+    10: /^\d+$/,
+    16: /^[0-9a-fA-F]+$/,
+  };
+
   function update(val: string, radix: number, sourceField: string) {
     hideAllErrors();
     lastSource = sourceField;
@@ -134,13 +142,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         reset();
         return;
     }
-    
-    const num = parseInt(val, radix);
-    
-    if (isNaN(num)) {
+
+    const trimmed = val.trim();
+    const pattern = VALID_PATTERNS[radix];
+    if (!pattern || !pattern.test(trimmed)) {
       showError(sourceField);
       return;
     }
+
+    // BigInt → presisi penuh untuk angka sebesar apapun (parseInt cuma aman sampai 2^53)
+    const prefix = radix === 16 ? '0x' : radix === 8 ? '0o' : radix === 2 ? '0b' : '';
+    const num = BigInt(prefix + trimmed);
 
     // Update all other fields
     if (sourceField !== 'dec') dec.value = num.toString(10);

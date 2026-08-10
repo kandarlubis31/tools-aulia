@@ -179,7 +179,7 @@ Each tool follows a consistent pattern:
 
 ## Known Decisions / Technical Notes
 
-1. **No SSR** — Astro configured as `output: "static"`. All dynamic behavior is client-side JS.
+1. **No SSR** — Astro configured as `output: "static"`. All dynamic behavior is client-side JS. **Enforced** by `npm run check:client-side` (fails on any server-side pattern in `src/`).
 2. **No React** — All UI is vanilla Astro + inline `<script>` tags.
 3. **i18n approach** is custom-built (not astro-i18n). Uses data attributes + DOM walking with phrase dictionary.
 4. **Search modal** uses debounced client-side filtering on `searchTools` array (passed as JSON script).
@@ -187,9 +187,18 @@ Each tool follows a consistent pattern:
 6. **CDN dependencies** (html2canvas, html2pdf.js) loaded via `is:inline` scripts with retry logic.
 7. **@imgly/background-removal** — ONNX + WASM AI model, ~5-15MB download on first use, cached by browser + PWA.
 8. **`public/id-words.json`** — auto-generated word list (195,193 words from Sastrawi + KBBI Edisi VI). Do not edit manually. Served via dynamic `fetch()` only on sinonim page.
-9. **`scripts/`** — build/dev tools, gitignored. Contains `build-words.mjs` and `check-typos.mjs`.
+9. **`scripts/`** — build/dev tools, gitignored. Contains `build-words.mjs`, `check-typos.mjs`, `generate-assets.mjs`, `new-tool.mjs`, `check-client-side.mjs` (garansi client-side guard).
 10. **`mammoth` npm dep** — used by `paste-to-md.astro` for DOCX file conversion via dynamic `import()`. Previously misidentified as dead dep.
 11. **`global.d.ts`** — window type declarations for shared helpers (`showToast`, `_tToast`, `showButtonSpinner`, `_staleIntervals`, etc.). Import-free type safety for inline scripts.
+
+## Client-Side Guarantee (Enforced)
+
+> **Prinsip inti project: SEMUA pemrosesan terjadi di browser. Data user tidak pernah dikirim ke server.**
+
+- ✅ **Bukti arsitektur** — `output: "static"` (tidak ada SSR); semua library pemrosesan (pdf.js, pdf-lib, @imgly/background-removal, mammoth, js-tiktoken, html2canvas) jalan client-side; Web Workers (`public/workers/*.js`) dieksekusi di browser.
+- ✅ **Guard otomatis** — `scripts/check-client-side.mjs` memindai `src/` + `astro.config.mjs` untuk pola server-side (`import.meta.env.SSR`, `Astro.locals`, `prerender = false`, `node:*` imports, `output: "server"`) dan **exit 1** kalau ada pelanggaran. **Otomatis jalan di `npm run build`** (via `prebuild`) — build gagal kalau garansi dilanggar.
+- ⚠️ **Satu-satunya pengecualian** — `src/pages/api/proxy.ts`: CORS forwarding proxy untuk tool `dev/proxy` & `calc/currency`. Bukan pemrosesan — hanya forward request ke allowlist 6 domain (anti-SSRF), tanpa upload/storage data user.
+- **Rule untuk developer**: jangan tambah endpoint server, jangan pindah processing ke server, jangan set `output: "server"`. Kalau butuh fitur baru → proses di browser.
 
 ## Known Bugs / Limitations
 

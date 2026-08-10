@@ -162,7 +162,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   };
 
   // State
-  let calculationHistory = JSON.parse(localStorage.getItem('percentageHistory') || '[]');
+  // safeJSON — localStorage corrupt = jangan matikan seluruh tool
+  function safeJSON(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; } catch { return fallback; }
+  }
+  let calculationHistory = safeJSON('percentageHistory', []);
 
   // Initialize
   document.addEventListener('astro:page-load', () => {

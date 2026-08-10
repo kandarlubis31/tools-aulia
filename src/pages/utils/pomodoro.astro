@@ -80,6 +80,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   var timeLeft = 25 * 60; // seconds
   var isRunning = false;
   var sessionCount = parseInt(localStorage.getItem('pomodoroSessions') || '0');
+  // Simpan title asli — updateDisplay() menimpa document.title selama timer jalan
+  const originalTitle = document.title;
   const display = document.getElementById('timer-display');
   const statusText = document.getElementById('status-text');
   const toggleBtn = document.getElementById('toggle-btn');
@@ -299,6 +301,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   document.addEventListener('astro:page-leave', () => {
     clearInterval(timer);
     isRunning = false;
-  });
+    // Restore original title biar gak nyangkut "12:34 - Pomodoro" di halaman lain
+    document.title = originalTitle;
+  }, { once: true });
   });
 </script>

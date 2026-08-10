@@ -233,25 +233,24 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const ctx = canvas.getContext('2d');
     if (!ctx) { resultBmp.close(); return resultBlob; }
 
+    let bgBmp: ImageBitmap | null = null;
     try {
-    if (bgMode === 'color') {
+      if (bgMode === 'color') {
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       } else if (bgMode === 'image' && bgImageFile) {
-        try {
-          const scale = Math.max(canvas.width / bgBmp.width, canvas.height / bgBmp.height);
-          const dw = bgBmp.width * scale;
-          const dh = bgBmp.height * scale;
-          const dx = (canvas.width - dw) / 2;
-          const dy = (canvas.height - dh) / 2;
-          ctx.drawImage(bgBmp, dx, dy, dw, dh);
-        } finally {
-          bgBmp.close();
-        }
+        bgBmp = await createImageBitmap(bgImageFile);
+        const scale = Math.max(canvas.width / bgBmp.width, canvas.height / bgBmp.height);
+        const dw = bgBmp.width * scale;
+        const dh = bgBmp.height * scale;
+        const dx = (canvas.width - dw) / 2;
+        const dy = (canvas.height - dh) / 2;
+        ctx.drawImage(bgBmp, dx, dy, dw, dh);
       }
 
       ctx.drawImage(resultBmp, 0, 0);
     } finally {
+      if (bgBmp) bgBmp.close();
       resultBmp.close();
     }
 
@@ -330,22 +329,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (!originalFile || isProcessing) return;
     isProcessing = true;
 
-    showLoading('Mendownload model AI...');
+    showLoading(window._tToast ? window._tToast('Mendownload model AI...') : 'Mendownload model AI...');
     resetResult();
 
     try {
       const { default: removeBg } = await import('@imgly/background-removal');
 
-      showLoading('Menghapus background...');
+      showLoading(window._tToast ? window._tToast('Menghapus background...') : 'Menghapus background...');
 
       const startTime = Date.now();
       resultBlob = await removeBg(originalFile, {
         progress: (key: string, current: number, total: number) => {
           const pct = Math.round((current / total) * 100);
           if (key.includes('download') || key.includes('model') || key === 'init') {
-            loadingText.textContent = `Download model... ${pct}%`;
+            loadingText.textContent = `${window._tToast ? window._tToast('Download model...') : 'Download model...'} ${pct}%`;
           } else {
-            loadingText.textContent = `Memproses... ${pct}%`;
+            loadingText.textContent = `${window._tToast ? window._tToast('Memproses...') : 'Memproses...'} ${pct}%`;
           }
         },
       });
@@ -437,7 +436,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     btn.addEventListener('click', () => {
       bgMode = btn.dataset.mode as 'transparent' | 'color' | 'image';
       updateBgToggleUI();
-      updatePreview();
+      updatePreview().catch(() => {
+        window.showToast?.(
+          window._tToast ? window._tToast('Gagal mengganti background.') : 'Gagal mengganti background.',
+          'error'
+        );
+      });
     });
   });
 
@@ -490,9 +494,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       window.showToast?.(window._tToast ? window._tToast('File harus berupa gambar.') : 'File harus berupa gambar.', 'error');
       return;
     }
+    if (file.size > MAX_FILE_SIZE) {
+      window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 20MB.') : 'File terlalu besar! Maksimal 20MB.', 'error');
+      return;
+    }
     bgImageFile = file;
     bgImageName.textContent = file.name;
-    bgImageLabel.textContent = 'Ganti Background';
+    bgImageLabel.textContent = window._tToast ? window._tToast('Ganti Background') : 'Ganti Background';
     updatePreview();
   });
 

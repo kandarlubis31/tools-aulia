@@ -89,6 +89,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let isEncode = true;
   let decodedMime = '';
 
+  const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+
   function process() {
     const val = input.value;
     if(!val) {
@@ -100,14 +102,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     try {
         if (isEncode) {
-            output.value = btoa(unescape(encodeURIComponent(val)));
+            // Unicode-safe encode via TextEncoder (ganti escape/unescape yang deprecated)
+            output.value = btoa(String.fromCharCode(...new TextEncoder().encode(val)));
             input.classList.remove('border-red-500');
             hidePreview();
         } else {
             // Decode
             let decoded: string;
             try {
-              decoded = decodeURIComponent(escape(atob(val)));
+              decoded = new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(val), c => c.charCodeAt(0)));
             } catch {
               decoded = atob(val); // fallback for binary data
             }
@@ -217,13 +220,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     a.href = url;
     a.download = `decoded.${ext}`;
     a.click();
-    URL.revokeObjectURL(url);
+    // Delay revoke — langsung revoke bisa abort download di Firefox
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
 
   // File upload → encode to base64
   fileInput?.addEventListener('change', () => {
     const file = fileInput.files?.[0];
     if (!file) return;
+    if (file.size > MAX_FILE_SIZE) {
+      window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 20MB.') : 'File terlalu besar! Maksimal 20MB.', 'error');
+      fileInput.value = '';
+      return;
+    }
     
     if (fileName) {
       fileName.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;

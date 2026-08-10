@@ -376,6 +376,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     // --- CORE LOGIC ---
 
+    // Satu sumber transform (rotate/flip/zoom) — dipakai applyFilterStyles & updateZoom
+    // supaya gak saling overwrite (bug: zoom bikin rotate/flip hilang dan sebaliknya).
+    function buildTransform(includeZoom = true) {
+       const z = includeZoom ? zoomScale : 1;
+       return `rotate(${settings.rotate}deg) scale(${settings.flipX * z}, ${settings.flipY * z})`;
+    }
+
     function applyFilterStyles(element, isPreview = true) {
        if (!element) return;
        
@@ -390,14 +397,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           blur(${settings.blur}px)
        `;
 
-       // Transform String
-       const transformString = `
-          rotate(${settings.rotate}deg) 
-          scale(${settings.flipX}, ${settings.flipY})
-       `;
-
        element.style.filter = filterString;
-       element.style.transform = transformString;
+       element.style.transform = buildTransform(isPreview);
     }
 
     function updatePreview() {
@@ -457,7 +458,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
 
     function updateZoom() {
-       previewImg.style.transform = `scale(${zoomScale})`;
+       previewImg.style.transform = buildTransform();
        zoomLevel.textContent = Math.round(zoomScale * 100) + '%';
        
        zoomOutBtn.disabled = zoomScale <= 0.25;
@@ -478,7 +479,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           compareContainer.classList.remove('hidden');
           originalImg.src = originalFileUrl;
           editedImg.src = originalFileUrl;
-          applyFilterStyles(editedImg);
+          applyFilterStyles(editedImg, false); // false = tanpa zoom, biar sejajar sama sisi original
           compareBtn.classList.add('bg-pink-100', 'dark:bg-pink-900/30');
        } else {
           // Exit comparison
@@ -542,9 +543,19 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // --- EVENT LISTENERS ---
 
     // 1. File Upload
+    const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
     fileInput.addEventListener('change', (e) => {
        const file = e.target.files[0];
        if (!file) return;
+
+       if (!file.type.startsWith('image/')) {
+          window.showToast?.(window._tToast ? window._tToast('File harus berupa gambar.') : 'File harus berupa gambar.', 'error');
+          return;
+       }
+       if (file.size > MAX_FILE_SIZE) {
+          window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 20MB.') : 'File terlalu besar! Maksimal 20MB.', 'error');
+          return;
+       }
 
        if (originalFileUrl) URL.revokeObjectURL(originalFileUrl);
        originalFileUrl = URL.createObjectURL(file);

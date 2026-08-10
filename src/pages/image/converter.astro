@@ -81,7 +81,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     });
   }
 
+  const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
   function handleFile(file: File) {
+    if (file.size > MAX_FILE_SIZE) {
+      window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 20MB.') : 'File terlalu besar! Maksimal 20MB.', 'error');
+      return;
+    }
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
       window.showToast?.(window._tToast ? window._tToast('Format tidak didukung! Upload PNG, JPG, atau WebP.') : 'Format tidak didukung! Upload PNG, JPG, atau WebP.', 'error');
       return;

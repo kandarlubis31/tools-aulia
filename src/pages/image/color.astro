@@ -214,9 +214,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   // --- 2. IMAGE PICKER & MAGNIFIER ---
+  const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
   fileInput.addEventListener('change', (e) => {
     const file = (e.target as HTMLInputElement).files[0];
     if (file) {
+        if (file.size > MAX_FILE_SIZE) {
+          window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 20MB.') : 'File terlalu besar! Maksimal 20MB.', 'error');
+          return;
+        }
         const reader = new FileReader();
         reader.onload = (event) => {
             const img = new Image();
@@ -256,6 +261,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   canvas.addEventListener('mousemove', (e) => {
     if (!magCtx) return;
     const rect = canvas.getBoundingClientRect();
+    // Posisi relatif ke container (bukan canvas) — canvas bisa di-center di tengah
+    // container yang lebih besar (min-h-[400px]), jadi offset centering bikin
+    // magnifier melenceng dari kursor. Pakai container rect biar presisi.
+    const containerRect = canvas.parentElement.getBoundingClientRect();
     
     // Scale coordinate (in case CSS resizes canvas)
     const scaleX = canvas.width / rect.width;
@@ -266,8 +275,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     // Show Magnifier
     magnifier.classList.remove('hidden');
-    magnifier.style.left = `${e.clientX - rect.left}px`;
-    magnifier.style.top = `${e.clientY - rect.top}px`;
+    magnifier.style.left = `${e.clientX - containerRect.left}px`;
+    magnifier.style.top = `${e.clientY - containerRect.top}px`;
 
     // Zoom Config
     const zoom = 4;

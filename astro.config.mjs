@@ -63,6 +63,16 @@ export default defineConfig({
             cacheableResponse: { statuses: [0, 200] }
           }
         },
+        // --- imgly AI model (remove-bg: wasm/onnx ~5-15MB, cached after first use → offline-capable) ---
+        {
+          urlPattern: /^https:\/\/staticimgly\.com\/.*/i,
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'imgly-model-cache',
+            expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            cacheableResponse: { statuses: [0, 200] }
+          }
+        },
         // --- Large Static Datasets (rarely change) ---
         {
           urlPattern: /\/kbbi-sinonim\.json$/,

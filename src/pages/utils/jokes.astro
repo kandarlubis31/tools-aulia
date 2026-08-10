@@ -225,10 +225,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let currentJoke = {};
   let originalJoke = {}; // Backup for translation revert
   let isTranslated = false;
-  let favorites = JSON.parse(localStorage.getItem('favoriteJokes') || '[]');
+  // safeJSON + escapeHtml — localStorage corrupt / konten API jangan sampai matikan tool atau jadi XSS
+  function safeJSON(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; } catch { return fallback; }
+  }
+  const _htmlEntities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, (c) => _htmlEntities[c]);
+  }
+  let favorites = safeJSON('favoriteJokes', []);
   let autoRefreshInterval = null;
-  let userStats = JSON.parse(localStorage.getItem('jokeStats') || '{"total": 0, "catCounts": {}, "lastDate": null, "streak": 0}');
-  let settings = JSON.parse(localStorage.getItem('jokeSettings') || '{"autoRefresh": 0, "textSize": "text-2xl", "targetLang": "id"}');
+  let userStats = safeJSON('jokeStats', { total: 0, catCounts: {}, lastDate: null, streak: 0 });
+  let settings = safeJSON('jokeSettings', { autoRefresh: 0, textSize: 'text-2xl', targetLang: 'id' });
 
   // --- 3. ELEMENTS ---
   const setupText = document.getElementById('joke-setup');
@@ -559,12 +567,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     favoritesSection.classList.remove('hidden');
     
     favoritesList.innerHTML = favorites.map(fav => {
-        const content = fav.type === 'single' ? fav.joke : `${fav.setup} ${fav.delivery}`;
+        const content = escapeHtml(fav.type === 'single' ? fav.joke : `${fav.setup} ${fav.delivery}`);
+        const category = escapeHtml(fav.category || 'Misc');
         return `
       <div class="fav-item p-3 bg-matte-50 dark:bg-matte-700 rounded-lg hover:bg-matte-100 dark:hover:bg-matte-600 transition-colors cursor-pointer group flex justify-between items-start" data-id="${fav.id}">
           <div class="flex-1">
             <p class="text-sm font-medium text-matte-700 dark:text-matte-300 line-clamp-2">"${content}"</p>
-            <p class="text-xs text-matte-500 dark:text-matte-400 mt-1 uppercase text-[10px] font-bold tracking-wider">${fav.category || 'Misc'}</p>
+            <p class="text-xs text-matte-500 dark:text-matte-400 mt-1 uppercase text-[10px] font-bold tracking-wider">${category}</p>
           </div>
           <button class="delete-fav ml-2 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-matte-400 hover:text-red-500 transition-colors" data-id="${fav.id}">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -697,9 +706,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         e.preventDefault();
         settingsBtn.click();
       }
+      if (e.key === 'Escape' && !settingsModal.classList.contains('hidden')) {
+        settingsModal.classList.add('hidden');
+      }
   };
   document.addEventListener('keydown', _jokeKeydown);
-  document.addEventListener('astro:page-leave', () => { document.removeEventListener('keydown', _jokeKeydown); }, { once: true });
+  document.addEventListener('astro:page-leave', () => {
+    document.removeEventListener('keydown', _jokeKeydown);
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    window.removeEventListener('online', updateNetworkStatus);
+    window.removeEventListener('offline', updateNetworkStatus);
+  }, { once: true });
 
   // Init
   window.addEventListener('online', updateNetworkStatus);

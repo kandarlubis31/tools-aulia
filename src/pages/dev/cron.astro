@@ -202,7 +202,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const val = cronInput.value;
       try {
         if (typeof cronstrue !== 'undefined') {
-            const text = cronstrue.toString(val, { locale: "en" });
+            // Lokalisasi: pakai bahasa situs (cronstrue support locale 'id')
+            const locale = (window.i18n && window.i18n.getLang() === 'id') ? 'id' : 'en';
+            const text = cronstrue.toString(val, { locale });
             humanResult.innerText = text;
             cronInput.classList.remove('border-red-500', 'text-red-500');
             errorMsg.classList.add('hidden');
