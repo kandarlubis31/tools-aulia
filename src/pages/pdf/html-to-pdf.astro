@@ -220,38 +220,33 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // Init Preview
   updatePreview();
 
-  // 2. Convert to PDF
-  let _html2pdfRetries = 0;
-  const MAX_RETRIES = 30;
+  // 2. Convert to PDF (waitForCdnLib didaftarkan global via BaseLayout)
   let _convertOriginalHTML = '';
 
-  convertBtn.addEventListener('click', () => {
+  convertBtn.addEventListener('click', async () => {
     const code = htmlInput.value.trim();
     if (!code) {
       window.showToast?.(window._tToast ? window._tToast('Editor HTML kosong. Tulis kode dulu.') : 'Editor HTML kosong. Tulis kode dulu.', 'warning');
       return;
     }
 
-    // Capture original button HTML once — do this BEFORE the retry check
     if (!_convertOriginalHTML) {
       _convertOriginalHTML = convertBtn.innerHTML;
     }
 
-    if (typeof html2pdf === 'undefined') {
-      if (_html2pdfRetries++ < MAX_RETRIES) {
-        setTimeout(() => convertBtn.click(), 100);
-        return;
-      }
-      _html2pdfRetries = 0;
+    // Feedback dulu sebelum menunggu CDN library (sampai ~3 detik)
+    convertBtn.innerHTML = window._tToast ? window._tToast('⏳ Loading library...') : '⏳ Loading library...';
+    convertBtn.disabled = true;
+
+    const cdnReady = await window.waitForCdnLib('html2pdf');
+    if (!cdnReady) {
       convertBtn.innerHTML = _convertOriginalHTML;
       convertBtn.disabled = false;
       window.showToast?.(window._tToast ? window._tToast('Gagal memuat library html2pdf. Cek koneksi internet.') : 'Gagal memuat library html2pdf. Cek koneksi internet.', 'error');
       return;
     }
-    _html2pdfRetries = 0;
 
     convertBtn.innerHTML = window._tToast ? window._tToast('⏳ Generating PDF...') : '⏳ Generating PDF...';
-    convertBtn.disabled = true;
 
     // Create a temporary element for PDF generation (without preview padding)
     const tmpDiv = document.createElement('div');

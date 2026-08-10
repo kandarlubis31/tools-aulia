@@ -68,6 +68,8 @@ declare global {
     /** usePdfDownload helpers (src/composables/usePdfDownload.ts) */
     downloadBlob?: typeof import('../composables/usePdfDownload').downloadBlob;
     downloadBytes?: typeof import('../composables/usePdfDownload').downloadBytes;
+    /** useCdnLib — wait for a CDN-loaded global lib with retries (src/composables/useCdnLib.ts) */
+    waitForCdnLib?: (libName: string, options?: { maxRetries?: number; interval?: number }) => Promise<boolean>;
   }
 
   // pdf.js types

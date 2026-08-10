@@ -75,38 +75,18 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
   let pageRotations: number[] = []; 
   let totalPages = 0;
 
-  // --- 1. HANDLE UPLOAD ---
-  dropZone?.addEventListener('click', () => fileInput.click());
+  // Drop zone via composable
+  const handleFile = async (file: File) => {
+    currentFile = file;
+    await renderThumbnails(file);
+  };
 
-  // Drag & Drop handlers
-  dropZone?.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone?.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/10');
+  const cleanupDropZone = window.usePdfDropZone('drop-zone', 'file-input', {
+    maxSize: 25 * 1024 * 1024,
+    accentColor: 'blue',
+    onFile: handleFile,
   });
-  dropZone?.addEventListener('dragleave', () => {
-    dropZone?.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/10');
-  });
-  dropZone?.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone?.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/10');
-    const file = e.dataTransfer?.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      currentFile = file;
-      renderThumbnails(file);
-    } else {
-      window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error');
-    }
-  });
-
-  fileInput?.addEventListener('change', async (e) => {
-    if (fileInput.files && fileInput.files[0]) {
-      const file = fileInput.files[0];
-      if (file.type !== 'application/pdf') { window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error'); return; }
-      
-      currentFile = file;
-      await renderThumbnails(file);
-    }
-  });
+  document.addEventListener('astro:page-leave', () => cleanupDropZone(), { once: true });
 
   // --- 2. RENDER PAGES (VISUAL HIGH QUALITY) ---
   async function renderThumbnails(file: File) {
@@ -130,21 +110,9 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
 
       for (let i = 1; i <= totalPages; i++) {
         const page = await pdf.getPage(i);
-        
-        // --- PERBAIKAN KUALITAS DI SINI ---
-        // Scale 1.5 biar tajam di layar modern (sebelumnya 0.5 bikin burik)
-        const viewport = page.getViewport({ scale: 1.5 }); 
-
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        if (!context) continue;
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        
-        // CSS memaksa canvas fit ke container, tapi resolusi asli tetap tinggi
+        const canvas = await window.renderPageToCanvas(page, 1.5, false);
+        if (!canvas) continue;
         canvas.className = "w-full h-auto rounded shadow-sm transition-transform duration-300 pointer-events-none bg-white";
-
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
 
         // UI Wrapper
         const wrapper = document.createElement('div');
@@ -227,12 +195,7 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
       });
 
       const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `rotated-${currentFile.name}`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+      window.downloadBytes(pdfBytes, `rotated-${currentFile.name}`, 'application/pdf');
 
     } catch (err) {
       window.showToast?.(window._tToast ? window._tToast("Gagal menyimpan PDF.") : "Gagal menyimpan PDF.", 'error');

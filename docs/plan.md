@@ -36,6 +36,7 @@ All items from [audit-plan.md](audit-plan.md) have been audited and fixed where 
 
 ## 🔜 Next Up
 
+- **PDF Tools Audit** → [plan-pdf-audit.md](plan-pdf-audit.md) — 2 critical bugs (to-text broken, to-ppt belum migrasi), 3 konsistensi, 2 UX/offline
 - **Migrate more PDF tools** to composables (split, merge, rotate, etc.) — ~16 tools remain
 - **E2E Playwright tests** — smoke test homepage + 5 key tools
 - **Performance budget** — Lighthouse CI monitoring

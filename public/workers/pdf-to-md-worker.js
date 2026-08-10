@@ -1,7 +1,8 @@
 // Load worker bundle dulu agar pdfjsLib tidak spawn nested worker
-importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js');
+// Lokal (public/vendor) supaya tetap jalan saat offline — di-precache oleh SW
+importScripts('/vendor/pdfjs/pdf.worker.min.js');
 // Load main bundle
-importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+importScripts('/vendor/pdfjs/pdf.min.js');
 
 // Set workerSrc ke blob kosong - mencegah pdf.js spawn nested worker
 const fakeWorkerBlob = new Blob(['self.onmessage=()=>{}'], { type: 'application/javascript' });

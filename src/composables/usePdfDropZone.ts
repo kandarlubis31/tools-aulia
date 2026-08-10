@@ -21,6 +21,14 @@ export interface PdfDropZoneOptions {
   accept?: string;
   /** Called when an invalid file is dropped/selected. Default: shows toast. */
   onInvalid?: (file: File) => void;
+  /** Max file size in bytes. Files larger than this are rejected with a toast. Default: 50MB. */
+  maxSize?: number;
+}
+
+const DEFAULT_MAX_SIZE = 50 * 1024 * 1024; // 50MB
+
+function formatSizeMB(bytes: number): string {
+  return (bytes / (1024 * 1024)).toFixed(0);
 }
 
 const INVALID_MAP: Record<string, string> = {
@@ -32,7 +40,7 @@ export function usePdfDropZone(
   fileInputId: string,
   options: PdfDropZoneOptions
 ): () => void {
-  const { accentColor, onFile, multiple = false, accept = 'application/pdf', onInvalid } = options;
+  const { accentColor, onFile, multiple = false, accept = 'application/pdf', onInvalid, maxSize = DEFAULT_MAX_SIZE } = options;
 
   const dropZone = document.getElementById(dropZoneId);
   const fileInput = document.getElementById(fileInputId) as HTMLInputElement | null;
@@ -91,6 +99,11 @@ export function usePdfDropZone(
           const msg = INVALID_MAP[accept] || `File tidak valid! Harap upload file ${accept}.`;
           window.showToast?.(window._tToast ? window._tToast(msg) : msg, 'error');
         }
+        continue;
+      }
+      if (file.size > maxSize) {
+        const msg = `File terlalu besar. Maksimal ukuran file adalah ${formatSizeMB(maxSize)}MB.`;
+        window.showToast?.(window._tToast ? window._tToast(msg) : msg, 'error');
         continue;
       }
       validFiles.push(file);

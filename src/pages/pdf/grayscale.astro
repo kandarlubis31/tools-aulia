@@ -76,8 +76,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <script type="module">
   const { PDFDocument } = await import('pdf-lib');
 
-  const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input');
   const workspace = document.getElementById('workspace');
   const filenameDisplay = document.getElementById('filename');
   const convertBtn = document.getElementById('convert-btn');
@@ -89,8 +87,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // Preview Elements
   const previewCanvas = document.getElementById('preview-canvas');
   const previewCtx = previewCanvas.getContext('2d');
-  if (!previewCtx) { window.showToast?.('Gagal render preview grayscale', 'error'); }
-  // Off-screen canvas untuk menyimpan gambar asli halaman 1
+  if (!previewCtx) { window.showToast?.(window._tToast ? window._tToast('Gagal render preview grayscale') : 'Gagal render preview grayscale', 'error'); }
   const rawFirstPageCanvas = document.createElement('canvas');
   
   // Filters Inputs
@@ -100,42 +97,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const brightVal = document.getElementById('brightness-val');
 
   let currentFile = null;
-  let pdfDocSource = null; // Menyimpan dokumen PDF.js yang sudah diload
+  let pdfDocSource = null;
 
-  // --- EVENT LISTENERS ---
-  dropZone.addEventListener('click', () => fileInput.click());
-
-  // Drag & Drop handlers
-  dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('border-gray-500', 'bg-gray-100', 'dark:bg-gray-800/50');
-  });
-  dropZone.addEventListener('dragleave', () => {
-    dropZone.classList.remove('border-gray-500', 'bg-gray-100', 'dark:bg-gray-800/50');
-  });
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('border-gray-500', 'bg-gray-100', 'dark:bg-gray-800/50');
-    const file = e.dataTransfer?.files?.[0];
-    if (file && file.type === 'application/pdf') {
+  window.usePdfDropZone('drop-zone', 'file-input', {
+    maxSize: 25 * 1024 * 1024,
+    accentColor: 'gray',
+    onFile: async (file) => {
       currentFile = file;
       filenameDisplay.innerText = currentFile.name;
-      dropZone.classList.add('hidden');
+      document.getElementById('drop-zone')!.classList.add('hidden');
       workspace.classList.remove('hidden');
-      loadAndPreviewFirstPage(file);
-    }
-  });
-
-  fileInput.addEventListener('change', async (e) => {
-    if (fileInput.files[0]) {
-      currentFile = fileInput.files[0];
-      filenameDisplay.innerText = currentFile.name;
-      dropZone.classList.add('hidden');
-      workspace.classList.remove('hidden');
-      
-      // Load PDF dan siapkan preview
-      await loadAndPreviewFirstPage(currentFile);
-    }
+      await loadAndPreviewFirstPage(file);
+    },
   });
 
   // Live Preview Update saat slider digeser
@@ -161,7 +134,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       rawFirstPageCanvas.width = viewport.width;
       rawFirstPageCanvas.height = viewport.height;
       const rawCtx = rawFirstPageCanvas.getContext('2d');
-      if (!rawCtx) { window.showToast?.('Gagal render halaman PDF', 'error'); return; }
+      if (!rawCtx) { window.showToast?.(window._tToast ? window._tToast('Gagal render halaman PDF') : 'Gagal render halaman PDF', 'error'); return; }
 
       // Isi background putih sebelum render (hindari warna hitam di JPEG)
       rawCtx.fillStyle = '#FFFFFF';
@@ -208,7 +181,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       // Canvas sementara untuk pemrosesan
       const tempCanvas = document.createElement('canvas');
       const tempCtx = tempCanvas.getContext('2d');
-      if (!tempCtx) { restoreBtn(); window.showToast?.('Gagal render: context tidak tersedia', 'error'); return; }
+      if (!tempCtx) { restoreBtn(); window.showToast?.(window._tToast ? window._tToast('Gagal render: context tidak tersedia') : 'Gagal render: context tidak tersedia', 'error'); return; }
 
       for (let i = 1; i <= totalPages; i++) {
         // Update Progress UI
@@ -255,12 +228,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       statusText.innerText = window._tToast ? window._tToast("Menyusun file PDF akhir...") : "Menyusun file PDF akhir...";
       const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `grayscale-${currentFile.name}`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+      window.downloadBytes(pdfBytes, `grayscale-${currentFile.name}`);
 
       window.showToast?.(window._tToast ? window._tToast("Berhasil! PDF Hitam Putih siap.") : "Berhasil! PDF Hitam Putih siap.", "success");
 

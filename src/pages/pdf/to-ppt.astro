@@ -37,45 +37,21 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 <script>
   const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input');
   const processArea = document.getElementById('process-area');
   const progressBar = document.getElementById('progress-bar');
   const statusText = document.getElementById('status-text');
   const filenameDisplay = document.getElementById('filename');
 
-  dropZone.addEventListener('click', () => fileInput.click());
-
-  // Drag & Drop handlers
-  dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10');
-  });
-  dropZone.addEventListener('dragleave', () => {
-    dropZone.classList.remove('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10');
-  });
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('border-orange-500', 'bg-orange-50', 'dark:bg-orange-900/10');
-    const file = e.dataTransfer?.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      filenameDisplay.innerText = file.name;
-      dropZone.classList.add('hidden');
-      processArea.classList.remove('hidden');
-      convertToPPT(file);
-    } else {
-      window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error');
-    }
-  });
-
-  fileInput.addEventListener('change', async (e) => {
-    if (fileInput.files[0]) {
-      const file = fileInput.files[0];
-      if (file.type !== 'application/pdf') { window.showToast?.(window._tToast ? window._tToast('Mohon upload file PDF!') : 'Mohon upload file PDF!', 'error'); return; }
+  // Drop zone (click + drag & drop) didaftarkan global via BaseLayout
+  window.usePdfDropZone('drop-zone', 'file-input', {
+    maxSize: 25 * 1024 * 1024,
+    accentColor: 'orange',
+    onFile: async (file) => {
       filenameDisplay.innerText = file.name;
       dropZone.classList.add('hidden');
       processArea.classList.remove('hidden');
       await convertToPPT(file);
-    }
+    },
   });
 
   async function convertToPPT(file) {
@@ -94,21 +70,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         progressBar.style.width = `${percent}%`;
         statusText.innerText = `Memproses halaman ${i} dari ${totalPages}...`;
 
-        // Render Page to Canvas
+        // Render Page to Canvas (renderPageToCanvas global — fill putih + scale 2.0)
         const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 2.0 }); // High res for quality
-        
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        if (!context) continue;
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        // Isi background putih sebelum render (hindari warna hitam di JPEG)
-        context.fillStyle = '#FFFFFF';
-        context.fillRect(0, 0, canvas.width, canvas.height);
-
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
+        const canvas = await window.renderPageToCanvas(page, 2.0, true);
 
         // Convert to Image Data
         const imgData = canvas.toDataURL('image/jpeg', 0.8);
@@ -121,8 +85,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       statusText.innerText = window._tToast ? window._tToast("Membuat file PowerPoint...") : "Membuat file PowerPoint...";
       
-      // Save
-      await pptx.writeFile({ fileName: `converted-${file.name}.pptx` });
+      // Save (strip .pdf extension biar gak double extension)
+      const pptName = file.name.replace(/\.pdf$/i, '') + '.pptx';
+      await pptx.writeFile({ fileName: `converted-${pptName}` });
       
       statusText.innerText = window._tToast ? window._tToast("Selesai! File terunduh.") : "Selesai! File terunduh.";
       window.showToast?.(window._tToast ? window._tToast("Berhasil konversi ke PowerPoint!") : "Berhasil konversi ke PowerPoint!", "success");

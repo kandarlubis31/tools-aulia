@@ -112,6 +112,7 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
   };
 
   const cleanupDropZone = window.usePdfDropZone('drop-zone', 'file-input', {
+    maxSize: 25 * 1024 * 1024,
     accentColor: 'emerald',
     onFile: handleFile,
   });

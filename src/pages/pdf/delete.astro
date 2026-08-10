@@ -238,24 +238,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   async function renderPageThumbnail(pdfDoc, pageIndex) {
     try {
       const page = await pdfDoc.getPage(pageIndex + 1);
-      const viewport = page.getViewport({ scale: 0.4 });
-      
-      // Gunakan canvas yang lebih kecil untuk performa
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      if (!context) return;
-      
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+      const canvas = await window.renderPageToCanvas(page, 0.4, false);
+      if (!canvas) return;
       canvas.className = "w-full h-auto pointer-events-none bg-white";
-
-      // Render dengan requestAnimationFrame untuk performa lebih baik
-      await new Promise(resolve => {
-        requestAnimationFrame(async () => {
-          await page.render({ canvasContext: context, viewport }).promise;
-          resolve();
-        });
-      });
 
       const wrapper = document.createElement('div');
       wrapper.className = "relative group cursor-pointer transition-all animate-on-scroll";
@@ -375,20 +360,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
 
       const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `cleaned-${currentFile.name}`;
-      document.body.appendChild(link);
-      link.click();
-      
-      // Cleanup memori
-      setTimeout(() => {
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }, 100);
+      window.downloadBytes(pdfBytes, `cleaned-${currentFile.name}`, 'application/pdf');
 
       window.showToast?.(window._tToast ? window._tToast("Halaman berhasil dihapus!") : "Halaman berhasil dihapus!", 'success');
       resetUI();

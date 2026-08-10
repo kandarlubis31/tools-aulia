@@ -876,6 +876,7 @@ if (isPdfTool) {
     import { usePdfDropZone } from '../composables/usePdfDropZone';
     import { loadPdf, renderPageToCanvas, renderAllPagesToCanvases } from '../composables/usePdfRenderer';
     import { downloadBlob, downloadBytes } from '../composables/usePdfDownload';
+    import { waitForCdnLib } from '../composables/useCdnLib';
     window.i18n = { getLang, setLang, translations, t };
     window.showToast = showToast;
     window.showButtonSpinner = showButtonSpinner;
@@ -887,6 +888,7 @@ if (isPdfTool) {
     window.renderAllPagesToCanvases = renderAllPagesToCanvases;
     window.downloadBlob = downloadBlob;
     window.downloadBytes = downloadBytes;
+    window.waitForCdnLib = waitForCdnLib;
 
     // Auto-generate dictionary from translations.ts for all unique tool headings/descriptions
     const dynamicPhrases = Object.values(translations).reduce((acc: Record<string, string>, item: any) => {

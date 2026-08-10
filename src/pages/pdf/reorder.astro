@@ -39,7 +39,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const { PDFDocument } = await import('pdf-lib');
 
   const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input');
   const workspace = document.getElementById('workspace');
   const pagesGrid = document.getElementById('pages-grid');
   const saveBtn = document.getElementById('save-btn');
@@ -48,15 +47,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let pageOrder = []; // Array of original indices
   let draggedItem = null;
 
-  dropZone.addEventListener('click', () => fileInput.click());
-
-  fileInput.addEventListener('change', async (e) => {
-    if (fileInput.files[0]) {
-      currentFile = fileInput.files[0];
+  // Drop zone (click + drag & drop) didaftarkan global via BaseLayout
+  window.usePdfDropZone('drop-zone', 'file-input', {
+    maxSize: 25 * 1024 * 1024,
+    accentColor: 'violet',
+    onFile: async (file) => {
+      currentFile = file;
       dropZone.classList.add('hidden');
       workspace.classList.remove('hidden');
       await renderThumbnails(currentFile);
-    }
+    },
   });
 
   async function renderThumbnails(file) {
@@ -69,14 +69,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     for (let i = 1; i <= totalPages; i++) {
       const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale: 0.5 });
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      if (!context) continue;
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+      const canvas = await window.renderPageToCanvas(page, 0.5, false);
+      if (!canvas) continue;
       canvas.className = "w-full h-auto rounded shadow-sm pointer-events-none";
-      await page.render({ canvasContext: context, viewport: viewport }).promise;
 
       // Wrapper Card
       const card = document.createElement('div');
@@ -151,12 +146,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       copiedPages.forEach(page => newPdf.addPage(page));
 
       const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `reordered-${currentFile.name}`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+      window.downloadBytes(pdfBytes, `reordered-${currentFile.name}`, 'application/pdf');
       
       window.showToast?.(window._tToast ? window._tToast("Berhasil mengatur ulang halaman!") : "Berhasil mengatur ulang halaman!", "success");
 

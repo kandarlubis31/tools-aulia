@@ -462,7 +462,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         }
 
         const pdfBytes = await pdfDoc.save();
-        downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), `images-to-pdf-${Date.now()}.pdf`);
+        window.downloadBytes(pdfBytes, `images-to-pdf-${Date.now()}.pdf`);
 
       } else {
         // --- SEPARATE: each image → own PDF, download sequentially ---
@@ -506,7 +506,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
           const pdfBytes = await pdfDoc.save();
           const nameBase = file.name.replace(/\.[^.]+$/, '');
-          downloadBlob(new Blob([pdfBytes], { type: 'application/pdf' }), `${nameBase}-${i + 1}.pdf`);
+          window.downloadBytes(pdfBytes, `${nameBase}-${i + 1}.pdf`);
 
           // Small delay between downloads
           if (i < totalFiles - 1) {
@@ -523,11 +523,4 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
   });
 
-  function downloadBlob(blob, filename) {
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-  }
 </script>

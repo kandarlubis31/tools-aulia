@@ -111,6 +111,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // --- PDF Drop Zone (composable) ---
   const dropZoneCleanup = window.usePdfDropZone?.('drop-zone', 'file-input', {
+    maxSize: 25 * 1024 * 1024,
     accentColor: 'red',
     onFile: (file: File) => processPDF(file),
   });

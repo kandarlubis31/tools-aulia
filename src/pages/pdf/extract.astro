@@ -52,36 +52,20 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   let currentFile = null;
   let selectedPages = new Set();
 
-  dropZone.addEventListener('click', () => fileInput.click());
+  // Drop zone via composable
+  const handleFile = async (file) => {
+    currentFile = file;
+    dropZone.classList.add('hidden');
+    workspace.classList.remove('hidden');
+    await renderThumbnails(file);
+  };
 
-  // Drag & Drop handlers
-  dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/10');
+  const cleanupDropZone = window.usePdfDropZone('drop-zone', 'file-input', {
+    maxSize: 25 * 1024 * 1024,
+    accentColor: 'emerald',
+    onFile: handleFile,
   });
-  dropZone.addEventListener('dragleave', () => {
-    dropZone.classList.remove('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/10');
-  });
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/10');
-    const file = e.dataTransfer?.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      currentFile = file;
-      dropZone.classList.add('hidden');
-      workspace.classList.remove('hidden');
-      renderThumbnails(file);
-    }
-  });
-
-  fileInput.addEventListener('change', async (e) => {
-    if (fileInput.files[0]) {
-      currentFile = fileInput.files[0];
-      dropZone.classList.add('hidden');
-      workspace.classList.remove('hidden');
-      await renderThumbnails(currentFile);
-    }
-  });
+  document.addEventListener('astro:page-leave', () => cleanupDropZone(), { once: true });
 
   async function renderThumbnails(file) {
     const arrayBuffer = await file.arrayBuffer();
@@ -92,14 +76,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     for (let i = 1; i <= totalPages; i++) {
       const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale: 0.5 });
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      if (!context) continue;
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+      const canvas = await window.renderPageToCanvas(page, 0.5, false);
+      if (!canvas) continue;
       canvas.className = "w-full h-auto rounded shadow-sm pointer-events-none";
-      await page.render({ canvasContext: context, viewport: viewport }).promise;
 
       // Card
       const card = document.createElement('div');
@@ -170,12 +149,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       copiedPages.forEach(page => newPdf.addPage(page));
 
       const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `extracted-${currentFile.name}`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+      window.downloadBytes(pdfBytes, `extracted-${currentFile.name}`, 'application/pdf');
       
       window.showToast?.(window._tToast ? window._tToast("Berhasil ekstrak halaman!") : "Berhasil ekstrak halaman!", "success");
 

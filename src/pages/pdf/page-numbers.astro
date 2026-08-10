@@ -30,50 +30,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   </div>
 </BaseLayout>
 
-<script>
-  const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input');
+<script type="module">
   const controlsArea = document.getElementById('controls-area');
   const filenameDisplay = document.getElementById('filename');
   const processBtn = document.getElementById('process-btn');
 
   let currentFile = null;
 
-  dropZone?.addEventListener('click', () => fileInput.click());
-
-  // Drag & Drop handlers
-  dropZone?.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone?.classList.add('border-violet-500', 'bg-violet-50', 'dark:bg-violet-900/10');
-  });
-  dropZone?.addEventListener('dragleave', () => {
-    dropZone?.classList.remove('border-violet-500', 'bg-violet-50', 'dark:bg-violet-900/10');
-  });
-  dropZone?.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone?.classList.remove('border-violet-500', 'bg-violet-50', 'dark:bg-violet-900/10');
-    const file = e.dataTransfer?.files?.[0];
-    if (file && file.type === 'application/pdf') {
+  window.usePdfDropZone('drop-zone', 'file-input', {
+    accentColor: 'violet',
+    onFile: (file) => {
       currentFile = file;
-      if (filenameDisplay) filenameDisplay.innerText = currentFile.name;
-      dropZone.classList.add('hidden');
-      controlsArea.classList.remove('hidden');
-    }
-  });
-
-  fileInput?.addEventListener('change', (e) => {
-    if (fileInput.files && fileInput.files[0]) {
-      currentFile = fileInput.files[0];
-      if (filenameDisplay) filenameDisplay.innerText = currentFile.name;
-      dropZone.classList.add('hidden');
-      controlsArea.classList.remove('hidden');
-    }
+      if (filenameDisplay) filenameDisplay.innerText = file.name;
+      document.getElementById('drop-zone')!.classList.add('hidden');
+      controlsArea!.classList.remove('hidden');
+    },
   });
 
   processBtn?.addEventListener('click', async () => {
     if (!currentFile) return;
 
-    // Lazy load pdf-lib via npm (no CDN)
     const { PDFDocument, rgb, StandardFonts } = await import('pdf-lib');
 
     const restoreBtn = window.showButtonSpinner(processBtn, window._tToast ? window._tToast('Memproses...') : 'Memproses...');
@@ -101,12 +77,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       });
 
       const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `numbered-${currentFile.name}`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+      window.downloadBytes(pdfBytes, `numbered-${currentFile.name}`);
 
       window.showToast?.(window._tToast ? window._tToast("Nomor halaman berhasil ditambahkan!") : "Nomor halaman berhasil ditambahkan!", "success");
 

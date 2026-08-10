@@ -511,13 +511,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   function preloadAudios() {
     soundAudios = SOUND_FILES.map(url => {
       const a = new Audio(url);
-      a.preload = 'auto';
+      // preload 'none' — click sounds (~1MB total) di-fetch on-demand saat playNextSound(),
+      // bukan saat page-load. play() otomatis memuat file.
+      a.preload = 'none';
       a.volume = 1.0;
       return a;
     });
     backsoundAudios = BACKSOUND_FILES.map(bs => {
       const a = new Audio(bs.path);
-      a.preload = 'auto';
+      // preload 'none' — backsound (2.5MB) hanya di-download saat user pertama kali klik maskot,
+      // bukan saat page-load. Hindari boros bandwidth 2.5MB untuk semua pengunjung.
+      a.preload = 'none';
       a.loop = true;
       a.volume = 0.45;
       return a;
@@ -727,11 +731,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       }
       setMascotFace('selfie');
       const statusEl = document.getElementById('mascot-status');
-      if (statusEl) statusEl.textContent = 'Zzz... gaskah?';
+      if (statusEl) statusEl.textContent = window._tToast ? window._tToast('Zzz... gaskah?') : 'Zzz... gaskah?';
       const speechEl = document.getElementById('speech-text');
       if (speechEl) {
         const boredTexts = ['Kapan diklik?', 'Bosen nih...', 'Halo?', 'Tidur dulu ah', 'Gasken lahh!'];
-        speechEl.textContent = boredTexts[Math.floor(Math.random() * boredTexts.length)];
+        const boredMsg = boredTexts[Math.floor(Math.random() * boredTexts.length)];
+        speechEl.textContent = window._tToast ? window._tToast(boredMsg) : boredMsg;
       }
     }, 25000);
   }
@@ -811,7 +816,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (fromClick) {
       clickCount++;
       const countEl = document.getElementById('click-count');
-      if (countEl) countEl.textContent = `${clickCount} klik`;
+      if (countEl) countEl.textContent = window._tToast ? window._tToast(`${clickCount} klik`) : `${clickCount} klik`;
       resetIdle();
       const now = Date.now();
       const timeSinceLast = now - lastClickTime;
@@ -962,8 +967,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     containerEl?.classList.add('animate-easter-egg');
     
     const statusEl = document.getElementById('mascot-status');
-    if (statusEl) statusEl.textContent = '✨ LEGEND! ✨';
-    if (countEl) countEl.textContent = '🔥 100 klik!';
+    if (statusEl) statusEl.textContent = window._tToast ? window._tToast('✨ LEGEND! ✨') : '✨ LEGEND! ✨';
+    if (countEl) countEl.textContent = window._tToast ? window._tToast('🔥 100 klik!') : '🔥 100 klik!';
     setMascotFace('kabur');
 
     createConfetti();
@@ -1023,7 +1028,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       document.getElementById('progress-bar').style.width = '100%';
       document.getElementById('progress-label').textContent = '100%';
       document.getElementById('percent-done').textContent = '100%';
-      document.getElementById('live-badge').textContent = '🎉 SUDAH SAMPAI!';
+      document.getElementById('live-badge').textContent = window._tToast ? window._tToast('🎉 SUDAH SAMPAI!') : '🎉 SUDAH SAMPAI!';
       const remainingEl = document.getElementById('remaining-days-big');
       if (remainingEl) remainingEl.textContent = '0000';
       const pctEl = document.getElementById('remaining-pct-big');
@@ -1035,9 +1040,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       if (gifPlaceholder) gifPlaceholder.classList.add('hidden');
       if (gifContent) gifContent.classList.remove('hidden');
       const gifBadge = document.getElementById('gif-badge');
-      if (gifBadge) gifBadge.textContent = '🎉 AKHIRNYA!';
+      if (gifBadge) gifBadge.textContent = window._tToast ? window._tToast('🎉 AKHIRNYA!') : '🎉 AKHIRNYA!';
       const targetEnd = document.getElementById('target-end-text');
-      if (targetEnd) targetEnd.textContent = '— SUDAH SAMPAI! 🎉';
+      if (targetEnd) targetEnd.textContent = window._tToast ? window._tToast('— SUDAH SAMPAI! 🎉') : '— SUDAH SAMPAI! 🎉';
       return;
     }
 
@@ -1122,7 +1127,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   document.addEventListener('astro:page-load', () => {
     preloadAudios();
-    initBacksound();
+    // initBacksound TIDAK dipanggil di sini — backsound 2.5MB hanya dimuat & diputar
+    // saat user gesture pertama (klik maskot) → hemat bandwidth 2.5MB per kunjungan.
     updateCountdown();
     const countdownInterval = setInterval(updateCountdown, 1000);
     
@@ -1156,7 +1162,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         mascotEl.appendChild(badge);
       }
       const countEl = document.getElementById('click-count');
-      if (countEl) countEl.textContent = '🔥 100 klik!';
+      if (countEl) countEl.textContent = window._tToast ? window._tToast('🔥 100 klik!') : '🔥 100 klik!';
     }
 
     document.getElementById('reset-leaderboard')?.addEventListener('click', () => {

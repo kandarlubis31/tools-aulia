@@ -430,35 +430,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       };
     }
 
-    // 4. GENERATE & DOWNLOAD (dengan retry untuk html2canvas)
-    let _html2canvasRetries = 0;
-    const MAX_HTML2CANVAS_RETRIES = 30; // ~3 detik
+    // 4. GENERATE & DOWNLOAD (waitForCdnLib didaftarkan global via BaseLayout)
     let _downloadOriginalHTML = '';
-    function generateAndDownload() {
+    async function generateAndDownload() {
       const iframe = previewContent.querySelector('iframe');
       if (!iframe) return;
       if (!iframe.contentWindow || !iframe.contentWindow.document.body) return;
 
-      // Capture original button HTML once, sebelum DOM dimodifikasi
-      if (_html2canvasRetries === 0) {
+      if (!_downloadOriginalHTML) {
         _downloadOriginalHTML = downloadBtn.innerHTML;
       }
 
       downloadBtn.innerHTML = window._tToast ? window._tToast('⏳ Rendering...') : '⏳ Rendering...';
       downloadBtn.disabled = true;
 
-      if (typeof html2canvas === 'undefined') {
-          if (_html2canvasRetries++ < MAX_HTML2CANVAS_RETRIES) {
-            setTimeout(generateAndDownload, 100);
-          } else {
-            _html2canvasRetries = 0;
-            downloadBtn.innerHTML = _downloadOriginalHTML;
-            downloadBtn.disabled = false;
-            window.showToast?.(window._tToast ? window._tToast('Gagal memuat library html2canvas. Cek koneksi internet.') : 'Gagal memuat library html2canvas. Cek koneksi internet.', 'error');
-          }
-          return;
+      const cdnReady = await window.waitForCdnLib('html2canvas');
+      if (!cdnReady) {
+        downloadBtn.innerHTML = _downloadOriginalHTML;
+        downloadBtn.disabled = false;
+        window.showToast?.(window._tToast ? window._tToast('Gagal memuat library html2canvas. Cek koneksi internet.') : 'Gagal memuat library html2canvas. Cek koneksi internet.', 'error');
+        return;
       }
-      _html2canvasRetries = 0;
 
       const body = iframe.contentWindow.document.body;
       html2canvas(body, getHtml2CanvasOptions(iframe)).then(canvas => {
@@ -598,7 +590,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         
         const restoreShare = window.showButtonSpinner(shareBtn as HTMLButtonElement, '⏳');
 
-        if (typeof html2canvas === 'undefined') {
+        const shareReady = await window.waitForCdnLib('html2canvas', { maxRetries: 5 });
+        if (!shareReady) {
             restoreShare();
             window.showToast?.(window._tToast ? window._tToast('Library html2canvas belum siap. Coba lagi sebentar.') : 'Library html2canvas belum siap. Coba lagi sebentar.', 'error');
             return;

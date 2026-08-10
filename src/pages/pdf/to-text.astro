@@ -23,7 +23,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
       <!-- Drop Zone -->
       <div id="drop-zone" class="bg-white dark:bg-matte-800 p-10 rounded-2xl border-2 border-dashed border-matte-300 dark:border-matte-700 text-center hover:border-blue-500 dark:hover:border-blue-500 transition-all cursor-pointer group relative">
-        <input type="file" id="file-input" accept="application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        <!-- Input hidden: click + drag & drop dihandle window.usePdfDropZone (BaseLayout) -->
+        <input type="file" id="file-input" accept="application/pdf" class="hidden" />
         <div class="pointer-events-none">
           <span class="text-5xl mb-4 block">📄</span>
           <h3 class="text-xl font-bold text-matte-700 dark:text-matte-200">Pilih atau Tarik File PDF</h3>
@@ -167,25 +168,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       fileInput.value = '';
     }
 
-    // File input change
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) processFile(file);
-    });
-
-    // Drag and drop
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropZone.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/10');
-    });
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/10');
-    });
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/10');
-      const file = e.dataTransfer.files[0];
-      if (file) processFile(file);
+    // usePdfDropZone handles file input + drag & drop (didaftarkan global via BaseLayout — jangan dynamic import di is:inline script)
+    window.usePdfDropZone('drop-zone', 'file-input', {
+      accentColor: 'blue',
+      onFile: (file) => processFile(file),
     });
 
     // Copy
