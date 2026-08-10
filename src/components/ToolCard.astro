@@ -5,12 +5,13 @@ interface Props {
   href: string;
   icon: string;
   isSoon?: boolean;
+  isPopular?: boolean;
   titleKey?: string;
   descKey?: string;
   tileClass?: string;
 }
 
-const { title, desc, href, icon, isSoon = false, titleKey, descKey, tileClass = 'from-matte-100 to-matte-200/60 text-matte-500 dark:from-surface-elevated dark:to-matte-800 dark:text-matte-300' } = Astro.props;
+const { title, desc, href, icon, isSoon = false, isPopular = false, titleKey, descKey, tileClass = 'from-matte-100 to-matte-200/60 text-matte-500 dark:from-surface-elevated dark:to-matte-800 dark:text-matte-300' } = Astro.props;
 ---
 
 <a href={isSoon ? "#" : href}
@@ -20,6 +21,12 @@ const { title, desc, href, icon, isSoon = false, titleKey, descKey, tileClass = 
   {isSoon && (
     <div class="absolute top-3 right-3 badge-muted z-10">
       Soon
+    </div>
+  )}
+
+  {isPopular && !isSoon && (
+    <div class="absolute top-3 right-3 badge-popular z-10" data-i18n="badge.popular">
+      🔥 Populer
     </div>
   )}
 

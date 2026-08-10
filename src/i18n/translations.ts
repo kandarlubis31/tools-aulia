@@ -25,12 +25,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   // --- BACK BUTTONS ---
   'back.dashboard': { id: 'Kembali ke Dashboard', en: 'Back to Dashboard' },
   'back.pdf_tools': { id: 'Kembali ke PDF Tools', en: 'Back to PDF Tools' },
-  'back.category_dev': { id: 'Kembali ke Developer', en: 'Back to Developer' },
-  'back.category_image': { id: 'Kembali ke Image', en: 'Back to Image' },
-  'back.category_calc': { id: 'Kembali ke Kalkulator', en: 'Back to Calculator' },
-  'back.category_file': { id: 'Kembali ke File', en: 'Back to File' },
-  'back.category_utils': { id: 'Kembali ke Utils', en: 'Back to Utils' },
-  'back.category_security': { id: 'Kembali ke Security', en: 'Back to Security' },
+  'badge.popular': { id: '🔥 Populer', en: '🔥 Popular' },
 
   // --- SEARCH ---
   'search.placeholder': { id: 'Cari tools...', en: 'Search tools...' },

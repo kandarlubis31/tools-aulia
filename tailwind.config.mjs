@@ -30,7 +30,8 @@ export default {
 					950: '#0b0e14',
 				},
 				accent: {
-					blue: '#38bdf8',
+					// RGB triplet var → opacity modifier (/10, /20 dst) tetap jalan + adaptif per mode
+					blue: 'rgb(var(--accent-blue-rgb) / <alpha-value>)',
 					mint: '#34d399',
 					amber: '#fbbf24',
 					sky: '#0ea5e9',

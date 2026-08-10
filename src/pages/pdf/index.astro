@@ -254,7 +254,7 @@ const getColorClass = (color: string) => {
         <div class="flex gap-2 overflow-x-auto py-2 px-6 custom-scrollbar scroll-smooth" id="desktop-filters">
           {categories.map((category, index) => (
             <button 
-              class={`pdf-category-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap border shrink-0
+              class={`pdf-category-btn px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap border shrink-0
               ${index === 0 
                 ? 'bg-rose-500 text-white border-transparent shadow-md' 
                 : 'bg-transparent text-matte-600 dark:text-matte-400 border-transparent hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400'}`}
@@ -313,7 +313,10 @@ const getColorClass = (color: string) => {
         const isPopular = popularTools.some(p => tool.href.includes(p));
 
         return (
-          <div class="pdf-tool-card h-full" data-title={tool.title.toLowerCase()} data-category={cat}>
+          <div class="pdf-tool-card h-full relative" data-title={tool.title.toLowerCase()} data-category={cat}>
+            {isPopular && (
+              <div class="absolute top-3 right-3 badge-popular z-10" data-i18n="badge.popular">🔥 Populer</div>
+            )}
             <a href={tool.href} 
                class={`tool-card-glow group block h-full p-5 rounded-2xl border transition-all duration-300 shadow-sm
                  ${isPopular 
@@ -415,10 +418,10 @@ const getColorClass = (color: string) => {
     categoryBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         categoryBtns.forEach(b => {
-             b.className = 'pdf-category-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap border shrink-0 bg-transparent text-matte-600 dark:text-matte-400 border-transparent hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400';
+             b.className = 'pdf-category-btn px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap border shrink-0 bg-transparent text-matte-600 dark:text-matte-400 border-transparent hover:bg-rose-50 dark:hover:bg-rose-900/20 hover:text-rose-600 dark:hover:text-rose-400';
         });
         
-        btn.className = 'pdf-category-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap border shrink-0 bg-rose-500 text-white border-transparent shadow-md';
+        btn.className = 'pdf-category-btn px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap border shrink-0 bg-rose-500 text-white border-transparent shadow-md';
         
         activeCategory = btn.getAttribute('data-category') || 'all';
         updateDisplay();

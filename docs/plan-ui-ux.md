@@ -3,7 +3,27 @@
 > Created: August 11, 2026
 > Tujuan: Bikin UI lebih **menarik & enak dilihat** — dari "fungsional" jadi "premium".
 > Baseline: commit backup `0b76437` (semua kerjaan audit sesi ini sudah di-commit)
-> Status: ✅ **Phase 1-3 SELESAI dieksekusi** (arah B) · build ✅ · tests ✅ 43/43
+> Status: ✅ **Phase 1-5 SELESAI dieksekusi** (arah B) · build ✅ · tests ✅ 43/43
+
+## ✅ Execution Log — Phase 5 (P3-5: Aksesibilitas Pass)
+
+| Item | Perubahan |
+|------|-----------|
+| **Kontras** | `--accent-blue` light → **#0284c7** (sky-600, teks 4.6:1 & tombol putih 4.6:1) + dark → **#38bdf8** (8:1) · Tailwind `accent.blue` → `rgb(var(--accent-blue-rgb) / <alpha-value>)` (dual var — opacity modifier /5-/80 tetap jalan, kebalikan dari var() polos yang ternyata **menghilangkan 26 class tint** — ketemu saat verifikasi build) · dark text rescue: `.dark .text-matte-300/400/500` → #9ea7b3/#8b949e/#7d8590 (semua ≥4.5:1, fix ~114 bare text-matte-500) |
+| **Touch target 44px** | Header control buttons + footer socials + back-to-top `w-8/9 h-8/9` → **w-11 h-11 (44px)** · breadcrumb `py-1.5`→`py-2` · filter pills (index + pdf hub) `py-1.5`→`py-2` · global `@media (pointer: coarse)`: `button/[role=button]/select/summary { min-height: 44px }` (WCAG 2.5.5) |
+| **Review** | 5 temuan: **bug opacity variants hilang di build** (diperbaiki dual-var, diverifikasi `rgb(var(--accent-blue-rgb) / .1)` ada) · shift visual accent light mode (intentional) · touch rule tidak cover link (AA 24px tetap aman, dicatat) · beberapa text-matte-300 light tersisa (word-counter 10px, split/rotate — mayoritas di surface gelap) · install-pwa-mobile kini 4.6:1 |
+
+**Verifikasi Phase 5:** build ✅ · tests ✅ 43/43 · `.bg-accent-blue/10` + `rgb(var(--accent-blue-rgb) / .1)` di CSS build ✅ · dark rescue + `min-height:44px` di CSS build ✅
+
+## ✅ Execution Log — Phase 4 (P3-4: Badge Populer + Breadcrumb)
+
+| Item | Perubahan |
+|------|-----------|
+| **C3 badge populer** | `.badge-popular` baru (amber pill, uppercase) di global.css · `ToolCard.astro` prop `isPopular` (guard `!isSoon` anti-overlap) · `index.astro` pass `isPopular={tool.popular}` (grid homepage) · `pdf/index.astro` badge di card populer (wrapper jadi `relative`) · key i18n `badge.popular` |
+| **D3 breadcrumb** | Back button → breadcrumb penuh: `Home / [Kategori atau PDF Tools] / [Tool]` · frontmatter `catMeta` map + `crumbMiddle`/`crumbCurrent` (isPdfRoot = current-only tanpa link) · `nav`+`ol`+`li`+`aria-current="page"` (a11y) · id `back-btn`/`back-btn-text` dipertahankan · JS `from_cat` → nama kategori polos · 6 key `back.category_*` yang jadi dead code dihapus |
+| **Review** | 3 saran diterapkan: crumb hub bukan link (aria-current), dead keys dihapus, guard isSoon+isPopular |
+
+**Verifikasi Phase 4:** build ✅ · tests ✅ 43/43 · breadcrumb ter-render di `/pdf/compress` ✓ · badge-popular di CSS build ✓
 
 ## ✅ Execution Log — Phase 3 (Premium)
 

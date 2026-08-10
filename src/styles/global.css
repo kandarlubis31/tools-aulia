@@ -18,7 +18,8 @@
   --surface-elevated: #161b22;
   --surface-hover: #1c2128;
   --surface-border: #21262d;
-  --accent-blue: #38bdf8;
+  --accent-blue: #0284c7; /* sky-600: kontras AA untuk teks & tombol di light mode */
+  --accent-blue-rgb: 2 132 199; /* triplet untuk Tailwind opacity modifier */
   --bg-card: #ffffff;
   --bg-page: #fbfbfd;
   --text-primary: #0f172a;
@@ -33,6 +34,20 @@
   --bg-page: #0b0e14;
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
+  --accent-blue: #38bdf8; /* sky-400: tetap cerah di dark (8:1 vs bg) */
+  --accent-blue-rgb: 56 189 248;
+}
+
+/* ========== P3-5 AKSESIBILITAS: kontras teks muted di dark mode (WCAG AA ≥4.5:1) ========== */
+.dark .text-matte-300 { color: #9ea7b3; }
+.dark .text-matte-400 { color: #8b949e; }
+.dark .text-matte-500 { color: #7d8590; }
+
+/* ========== P3-5 AKSESIBILITAS: touch target 44px (WCAG 2.5.5) ========== */
+@media (pointer: coarse) {
+  button, [role='button'], select, summary {
+    min-height: 44px;
+  }
 }
 
 /* ========== BASE ========== */
@@ -237,6 +252,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border-color: var(--matte-500);
   color: var(--matte-300);
   background-color: rgba(22, 27, 34, 0.5);
+}
+.badge-popular {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #d97706;
+  background-color: rgba(251, 191, 36, 0.14);
+}
+.dark .badge-popular {
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  background-color: rgba(251, 191, 36, 0.1);
 }
 
 /* ========== ICON WRAPPER ========== */

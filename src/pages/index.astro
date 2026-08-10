@@ -221,7 +221,7 @@ const categories = [
           <div class="flex gap-1 overflow-x-auto py-1 custom-scrollbar scroll-smooth" id="desktop-filters">
              {categories.map((cat, index) => (
                 <button 
-                   class={`filter-btn px-3 py-1.5 text-xs font-medium transition-all duration-150 whitespace-nowrap rounded-lg shrink-0
+                   class={`filter-btn px-3 py-2 text-xs font-medium transition-all duration-150 whitespace-nowrap rounded-lg shrink-0
                    ${index === 0 
                        ? 'bg-matte-900 text-white dark:bg-white dark:text-matte-900' 
                        : 'text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white'}`} 
@@ -238,7 +238,7 @@ const categories = [
           <div id="mobile-filters" class="flex gap-1.5 overflow-x-auto py-1 custom-scrollbar scroll-smooth" role="group" aria-label="Filter Kategori">
              {categories.map((cat, index) => (
                 <button
-                   class={`filter-btn-mobile px-3 py-1.5 text-xs font-medium transition-all duration-150 whitespace-nowrap rounded-lg shrink-0
+                   class={`filter-btn-mobile px-3 py-2 text-xs font-medium transition-all duration-150 whitespace-nowrap rounded-lg shrink-0
                    ${index === 0
                        ? 'bg-matte-900 text-white dark:bg-white dark:text-matte-900'
                        : 'text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white'}`}
@@ -307,6 +307,7 @@ const categories = [
                 desc={tool.desc}
                 href={tool.href}
                 icon={tool.icon}
+                isPopular={tool.popular}
                 titleKey={tool.titleKey}
                 descKey={tool.descKey}
                 tileClass={colorTile[tool.color] || colorTile.indigo}
@@ -552,17 +553,17 @@ const categories = [
 
         filterBtns.forEach(btn => {
             if(btn.getAttribute('data-filter') === filterId) {
-                btn.className = "filter-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-matte-900 text-white dark:bg-white dark:text-matte-900 transition-all whitespace-nowrap shrink-0";
+                btn.className = "filter-btn px-3 py-2 text-xs font-medium rounded-lg bg-matte-900 text-white dark:bg-white dark:text-matte-900 transition-all whitespace-nowrap shrink-0";
             } else {
-                btn.className = "filter-btn px-3 py-1.5 text-xs font-medium text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white rounded-lg transition-all whitespace-nowrap shrink-0";
+                btn.className = "filter-btn px-3 py-2 text-xs font-medium text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white rounded-lg transition-all whitespace-nowrap shrink-0";
             }
         });
 
         mobileFilters.forEach(btn => {
             if(btn.getAttribute('data-filter') === filterId) {
-                btn.className = "filter-btn-mobile px-3 py-1.5 text-xs font-medium rounded-lg bg-matte-900 text-white dark:bg-white dark:text-matte-900 transition-all whitespace-nowrap shrink-0";
+                btn.className = "filter-btn-mobile px-3 py-2 text-xs font-medium rounded-lg bg-matte-900 text-white dark:bg-white dark:text-matte-900 transition-all whitespace-nowrap shrink-0";
             } else {
-                btn.className = "filter-btn-mobile px-3 py-1.5 text-xs font-medium text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white rounded-lg transition-all whitespace-nowrap shrink-0";
+                btn.className = "filter-btn-mobile px-3 py-2 text-xs font-medium text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white rounded-lg transition-all whitespace-nowrap shrink-0";
             }
         });
         renderTools();
