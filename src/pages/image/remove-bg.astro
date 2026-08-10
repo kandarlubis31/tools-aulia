@@ -1,25 +1,19 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Remove Background">
   <div class="max-w-6xl mx-auto px-4 py-8 min-h-[85vh]">
     
-    <header class="text-center mb-10 animate-on-scroll">
-      <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl mb-4 shadow-lg shadow-violet-500/30">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-      </div>
-      <h1 class="text-matte-900 dark:text-white text-4xl font-extrabold mb-3 tracking-tight" data-i18n="header.remove_bg">
-        Remove Background
-      </h1>
-      <p class="text-matte-600 dark:text-matte-400 max-w-2xl mx-auto text-lg" data-i18n="header.remove_bg_desc">
-        Hapus background gambar otomatis pakai AI. 100% diproses di browser — gak ada upload ke server.
-      </p>
-      <p class="text-matte-400 dark:text-matte-500 text-xs mt-2 flex items-center justify-center gap-1">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Proses pertama kali perlu download model AI (~5-15MB). Setelah itu offline-ready.
-      </p>
-    </header>
+        <ToolPageHeader
+      title="Remove Background"
+      titleKey="header.remove_bg"
+      desc="Remove Background Hapus background gambar otomatis pakai AI. 100% diproses di browser — gak ada upload ke server."
+      descKey="header.remove_bg"
+      icon='<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'
+      gradient="from-violet-500 to-purple-600"
+    />
 
     <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-matte-300 dark:border-matte-600 rounded-3xl p-12 cursor-pointer hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-950/30 transition-all group text-center animate-on-scroll">
       <div class="w-20 h-20 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">

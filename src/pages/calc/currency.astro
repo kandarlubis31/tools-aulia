@@ -1,17 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Currency Converter">
   <div class="max-w-xl mx-auto px-4 min-h-[60vh]">
-    <div class="text-center mb-8 pt-8 animate-fade-in">
-      <h1 class="text-3xl font-extrabold mb-2 text-matte-900 dark:text-white" data-i18n="header.currency">
-        Konversi Mata Uang
-      </h1>
-      <p class="text-matte-400 dark:text-matte-300" data-i18n="header.currency_desc">
-        Kurs live real-time dengan smart caching.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Konversi Mata Uang"
+      titleKey="header.currency"
+      desc="Kurs live real-time dengan smart caching."
+      descKey="header.currency_desc"
+      icon='<path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
 
     <div class="card-base p-8 animate-fade-in-up relative overflow-hidden">
       

@@ -1,18 +1,19 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Pomodoro Timer">
   <div class="max-w-2xl mx-auto px-4 min-h-[70vh] flex flex-col items-center">
     
-    <div class="text-center mb-8 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-orange-500" data-i18n="header.pomodoro">
-        Pomodoro Focus
-      </h1>
-      <p class="text-matte-600 dark:text-matte-400" data-i18n="header.pomodoro_desc">
-        Tingkatkan produktivitas dengan teknik interval waktu.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Pomodoro Focus"
+      titleKey="header.pomodoro"
+      desc="Tingkatkan produktivitas dengan teknik interval waktu."
+      descKey="header.pomodoro_desc"
+      icon='<path d="M12 2a10 10 0 1 0 10 10h-10V2z"/>'
+      gradient="from-rose-500 to-orange-500"
+    />
 
     <div class="bg-white dark:bg-matte-800 p-8 rounded-3xl border border-matte-200 dark:border-matte-700 shadow-2xl w-full max-w-md text-center animate-fade-in">
        

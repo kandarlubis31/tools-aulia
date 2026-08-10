@@ -1,19 +1,19 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Split PDF Pages" pdfJs={true}>
 
   <div class="max-w-6xl mx-auto px-4 min-h-[60vh]">
     
-    <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-600">
-        Split PDF
-      </h1>
-      <p class="text-matte-600 dark:text-matte-400" data-i18n="header.split_desc">
-        Pilih halaman yang ingin Anda ambil, lalu simpan sebagai PDF terpisah.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Split PDF"
+      desc="Pilih halaman yang ingin Anda ambil, lalu simpan sebagai PDF terpisah."
+      descKey="header.split_desc"
+      icon='<path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>'
+      gradient="from-orange-500 to-amber-600"
+    />
 
     <div 
       id="drop-zone"

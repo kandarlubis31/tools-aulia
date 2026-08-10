@@ -1,18 +1,19 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Percentage Calculator">
   <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
     
-    <div class="text-center mb-12 animate-on-scroll">
-      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-matte-900 dark:text-white tracking-tight" data-i18n="header.percentage">
-        Kalkulator Persentase
-      </h1>
-      <p class="text-matte-400 dark:text-matte-300 text-lg max-w-2xl mx-auto" data-i18n="header.percentage_desc">
-        Hitung persen diskon, kenaikan harga, dan proporsi dengan cepat dan akurat.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Kalkulator Persentase"
+      titleKey="header.percentage"
+      desc="Hitung persen diskon, kenaikan harga, dan proporsi dengan cepat dan akurat."
+      descKey="header.percentage_desc"
+      icon='<path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>'
+      gradient="from-pink-500 to-rose-600"
+    />
 
     <div class="grid gap-8 animate-fade-in">
         

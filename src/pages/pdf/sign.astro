@@ -1,17 +1,16 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Sign PDF" pdfJs={true}>
   <div class="max-w-6xl mx-auto px-4 min-h-[80vh]">
-    <div class="text-center mb-8 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-        Sign PDF Pro
-      </h1>
-      <p class="text-matte-600 dark:text-matte-400">
-        Gambar tanda tangan atau upload gambar PNG, lalu tempel posisinya sesuka hati.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Sign PDF Pro"
+      desc="Gambar tanda tangan atau upload gambar PNG, lalu tempel posisinya sesuka hati."
+      icon='<path d="M11 12H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4"/><path d="M18 8V5a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v3"/><path d="M18 21v-3"/><path d="M22 18h-4"/>'
+      gradient="from-blue-500 to-indigo-600"
+    />
 
     <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-matte-300 dark:border-matte-600 rounded-3xl p-12 cursor-pointer hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-matte-800/50 transition-all group text-center animate-on-scroll">
       <div class="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">

@@ -1,19 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="QR Code Generator">
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
   
   <div class="max-w-6xl mx-auto px-4 min-h-[60vh]">
-    <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white">
-        QR Code Generator
-      </h1>
-      <p class="text-matte-400 dark:text-matte-300">
-        Ubah teks, link, atau data lainnya menjadi kode QR kustom dengan berbagai opsi.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="QR Code Generator"
+      desc="Ubah teks, link, atau data lainnya menjadi kode QR kustom dengan berbagai opsi."
+      icon='<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>'
+      gradient="from-indigo-500 to-violet-600"
+    />
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in pb-20">
       

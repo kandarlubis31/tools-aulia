@@ -1,17 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Paste to Markdown">
   <div class="max-w-5xl mx-auto px-4 min-h-[80vh] flex flex-col">
-    <div class="text-center mb-6 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white" data-i18n="header.paste_to_md">
-        Paste to Markdown
-      </h1>
-      <p class="text-matte-400 dark:text-matte-300 max-w-2xl mx-auto" data-i18n="header.paste_to_md_desc">
-        Tempel teks dari mana saja (Word, web, PDF), dapatkan Markdown bersih siap pakai buat AI. Hemat token!
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Paste to Markdown"
+      titleKey="header.paste_to_md"
+      desc="Tempel teks dari mana saja (Word, web, PDF), dapatkan Markdown bersih siap pakai buat AI. Hemat token!"
+      descKey="header.paste_to_md_desc"
+      icon='<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4h-4V2"/><path d="M10 14l2 2 4-4"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
 
     <!-- Compression Mode Selector -->
     <div class="flex flex-col items-center gap-2 mb-4">

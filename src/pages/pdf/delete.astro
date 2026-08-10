@@ -1,14 +1,17 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Delete PDF Pages" pdfJs={true}>
 
   <div class="max-w-6xl mx-auto px-4 min-h-[60vh]">
-    <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-600">Delete Pages</h1>
-      <p class="text-matte-600 dark:text-matte-400">Klik pada halaman yang ingin Anda <strong class="text-red-500">HAPUS</strong>.</p>
-    </div>
+        <ToolPageHeader
+      title="Delete Pages"
+      desc="Klik pada halaman yang ingin Anda HAPUS."
+      icon='<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>'
+      gradient="from-rose-500 to-orange-500"
+    />
 
     <div 
       id="drop-zone" 

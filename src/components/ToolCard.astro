@@ -7,9 +7,10 @@ interface Props {
   isSoon?: boolean;
   titleKey?: string;
   descKey?: string;
+  tileClass?: string;
 }
 
-const { title, desc, href, icon, isSoon = false, titleKey, descKey } = Astro.props;
+const { title, desc, href, icon, isSoon = false, titleKey, descKey, tileClass = 'from-matte-100 to-matte-200/60 text-matte-500 dark:from-surface-elevated dark:to-matte-800 dark:text-matte-300' } = Astro.props;
 ---
 
 <a href={isSoon ? "#" : href}
@@ -23,9 +24,9 @@ const { title, desc, href, icon, isSoon = false, titleKey, descKey } = Astro.pro
   )}
 
   <!-- Icon with subtle color ring on hover -->
-  <div class="icon-mono w-10 h-10 mb-3.5 relative">
-    <div class="absolute inset-0 rounded-xl ring-1 ring-transparent group-hover:ring-accent-blue/20 transition-all duration-300"></div>
-    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
+  <div class={`icon-mono icon-tile w-10 h-10 mb-3.5 relative rounded-xl bg-gradient-to-br ${tileClass} transition-all duration-200 group-hover:scale-110`}>
+    <div class="absolute inset-0 rounded-xl ring-1 ring-transparent group-hover:ring-accent-blue/25 transition-all duration-300"></div>
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: inherit" set:html={icon} />
   </div>
   
   <!-- Title with accent dot -->

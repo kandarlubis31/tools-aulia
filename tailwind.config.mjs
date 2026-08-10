@@ -6,7 +6,7 @@ export default {
 		extend: {
 			fontFamily: {
 				sans: ['Inter', 'system-ui', 'sans-serif'],
-				heading: ['Inter', 'system-ui', 'sans-serif'],
+				heading: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
 				mono: ['JetBrains Mono', 'IBM Plex Mono', 'Fira Code', 'monospace'],
 			},
 			colors: {
@@ -24,10 +24,10 @@ export default {
 					400: '#6e7681',
 					500: '#484f58',
 					600: '#30363d',
-					700: '#21262d',
-					800: '#161b22',
-					900: '#0d1117',
-					950: '#010409',
+					700: '#242b3b',
+					800: '#1a2030',
+					900: '#131722',
+					950: '#0b0e14',
 				},
 				accent: {
 					blue: '#38bdf8',

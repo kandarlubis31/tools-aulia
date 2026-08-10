@@ -1,17 +1,17 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Todo List">
   <div class="max-w-2xl mx-auto px-4 min-h-[70vh]">
-    <div class="text-center mb-8 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white">
-        Todo List
-      </h1>
-      <p class="text-matte-400 dark:text-matte-300" data-i18n="header.todo_desc">
-        Catat tugas harian Anda. Tersimpan otomatis di browser.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Todo List"
+      desc="Catat tugas harian Anda. Tersimpan otomatis di browser."
+      descKey="header.todo_desc"
+      icon='<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'
+      gradient="from-violet-500 to-purple-600"
+    />
 
     <div class="card-base overflow-hidden animate-fade-in">
       

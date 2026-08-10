@@ -1,16 +1,21 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Image Converter (PNG/JPG/WebP)">
   <div class="flex flex-col items-center justify-center min-h-[60vh]">
     
-    <div class="max-w-xl w-full card-base p-8 text-center">
-      <h1 class="text-3xl font-bold mb-2 text-matte-900 dark:text-white" data-i18n="header.converter">
-        Image Converter (PNG/JPG/WebP)
-      </h1>
-      <p class="text-matte-400 dark:text-matte-300 mb-8" data-i18n="header.converter_desc">Ubah format gambar (PNG, JPG, WebP) instan tanpa upload ke server.</p>
+    <ToolPageHeader
+      title="Image Converter (PNG/JPG/WebP)"
+      titleKey="header.converter"
+      desc="Ubah format gambar (PNG, JPG, WebP) instan tanpa upload ke server."
+      descKey="header.converter_desc"
+      icon='<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>'
+      gradient="from-sky-500 to-blue-600"
+    />
 
+    <div class="max-w-xl w-full card-base p-8 text-center">
       <div 
         id="drop-zone"
         class="border-2 border-dashed border-matte-200 dark:border-surface-border rounded-xl p-10 cursor-pointer hover:border-accent-blue hover:bg-matte-100 dark:hover:bg-surface-hover transition-all group"

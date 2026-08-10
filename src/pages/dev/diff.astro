@@ -1,19 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Text Diff Checker">
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"></script>
 
   <div class="max-w-6xl mx-auto px-4 min-h-[80vh] flex flex-col">
-    <div class="text-center mb-8 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">
-        Diff Checker
-      </h1>
-      <p class="text-matte-600 dark:text-matte-400">
-        Bandingkan dua teks untuk melihat perbedaan karakter atau baris.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Diff Checker"
+      desc="Bandingkan dua teks untuk melihat perbedaan karakter atau baris."
+      icon='<path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l5 5"/><path d="M4 4l5 5"/>'
+      gradient="from-orange-500 to-amber-600"
+    />
 
     <div class="flex justify-center gap-3 mb-4 animate-fade-in">
       <button id="mode-chars" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-orange-500 text-white transition">Word Diff</button>

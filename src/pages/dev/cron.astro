@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <script is:inline src="https://cdn.jsdelivr.net/npm/cronstrue@2.4.1/dist/cronstrue.min.js"></script>
@@ -8,10 +9,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <BaseLayout pageTitle="Cron Generator">
   <div class="max-w-5xl mx-auto px-4 py-12">
     
-    <header class="text-center mb-10 animate-fade-in">
-      <h1 class="text-4xl font-extrabold text-matte-900 dark:text-white mb-2">Cron Generator</h1>
-      <p class="text-matte-500" data-i18n="header.cron_desc">Bikin jadwal Cron Job tanpa pusing mikirin urutan bintang (*).</p>
-    </header>
+        <ToolPageHeader
+      title="Cron Generator"
+      desc="Bikin jadwal Cron Job tanpa pusing mikirin urutan bintang (*)."
+      descKey="header.cron_desc"
+      icon='<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>'
+      gradient="from-orange-500 to-amber-600"
+    />
 
     
 

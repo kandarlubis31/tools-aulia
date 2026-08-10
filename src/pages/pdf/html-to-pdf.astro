@@ -1,22 +1,20 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="HTML to PDF">
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" async></script>
 
   <div class="max-w-7xl mx-auto px-4 min-h-[85vh] flex flex-col">
-    <div class="text-center mb-6 pt-8 animate-on-scroll">
-      <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl mb-4 shadow-lg shadow-pink-500/30">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      </div>
-      <h1 class="text-matte-900 dark:text-white text-4xl font-extrabold mb-3 tracking-tight" data-i18n="header.html_to_pdf">
-        HTML to PDF
-      </h1>
-      <p class="text-matte-600 dark:text-matte-400 max-w-2xl mx-auto text-lg" data-i18n="text.write_html_convert_pdf">
-        Tulis kode HTML dan ubah menjadi dokumen PDF.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="HTML to PDF"
+      titleKey="header.html_to_pdf"
+      desc="HTML to PDF Tulis kode HTML dan ubah menjadi dokumen PDF."
+      descKey="header.html_to_pdf"
+      icon='<polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/>'
+      gradient="from-indigo-500 to-violet-600"
+    />
 
     <div class="grid lg:grid-cols-2 gap-8 pb-12 animate-fade-in" style="min-height: 520px;">
       

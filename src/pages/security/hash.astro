@@ -1,19 +1,20 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Hash Generator (MD5, SHA)">
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" async></script>
 
   <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
-    <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white" data-i18n="header.hash">
-        Hash Generator
-      </h1>
-      <p class="text-matte-400 dark:text-matte-300" data-i18n="header.hash_desc">
-        Enkripsi teks menggunakan algoritma hashing standar (MD5, SHA-1, SHA-256).
-      </p>
-    </div>
+    <ToolPageHeader
+      title="Hash Generator"
+      titleKey="header.hash"
+      desc="Enkripsi teks menggunakan algoritma hashing standar (MD5, SHA-1, SHA-256)."
+      descKey="header.hash_desc"
+      icon='<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>'
+      gradient="from-rose-500 to-orange-500"
+    />
 
     <div class="card-base p-6 mb-8 animate-fade-in">
         <label class="section-title mb-2" data-i18n="label.hash_input">Input Text</label>

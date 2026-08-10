@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 import LoadingSpinner from '../../components/LoadingSpinner.astro';
 ---
 
@@ -7,14 +8,14 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
 
   <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
     
-    <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600" data-i18n="header.compress_pdf">
-        Compress PDF
-      </h1>
-      <p class="text-matte-600 dark:text-matte-400" data-i18n="header.compress_desc">
-        Kurangi ukuran file PDF dengan teknik re-sampling cerdas.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Compress PDF"
+      titleKey="header.compress_pdf"
+      desc="Kurangi ukuran file PDF dengan teknik re-sampling cerdas."
+      descKey="header.compress_desc"
+      icon='<path d="M4 14l6 6 6-6"/><path d="M12 20v-9"/><path d="M20 10c0-4.418-3.582-8-8-8s-8 3.582-8 8"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
 
     <div 
       id="drop-zone"

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Markdown Editor">
@@ -7,14 +8,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   <script is:inline src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
 
   <div class="max-w-7xl mx-auto px-4 min-h-[80vh] flex flex-col">
-    <div class="text-center mb-6 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-matte-700 to-matte-900 dark:from-matte-100 dark:to-matte-300">
-        Markdown Editor
-      </h1>
-      <p class="text-matte-600 dark:text-matte-400">
-        Tulis Markdown di kiri, lihat hasilnya di kanan secara real-time.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Markdown Editor"
+      desc="Tulis Markdown di kiri, lihat hasilnya di kanan secara real-time."
+      icon='<path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/>'
+      gradient="from-slate-500 to-slate-600"
+    />
 
     <div class="flex justify-end gap-2 mb-4 animate-fade-in">
        <button id="copy-html" class="px-4 py-2 bg-matte-200 dark:bg-matte-700 hover:bg-matte-300 dark:hover:bg-matte-600 text-sm font-bold rounded-lg transition" data-i18n="btn.copy_html">Copy HTML</button>

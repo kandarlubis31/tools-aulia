@@ -1,17 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Image Compressor">
   <div class="max-w-5xl mx-auto px-4 min-h-[80vh]">
-    <div class="text-center mb-10 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-matte-900 dark:text-white" data-i18n="header.image_compressor">
-        Image Compressor
-      </h1>
-      <p class="text-matte-400 dark:text-matte-300" data-i18n="header.image_compressor_desc">
-        Kompres ukuran file gambar (JPG/PNG/WEBP) langsung di browser.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Image Compressor"
+      titleKey="header.image_compressor"
+      desc="Kompres ukuran file gambar (JPG/PNG/WEBP) langsung di browser."
+      descKey="header.image_compressor_desc"
+      icon='<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><polyline points="11 3 11 11 14 8 17 11 17 3"/><path d="m21 15-5-5L5 21"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
 
     <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-matte-300 dark:border-matte-600 rounded-3xl p-12 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-matte-800/50 transition-all group text-center animate-on-scroll">
       <div class="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">

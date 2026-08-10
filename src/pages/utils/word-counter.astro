@@ -1,17 +1,17 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Word Counter">
   <div class="max-w-4xl mx-auto px-4 min-h-[80vh] flex flex-col">
-    <div class="text-center mb-8 pt-8 animate-on-scroll">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-500" data-i18n="header.word_counter">
-        Word Counter
-      </h1>
-      <p class="text-matte-400 dark:text-matte-300">
-        Analisis teks real-time: kata, karakter, paragraf, dan frekuensi kata.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Word Counter"
+      titleKey="header.word_counter"
+      desc="Analisis teks real-time: kata, karakter, paragraf, dan frekuensi kata."
+      icon='<path d="M4 7V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M4 12h16"/><path d="M4 17h16"/><path d="M4 22h12"/>'
+      gradient="from-pink-500 to-rose-600"
+    />
 
     <!-- Primary Stats -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4 animate-fade-in">

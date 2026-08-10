@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="HTML to Image">
@@ -167,17 +168,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   </script>
 
   <div class="max-w-7xl mx-auto px-4 py-8 min-h-[85vh]">
-    <header class="text-center mb-10 animate-on-scroll">
-      <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl mb-4 shadow-lg shadow-indigo-500/30">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-      </div>
-      <h1 class="text-matte-900 dark:text-white text-4xl font-extrabold mb-3 tracking-tight">
-        Code to Image
-      </h1>
-      <p class="text-matte-600 dark:text-matte-400 max-w-2xl mx-auto text-lg">
-        Tulis HTML & CSS dalam satu editor, langsung jadi gambar.
-      </p>
-    </header>
+        <ToolPageHeader
+      title="Code to Image"
+      desc="Code to Image Tulis HTML & CSS dalam satu editor, langsung jadi gambar."
+      icon='<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'
+      gradient="from-pink-500 to-rose-600"
+    />
 
     <div class="grid lg:grid-cols-2 gap-8 mb-8">
       

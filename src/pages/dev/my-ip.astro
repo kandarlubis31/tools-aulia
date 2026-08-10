@@ -1,18 +1,19 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="My IP & Network Info">
   <div class="max-w-6xl mx-auto px-4 py-10 min-h-[85vh]">
     
-    <div class="text-center mb-10 animate-on-scroll">
-      <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-400 tracking-tight" data-i18n="header.my_ip_full">
-        Cek IP & Koneksi
-      </h1>
-      <p class="text-matte-600 dark:text-matte-400 text-lg" data-i18n="header.my_ip_detail">
-        Lihat info detail tentang koneksi internet dan identitas digital kamu.
-      </p>
-    </div>
+        <ToolPageHeader
+      title="Cek IP & Koneksi"
+      titleKey="header.my_ip_full"
+      desc="Lihat info detail tentang koneksi internet dan identitas digital kamu."
+      descKey="header.my_ip_detail"
+      icon='<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>'
+      gradient="from-blue-500 to-indigo-600"
+    />
 
     <div id="network-status" class="hidden fixed top-24 right-4 px-4 py-2 rounded-lg text-sm font-bold z-50 transition-all duration-300 shadow-lg border border-white/20 backdrop-blur-md">
         <span id="network-text"></span>

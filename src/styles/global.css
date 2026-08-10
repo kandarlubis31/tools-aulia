@@ -11,28 +11,28 @@
   --matte-400: #6e7681;
   --matte-500: #484f58;
   --matte-600: #30363d;
-  --matte-700: #21262d;
-  --matte-800: #161b22;
-  --matte-900: #0d1117;
-  --matte-950: #010409;
+  --matte-700: #242b3b;
+  --matte-800: #1a2030;
+  --matte-900: #131722;
+  --matte-950: #0b0e14;
   --surface-elevated: #161b22;
   --surface-hover: #1c2128;
   --surface-border: #21262d;
   --accent-blue: #38bdf8;
   --bg-card: #ffffff;
-  --bg-page: #fafafa;
-  --text-primary: #0d1117;
-  --text-secondary: #6e7681;
+  --bg-page: #fbfbfd;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
 }
 
 .dark {
-  --surface-elevated: #161b22;
-  --surface-hover: #1c2128;
-  --surface-border: #21262d;
-  --bg-card: #161b22;
-  --bg-page: #010409;
-  --text-primary: #ffffff;
-  --text-secondary: #8b949e;
+  --surface-elevated: #131722;
+  --surface-hover: #1a2030;
+  --surface-border: #242b3b;
+  --bg-card: #131722;
+  --bg-page: #0b0e14;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
 }
 
 /* ========== BASE ========== */
@@ -43,6 +43,23 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* ========== HEADING FONT (Warm Premium) ========== */
+h1, h2, h3, h4 {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+}
+
+/* ========== SIGNATURE GRADIENT ========== */
+.gradient-text {
+  background-image: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.gradient-brand {
+  background-image: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #8b5cf6 100%);
+  color: #ffffff;
 }
 
 /* ========== FOCUS VISIBLE (Accessibility) ========== */
@@ -138,18 +155,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .card-base {
   background-color: var(--bg-card);
   border: 1px solid var(--matte-200);
-  border-radius: 0.75rem;
-  transition: all 0.15s ease;
+  border-radius: 1rem;
+  transition: all 0.2s ease;
 }
 .dark .card-base {
   border-color: var(--surface-border);
 }
 .card-base:hover {
   border-color: var(--matte-300);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 .dark .card-base:hover {
-  border-color: var(--matte-500);
+  border-color: rgba(56, 189, 248, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 .card-base:active {
   transform: scale(0.98);
@@ -219,6 +237,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .group:hover .icon-mono svg {
   color: var(--accent-blue);
+}
+
+/* ========== ICON TILE (duotone per kategori — warna ikon ikut tile) ========== */
+.icon-tile svg {
+  color: inherit;
 }
 
 /* ========== STAT PILL ========== */
