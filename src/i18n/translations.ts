@@ -67,6 +67,11 @@ export const translations: Record<string, { id: string; en: string }> = {
   'footer.dev_tools': { id: 'Developer Tools', en: 'Developer Tools' },
   'footer.copyright': { id: 'Dibuat oleh', en: 'Created by' },
   'footer.made_in': { id: 'Made in Indonesia', en: 'Made in Indonesia' },
+  'footer.calc_tools': { id: 'Kalkulator', en: 'Calculator' },
+  'footer.security_tools': { id: 'Security', en: 'Security' },
+  'footer.utils_tools': { id: 'Utils', en: 'Utils' },
+  'footer.popular': { id: 'Tools Populer', en: 'Popular Tools' },
+  'footer.support': { id: 'Bantuan', en: 'Support' },
 
   // --- INDEX / DASHBOARD ---
   'index.badge': { id: '🚀 Productivity Booster', en: '🚀 Productivity Booster' },

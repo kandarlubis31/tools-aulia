@@ -124,6 +124,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 
+/* ========== SCROLL REVEAL (global, P3-3) ========== */
+/* Hidden hanya saat JS aktif (class .js di <html>) — no-JS tetap terlihat */
+.js .animate-on-scroll {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.js .animate-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .animate-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 /* ========== DIVIDER ========== */
 .divider-thin {
   height: 1px;
@@ -273,6 +292,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   background-color: var(--surface-elevated);
   border-color: var(--surface-border);
   color: var(--matte-300);
+}
+
+/* ========== FOOTER LINK (P3-1) ========== */
+.footer-link {
+  color: var(--matte-400);
+  transition: color 0.15s ease;
+}
+.dark .footer-link {
+  color: var(--matte-300);
+}
+.footer-link:hover {
+  color: var(--text-primary);
+}
+.dark .footer-link:hover {
+  color: #ffffff;
 }
 
 /* ========== SECTION TITLE ========== */

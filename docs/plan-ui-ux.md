@@ -3,7 +3,18 @@
 > Created: August 11, 2026
 > Tujuan: Bikin UI lebih **menarik & enak dilihat** — dari "fungsional" jadi "premium".
 > Baseline: commit backup `0b76437` (semua kerjaan audit sesi ini sudah di-commit)
-> Status: ✅ **Phase 1-2 SELESAI dieksekusi** (arah B) · Phase 3 menunggu perintah
+> Status: ✅ **Phase 1-3 SELESAI dieksekusi** (arah B) · build ✅ · tests ✅ 43/43
+
+## ✅ Execution Log — Phase 3 (Premium)
+
+| Item | Perubahan |
+|------|-----------|
+| **P3-1 footer** | Footer redesain: grid 4 kolom (brand + logo gradient + social icon btn, Kategori 7 link termasuk File, Tools Populer, Bantuan + cache-clear) + bottom bar copyright/🇮🇩 Made in Indonesia + `.footer-link` utility + 5 keys i18n baru (calc_tools, security_tools, utils_tools, popular, support) |
+| **P3-2 drop zone** | Komponen `components/DropZone.astro` baru (pure markup, stable ids, props: icon/gradient/hoverClass/overlay/extraInputId/labelKey, a11y tabindex+role+Enter/Space) + **migrasi 4 non-PDF tools** (image/converter, image/compressor, image/remove-bg, file/pdf-to-md) — PDF tools (16) pakai standar `usePdfDropZone` sendiri (2-tier standard, didokumentasikan) |
+| **P3-3 scroll reveal** | `.animate-on-scroll` yang tadinya **kelas mati (tanpa CSS/JS!)** kini hidup: CSS `.js .animate-on-scroll` + `.is-visible` (no-JS aman via class `js` di `<html>`) + IntersectionObserver global di BaseLayout (reuse satu observer, fallback reduced-motion/no-IO, hapus `will-change`) — aktif di 18 halaman + ToolPageHeader |
+| **Review** | 7 saran diterapkan: emoji 🇮🇩 dipindah ke luar `data-i18n` (bug textContent wipe), link kategori File ditambah, hapus `will-change`, observer reuse di `window`, a11y keyboard drop zone, verifikasi tidak ada reveal element di-toggle hidden, scope 2-tier drop zone didokumentasikan |
+
+**Verifikasi Phase 3:** build ✅ · tests ✅ 43/43 · JS refs (drop-zone/file-input/bg-image-input) tetap aman
 
 ## ✅ Execution Log — Phase 1 (Warm Premium)
 
