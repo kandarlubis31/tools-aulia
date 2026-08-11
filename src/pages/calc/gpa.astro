@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="GPA Calculator — Hitung IPK Skala 4.0 | ToolsAulia" description="Hitung IPK dari nilai mata kuliah & SKS. 100% client-side di browser." category="Calc" toolHref="/calc/gpa">
+  <ToolPageHeader title="GPA Calculator" description="Hitung IPK dari nilai & SKS mata kuliah" icon='<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="15" y2="15"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="space-y-2" id="courses-container">
+      <div class="grid grid-cols-12 gap-2 text-xs text-matte-400 font-medium px-1">
+        <span class="col-span-5">Mata Kuliah</span>
+        <span class="col-span-3">Nilai (A-F)</span>
+        <span class="col-span-3">SKS</span>
+        <span class="col-span-1"></span>
+      </div>
+    </div>
+
+    <button id="add-course" class="btn-secondary text-sm w-full">+ Tambah Mata Kuliah</button>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="card-base p-3 text-center bg-gradient-to-br from-accent-blue/5 to-transparent">
+        <p class="text-xs text-matte-400">Total SKS</p>
+        <p class="text-2xl font-bold text-accent-blue" id="total-sks">0</p>
+      </div>
+      <div class="card-base p-3 text-center bg-gradient-to-br from-accent-green/5 to-transparent">
+        <p class="text-xs text-matte-400">Total Bobot</p>
+        <p class="text-2xl font-bold text-accent-green" id="total-points">0.00</p>
+      </div>
+      <div class="card-base p-3 text-center bg-gradient-to-br from-accent-amber/5 to-transparent col-span-2">
+        <p class="text-xs text-matte-400">IPK (GPA)</p>
+        <p class="text-3xl font-bold text-accent-amber" id="gpa-result">0.00</p>
+      </div>
+    </div>
+
+    <div class="text-xs text-matte-400 space-x-3">
+      <span>A=4.0</span> <span>A-=3.7</span> <span>B+=3.3</span> <span>B=3.0</span>
+      <span>B-=2.7</span> <span>C+=2.3</span> <span>C=2.0</span> <span>D=1.0</span> <span>E=0</span>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const gradeMap: Record<string, number> = { 'A':4,'A-':3.7,'B+':3.3,'B':3,'B-':2.7,'C+':2.3,'C':2,'D':1,'E':0 };
+  const container = document.getElementById('courses-container')!;
+  let rowId = 0;
+
+  function addRow(name = '', grade = 'A', sks = '3') {
+    const id = ++rowId;
+    const div = document.createElement('div');
+    div.className = 'grid grid-cols-12 gap-2 items-center course-row';
+    div.innerHTML = `
+      <input type="text" class="col-span-5 input-field text-sm" placeholder="Mata Kuliah" value="${name}" data-role="name">
+      <select class="col-span-3 input-field text-sm" data-role="grade">
+        ${Object.keys(gradeMap).map(g => `<option value="${g}" ${g===grade?'selected':''}>${g}</option>`).join('')}
+      </select>
+      <input type="number" min="0" step="1" class="col-span-3 input-field text-sm" value="${sks}" data-role="sks" placeholder="SKS">
+      <button class="col-span-1 text-red-400 hover:text-red-600 text-lg remove-btn" title="Hapus">✕</button>
+    `;
+    container.appendChild(div);
+    div.querySelector('.remove-btn')!.addEventListener('click', () => { div.remove(); calc(); });
+    div.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calc));
+    calc();
+  }
+
+  function calc() {
+    let totalSks = 0, totalPoints = 0;
+    document.querySelectorAll('.course-row').forEach(row => {
+      const grade = (row.querySelector('[data-role="grade"]') as HTMLSelectElement)?.value;
+      const sks = +(row.querySelector('[data-role="sks"]') as HTMLInputElement)?.value || 0;
+      if (grade && gradeMap[grade] !== undefined && sks > 0) {
+        totalSks += sks;
+        totalPoints += gradeMap[grade] * sks;
+      }
+    });
+    document.getElementById('total-sks')!.textContent = String(totalSks);
+    document.getElementById('total-points')!.textContent = totalPoints.toFixed(2);
+    const gpa = totalSks > 0 ? totalPoints / totalSks : 0;
+    document.getElementById('gpa-result')!.textContent = gpa.toFixed(2);
+  }
+
+  document.getElementById('add-course')!.addEventListener('click', () => addRow());
+  addRow(); addRow(); addRow();
+</script>

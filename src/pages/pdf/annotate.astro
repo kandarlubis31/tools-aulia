@@ -1,0 +1,172 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="PDF Annotate — Tambah Highlight & Notes | ToolsAulia" description="Tambah highlight, underline, dan sticky notes ke halaman PDF. 100% client-side di browser." category="PDF" toolHref="/pdf/annotate">
+  <ToolPageHeader title="PDF Annotate" description="Tambah highlight, underline, dan sticky notes ke halaman PDF" icon='<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div id="drop-zone"
+         class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-10 text-center cursor-pointer
+                hover:border-accent-blue dark:hover:border-accent-blue/70 transition-colors">
+      <div class="text-3xl mb-2">📄</div>
+      <p class="text-matte-600 dark:text-matte-300 font-medium">Drop PDF di sini atau klik untuk pilih</p>
+      <p class="text-sm text-matte-400 mt-1">Max 25MB</p>
+      <input type="file" id="file-input" class="hidden" accept=".pdf">
+    </div>
+
+    <div id="process-area" class="hidden space-y-4">
+      <div class="flex flex-wrap gap-3 items-center">
+        <span class="text-sm text-matte-500 font-medium" id="filename"></span>
+        <select id="annot-type" class="input-field text-sm">
+          <option value="highlight">🟡 Highlight</option>
+          <option value="underline">📝 Underline</option>
+          <option value="note">📌 Sticky Note</option>
+        </select>
+        <input id="annot-color" type="color" value="#FFEB3B" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+        <input id="annot-page" type="number" min="1" value="1" class="input-field w-20 text-sm" title="Halaman">
+        <button id="add-annot-btn" class="btn-primary text-sm">Tambah Anotasi</button>
+      </div>
+
+      <div class="bg-matte-50 dark:bg-matte-800 rounded-lg p-3">
+        <div class="flex flex-wrap gap-2" id="annot-list"></div>
+        <p id="no-annot" class="text-sm text-matte-400">Belum ada anotasi. Tambahkan di atas.</p>
+      </div>
+
+      <button id="apply-btn" class="btn-primary w-full">Terapkan Anotasi & Download PDF</button>
+    </div>
+
+    <div id="progress-area" class="hidden">
+      <div class="h-2 bg-matte-200 dark:bg-matte-700 rounded-full overflow-hidden">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-accent-blue to-accent-cyan rounded-full transition-all" style="width:0%"></div>
+      </div>
+      <p id="status-text" class="text-sm text-matte-500 mt-2 text-center"></p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+  const dropZone = document.getElementById('drop-zone')!;
+  const fileInput = document.getElementById('file-input')! as HTMLInputElement;
+  const processArea = document.getElementById('process-area')!;
+  const filename = document.getElementById('filename')!;
+  const progressArea = document.getElementById('progress-area')!;
+  const progressBar = document.getElementById('progress-bar')!;
+  const statusText = document.getElementById('status-text')!;
+  const annotList = document.getElementById('annot-list')!;
+  const noAnnot = document.getElementById('no-annot')!;
+
+  const annotType = document.getElementById('annot-type')! as HTMLSelectElement;
+  const annotColor = document.getElementById('annot-color')! as HTMLInputElement;
+  const annotPage = document.getElementById('annot-page')! as HTMLInputElement;
+  const addAnnotBtn = document.getElementById('add-annot-btn')!;
+  const applyBtn = document.getElementById('apply-btn')!;
+
+  let pdfBytes: Uint8Array | null = null;
+  let pageCount = 0;
+  const annotations: { type: string; color: string; page: number }[] = [];
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-accent-blue'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-accent-blue'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-accent-blue');
+    const file = e.dataTransfer?.files?.[0];
+    if (file) handleFile(file);
+  });
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (file) handleFile(file);
+  });
+
+  async function handleFile(file: File) {
+    if (file.size > 25 * 1024 * 1024) { showToast?.(_tToast?.('File maksimal 25MB', 'Max file size 25MB'), 'error'); return; }
+    pdfBytes = new Uint8Array(await file.arrayBuffer());
+    const { PDFDocument } = await import('../../composables/useCdnLib').then(function(m){ return m.waitForCdnLib('pdf-lib'); });
+    const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+    pageCount = doc.getPageCount();
+    annotPage.max = String(pageCount);
+    filename.textContent = `${file.name} (${pageCount} halaman)`;
+    dropZone.classList.add('hidden');
+    processArea.classList.remove('hidden');
+    annotList.innerHTML = '';
+    noAnnot?.classList.remove('hidden');
+    annotations.length = 0;
+  }
+
+  addAnnotBtn.addEventListener('click', () => {
+    const page = parseInt(annotPage.value);
+    if (page < 1 || page > pageCount) { showToast?.(_tToast?.('Halaman tidak valid', 'Invalid page'), 'error'); return; }
+    annotations.push({ type: annotType.value, color: annotColor.value, page });
+    renderAnnotList();
+    noAnnot?.classList.add('hidden');
+    showToast?.(_tToast?.('Anotasi ditambahkan!', 'Annotation added!'), 'success');
+  });
+
+  function renderAnnotList() {
+    annotList.innerHTML = annotations.map((a, i) => `
+      <span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-matte-100 dark:bg-matte-700">
+        <span class="w-3 h-3 rounded-full inline-block" style="background:${a.color}"></span>
+        P${a.page} · ${a.type}
+        <button data-idx="${i}" class="ml-1 text-matte-400 hover:text-red-500 remove-annot">✕</button>
+      </span>
+    `).join('');
+    annotList.querySelectorAll('.remove-annot').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.idx!);
+        annotations.splice(idx, 1);
+        renderAnnotList();
+        if (!annotations.length) noAnnot?.classList.remove('hidden');
+      });
+    });
+  }
+
+  applyBtn.addEventListener('click', async () => {
+    if (!pdfBytes || !annotations.length) {
+      showToast?.(_tToast?.('Belum ada anotasi untuk diterapkan', 'No annotations to apply'), 'error');
+      return;
+    }
+    processArea.classList.add('hidden');
+    progressArea.classList.remove('hidden');
+    statusText.textContent = _tToast?.('Memproses anotasi...', 'Processing annotations...') || 'Processing...';
+
+    const { PDFDocument, rgb, StandardFonts } = await import('../../composables/useCdnLib').then(function(m){ return m.waitForCdnLib('pdf-lib'); });
+    const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+    const pages = doc.getPages();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+
+    for (let i = 0; i < annotations.length; i++) {
+      const a = annotations[i];
+      const page = pages[a.page - 1];
+      const { width, height } = page.getSize();
+      const hex = a.color.replace('#', '');
+      const r = parseInt(hex.substring(0,2),16)/255;
+      const g = parseInt(hex.substring(2,4),16)/255;
+      const b = parseInt(hex.substring(4,6),16)/255;
+      const y = 50 + i * 30;
+
+      if (a.type === 'highlight') {
+        page.drawRectangle({ x: 60, y: height - y - 18, width: 200, height: 20, color: rgb(r,g,b), opacity: 0.3 });
+      } else if (a.type === 'underline') {
+        page.drawLine({ start: { x: 60, y: height - y - 2 }, end: { x: 260, y: height - y - 2 }, thickness: 2, color: rgb(r,g,b) });
+      } else if (a.type === 'note') {
+        page.drawRectangle({ x: 60, y: height - y - 22, width: 200, height: 24, color: rgb(1,1,0.9), opacity: 0.5 });
+        page.drawText(`📌 Anotasi #${i+1}`, { x: 65, y: height - y - 16, size: 10, font, color: rgb(0,0,0) });
+      }
+      progressBar.style.width = `${Math.round((i+1)/annotations.length*100)}%`;
+      await new Promise(r => setTimeout(r, 10));
+    }
+
+    const outBytes = await doc.save();
+    const blob = new Blob([outBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'annotated.pdf';
+    a.click(); URL.revokeObjectURL(url);
+
+    statusText.textContent = _tToast?.('PDF berhasil dianotasi!', 'PDF annotated!') || 'Done!';
+    showToast?.(_tToast?.('Download dimulai!', 'Download started!'), 'success');
+    setTimeout(() => { progressArea.classList.add('hidden'); processArea.classList.remove('hidden'); }, 2000);
+  });
+</script>

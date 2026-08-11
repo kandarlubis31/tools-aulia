@@ -1,0 +1,158 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Calendar Generator — Kalender Printable | ToolsAulia" description="Generate kalender bulanan/tahunan printable. 100% client-side canvas." category="Utils" toolHref="/utils/calendar">
+  <ToolPageHeader title="Calendar Generator" description="Buat kalender bulanan/tahunan, siap cetak!" icon='<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div>
+        <label class="block text-xs text-matte-500 mb-1">Bulan</label>
+        <select id="month" class="input-field text-sm w-full">
+          <option value="0">Januari</option><option value="1">Februari</option><option value="2">Maret</option>
+          <option value="3">April</option><option value="4">Mei</option><option value="5">Juni</option>
+          <option value="6">Juli</option><option value="7">Agustus</option><option value="8">September</option>
+          <option value="9">Oktober</option><option value="10">November</option><option value="11">Desember</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-matte-500 mb-1">Tahun</label>
+        <input id="year" type="number" min="1900" max="2100" value="2026" class="input-field text-sm w-full">
+      </div>
+      <div>
+        <label class="block text-xs text-matte-500 mb-1">Format</label>
+        <select id="format" class="input-field text-sm w-full">
+          <option value="monthly">Bulanan</option>
+          <option value="yearly">Tahunan</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-matte-500 mb-1">Hari Mulai</label>
+        <select id="start-day" class="input-field text-sm w-full">
+          <option value="0">Minggu</option>
+          <option value="1" selected>Senin</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="bg-matte-50 dark:bg-matte-800 rounded-lg p-3 flex justify-center overflow-auto">
+      <canvas id="cal-canvas" class="bg-white rounded shadow-lg" width="800" height="600"></canvas>
+    </div>
+
+    <div class="flex gap-2">
+      <button id="generate-btn" class="btn-primary flex-1">Generate</button>
+      <button id="download-btn" class="btn-secondary">Download PNG</button>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const canvas = document.getElementById('cal-canvas')! as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const dayLabels = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+  function generate() {
+    const month = +(document.getElementById('month') as HTMLSelectElement).value;
+    const year = +(document.getElementById('year') as HTMLInputElement).value;
+    const fmt = (document.getElementById('format') as HTMLSelectElement).value;
+    const startDay = +(document.getElementById('start-day') as HTMLSelectElement).value;
+
+    if (fmt === 'yearly') {
+      canvas.width = 1200;
+      canvas.height = 1600;
+      renderYear(year, startDay);
+    } else {
+      canvas.width = 800;
+      canvas.height = 600;
+      renderMonth(year, month, startDay, 50, 70, 700, 520);
+    }
+  }
+
+  function renderYear(year: number, startDay: number) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(year), canvas.width/2, 45);
+
+    const cols = 4, rows = 3;
+    const cellW = 270, cellH = 470;
+    const gapX = 30, gapY = 30;
+    const offX = 20, offY = 70;
+
+    for (let m = 0; m < 12; m++) {
+      const col = m % cols, row = Math.floor(m / cols);
+      const x = offX + col * (cellW + gapX);
+      const y = offY + row * (cellH + gapY);
+      renderMonth(year, m, startDay, x, y, cellW, cellH);
+    }
+  }
+
+  function renderMonth(year: number, month: number, startDay: number, x: number, y: number, w: number, h: number) {
+    // Header
+    ctx.fillStyle = '#2563eb';
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, 40, 8);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${months[month]} ${year}`, x + w/2, y + 28);
+
+    // Day headers
+    const gridY = y + 55;
+    const colW = w / 7;
+    ctx.fillStyle = '#64748b';
+    ctx.font = '12px sans-serif';
+    for (let d = 0; d < 7; d++) {
+      const idx = (startDay + d) % 7;
+      ctx.fillText(dayLabels[idx], x + d * colW + colW/2, gridY + 15);
+    }
+
+    // Days
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const offset = (firstDay - startDay + 7) % 7;
+    const cellH = Math.min((h - 80) / 6, 55);
+    const today = new Date();
+
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+
+    for (let d = 0; d < daysInMonth; d++) {
+      const col = (offset + d) % 7;
+      const row = Math.floor((offset + d) / 7);
+      const cx = x + col * colW + colW/2;
+      const cy = gridY + 30 + row * (cellH + 6) + cellH/2;
+
+      const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === d + 1;
+      if (isToday) {
+        ctx.fillStyle = '#2563eb';
+        ctx.beginPath(); ctx.arc(cx, cy, cellH/2 - 2, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+      } else {
+        ctx.fillStyle = '#1e293b';
+      }
+      ctx.fillText(String(d + 1), cx, cy + 5);
+    }
+  }
+
+  document.getElementById('generate-btn')!.addEventListener('click', generate);
+  document.getElementById('download-btn')!.addEventListener('click', () => {
+    canvas.toBlob(blob => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url;
+      a.download = 'calendar.png'; a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  });
+
+  // set default month to current
+  (document.getElementById('month') as HTMLSelectElement).value = String(new Date().getMonth());
+  generate();
+</script>

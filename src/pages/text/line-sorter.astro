@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Line Sorter — Sort, Dedupe, Shuffle Teks | ToolsAulia" description="Sort, dedupe, shuffle, reverse baris teks. 100% client-side." category="Text" toolHref="/text/line-sorter">
+  <ToolPageHeader title="Line Sorter" description="Sort, dedupe, shuffle, reverse — atur baris teks sekejap" icon='<line x1="12" y1="3" x2="12" y2="21"/><polyline points="16 7 12 3 8 7"/><polyline points="8 17 12 21 16 17"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <textarea id="input" class="input-field w-full h-40 font-mono text-sm" placeholder="Paste teks di sini...&#10;satu baris per line&#10;B&#10;A&#10;C"></textarea>
+
+    <div class="flex flex-wrap gap-2">
+      <button data-action="sort-asc" class="btn-secondary text-sm active-btn">Sort A→Z</button>
+      <button data-action="sort-desc" class="btn-secondary text-sm">Sort Z→A</button>
+      <button data-action="sort-num-asc" class="btn-secondary text-sm">Sort Numerik ↑</button>
+      <button data-action="sort-num-desc" class="btn-secondary text-sm">Sort Numerik ↓</button>
+      <button data-action="dedupe" class="btn-secondary text-sm">Hapus Duplikat</button>
+      <button data-action="shuffle" class="btn-secondary text-sm">Acak</button>
+      <button data-action="reverse" class="btn-secondary text-sm">Reverse</button>
+      <button data-action="trim" class="btn-secondary text-sm">Trim Whitespace</button>
+      <button data-action="sort-length" class="btn-secondary text-sm">Sort by Length</button>
+    </div>
+
+    <div class="flex justify-between text-xs text-matte-400">
+      <span id="line-count">0 baris</span>
+      <span id="char-count">0 karakter</span>
+    </div>
+
+    <div class="flex justify-between items-center">
+      <label class="text-sm text-matte-500 font-medium">Hasil</label>
+      <div class="flex gap-2">
+        <button id="copy-btn" class="btn-secondary text-xs">📋 Copy</button>
+        <button id="download-btn" class="btn-secondary text-xs">⬇️ .txt</button>
+      </div>
+    </div>
+    <textarea id="output" class="input-field w-full h-40 font-mono text-sm bg-matte-50 dark:bg-matte-800" readonly placeholder="Hasil sort..."></textarea>
+  </div>
+</BaseLayout>
+
+<script>
+  const input = document.getElementById('input')! as HTMLTextAreaElement;
+  const output = document.getElementById('output')! as HTMLTextAreaElement;
+  const lineCount = document.getElementById('line-count')!;
+  const charCount = document.getElementById('char-count')!;
+  const { showToast, _tToast } = window as any;
+
+  function getLines(): string[] {
+    return input.value.split('\n').filter(l => l.trim() !== '');
+  }
+
+  function updateStats() {
+    const lines = getLines();
+    lineCount.textContent = lines.length + ' baris';
+    charCount.textContent = input.value.length + ' karakter';
+  }
+
+  function process(action: string) {
+    let lines = getLines();
+    switch (action) {
+      case 'sort-asc': lines.sort((a,b) => a.localeCompare(b, 'id', { sensitivity: 'base' })); break;
+      case 'sort-desc': lines.sort((a,b) => b.localeCompare(a, 'id', { sensitivity: 'base' })); break;
+      case 'sort-num-asc': lines.sort((a,b) => parseFloat(a) - parseFloat(b)); break;
+      case 'sort-num-desc': lines.sort((a,b) => parseFloat(b) - parseFloat(a)); break;
+      case 'dedupe': lines = [...new Set(lines)]; break;
+      case 'shuffle': for (let i = lines.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [lines[i],lines[j]] = [lines[j],lines[i]]; } break;
+      case 'reverse': lines.reverse(); break;
+      case 'trim': lines = lines.map(l => l.trim()); break;
+      case 'sort-length': lines.sort((a,b) => a.length - b.length); break;
+    }
+    output.value = lines.join('\n');
+    showToast?.(_tToast?.('Baris diproses!', 'Lines processed!'), 'success');
+  }
+
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => process((btn as HTMLElement).dataset.action!));
+  });
+
+  input.addEventListener('input', updateStats);
+
+  document.getElementById('copy-btn')!.addEventListener('click', () => {
+    navigator.clipboard.writeText(output.value).then(() => {
+      showToast?.(_tToast?.('Hasil disalin!', 'Result copied!'), 'success');
+    });
+  });
+
+  document.getElementById('download-btn')!.addEventListener('click', () => {
+    const blob = new Blob([output.value], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'sorted-lines.txt'; a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  updateStats();
+</script>

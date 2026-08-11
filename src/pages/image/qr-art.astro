@@ -1,0 +1,144 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="QR Code Art — QR Custom Warna & Logo | ToolsAulia" description="Buat QR code custom dengan warna, logo, dan style. 100% client-side di browser." category="Image" toolHref="/image/qr-art">
+  <ToolPageHeader title="QR Code Art" description="QR code kustom dengan warna, logo, & style" icon='<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div>
+      <label class="block text-sm text-matte-500 mb-1 font-medium">URL / Teks</label>
+      <input id="qr-text" type="text" class="input-field w-full" placeholder="https://tools.paklubis.my.id" value="https://tools.paklubis.my.id">
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div>
+        <label class="block text-xs text-matte-500 mb-1">Warna Foreground</label>
+        <input id="fg-color" type="color" value="#1E40AF" class="w-full h-10 rounded cursor-pointer border-0 p-0">
+      </div>
+      <div>
+        <label class="block text-xs text-matte-500 mb-1">Warna Background</label>
+        <input id="bg-color" type="color" value="#FFFFFF" class="w-full h-10 rounded cursor-pointer border-0 p-0">
+      </div>
+      <div>
+        <label class="block text-xs text-matte-500 mb-1">Ukuran (px)</label>
+        <input id="qr-size" type="number" min="128" max="1024" value="256" class="input-field w-full text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-matte-500 mb-1">Error Correction</label>
+        <select id="qr-level" class="input-field w-full text-sm">
+          <option value="L">Low (7%)</option>
+          <option value="M" selected>Medium (15%)</option>
+          <option value="Q">Quartile (25%)</option>
+          <option value="H">High (30%)</option>
+        </select>
+      </div>
+    </div>
+
+    <details class="text-sm">
+      <summary class="cursor-pointer text-matte-500 font-medium">Tambah Logo (opsional)</summary>
+      <div class="mt-2">
+        <input type="file" id="logo-input" accept="image/*" class="input-field text-sm">
+        <p class="text-xs text-matte-400 mt-1">Logo di tengah QR (max 25% area QR)</p>
+      </div>
+    </details>
+
+    <div class="bg-matte-50 dark:bg-matte-800 rounded-lg p-4 flex justify-center">
+      <canvas id="qr-canvas" width="256" height="256" class="rounded shadow-lg"></canvas>
+    </div>
+
+    <div class="flex gap-2">
+      <button id="generate-btn" class="btn-primary flex-1">Generate QR</button>
+      <button id="download-btn" class="btn-secondary">Download PNG</button>
+      <button id="copy-btn" class="btn-secondary">Copy SVG</button>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  interface QRInstance { appendTo: (el: HTMLElement) => void; getCanvas: () => HTMLCanvasElement; }
+  const { showToast, _tToast } = window as any;
+  let logoImg: HTMLImageElement | null = null;
+
+  const canvas = document.getElementById('qr-canvas')! as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const qrText = document.getElementById('qr-text')! as HTMLInputElement;
+  const qrSize = document.getElementById('qr-size')! as HTMLInputElement;
+  const qrLevel = document.getElementById('qr-level')! as HTMLSelectElement;
+  const fgColor = document.getElementById('fg-color')! as HTMLInputElement;
+  const bgColor = document.getElementById('bg-color')! as HTMLInputElement;
+  const logoInput = document.getElementById('logo-input')! as HTMLInputElement;
+
+  logoInput.addEventListener('change', () => {
+    const f = logoInput.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      logoImg = new Image();
+      logoImg.onload = () => {
+        const size = parseInt(qrSize.value);
+        const maxW = size * 0.22;
+        if (logoImg!.naturalWidth > maxW || logoImg!.naturalHeight > maxW) {
+          showToast?.(_tToast?.('Logo terlalu besar, akan diperkecil', 'Logo too large, will be scaled down'), 'warning');
+        }
+        generate();
+      };
+      logoImg.src = reader.result as string;
+    };
+    reader.readAsDataURL(f);
+  });
+
+  async function generate() {
+    const text = qrText.value.trim();
+    if (!text) { showToast?.(_tToast?.('Masukkan URL atau teks', 'Enter URL or text'), 'error'); return; }
+
+    const size = parseInt(qrSize.value) || 256;
+    const level = qrLevel.value;
+    canvas.width = canvas.height = size;
+
+    const QRCode = (await import('../../composables/useCdnLib')).QRCode || (window as any).QRCode;
+    try {
+      const qr = new QRCode(canvas, {
+        text, width: size, height: size,
+        colorDark: fgColor.value, colorLight: bgColor.value,
+        correctLevel: (window as any).QRCode?.CorrectLevel?.[level] || 1
+      });
+      await new Promise(r => setTimeout(r, 200));
+
+      if (logoImg) {
+        const logoSize = Math.min(size * 0.22, Math.min(logoImg.naturalWidth, logoImg.naturalHeight));
+        const lx = (size - logoSize) / 2, ly = (size - logoSize) / 2;
+        ctx.fillStyle = bgColor.value;
+        ctx.fillRect(lx - 4, ly - 4, logoSize + 8, logoSize + 8);
+        ctx.drawImage(logoImg, lx, ly, logoSize, logoSize);
+      }
+
+      showToast?.(_tToast?.('QR code dibuat!', 'QR code generated!'), 'success');
+    } catch {
+      showToast?.(_tToast?.('Gagal membuat QR', 'Failed to generate QR'), 'error');
+    }
+  }
+
+  document.getElementById('generate-btn')!.addEventListener('click', generate);
+  [qrText, qrSize, qrLevel, fgColor, bgColor].forEach(el => el.addEventListener('change', generate));
+
+  document.getElementById('download-btn')!.addEventListener('click', () => {
+    canvas.toBlob(blob => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'qr-art.png'; a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  });
+
+  document.getElementById('copy-btn')!.addEventListener('click', () => {
+    const w = canvas.width, h = canvas.height;
+    const data = canvas.toDataURL('image/png');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><image href="${data}" width="${w}" height="${h}"/></svg>`;
+    navigator.clipboard.writeText(svg).then(() => {
+      showToast?.(_tToast?.('SVG QR disalin!', 'QR SVG copied!'), 'success');
+    });
+  });
+
+  generate();
+</script>

@@ -1,0 +1,126 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="ZIP Extractor — Ekstrak ZIP di Browser | ToolsAulia" description="Ekstrak file ZIP langsung di browser, download per file. 100% client-side, gak perlu upload." category="File" toolHref="/file/zip-extractor">
+  <ToolPageHeader title="ZIP Extractor" description="Ekstrak & download file dari ZIP langsung di browser" icon='<path d="M21 8v12.993A2 2 0 0 1 19.007 22H4.993A.993.993 0 0 1 4 21.007V8h17zM2.458 8 5 2.458A1 1 0 0 1 5.854 2h12.292a1 1 0 0 1 .854.458L21.542 8"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div id="drop-zone"
+         class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-10 text-center cursor-pointer
+                hover:border-accent-blue dark:hover:border-accent-blue/70 transition-colors">
+      <div class="text-3xl mb-2">🗜️</div>
+      <p class="text-matte-600 dark:text-matte-300 font-medium">Drop ZIP di sini atau klik untuk pilih</p>
+      <p class="text-sm text-matte-400 mt-1">Max 50MB</p>
+      <input type="file" id="file-input" class="hidden" accept=".zip">
+    </div>
+
+    <div id="results-area" class="hidden space-y-3">
+      <div class="flex justify-between items-center">
+        <span class="text-sm text-matte-500 font-medium" id="filename"></span>
+        <button id="download-all-btn" class="btn-primary text-sm">Download Semua</button>
+      </div>
+      <div class="max-h-96 overflow-y-auto space-y-1" id="file-list"></div>
+    </div>
+
+    <div id="progress-area" class="hidden">
+      <div class="h-2 bg-matte-200 dark:bg-matte-700 rounded-full overflow-hidden">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-accent-blue to-accent-cyan rounded-full transition-all" style="width:0%"></div>
+      </div>
+      <p id="status-text" class="text-sm text-matte-500 mt-2 text-center"></p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+  const dropZone = document.getElementById('drop-zone')!;
+  const fileInput = document.getElementById('file-input')! as HTMLInputElement;
+  const resultsArea = document.getElementById('results-area')!;
+  const filename = document.getElementById('filename')!;
+  const fileList = document.getElementById('file-list')!;
+  const progressArea = document.getElementById('progress-area')!;
+  const progressBar = document.getElementById('progress-bar')!;
+  const statusText = document.getElementById('status-text')!;
+
+  let extractedFiles: { name: string; blob: Blob }[] = [];
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('border-accent-blue'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-accent-blue'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('border-accent-blue');
+    const file = e.dataTransfer?.files?.[0]; if (file) handleFile(file);
+  });
+  fileInput.addEventListener('change', () => { const f = fileInput.files?.[0]; if (f) handleFile(f); });
+
+  async function handleFile(file: File) {
+    if (file.size > 50 * 1024 * 1024) { showToast?.('File maksimal 50MB', 'error'); return; }
+    dropZone.classList.add('hidden');
+    progressArea.classList.remove('hidden');
+    statusText.textContent = _tToast?.('Membaca ZIP...', 'Reading ZIP...') || 'Reading...';
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const fflate = await import('../../composables/useCdnLib').then(m => m._waitForCdnLib('fflate')) as any;
+
+      if (!fflate.unzipSync) {
+        // fallback: use zip.js pattern
+        showToast?.(_tToast?.('Gunakan browser terbaru untuk ekstrak ZIP', 'Use latest browser'), 'warning');
+        progressArea.classList.add('hidden');
+        dropZone.classList.remove('hidden');
+        return;
+      }
+
+      statusText.textContent = _tToast?.('Mengekstrak...', 'Extracting...') || 'Extracting...';
+      const unzipped = fflate.unzipSync(new Uint8Array(buffer));
+
+      extractedFiles = [];
+      for (const [name, data] of Object.entries(unzipped)) {
+        if (name.endsWith('/')) continue;
+        extractedFiles.push({ name, blob: new Blob([data as Uint8Array]) });
+      }
+
+      filename.textContent = `${file.name} · ${extractedFiles.length} file`;
+      renderFileList();
+      resultsArea.classList.remove('hidden');
+      progressArea.classList.add('hidden');
+      showToast?.(_tToast?.(`${extractedFiles.length} file diekstrak!`, `${extractedFiles.length} files extracted!`), 'success');
+    } catch (e) {
+      showToast?.(_tToast?.('Gagal ekstrak ZIP', 'Failed to extract ZIP'), 'error');
+      progressArea.classList.add('hidden');
+      dropZone.classList.remove('hidden');
+    }
+  }
+
+  function formatSize(bytes: number) {
+    return bytes < 1024 ? bytes + ' B' : bytes < 1048576 ? (bytes/1024).toFixed(1)+' KB' : (bytes/1048576).toFixed(1)+' MB';
+  }
+
+  function renderFileList() {
+    fileList.innerHTML = extractedFiles.map((f, i) => `
+      <div class="flex items-center justify-between p-2 rounded-lg hover:bg-matte-50 dark:hover:bg-matte-800 transition-colors">
+        <span class="text-sm truncate flex-1 mr-2" title="${f.name}">📄 ${f.name}</span>
+        <span class="text-xs text-matte-400 mr-2 whitespace-nowrap">${formatSize(f.blob.size)}</span>
+        <button data-idx="${i}" class="download-one btn-secondary text-xs px-2 py-1">⬇️</button>
+      </div>
+    `).join('');
+    fileList.querySelectorAll('.download-one').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.idx!);
+        downloadFile(extractedFiles[idx]);
+      });
+    });
+  }
+
+  function downloadFile(f: { name: string; blob: Blob }) {
+    const url = URL.createObjectURL(f.blob);
+    const a = document.createElement('a'); a.href = url; a.download = f.name.split('/').pop() || f.name;
+    a.click(); URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('download-all-btn')!.addEventListener('click', () => {
+    extractedFiles.forEach((f, i) => setTimeout(() => downloadFile(f), i * 200));
+    showToast?.(_tToast?.('Download semua dimulai!', 'Download all started!'), 'success');
+  });
+</script>

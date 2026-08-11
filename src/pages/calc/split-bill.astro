@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Split Bill — Patungan Makan & Pajak | ToolsAulia" description="Hitung patungan dengan pajak dan service charge otomatis. 100% client-side." category="Calc" toolHref="/calc/split-bill">
+  <ToolPageHeader title="Split Bill Calculator" description="Patungan hemat: hitung per-orang + pajak & service" icon='<path d="M6 2v20M18 2v20M2 6h20M2 18h20"/><circle cx="8" cy="8" r="2"/><circle cx="16" cy="8" r="2"/><circle cx="8" cy="16" r="2"/><circle cx="16" cy="16" r="2"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm text-matte-500 mb-1 font-medium">Total Tagihan (Rp)</label>
+        <input id="total-bill" type="number" min="0" value="350000" class="input-field w-full" placeholder="350000">
+      </div>
+      <div>
+        <label class="block text-sm text-matte-500 mb-1 font-medium">Jumlah Orang</label>
+        <div class="flex gap-2 items-center">
+          <button id="minus-person" class="btn-secondary px-3 py-2 text-lg leading-none">−</button>
+          <input id="person-count" type="number" min="1" value="4" class="input-field w-20 text-center text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" readonly>
+          <button id="plus-person" class="btn-secondary px-3 py-2 text-lg leading-none">+</button>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm text-matte-500 mb-1 font-medium">Pajak (%)</label>
+        <input id="tax" type="number" min="0" step="0.1" value="11" class="input-field w-full" placeholder="11">
+      </div>
+      <div>
+        <label class="block text-sm text-matte-500 mb-1 font-medium">Service Charge (%)</label>
+        <input id="service" type="number" min="0" step="0.1" value="5" class="input-field w-full" placeholder="5">
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div class="card-base p-3 text-center bg-gradient-to-br from-accent-blue/5 to-transparent">
+        <p class="text-xs text-matte-400">Subtotal</p>
+        <p class="text-xl font-bold text-accent-blue" id="subtotal">-</p>
+      </div>
+      <div class="card-base p-3 text-center bg-gradient-to-br from-accent-amber/5 to-transparent">
+        <p class="text-xs text-matte-400">Pajak + Service</p>
+        <p class="text-xl font-bold text-accent-amber" id="extra-cost">-</p>
+      </div>
+      <div class="card-base p-3 text-center bg-gradient-to-br from-accent-green/5 to-transparent col-span-2 sm:col-span-1">
+        <p class="text-xs text-matte-400">Grand Total</p>
+        <p class="text-xl font-bold text-accent-green" id="grand-total">-</p>
+      </div>
+      <div class="card-base p-4 text-center bg-gradient-to-br from-accent-purple/10 to-accent-purple/5 border-2 border-accent-purple/20 col-span-2 sm:col-span-3">
+        <p class="text-sm text-matte-500 font-medium">Per Orang</p>
+        <p class="text-4xl font-bold text-accent-purple" id="per-person">-</p>
+        <p class="text-xs text-matte-400 mt-1" id="per-person-detail"></p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const fmt = (n: number) => n.toLocaleString('id-ID', { maximumFractionDigits: 0 });
+
+  function calc() {
+    const total = +(document.getElementById('total-bill') as HTMLInputElement).value || 0;
+    const persons = +(document.getElementById('person-count') as HTMLInputElement).value || 1;
+    const tax = +(document.getElementById('tax') as HTMLInputElement).value || 0;
+    const service = +(document.getElementById('service') as HTMLInputElement).value || 0;
+
+    const taxAmt = total * tax / 100;
+    const svcAmt = total * service / 100;
+    const grand = total + taxAmt + svcAmt;
+    const perPerson = grand / persons;
+
+    document.getElementById('subtotal')!.textContent = 'Rp ' + fmt(total);
+    document.getElementById('extra-cost')!.textContent = 'Rp ' + fmt(taxAmt + svcAmt);
+    document.getElementById('grand-total')!.textContent = 'Rp ' + fmt(grand);
+    document.getElementById('per-person')!.textContent = 'Rp ' + fmt(perPerson);
+    document.getElementById('per-person-detail')!.textContent =
+      `${fmt(total/persons)} (makan) + ${fmt((taxAmt+svcAmt)/persons)} (pajak+SC)`;
+  }
+
+  ['total-bill','tax','service'].forEach(id => {
+    document.getElementById(id)!.addEventListener('input', calc);
+  });
+
+  const personsEl = document.getElementById('person-count')! as HTMLInputElement;
+  document.getElementById('minus-person')!.addEventListener('click', () => {
+    const v = Math.max(1, +personsEl.value - 1);
+    personsEl.value = String(v); calc();
+  });
+  document.getElementById('plus-person')!.addEventListener('click', () => {
+    const v = +personsEl.value + 1;
+    personsEl.value = String(v); calc();
+  });
+
+  calc();
+</script>

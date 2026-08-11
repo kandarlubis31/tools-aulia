@@ -1,0 +1,146 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="API Mock Generator — Generate Fake JSON | ToolsAulia" description="Generate fake JSON response dari definisi schema untuk testing & prototyping. 100% client-side." category="Dev" toolHref="/dev/api-mock">
+  <ToolPageHeader title="API Mock Generator" description="Generate fake JSON dari schema untuk testing API" icon='<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm text-matte-500 mb-1 font-medium">Schema JSON</label>
+        <textarea id="schema-input" class="input-field w-full h-48 font-mono text-sm" spellcheck="false"></textarea>
+        <div class="flex gap-2 mt-2">
+          <button id="gen-btn" class="btn-primary text-sm">Generate Mock</button>
+          <select id="count-select" class="input-field text-sm w-24">
+            <option value="1">x1</option>
+            <option value="3" selected>x3</option>
+            <option value="5">x5</option>
+            <option value="10">x10</option>
+            <option value="20">x20</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label class="text-sm text-matte-500 font-medium">Output</label>
+          <button id="copy-output-btn" class="text-xs text-accent-blue hover:underline" type="button">📋 Copy</button>
+        </div>
+        <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-48 overflow-auto text-sm font-mono whitespace-pre-wrap"></pre>
+        <button id="download-btn" class="btn-secondary text-sm w-full mt-2" type="button">Download JSON</button>
+      </div>
+    </div>
+
+    <details class="text-sm">
+      <summary class="cursor-pointer text-matte-500 font-medium">Referensi Tipe Cepat</summary>
+      <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-matte-600 dark:text-matte-300">
+        <span><b>name</b> → Nama lengkap</span>
+        <span><b>firstName</b> → Depan saja</span>
+        <span><b>email</b> → user@example.com</span>
+        <span><b>phone</b> → +62-xxx-xxxx</span>
+        <span><b>uuid</b> → UUID v4</span>
+        <span><b>date</b> → ISO date</span>
+        <span><b>int(0,100)</b> → Random 0-100</span>
+        <span><b>float(0,1)</b> → Random float</span>
+        <span><b>bool</b> → true/false</span>
+        <span><b>enum:a,b,c</b> → Pilih satu</span>
+        <span><b>lorem</b> → 1 kalimat</span>
+        <span><b>words(3)</b> → 3 kata acak</span>
+        <span><b>url</b> → https://...</span>
+        <span><b>avatar</b> → URL avatar</span>
+        <span><b>color</b> → #hex color</span>
+      </div>
+    </details>
+  </div>
+</BaseLayout>
+
+<script>
+  const showToast = window.showToast;
+  const _tToast = window._tToast;
+
+  const schemaInput = document.getElementById('schema-input');
+  const output = document.getElementById('output');
+  const countSelect = document.getElementById('count-select');
+
+  const defaultSchema = {
+    users: [{ id: 'uuid', name: 'name', email: 'email', role: 'enum:admin,user,guest' }],
+    total: 'int(10,100)',
+    page: 1,
+    timestamp: 'date'
+  };
+  schemaInput.value = JSON.stringify(defaultSchema, null, 2);
+
+  function pick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function fakeValue(key) {
+    var k = key.toLowerCase();
+    if (k === 'uuid' || (k === 'id' && key.includes('uuid'))) return crypto.randomUUID();
+    if (k === 'name' || k.includes('fullname')) return pick(['Alice Chen','Bob Rahman','Citra Dewi','Dodi Pratama','Eva Susanti']);
+    if (k === 'firstname') return pick(['Andi','Budi','Citra','Dewi','Eko']);
+    if (k === 'email') return pick(['user','admin','hello'])+'@'+pick(['gmail.com','yahoo.com','outlook.com']);
+    if (k === 'phone') return '+62-8'+String(Math.floor(Math.random()*9000+1000))+'-'+String(Math.floor(Math.random()*90000+10000));
+    if (k === 'date') return new Date(Date.now()-Math.random()*365*86400000).toISOString().slice(0,10);
+    if (k === 'bool') return Math.random() > 0.5;
+    if (k === 'lorem') return pick(['Lorem ipsum dolor sit amet.','A quick brown fox jumps.','Pack my box with five liquor jugs.']);
+    if (k === 'url') return 'https://'+pick(['example.com','mysite.id','demo.dev'])+'/'+pick(['api','v1','data']);
+    if (k === 'avatar') return 'https://i.pravatar.cc/150?u='+Math.random().toString(36).slice(2);
+    if (k === 'color') return '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
+    return pick(['sample','data','test']);
+  }
+
+  function generateMock(schema, count) {
+    if (schema === null) return null;
+    if (typeof schema === 'string') {
+      var s = schema.toLowerCase();
+      if (s.startsWith('int(')) { var parts=s.slice(4,-1).split(','); return Math.floor(Math.random()*(+parts[1]-+parts[0]+1) + +parts[0]); }
+      if (s.startsWith('float(')) { var fp=s.slice(6,-1).split(','); return +(Math.random()*(+fp[1]-+fp[0]) + +fp[0]).toFixed(2); }
+      if (s.startsWith('enum:')) return pick(s.slice(5).split(','));
+      if (s.startsWith('words(')) { var n = +s.slice(6,-1); return Array(n).fill(0).map(function(){return fakeValue('lorem')}).join(' '); }
+      return fakeValue(s);
+    }
+    if (typeof schema === 'number' || typeof schema === 'boolean') return schema;
+    if (Array.isArray(schema)) {
+      return Array.from({ length: count }, function(_,i) { return generateMock(schema[0], 1); });
+    }
+    if (typeof schema === 'object') {
+      var result = {};
+      for (var key in schema) {
+        if (schema.hasOwnProperty(key)) {
+          result[key] = generateMock(schema[key], count);
+        }
+      }
+      return result;
+    }
+    return schema;
+  }
+
+  function run() {
+    try {
+      var schema = JSON.parse(schemaInput.value);
+      var count = parseInt(countSelect.value);
+      var result = Array.isArray(schema) ? generateMock(schema[0], count) : generateMock(schema, count);
+      output.textContent = JSON.stringify(result, null, 2);
+    } catch (e) {
+      output.textContent = 'Schema JSON tidak valid: ' + e.message;
+    }
+  }
+
+  document.getElementById('gen-btn').addEventListener('click', run);
+  countSelect.addEventListener('change', run);
+
+  document.getElementById('copy-output-btn').addEventListener('click', function() {
+    navigator.clipboard.writeText(output.textContent || '').then(function() {
+      if (showToast) showToast(_tToast ? _tToast('JSON disalin!', 'JSON copied!') : 'JSON copied!', 'success');
+    });
+  });
+
+  document.getElementById('download-btn').addEventListener('click', function() {
+    var blob = new Blob([output.textContent || ''], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = 'mock-data.json'; a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  run();
+</script>
