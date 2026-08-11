@@ -26,10 +26,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     </div>
 
     <!-- Timer + Live stats -->
-    <div class="card-base p-5 mb-6 animate-fade-in">
+    <div class="card-base p-5 mb-6 animate-fade-in overflow-hidden">
+      <!-- Progress Bar -->
+      <div class="-mx-5 -mt-5 mb-4 h-1 bg-matte-100 dark:bg-matte-800">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-r-full transition-all duration-300 ease-linear" style="width:100%"></div>
+      </div>
+
       <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div class="flex items-center gap-3">
           <span class="text-3xl font-extrabold font-mono tabular-nums text-matte-800 dark:text-white" id="timer">0s</span>
+          <span id="pb-badge" class="hidden px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 animate-bounce-in">🏆 PB!</span>
           <span class="text-2xs text-matte-400 hidden sm:inline">Ketik untuk mulai</span>
         </div>
         <div class="flex gap-2 text-center">
@@ -43,7 +49,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div id="text-display" class="relative rounded-xl border-2 border-matte-200 dark:border-surface-border bg-matte-50 dark:bg-matte-900 p-5 text-lg md:text-xl leading-relaxed font-mono tracking-wide select-none min-h-[120px] cursor-text overflow-hidden transition-colors duration-200 focus-within:border-sky-400 dark:focus-within:border-sky-500" tabindex="0" aria-label="Area mengetik">
         <div id="chars-container" class="flex flex-wrap"></div>
         <!-- Cursor -->
-        <div id="cursor" class="absolute w-0.5 bg-sky-500 rounded-full transition-all duration-75" style="height:1.5em; top:1.25rem; left:1.25rem;"></div>
+        <div id="cursor" class="absolute w-0.5 bg-sky-500 rounded-full transition-all duration-100 ease-out" style="height:1.5em; top:1.25rem; left:1.25rem;"></div>
+        <!-- Ghost text: expected char at cursor -->
+        <div id="ghost-char" class="absolute text-sky-300 dark:text-sky-700 font-mono tracking-wide select-none pointer-events-none opacity-60 transition-all duration-100 ease-out" style="top:1.25rem; left:1.25rem; font-size:inherit; line-height:inherit;"></div>
       </div>
 
       <!-- Result -->
@@ -121,6 +129,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     let correctKeystrokes = 0;
     let finished = false;
 
+    const PB_KEY = (d: number) => `tt-pb-${d}`;
+    function getPB(d: number): number {
+      try { return parseInt(localStorage.getItem(PB_KEY(d)) || '0', 10) || 0; }
+      catch { return 0; }
+    }
+    function setPB(d: number, wpm: number) {
+      try { localStorage.setItem(PB_KEY(d), String(wpm)); }
+      catch {}
+    }
+
     function pickText() {
       const pool = lang === 'id' ? ID_TEXTS : EN_TEXTS;
       return pool[Math.floor(Math.random() * pool.length)];
@@ -171,11 +189,29 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           span.classList.add('bg-sky-100', 'dark:bg-sky-900/40', 'rounded-sm');
         }
       }
+      // Update ghost character
+      if (!finished && cursorIdx < text.length) {
+        const targetSpan = charsContainer.children[cursorIdx] as HTMLElement | undefined;
+        if (targetSpan) {
+          const rect = targetSpan.getBoundingClientRect();
+          const containerRect = charsContainer.getBoundingClientRect();
+          const ghost = document.getElementById('ghost-char')!;
+          ghost.style.left = (rect.left - containerRect.left) + 'px';
+          ghost.style.top = (rect.top - containerRect.top) + 'px';
+          ghost.style.height = rect.height + 'px';
+          ghost.style.lineHeight = rect.height + 'px';
+          ghost.textContent = text[cursorIdx];
+          ghost.style.display = 'block';
+        }
+      } else {
+        (document.getElementById('ghost-char')!).style.display = 'none';
+      }
     }
 
     function updateLiveStats() {
       if (!startTime) return;
       const elapsed = (Date.now() - startTime) / 1000;
+      const remaining = Math.max(0, duration - elapsed);
       const mins = elapsed / 60;
       const wpm = mins > 0 ? Math.round((correctKeystrokes / 5) / mins) : 0;
       const cpm = mins > 0 ? Math.round(correctKeystrokes / mins) : 0;
@@ -183,6 +219,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       statWpm.textContent = String(wpm);
       statAcc.textContent = acc + '%';
       statCpm.textContent = String(cpm);
+      // Progress bar
+      const pct = (remaining / duration) * 100;
+      (document.getElementById('progress-bar')!).style.width = pct + '%';
     }
 
     function finish() {
@@ -211,6 +250,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       else if (wpm >= 20) rating.textContent = '💪 Lumayan, tingkatkan lagi!';
       else rating.textContent = '🌱 Ayo latihan lebih sering!';
 
+      // Personal best check
+      const prevPB = getPB(duration);
+      if (wpm > prevPB) {
+        setPB(duration, wpm);
+        (document.getElementById('pb-badge')!).classList.remove('hidden');
+      }
+
       resultCard.classList.remove('hidden');
     }
 
@@ -220,8 +266,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       totalKeystrokes = 0; correctKeystrokes = 0;
       cursorIdx = 0;
       timerEl.textContent = '0s';
+      timerEl.classList.remove('text-rose-500', 'dark:text-rose-400');
       statWpm.textContent = '0'; statAcc.textContent = '—'; statCpm.textContent = '0';
       resultCard.classList.add('hidden');
+      (document.getElementById('pb-badge')!).classList.add('hidden');
+      (document.getElementById('progress-bar')!).style.width = '100%';
+      (document.getElementById('ghost-char')!).style.display = 'none';
       text = pickText();
       buildCharSpans();
       positionCursor();
@@ -240,6 +290,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           const elapsed = Math.floor((Date.now() - startTime) / 1000);
           const remaining = Math.max(0, duration - elapsed);
           timerEl.textContent = remaining + 's';
+          if (remaining <= 10) timerEl.classList.add('text-rose-500', 'dark:text-rose-400');
           updateLiveStats();
           if (remaining <= 0) finish();
         }, 100);
