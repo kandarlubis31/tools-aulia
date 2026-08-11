@@ -269,6 +269,13 @@ const categories = [
        ))}
     </div>
 
+    <!-- Pagination -->
+    <div id="pagination" class="flex items-center justify-center gap-1 py-6">
+      <button id="prev-page" class="px-3 py-1.5 rounded-lg text-xs font-medium text-matte-400 hover:text-matte-600 dark:hover:text-white hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all disabled:opacity-30 disabled:cursor-not-allowed">← Prev</button>
+      <div id="page-numbers" class="flex gap-0.5"></div>
+      <button id="next-page" class="px-3 py-1.5 rounded-lg text-xs font-medium text-matte-400 hover:text-matte-600 dark:hover:text-white hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all disabled:opacity-30 disabled:cursor-not-allowed">Next →</button>
+    </div>
+
     <!-- Empty State -->
     <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-center animate-fade-in">
        <div class="w-20 h-20 bg-matte-100 dark:bg-matte-800 rounded-full flex items-center justify-center mb-6">
@@ -298,11 +305,17 @@ const categories = [
       const recentToolsContainer = document.getElementById('recent-tools');
       const clearRecentBtn = document.getElementById('clear-recent');
       const toolsGrid = document.getElementById('tools-grid');
+      const pagination = document.getElementById('pagination');
+      const prevBtn = document.getElementById('prev-page');
+      const nextBtn = document.getElementById('next-page');
+      const pageNumbers = document.getElementById('page-numbers');
 
       const urlParams = new URLSearchParams(window.location.search);
       let currentFilter = urlParams.get('cat') || 'all'; 
       let currentSearch = '';
       let currentSort = 'name';
+      let currentPage = 1;
+      const PER_PAGE = 36;
 
       function getRecentTools() {
         try {
@@ -386,7 +399,7 @@ const categories = [
 
       function renderTools() {
         const toolsArray = Array.from(tools);
-        let visibleCount = 0;
+        const matched = [];
 
         if(currentSort === 'name') {
             toolsArray.sort((a, b) => {
@@ -395,49 +408,80 @@ const categories = [
                 return nameA.localeCompare(nameB);
             });
         }
-        
-        if(toolsGrid) {
-            toolsGrid.innerHTML = '';
-            toolsArray.forEach(el => toolsGrid.appendChild(el));
-        }
 
-        toolsArray.forEach((tool, index) => {
+        // First pass: find all matching + sort
+        toolsArray.forEach(tool => {
             const cat = tool.getAttribute('data-cat');
             const title = tool.getAttribute('data-title') || '';
-            
             let matchFilter = currentFilter === 'all' || cat === currentFilter;
             let matchSearch = title.includes(currentSearch);
-
-            if (matchFilter && matchSearch) {
-                tool.classList.remove('hidden');
-                tool.classList.add('animate-fade-in-up');
-                tool.style.animationDelay = `${(index % 10) * 30}ms`;
-                visibleCount++;
-            } else {
-                tool.classList.add('hidden');
-                tool.classList.remove('animate-fade-in-up');
-                tool.style.animationDelay = '0ms';
-            }
+            if (matchFilter && matchSearch) matched.push(tool);
         });
 
+        const totalPages = Math.max(1, Math.ceil(matched.length / PER_PAGE));
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * PER_PAGE;
+        const pageItems = matched.slice(start, start + PER_PAGE);
+
+        // Hide all, show only current page
+        toolsArray.forEach(t => { t.classList.add('hidden'); t.classList.remove('animate-fade-in-up'); });
+        pageItems.forEach((tool, i) => {
+            tool.classList.remove('hidden');
+            tool.classList.add('animate-fade-in-up');
+            tool.style.animationDelay = `${(i % 12) * 25}ms`;
+        });
+
+        if(toolsGrid) {
+            toolsGrid.innerHTML = '';
+            pageItems.forEach(el => toolsGrid.appendChild(el));
+        }
+
+        // Update title
         if(resultsCountTitle) {
             if(currentSearch) {
-            const toolsText = (window._tToast) ? window._tToast('Tools') : 'Tools';
-            resultsCountTitle.textContent = visibleCount + ' ' + toolsText;
-        }
-            else {
+                resultsCountTitle.textContent = matched.length + ' Tools';
+            } else {
                 const activeBtn = Array.from(filterBtns).find(b => b.getAttribute('data-filter') === currentFilter);
-                resultsCountTitle.textContent = activeBtn ? activeBtn.textContent.trim() : 'Tools';
+                resultsCountTitle.textContent = (activeBtn ? activeBtn.textContent.trim() : 'Tools') + (totalPages > 1 ? ' — Halaman '+currentPage+'/'+totalPages : '');
             }
         }
 
-        if (visibleCount === 0) {
+        // Empty state
+        if (matched.length === 0) {
             emptyState?.classList.remove('hidden');
             toolsGrid?.classList.add('hidden');
+            pagination?.classList.add('hidden');
         } else {
             emptyState?.classList.add('hidden');
             toolsGrid?.classList.remove('hidden');
+            pagination?.classList.remove('hidden');
         }
+
+        // Render page numbers
+        renderPagination(totalPages);
+      }
+
+      function renderPagination(totalPages) {
+        if (!pageNumbers || totalPages <= 1) { if(pagination) pagination.classList.add('hidden'); return; }
+        pagination?.classList.remove('hidden');
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+
+        let html = '';
+        const maxShow = 7;
+        let startP = Math.max(1, currentPage - Math.floor(maxShow/2));
+        let endP = Math.min(totalPages, startP + maxShow - 1);
+        if (endP - startP < maxShow - 1) startP = Math.max(1, endP - maxShow + 1);
+
+        for (let p = startP; p <= endP; p++) {
+            const active = p === currentPage ? 'bg-matte-900 text-white dark:bg-white dark:text-matte-900' : 'text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white';
+            html += `<button data-page="${p}" class="px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${active}">${p}</button>`;
+        }
+        pageNumbers.innerHTML = html;
+
+        pageNumbers.querySelectorAll('[data-page]').forEach(btn => {
+            btn.addEventListener('click', () => { currentPage = parseInt(btn.dataset.page); renderTools(); window.scrollTo({ top: toolsGrid.offsetTop - 100, behavior: 'smooth' }); });
+        });
       }
 
       function setActiveFilter(filterId) {
@@ -480,11 +524,6 @@ const categories = [
         });
       });
 
-      searchInput?.addEventListener('input', (e) => {
-        currentSearch = e.target.value.toLowerCase();
-        renderTools();
-      });
-
       sortSelect?.addEventListener('change', (e) => {
          currentSort = e.target.value;
          renderTools();
@@ -511,6 +550,14 @@ const categories = [
       document.addEventListener('astro:page-leave', () => {
         document.removeEventListener('keydown', _idxKeydown);
       }, { once: true });
+
+      prevBtn?.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTools(); window.scrollTo({ top: toolsGrid.offsetTop - 100, behavior: 'smooth' }); } });
+      nextBtn?.addEventListener('click', () => { currentPage++; renderTools(); window.scrollTo({ top: toolsGrid.offsetTop - 100, behavior: 'smooth' }); });
+
+      // Reset page on filter/search change
+      const origSetActiveFilter = setActiveFilter;
+      setActiveFilter = function(id) { currentPage = 1; origSetActiveFilter(id); };
+      searchInput?.addEventListener('input', (e) => { currentPage = 1; currentSearch = e.target.value.toLowerCase(); renderTools(); });
 
       updateRecentDisplay();
       setActiveFilter(currentFilter);
