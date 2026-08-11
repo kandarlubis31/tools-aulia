@@ -1,0 +1,62 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Tip Calculator — Kalkulator Tip & Patungan Online">
+  <div class="max-w-md mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader title="Tip Calculator" titleKey="header.tip_calculator"
+      desc="Hitung tip restoran + patungan. Pilih persentase & jumlah orang."
+      descKey="header.tip_calculator_desc"
+      icon='<path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
+      gradient="from-emerald-500 to-green-600" />
+
+    <div class="card-base p-5 animate-fade-in space-y-3">
+      <div><label class="text-2xs text-matte-400 font-bold block mb-1">Total Tagihan</label>
+        <div class="flex"><span class="px-3 py-2.5 rounded-l-lg bg-matte-100 dark:bg-surface-elevated text-sm font-bold border border-r-0 border-matte-200 dark:border-matte-700">Rp</span>
+          <input id="bill-input" type="number" value="150000" min="0" class="flex-1 px-3 py-2.5 rounded-r-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-emerald-500/40" /></div>
+      </div>
+
+      <div><label class="text-2xs text-matte-400 font-bold block mb-1">Tip: <span id="tip-pct-val" class="text-emerald-500">15%</span></label>
+        <input id="tip-pct" type="range" min="0" max="30" value="15" class="w-full accent-emerald-500" />
+        <div class="flex flex-wrap gap-1.5 mt-1">{['5','10','15','20','25'].map(p=>
+          <button class="tip-btn px-2.5 py-1 rounded text-2xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all" data-pct={p}>{p}%</button>)}</div>
+      </div>
+
+      <div><label class="text-2xs text-matte-400 font-bold block mb-1">Jumlah Orang</label>
+        <div class="flex items-center gap-2"><button id="people-dec" class="w-8 h-8 rounded-full bg-matte-100 dark:bg-surface-elevated font-bold text-sm">−</button>
+        <input id="people-input" type="number" value="4" min="1" max="50" class="w-16 px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none text-center focus:ring-2 focus:ring-emerald-500/40" />
+        <button id="people-inc" class="w-8 h-8 rounded-full bg-matte-100 dark:bg-surface-elevated font-bold text-sm">+</button></div>
+      </div>
+
+      <div id="result-card" class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 space-y-2 mt-3">
+        <div class="flex justify-between"><span class="text-xs text-emerald-600 dark:text-emerald-400">Tip</span><span id="tip-amount" class="font-bold text-emerald-700 dark:text-emerald-300">Rp 22,500</span></div>
+        <div class="flex justify-between"><span class="text-xs text-emerald-600 dark:text-emerald-400">Total + Tip</span><span id="total-amount" class="font-bold text-emerald-700 dark:text-emerald-300">Rp 172,500</span></div>
+        <div class="flex justify-between border-t border-emerald-200 dark:border-emerald-800 pt-2"><span class="text-xs font-bold text-emerald-700 dark:text-emerald-300">Per Orang</span><span id="per-person" class="font-bold text-lg text-emerald-700 dark:text-emerald-300">Rp 43,125</span></div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load',()=>{
+    const billInput=document.getElementById('bill-input') as HTMLInputElement;
+    const tipPct=document.getElementById('tip-pct') as HTMLInputElement;
+    const tipPctVal=document.getElementById('tip-pct-val')!;
+    const peopleInput=document.getElementById('people-input') as HTMLInputElement;
+    const tipAmount=document.getElementById('tip-amount')!,totalAmount=document.getElementById('total-amount')!,perPerson=document.getElementById('per-person')!;
+
+    function fmt(n:number):string{return 'Rp '+n.toLocaleString('id-ID');}
+    function calc(){
+      const bill=parseInt(billInput.value)||0, pct=parseInt(tipPct.value), people=Math.max(1,parseInt(peopleInput.value)||1);
+      tipPctVal.textContent=pct+'%';const tip=Math.round(bill*pct/100),total=bill+tip;
+      tipAmount.textContent=fmt(tip);totalAmount.textContent=fmt(total);perPerson.textContent=fmt(Math.round(total/people));
+    }
+    billInput.addEventListener('input',calc);tipPct.addEventListener('input',calc);
+    peopleInput.addEventListener('input',calc);
+    document.getElementById('people-dec')!.addEventListener('click',()=>{peopleInput.value=String(Math.max(1,(parseInt(peopleInput.value)||1)-1));calc();});
+    document.getElementById('people-inc')!.addEventListener('click',()=>{peopleInput.value=String(Math.min(50,(parseInt(peopleInput.value)||1)+1));calc();});
+    document.querySelectorAll('.tip-btn').forEach(b=>b.addEventListener('click',()=>{tipPct.value=(b as HTMLElement).dataset.pct!;calc();}));
+    calc();
+  });
+</script>

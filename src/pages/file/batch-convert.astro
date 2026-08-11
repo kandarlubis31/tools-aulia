@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Batch File Converter — Konversi Format File Batch Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader title="Batch File Converter" titleKey="header.batch_convert"
+      desc="Konversi banyak gambar sekaligus ke format pilihan (PNG, JPG, WEBP)."
+      descKey="header.batch_convert_desc"
+      icon='<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>'
+      gradient="from-teal-500 to-cyan-600" />
+
+    <div class="card-base p-6 text-center animate-fade-in">
+      <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 hover:border-teal-400 transition-colors cursor-pointer mb-4" id="drop-zone">
+        <input type="file" id="file-input" accept="image/*" multiple class="hidden" />
+        <p class="text-sm font-bold text-matte-500 dark:text-matte-300">Upload gambar (banyak)</p>
+        <p class="text-2xs text-matte-400 mt-1">PNG, JPG, WEBP</p>
+      </div>
+
+      <div class="flex gap-3 justify-center mb-4 flex-wrap">
+        <select id="format-select" class="px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold outline-none">
+          <option value="image/png">PNG</option><option value="image/jpeg">JPG</option><option value="image/webp">WEBP</option></select>
+        <span class="text-xs text-matte-400 self-center">Quality:</span>
+        <input id="quality-input" type="range" min="10" max="100" value="80" class="w-24 accent-teal-500" />
+      </div>
+
+      <div id="files-area" class="flex flex-wrap gap-2 justify-center mb-4"></div>
+      <span id="count-text" class="text-2xs text-matte-400 block mb-3"></span>
+
+      <button id="convert-btn" class="gradient-brand px-8 py-3 rounded-lg text-sm font-bold disabled:opacity-50" disabled>🔄 Convert All</button>
+      <button id="download-all" class="hidden gradient-brand px-8 py-3 rounded-lg text-sm font-bold mt-3">💾 Download All</button>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load',()=>{
+    const dropZone=document.getElementById('drop-zone')!,fileInput=document.getElementById('file-input') as HTMLInputElement;
+    const filesArea=document.getElementById('files-area')!,countText=document.getElementById('count-text')!;
+    const formatSelect=document.getElementById('format-select') as HTMLSelectElement;
+    const convertBtn=document.getElementById('convert-btn') as HTMLButtonElement,downloadAll=document.getElementById('download-all') as HTMLButtonElement;
+    const toast=(m:string)=>window.showToast?.(window._tToast?window._tToast(m):m);
+    let files:File[]=[],results:{name:string,blob:Blob}[]=[];
+
+    function addFiles(fl:FileList|File[]){const arr=Array.from(fl).filter(f=>f.type.startsWith('image/'));files.push(...arr);countText.textContent=files.length+' gambar';convertBtn.disabled=files.length===0;renderFiles();}
+
+    function renderFiles(){
+      filesArea.innerHTML=files.map((f,i)=>`<div class=\"relative group\"><img src=\"${URL.createObjectURL(f)}\" class=\"w-16 h-16 object-cover rounded-lg border-2 border-matte-200 dark:border-matte-700\" /><span class=\"absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-teal-500 text-white text-2xs flex items-center justify-center font-bold\">${i+1}</span><button class=\"del-btn absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-2xs flex items-center justify-center opacity-0 group-hover:opacity-100\" data-idx=\"${i}\">x</button></div>`).join('');
+      filesArea.querySelectorAll('.del-btn').forEach(b=>b.addEventListener('click',()=>{files.splice(parseInt((b as HTMLElement).dataset.idx!),1);countText.textContent=files.length+' gambar';convertBtn.disabled=files.length===0;results=[];downloadAll.classList.add('hidden');renderFiles();}));
+    }
+
+    async function convert(){
+      results=[];convertBtn.disabled=true;convertBtn.innerHTML='⏳…';const fmt=formatSelect.value,quality=parseInt((document.getElementById('quality-input') as HTMLInputElement).value)/100;
+      for(const file of files){
+        const img=await new Promise<HTMLImageElement>(r=>{const i=new Image();i.onload=()=>r(i);i.src=URL.createObjectURL(file);});
+        const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d')!.drawImage(img,0,0);
+        const ext=fmt==='image/jpeg'?'jpg':fmt==='image/webp'?'webp':'png';
+        const blob=await new Promise<Blob>(r=>c.toBlob(b=>r(b!),fmt,quality));
+        results.push({name:file.name.replace(/\.[^.]+$/,'.'+ext),blob});
+      }
+      downloadAll.classList.remove('hidden');convertBtn.innerHTML='✅ Done';convertBtn.disabled=false;
+      toast(results.length+' file dikonversi!');
+    }
+
+    dropZone.addEventListener('click',()=>fileInput.click());
+    dropZone.addEventListener('dragover',e=>{e.preventDefault();});
+    dropZone.addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer?.files)addFiles(e.dataTransfer.files);});
+    fileInput.addEventListener('change',()=>{if(fileInput.files)addFiles(fileInput.files);fileInput.value='';});
+    convertBtn.addEventListener('click',convert);
+    downloadAll.addEventListener('click',()=>{results.forEach((r,i)=>{setTimeout(()=>{const a=document.createElement('a');a.href=URL.createObjectURL(r.blob);a.download=r.name;a.click();URL.revokeObjectURL(a.href);},i*300);});});
+  });
+</script>

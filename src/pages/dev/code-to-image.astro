@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Code to Image — Kode ke Gambar PNG Online">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader title="Code to Image" titleKey="header.code_to_image"
+      desc="Carbon-style: kode syntax-highlight jadi PNG. Atur tema dan font."
+      descKey="header.code_to_image_desc"
+      icon='<polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline><line x1="12" y1="2" x2="12" y2="22"></line>'
+      gradient="from-gray-500 to-slate-700" />
+
+    <div class="grid md:grid-cols-2 gap-4 animate-fade-in">
+      <div class="card-base p-5">
+        <textarea id="code-input" rows="12" placeholder="Paste kode di sini…" class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-slate-500/40 resize-y"></textarea>
+        <div class="flex flex-wrap gap-2 mt-3">
+          <select id="theme-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none">
+            <option value="dark">Dark</option><option value="light">Light</option><option value="dracula">Dracula</option></select>
+          <select id="lang-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none">
+            <option value="javascript">JS</option><option value="typescript">TS</option><option value="python">Python</option><option value="html">HTML</option><option value="css">CSS</option></select>
+          <div class="flex items-center gap-1 ml-auto"><label class="text-2xs text-matte-400">Padding</label>
+            <input id="pad-input" type="number" value="20" min="0" max="80" class="w-14 px-1.5 py-1 rounded bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none" /></div>
+        </div>
+        <button id="render-btn" class="gradient-brand w-full mt-3 py-2.5 rounded-lg text-sm font-bold">Render to Image</button>
+      </div>
+
+      <div class="card-base p-5 text-center">
+        <span class="text-2xs text-matte-400 font-bold uppercase tracking-wider block mb-2">Preview</span>
+        <img id="preview-img" class="max-w-full rounded-lg shadow-lg" />
+        <button id="download-btn" class="hidden gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold mt-3">Download PNG</button>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load',()=>{
+    const codeInput=document.getElementById('code-input') as HTMLTextAreaElement;
+    const themeSelect=document.getElementById('theme-select') as HTMLSelectElement;
+    const padInput=document.getElementById('pad-input') as HTMLInputElement;
+    const renderBtn=document.getElementById('render-btn') as HTMLButtonElement;
+    const previewImg=document.getElementById('preview-img') as HTMLImageElement;
+    const downloadBtn=document.getElementById('download-btn') as HTMLButtonElement;
+    const toast=(m:string)=>window.showToast?.(window._tToast?window._tToast(m):m);
+
+    const THEMES:Record<string,{bg:string,text:string,keyword:string,string:string,comment:string}> = {
+      dark:{bg:'#1e1e1e',text:'#d4d4d4',keyword:'#569cd6',string:'#ce9178',comment:'#6a9955'},
+      light:{bg:'#ffffff',text:'#333333',keyword:'#0000ff',string:'#a31515',comment:'#008000'},
+      dracula:{bg:'#282a36',text:'#f8f8f2',keyword:'#ff79c6',string:'#f1fa8c',comment:'#6272a4'},
+    };
+
+    const KEYWORDS=['function','const','let','var','if','else','return','class','import','export','from','async','await','for','while','def','print'];
+
+    function tokenize(line:string):{text:string,color:string}[]{
+      const tokens:{text:string,color:string}[]=[];let i=0;
+      while(i<line.length){
+        if(line[i]==='/'&&line[i+1]==='/'){tokens.push({text:line.slice(i),color:'comment'});break;}
+        if(line[i]==='"'||line[i]==="'"||line[i]==='`'){const q=line[i];let j=i+1;while(j<line.length&&line[j]!==q){if(line[j]==='\\')j++;j++;}tokens.push({text:line.slice(i,j+1),color:'string'});i=j+1;continue;}
+        if(/[a-zA-Z_]/.test(line[i])){let j=i;while(j<line.length&&/[a-zA-Z0-9_]/.test(line[j]))j++;const word=line.slice(i,j);tokens.push({text:word,color:KEYWORDS.includes(word)?'keyword':'text'});i=j;continue;}
+        tokens.push({text:line[i],color:'text'});i++;
+      }return tokens;
+    }
+
+    function render(){
+      const code=codeInput.value.trim();if(!code){toast('Paste kode dulu');return;}
+      const theme=THEMES[themeSelect.value],pad=parseInt(padInput.value)||20;
+      const fontSize=14,lineHeight=20;const lines=code.split('\n');
+      const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d')!;
+      ctx.font=`${fontSize}px "JetBrains Mono","Fira Code",monospace`;
+      const maxW=Math.max(...lines.map(l=>ctx.measureText(l).width));
+      canvas.width=maxW+pad*2+40;canvas.height=lines.length*lineHeight+pad*2;
+      ctx.fillStyle=theme.bg;ctx.fillRect(0,0,canvas.width,canvas.height);
+      lines.forEach((line,li)=>{
+        const y=pad+lineHeight*(li+1)-3;let x=pad+10;
+        tokenize(line).forEach(tok=>{ctx.fillStyle=theme[tok.color as keyof typeof theme]||theme.text;ctx.fillText(tok.text,x,y);x+=ctx.measureText(tok.text).width;});
+      });
+      previewImg.src=canvas.toDataURL('image/png');downloadBtn.classList.remove('hidden');
+    }
+
+    renderBtn.addEventListener('click',render);
+    downloadBtn.addEventListener('click',()=>{if(!previewImg.src)return;const a=document.createElement('a');a.href=previewImg.src;a.download='code-'+Date.now()+'.png';a.click();});
+    codeInput.value='function hello() {\n  console.log("Hello, World!");\n}\n\nhello();';render();
+  });
+</script>

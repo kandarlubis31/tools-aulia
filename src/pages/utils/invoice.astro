@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Invoice Generator — Buat Invoice Online Gratis">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader title="Invoice Generator" titleKey="header.invoice_gen"
+      desc="Buat invoice/faktur sederhana. Isi data, preview, download PNG."
+      descKey="header.invoice_gen_desc"
+      icon='<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="12" y2="18"/>'
+      gradient="from-orange-500 to-amber-600" />
+
+    <div class="grid md:grid-cols-2 gap-4 animate-fade-in">
+      <div class="card-base p-5 space-y-2">
+        <div class="grid grid-cols-2 gap-2">
+          <input id="from-name" placeholder="Nama Bisnis" class="px-2 py-2 rounded bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-orange-500/40" />
+          <input id="from-email" placeholder="Email" class="px-2 py-2 rounded bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-orange-500/40" /></div>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="to-name" placeholder="Nama Klien" class="px-2 py-2 rounded bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-orange-500/40" />
+          <input id="inv-date" type="date" class="px-2 py-2 rounded bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-orange-500/40" /></div>
+
+        <div class="text-2xs text-matte-400 font-bold uppercase mt-2">Items</div>
+        <div id="items-list" class="space-y-1.5"></div>
+        <button id="add-item" class="text-2xs text-orange-500 hover:underline font-bold">+ Tambah item</button>
+      </div>
+
+      <div class="card-base p-5 text-center">
+        <canvas id="inv-canvas" width="600" height="700" class="w-full rounded-lg shadow"></canvas>
+        <button id="download-btn" class="gradient-brand px-5 py-2.5 rounded-lg text-sm font-bold mt-3">💾 Download PNG</button>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load',()=>{
+    const canvas=document.getElementById('inv-canvas') as HTMLCanvasElement,ctx=canvas.getContext('2d')!;
+    const itemsList=document.getElementById('items-list')!;
+    const toast=(m:string)=>window.showToast?.(window._tToast?window._tToast(m):m);
+
+    function getVal(id:string){return(document.getElementById(id)as HTMLInputElement).value||'';}
+    const d=new Date();(document.getElementById('inv-date')as HTMLInputElement).value=d.toISOString().split('T')[0];
+
+    let items:{desc:string,qty:number,price:number}[]=[{desc:'Jasa Desain',qty:1,price:500000}];
+
+    function addItemRow(item:typeof items[0],idx:number){
+      const div=document.createElement('div');div.className='flex gap-1';
+      div.innerHTML=`<input class=\"desc-inp flex-1 min-w-0 px-1.5 py-1.5 rounded bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none\" value=\"${escAttr(item.desc)}\" /><input type=\"number\" class=\"qty-inp w-14 px-1 py-1.5 rounded bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none text-center\" value=\"${item.qty}\" min=\"1\" /><input type=\"number\" class=\"price-inp w-24 px-1 py-1.5 rounded bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none text-right\" value=\"${item.price}\" /><button class=\"del-item-btn w-7 rounded bg-red-100 dark:bg-red-900/40 text-red-500 text-xs font-bold\">x</button>`;
+      div.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',draw));
+      div.querySelector('.del-item-btn')!.addEventListener('click',()=>{if(items.length>1){items.splice(idx,1);renderItems();draw();}});
+      itemsList.appendChild(div);
+    }
+
+    function renderItems(){itemsList.innerHTML='';items.forEach((it,i)=>addItemRow(it,i));}
+
+    function collectItems(){items=[];itemsList.querySelectorAll('div').forEach(div=>{const desc=(div.querySelector('.desc-inp') as HTMLInputElement).value;const qty=parseInt((div.querySelector('.qty-inp') as HTMLInputElement).value)||1;const price=parseInt((div.querySelector('.price-inp') as HTMLInputElement).value)||0;items.push({desc,qty,price});});}
+
+    function draw(){
+      collectItems();ctx.fillStyle='#ffffff';ctx.fillRect(0,0,600,700);
+      ctx.strokeStyle='#f97316';ctx.lineWidth=3;ctx.strokeRect(15,15,570,670);
+      ctx.fillStyle='#f97316';ctx.fillRect(15,15,570,80);
+      ctx.fillStyle='#ffffff';ctx.font='bold 22px sans-serif';ctx.fillText('INVOICE',30,55);
+      ctx.font='12px sans-serif';ctx.fillText(getVal('from-name')||'Nama Bisnis',30,80);
+      ctx.fillStyle='#333';ctx.font='12px sans-serif';ctx.fillText('Kepada: '+(getVal('to-name')||'Klien'),30,110);
+      ctx.fillText('Tanggal: '+getVal('inv-date'),400,110);ctx.fillText('Email: '+getVal('from-email'),400,130);
+
+      let y=150;ctx.fillStyle='#f5f5f5';ctx.fillRect(30,y-15,540,25);
+      ctx.fillStyle='#666';ctx.font='bold 11px sans-serif';ctx.fillText('Deskripsi',40,y);ctx.fillText('Qty',340,y);ctx.fillText('Harga',420,y);ctx.fillText('Total',500,y);
+      y+=20;let grand=0;ctx.font='11px sans-serif';ctx.fillStyle='#333';
+      items.forEach(it=>{const tot=it.qty*it.price;grand+=tot;ctx.fillText(it.desc,40,y);ctx.fillText(String(it.qty),340,y);ctx.fillText('Rp '+it.price.toLocaleString('id-ID'),420,y);ctx.fillText('Rp '+tot.toLocaleString('id-ID'),500,y);y+=20;});
+
+      y+=10;ctx.strokeStyle='#ddd';ctx.beginPath();ctx.moveTo(30,y);ctx.lineTo(570,y);ctx.stroke();
+      y+=20;ctx.font='bold 14px sans-serif';ctx.fillText('TOTAL: Rp '+grand.toLocaleString('id-ID'),400,y);
+    }
+
+    function escAttr(s:string){return String(s).replace(/&/g,'&amp;').replace(/\"/g,'&quot;');}
+
+    document.getElementById('add-item')!.addEventListener('click',()=>{items.push({desc:'',qty:1,price:0});renderItems();draw();});
+    ['from-name','from-email','to-name','inv-date'].forEach(id=>document.getElementById(id)!.addEventListener('input',draw));
+    renderItems();draw();
+
+    document.getElementById('download-btn')!.addEventListener('click',()=>{const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='invoice-'+Date.now()+'.png';a.click();});
+  });
+</script>

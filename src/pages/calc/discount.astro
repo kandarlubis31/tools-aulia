@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Discount Calculator — Kalkulator Diskon Online">
+  <div class="max-w-md mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader title="Discount Calculator" titleKey="header.discount_calc"
+      desc="Hitung diskon bertingkat + harga akhir. Cocok untuk belanja online."
+      descKey="header.discount_calc_desc"
+      icon='<path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>'
+      gradient="from-pink-500 to-rose-600" />
+
+    <div class="card-base p-5 animate-fade-in space-y-3">
+      <div><label class="text-2xs text-matte-400 font-bold block mb-1">Harga Awal</label>
+        <div class="flex"><span class="px-3 py-2.5 rounded-l-lg bg-matte-100 dark:bg-surface-elevated text-sm font-bold border border-r-0 border-matte-200 dark:border-matte-700">Rp</span>
+          <input id="price-input" type="number" value="500000" min="0" class="flex-1 px-3 py-2.5 rounded-r-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40" /></div>
+      </div>
+
+      <div><label class="text-2xs text-matte-400 font-bold block mb-1">Diskon (%)</label>
+        <div class="flex gap-1.5 flex-wrap mb-2">{['5','10','15','20','25','30','40','50'].map(p=>
+          <button class="disc-btn px-3 py-1.5 rounded text-xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-pink-100 dark:hover:bg-pink-900/30 transition-all" data-pct={p}>{p}%</button>)}</div>
+        <input id="disc-input" type="range" min="0" max="90" value="15" class="w-full accent-pink-500" />
+        <span id="disc-val" class="text-2xs text-pink-500 font-bold">15%</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated text-center">
+          <span class="text-2xs text-matte-400 block">Kamu Hemat</span>
+          <span id="saved-val" class="font-bold text-pink-600 dark:text-pink-400 text-sm">Rp 75,000</span></div>
+        <div class="p-3 rounded-lg bg-pink-50 dark:bg-pink-900/20 text-center">
+          <span class="text-2xs text-pink-500 block">Harga Akhir</span>
+          <span id="final-val" class="font-bold text-pink-700 dark:text-pink-300 text-lg">Rp 425,000</span></div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load',()=>{
+    const priceInput=document.getElementById('price-input') as HTMLInputElement;
+    const discInput=document.getElementById('disc-input') as HTMLInputElement;
+    const discVal=document.getElementById('disc-val')!,savedVal=document.getElementById('saved-val')!,finalVal=document.getElementById('final-val')!;
+    function fmt(n:number):string{return 'Rp '+n.toLocaleString('id-ID');}
+    function calc(){
+      const price=parseInt(priceInput.value)||0,disc=parseInt(discInput.value);
+      discVal.textContent=disc+'%';const saved=Math.round(price*disc/100),final=price-saved;
+      savedVal.textContent=fmt(saved);finalVal.textContent=fmt(final);
+    }
+    priceInput.addEventListener('input',calc);discInput.addEventListener('input',calc);
+    document.querySelectorAll('.disc-btn').forEach(b=>b.addEventListener('click',()=>{discInput.value=(b as HTMLElement).dataset.pct!;calc();}));
+    calc();
+  });
+</script>

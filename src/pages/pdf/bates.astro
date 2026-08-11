@@ -1,0 +1,100 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="PDF Bates Numbering — Tambah Nomor Legal PDF Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader title="PDF Bates Numbering" titleKey="header.pdf_bates"
+      desc="Tambah nomor bates (legal numbering) ke setiap halaman PDF. Atur prefix, digits, posisi."
+      descKey="header.pdf_bates_desc"
+      icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="10" y1="17" x2="14" y2="17"/>'
+      gradient="from-amber-500 to-orange-600" />
+
+    <div class="card-base p-6 text-center animate-fade-in">
+      <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 hover:border-amber-400 transition-colors cursor-pointer mb-4" id="drop-zone">
+        <input type="file" id="file-input" accept=".pdf" class="hidden" />
+        <p class="text-sm font-bold text-matte-500 dark:text-matte-300">Upload PDF</p>
+        <p class="text-2xs text-matte-400 mt-1" id="file-name">—</p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div><label class="text-2xs text-matte-400 font-bold block mb-1">Prefix</label>
+          <input id="prefix-input" type="text" value="DOC-" maxlength="10" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-amber-500/40" /></div>
+        <div><label class="text-2xs text-matte-400 font-bold block mb-1">Digits</label>
+          <select id="digits-select" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold outline-none focus:ring-2 focus:ring-amber-500/40">
+            {[3,4,5,6].map(n => <option value={n} selected={n===4}>{n} digit (0001)</option>)}
+          </select></div>
+        <div><label class="text-2xs text-matte-400 font-bold block mb-1">Start</label>
+          <input id="start-input" type="number" value="1" min="1" max="999999" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-amber-500/40" /></div>
+      </div>
+
+      <div class="flex flex-wrap gap-2 justify-center mb-4">
+        {['bottom-right','bottom-center','bottom-left','top-right','top-center','top-left'].map(pos => (
+          <button class="pos-btn px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all" data-pos={pos}>{pos.replace('-',' ')}</button>
+        ))}
+      </div>
+
+      <button id="apply-btn" class="gradient-brand px-8 py-3 rounded-lg text-sm font-bold disabled:opacity-50" disabled>
+        🔢 Apply Bates Numbers
+      </button>
+      <button id="download-btn" class="hidden gradient-brand px-8 py-3 rounded-lg text-sm font-bold mt-3">💾 Download PDF</button>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone')!, fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const fileName = document.getElementById('file-name')!, applyBtn = document.getElementById('apply-btn') as HTMLButtonElement;
+    const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+    const prefixInput = document.getElementById('prefix-input') as HTMLInputElement;
+    const digitsSelect = document.getElementById('digits-select') as HTMLSelectElement;
+    const startInput = document.getElementById('start-input') as HTMLInputElement;
+
+    const toast = (m: string, t: 'success'|'error'='success') => window.showToast?.(window._tToast?window._tToast(m):m,t);
+    let pdfBytes: Uint8Array|null = null, pdfFile: File|null = null, position = 'bottom-right';
+
+    async function loadPdfLib() {
+      if ((window as any).PDFLib) return (window as any).PDFLib;
+      return new Promise(r => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js'; s.onload = () => r((window as any).PDFLib); document.head.appendChild(s); });
+    }
+
+    dropZone.addEventListener('click',()=>fileInput.click());
+    dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('border-amber-400')});
+    dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('border-amber-400'));
+    dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('border-amber-400'); const f=e.dataTransfer?.files?.[0]; if(f){pdfFile=f;fileName.textContent=f.name;applyBtn.disabled=false;}});
+    fileInput.addEventListener('change',()=>{const f=fileInput.files?.[0];if(f){pdfFile=f;fileName.textContent=f.name;applyBtn.disabled=false;}});
+
+    document.querySelectorAll('.pos-btn').forEach(b=>b.addEventListener('click',()=>{
+      document.querySelectorAll('.pos-btn').forEach(x=>x.className='pos-btn px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all');
+      (b as HTMLElement).className='pos-btn px-3 py-1.5 rounded-lg text-2xs font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300';
+      position=(b as HTMLElement).dataset.pos!;
+    }));
+
+    applyBtn.addEventListener('click',async()=>{
+      if(!pdfFile)return;
+      applyBtn.disabled=true;applyBtn.innerHTML='⏳…';
+      const PDFLib=await loadPdfLib();
+      const doc=await PDFLib.PDFDocument.load(await pdfFile.arrayBuffer());
+      const font=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+      const pages=doc.getPages();const digits=parseInt(digitsSelect.value);const start=parseInt(startInput.value);
+      const prefix=prefixInput.value;
+      pages.forEach((page,i)=>{
+        const num=String(start+i).padStart(digits,'0');const text=prefix+num;
+        const {width,height}=page.getSize();const margin=40;let x=margin,y=margin;const tw=text.length*6;
+        if(position.includes('right'))x=width-margin-tw;else if(position.includes('center'))x=(width-tw)/2;
+        if(position.includes('top'))y=height-margin-15;
+        page.drawText(text,{x,y,size:10,font,color:PDFLib.rgb(0.3,0.3,0.3)});
+      });
+      pdfBytes=await doc.save();
+      downloadBtn.classList.remove('hidden');applyBtn.innerHTML='✅ Done';applyBtn.disabled=false;
+      toast('Bates numbers applied!');
+    });
+
+    downloadBtn.addEventListener('click',()=>{
+      if(!pdfBytes)return;const b=new Blob([pdfBytes],{type:'application/pdf'});
+      const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='bates-'+Date.now()+'.pdf';a.click();URL.revokeObjectURL(a.href);
+    });
+  });
+</script>

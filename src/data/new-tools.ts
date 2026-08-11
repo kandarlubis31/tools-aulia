@@ -7,6 +7,17 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  // ---- Batch 12 (10 tools: Quick Wins P1) ----
+  '/pdf/bates',
+  '/pdf/text-search',
+  '/image/upscaler',
+  '/dev/code-to-image',
+  '/calc/tip',
+  '/calc/discount',
+  '/security/base64-image',
+  '/file/batch-convert',
+  '/utils/invoice',
+  '/text/slug',
   // ---- Batch 11 (10 tools: PDF + Data + Media + Image + Text) ----
   '/pdf/to-excel',
   '/pdf/optimizer',
