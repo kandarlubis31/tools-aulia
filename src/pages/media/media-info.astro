@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Media Info — Metadata Audio/Video | ToolsAulia" description="Tampilkan metadata audio/video: codec, bitrate, durasi, resolusi. 100% client-side." category="Media" toolHref="/media/media-info">
+  <ToolPageHeader title="Media Info" description="Metadata audio/video: codec, bitrate, durasi, resolusi" icon='<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 text-center cursor-pointer hover:border-accent-blue transition-colors">
+      <span>🎬 Drop audio/video di sini</span>
+      <input type="file" id="file-input" class="hidden" accept="audio/*,video/*">
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm" id="info-cards"></div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.getElementById('file-input').addEventListener('change', handler);
+  const dz = document.getElementById('drop-zone');
+  dz.addEventListener('click', () => document.getElementById('file-input').click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('border-accent-blue'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('border-accent-blue'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('border-accent-blue'); handler({ target: { files: e.dataTransfer.files } }); });
+
+  function handler(e) {
+    const f = e.target.files[0]; if (!f) return;
+    const url = URL.createObjectURL(f);
+    const el = f.type.startsWith('video') ? document.createElement('video') : document.createElement('audio');
+    el.src = url;
+    el.addEventListener('loadedmetadata', () => {
+      const cards = [];
+      cards.push(['Nama File', f.name]);
+      cards.push(['Tipe', f.type]);
+      cards.push(['Ukuran', (f.size/1048576).toFixed(2)+' MB']);
+      cards.push(['Durasi', fmtTime(el.duration)]);
+      cards.push(['Channels', (el.audioTracks?.length || el.mozAudioChannels || 2)+'']);
+      if (el.videoWidth) { cards.push(['Resolusi', el.videoWidth+'×'+el.videoHeight]); }
+      if (el.videoHeight) { cards.push(['Aspect Ratio', (el.videoWidth/el.videoHeight).toFixed(2)]); }
+      cards.push(['Sample Rate', (el.mozSampleRate || 'N/A')+'']);
+      document.getElementById('info-cards').innerHTML = cards.map(([k,v]) =>
+        '<div class="card-base p-2"><span class="text-xs text-matte-400">'+esc(k)+'</span><p class="font-mono text-xs break-all">'+esc(v)+'</p></div>'
+      ).join('');
+    });
+  }
+
+  function fmtTime(s) { if (!s||isNaN(s)) return 'N/A'; const m=Math.floor(s/60), sec=Math.floor(s%60); return m+':'+String(sec).padStart(2,'0'); }
+  function esc(s) { return String(s||'').replace(/</g,'&lt;'); }
+</script>

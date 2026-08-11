@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Receipt Generator — Buat Struk Lucu | ToolsAulia" description="Buat struk pembayaran lucu untuk konten. 100% client-side canvas." category="Utils" toolHref="/utils/receipt">
+  <ToolPageHeader title="Receipt Generator" description="Buat struk belanja lucu — konten & fun" icon='<rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="18" y2="8"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="6" y1="16" x2="12" y2="16"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div><label class="text-xs text-matte-500 mb-1 block">Nama Toko</label><input id="store" type="text" class="input-field w-full text-sm" value="Warung Pak Aul"></div>
+      <div><label class="text-xs text-matte-500 mb-1 block">Tanggal</label><input id="date" type="date" class="input-field w-full text-sm"></div>
+    </div>
+
+    <div class="space-y-1" id="items-container">
+      <div class="grid grid-cols-12 gap-1 text-xs text-matte-400 font-medium"><span class="col-span-6">Item</span><span class="col-span-3">Qty</span><span class="col-span-3">Harga</span></div>
+    </div>
+    <button id="add-item" class="btn-secondary text-sm w-full">+ Tambah Item</button>
+
+    <div class="flex justify-center"><canvas id="receipt-canvas" width="350" height="500" class="shadow-lg rounded bg-white"></canvas></div>
+    <button id="gen-btn" class="btn-primary w-full">Download Struk PNG</button>
+  </div>
+</BaseLayout>
+
+<script>
+  let itemId = 0;
+  function addItem(name='', qty='1', price='10000') {
+    const id = ++itemId;
+    const div = document.createElement('div'); div.className = 'grid grid-cols-12 gap-1 items-center';
+    div.innerHTML = `<input type="text" class="col-span-6 input-field text-xs" value="${name}" placeholder="Item"><input type="number" class="col-span-3 input-field text-xs" value="${qty}" min="1"><input type="number" class="col-span-2 input-field text-xs" value="${price}" min="0"><button class="col-span-1 text-red-400 hover:text-red-600 text-sm">✕</button>`;
+    div.querySelector('button').addEventListener('click', () => div.remove());
+    document.getElementById('items-container').appendChild(div);
+  }
+
+  document.getElementById('add-item').addEventListener('click', () => addItem());
+  addItem('Nasi Goreng','2','15000'); addItem('Es Teh Manis','1','5000');
+
+  document.getElementById('gen-btn').addEventListener('click', () => {
+    const canvas = document.getElementById('receipt-canvas'), ctx = canvas.getContext('2d');
+    const store = document.getElementById('store').value || 'Warung';
+    const date = document.getElementById('date').value || new Date().toISOString().slice(0,10);
+
+    const items = [];
+    document.getElementById('items-container').querySelectorAll('.grid.grid-cols-12').forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      if (inputs.length >= 3) items.push({ name: inputs[0].value, qty: +inputs[1].value, price: +inputs[2].value });
+    });
+
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#000'; ctx.textAlign = 'center';
+
+    ctx.font = 'bold 18px monospace'; ctx.fillText(store.toUpperCase(), 175, 50);
+    ctx.font = '10px monospace'; ctx.fillText(date, 175, 65);
+    ctx.beginPath(); ctx.moveTo(20,75); ctx.lineTo(330,75); ctx.stroke();
+
+    let y = 95;
+    items.forEach(it => {
+      if (!it.name) return;
+      ctx.textAlign = 'left'; ctx.font = '11px monospace';
+      ctx.fillText(it.name.substring(0,22), 20, y);
+      ctx.textAlign = 'center'; ctx.fillText('x'+it.qty, 200, y);
+      ctx.textAlign = 'right'; ctx.fillText('Rp'+(it.qty*it.price).toLocaleString('id-ID'), 330, y);
+      y += 18;
+    });
+    ctx.beginPath(); ctx.moveTo(20,y+2); ctx.lineTo(330,y+2); ctx.stroke();
+    y += 18;
+    const total = items.reduce((s,i) => s + i.qty*i.price, 0);
+    ctx.font = 'bold 14px monospace'; ctx.textAlign = 'right';
+    ctx.fillText('TOTAL: Rp'+total.toLocaleString('id-ID'), 330, y);
+    y += 25;
+    ctx.font = '10px monospace'; ctx.textAlign = 'center'; ctx.fillText('Terima kasih! ❤️', 175, y);
+
+    canvas.toBlob(b => {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'receipt.png'; a.click();
+    }, 'image/png');
+  });
+
+  document.getElementById('date').value = new Date().toISOString().slice(0,10);
+</script>

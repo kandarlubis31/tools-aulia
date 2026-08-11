@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Text to Handwriting — Teks ke Tulisan Tangan | ToolsAulia" description="Konversi teks ke gaya tulisan tangan di canvas. 100% client-side." category="Text" toolHref="/text/handwriting">
+  <ToolPageHeader title="Text to Handwriting" description="Konversi teks ke tulisan tangan — download PNG" icon='<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <textarea id="text-input" class="input-field w-full h-24 text-sm" placeholder="Tulis teks di sini..."></textarea>
+
+    <div class="flex flex-wrap gap-3 items-end">
+      <div><label class="text-xs text-matte-500 mb-1 block">Gaya Tulisan</label><select id="font-style" class="input-field text-sm w-40"><option value="cursive">Cursive</option><option value="marker">Marker</option><option value="neat">Neat Print</option></select></div>
+      <div><label class="text-xs text-matte-500 mb-1 block">Ukuran Font</label><input id="font-size" type="number" class="input-field w-16 text-sm" value="24" min="12" max="48"></div>
+      <div><label class="text-xs text-matte-500 mb-1 block">Warna Tinta</label><input id="ink-color" type="color" value="#1e40af" class="w-8 h-8 rounded cursor-pointer p-0 border-0"></div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-4 flex justify-center"><canvas id="hw-canvas" width="700" height="400" class="max-w-full"></canvas></div>
+    <button id="gen-btn" class="btn-primary w-full">Generate & Download PNG</button>
+  </div>
+</BaseLayout>
+
+<script>
+  const canvas = document.getElementById('hw-canvas'), ctx = canvas.getContext('2d');
+  const fonts = { cursive: 'cursive', marker: 'fantasy', neat: 'monospace' };
+
+  document.getElementById('gen-btn').addEventListener('click', () => {
+    const text = document.getElementById('text-input').value || 'Tulis sesuatu di sini...';
+    const style = document.getElementById('font-style').value;
+    const size = parseInt(document.getElementById('font-size').value) || 24;
+    const color = document.getElementById('ink-color').value;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#fefce8'; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // Draw ruled lines
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.5;
+    for (let y=50; y<canvas.height; y+=size+10) { ctx.beginPath(); ctx.moveTo(20,y+size); ctx.lineTo(canvas.width-20,y+size); ctx.stroke(); }
+
+    ctx.fillStyle = color;
+    ctx.font = size+'px ' + fonts[style];
+    const words = text.split(' ');
+    let x=30, y=size+30;
+    words.forEach(w => {
+      const m = ctx.measureText(w+' ');
+      if (x+m.width > canvas.width-30) { x=30; y+=size+10; }
+      // slight random tilt for realism
+      ctx.save(); ctx.translate(x, y); ctx.rotate((Math.random()-0.5)*0.05);
+      ctx.fillText(w, 0, 0); ctx.restore();
+      x += m.width;
+    });
+
+    canvas.toBlob(b => {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'handwriting.png'; a.click();
+    }, 'image/png');
+  });
+</script>

@@ -185,4 +185,13 @@ export const newToolHrefs: string[] = [
   '/media/audio-eq',
   '/life/sleep',
   '/life/water-tracker',
+  '/media/media-info',
+  '/network/wol',
+  '/data/sql-to-json',
+  '/data/md-table',
+  '/text/handwriting',
+  '/utils/receipt',
+  '/life/grocery',
+  '/life/bucket-list',
+  '/media/audio-convert',
 ];

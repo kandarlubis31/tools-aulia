@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Markdown Table Generator — CSV ke Tabel MD | ToolsAulia" description="Generate tabel Markdown dari data CSV atau manual input. 100% client-side." category="Data" toolHref="/data/md-table">
+  <ToolPageHeader title="Markdown Table Gen" description="Generate tabel Markdown dari CSV — copy-paste siap" icon='<path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 3v18"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <textarea id="csv-input" class="input-field w-full h-32 font-mono text-sm" placeholder="Paste CSV di sini...&#10;Nama, Usia, Kota&#10;Alice, 25, Jakarta&#10;Bob, 30, Bandung"></textarea>
+    <div class="flex gap-2">
+      <button id="gen-btn" class="btn-primary">Generate MD Table</button>
+      <label class="flex items-center gap-1 text-sm text-matte-500"><input type="checkbox" id="align" checked> Alignment header</label>
+      <label class="flex items-center gap-1 text-sm text-matte-500"><input type="checkbox" id="pretty"> Pretty format</label>
+    </div>
+
+    <div class="flex justify-between items-center"><label class="text-sm text-matte-500 font-medium">Output</label><button id="copy-btn" class="btn-secondary text-xs">📋 Copy</button></div>
+    <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-40 overflow-auto text-sm font-mono whitespace-pre-wrap"></pre>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+
+  document.getElementById('gen-btn').addEventListener('click', () => {
+    const csv = document.getElementById('csv-input').value.trim();
+    if (!csv) return;
+    const lines = csv.split('\n').filter(Boolean);
+    const rows = lines.map(l => l.split(',').map(c => c.trim()));
+    if (!rows.length) return;
+    const pretty = document.getElementById('pretty').checked;
+    const align = document.getElementById('align').checked;
+
+    const colWidths = rows[0].map((_,ci) => Math.max(...rows.map(r => (r[ci]||'').length)));
+    const pad = (s,w) => pretty ? s + ' '.repeat(Math.max(0,w-s.length)) : s;
+
+    let md = '| ' + rows[0].map((c,i) => pad(c, colWidths[i])).join(' | ') + ' |\n';
+    if (align) {
+      md += '|' + rows[0].map((_,i) => ' ' + ':---' + ' '.repeat(Math.max(0,colWidths[i]-4)) + ' |').join('') + '\n';
+    } else {
+      md += '|' + rows[0].map((_,i) => ' ' + '---' + ' '.repeat(Math.max(0,colWidths[i]-3)) + ' |').join('') + '\n';
+    }
+    for (let r=1; r<rows.length; r++) {
+      md += '| ' + rows[r].map((c,i) => pad(c||'', colWidths[i])).join(' | ') + ' |\n';
+    }
+
+    document.getElementById('output').textContent = md;
+  });
+
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(document.getElementById('output').textContent).then(() => showToast?.(_tToast?.('Disalin!','Copied!'),'success'));
+  });
+</script>

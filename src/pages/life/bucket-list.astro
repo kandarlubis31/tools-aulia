@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Bucket List — Catat Goals & Mimpi | ToolsAulia" description="Catat & track mimpi hidup. 100% client-side localStorage." category="Life" toolHref="/life/bucket-list">
+  <ToolPageHeader title="Bucket List" description="Catat mimpi & goals — progress tracker" icon='<path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="flex gap-2">
+      <input id="goal-input" type="text" class="input-field flex-1 text-sm" placeholder="Apa yang ingin kamu capai?">
+      <button id="add-btn" class="btn-primary text-sm">Tambah Goal</button>
+    </div>
+
+    <div id="goals" class="space-y-2"></div>
+    <p class="text-xs text-matte-400 text-center" id="empty-msg">✨ Tambah mimpi pertama kamu di atas!</p>
+  </div>
+</BaseLayout>
+
+<script>
+  const KEY = 'bucket_list';
+  let goals = JSON.parse(localStorage.getItem(KEY) || '[]');
+
+  function save() { localStorage.setItem(KEY, JSON.stringify(goals)); render(); }
+  function render() {
+    const done = goals.filter(g => g.done).length;
+    document.getElementById('goals').innerHTML = goals.length
+      ? `<p class="text-xs text-matte-400 text-center">${done}/${goals.length} tercapai 🎯</p>`+
+        goals.map((g,i) => `<div class="card-base p-3 flex items-center gap-3 ${g.done?'opacity-60':''}">
+        <input type="checkbox" data-idx="${i}" ${g.done?'checked':''} class="rounded w-5 h-5">
+        <span class="flex-1 text-sm ${g.done?'line-through text-matte-400':''}">${esc(g.text)}</span>
+        <span class="text-xs text-matte-400">${g.date}</span>
+        <button data-idx="${i}" class="text-red-400 hover:text-red-600 del-goal text-sm">✕</button>
+      </div>`).join('')
+      : '';
+    document.getElementById('empty-msg').classList.toggle('hidden', goals.length > 0);
+
+    document.querySelectorAll('[data-idx]').forEach(el => {
+      if (el.tagName === 'INPUT') el.addEventListener('change', function() { goals[this.dataset.idx].done = this.checked; save(); });
+      else el.addEventListener('click', function() { goals.splice(this.dataset.idx,1); save(); });
+    });
+  }
+
+  document.getElementById('add-btn').addEventListener('click', () => {
+    const text = document.getElementById('goal-input').value.trim();
+    if (!text) return;
+    goals.push({ text, date: new Date().toISOString().slice(0,10), done: false });
+    document.getElementById('goal-input').value = '';
+    save();
+  });
+  document.getElementById('goal-input').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('add-btn').click(); });
+
+  function esc(s) { return String(s).replace(/</g,'&lt;'); }
+  render();
+</script>

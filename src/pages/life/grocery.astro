@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Grocery List — Daftar Belanja Simpel | ToolsAulia" description="Daftar belanja tersimpan di localStorage. 100% client-side." category="Life" toolHref="/life/grocery">
+  <ToolPageHeader title="Grocery List" description="Daftar belanja simpel — checklist + localStorage" icon='<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="flex gap-2">
+      <input id="item-input" type="text" class="input-field flex-1 text-sm" placeholder="Tambah item belanja...">
+      <input id="qty-input" type="number" class="input-field w-16 text-sm" value="1" min="1">
+      <button id="add-btn" class="btn-primary text-sm">Tambah</button>
+    </div>
+
+    <div id="list" class="space-y-1"></div>
+    <div class="flex gap-2 text-xs"><button id="clear-done" class="btn-secondary text-xs">Hapus Selesai</button><button id="clear-all" class="btn-secondary text-xs text-red-500">Hapus Semua</button></div>
+  </div>
+</BaseLayout>
+
+<script>
+  const KEY = 'grocery_list';
+  let items = JSON.parse(localStorage.getItem(KEY) || '[]');
+
+  function save() { localStorage.setItem(KEY, JSON.stringify(items)); render(); }
+  function render() {
+    document.getElementById('list').innerHTML = items.length
+      ? items.map((it,i) => `<div class="flex items-center gap-2 p-2 rounded hover:bg-matte-50 dark:hover:bg-matte-800"><input type="checkbox" data-idx="${i}" ${it.done?'checked':''} class="rounded"><span class="flex-1 text-sm ${it.done?'line-through text-matte-400':''}">${esc(it.name)}</span><span class="text-xs text-matte-400">${it.qty}</span><button data-idx="${i}" class="text-red-400 hover:text-red-600 del-item">✕</button></div>`).join('')
+      : '<p class="text-sm text-matte-400 text-center">Belum ada item. Tambah di atas!</p>';
+
+    document.querySelectorAll('[data-idx]').forEach(el => {
+      if (el.tagName === 'INPUT') el.addEventListener('change', function() { items[this.dataset.idx].done = this.checked; save(); });
+      else el.addEventListener('click', function() { items.splice(this.dataset.idx,1); save(); });
+    });
+  }
+
+  document.getElementById('add-btn').addEventListener('click', () => {
+    const name = document.getElementById('item-input').value.trim();
+    if (!name) return;
+    items.push({ name, qty: parseInt(document.getElementById('qty-input').value)||1, done: false });
+    document.getElementById('item-input').value = '';
+    save();
+  });
+  document.getElementById('item-input').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('add-btn').click(); });
+
+  document.getElementById('clear-done').addEventListener('click', () => { items = items.filter(it => !it.done); save(); });
+  document.getElementById('clear-all').addEventListener('click', () => { items = []; save(); });
+
+  function esc(s) { return String(s).replace(/</g,'&lt;'); }
+  render();
+</script>

@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Audio Converter — Konversi Format Audio | ToolsAulia" description="Konversi format audio via WebAudio offline render. 100% client-side." category="Media" toolHref="/media/audio-convert">
+  <ToolPageHeader title="Audio Converter" description="Konversi format audio: WAV/WebM — render offline" icon='<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 text-center cursor-pointer hover:border-accent-blue transition-colors">
+      <span>🎵 Drop audio di sini (WAV, MP3, OGG, WebM)</span>
+      <input type="file" id="file-input" class="hidden" accept="audio/*">
+    </div>
+
+    <div id="controls" class="hidden space-y-3">
+      <div class="flex flex-wrap gap-3 items-end">
+        <div><label class="text-xs text-matte-500 mb-1 block">Format Output</label><select id="format" class="input-field text-sm w-24"><option value="wav">WAV</option><option value="webm">WebM/OGG</option></select></div>
+        <div><label class="text-xs text-matte-500 mb-1 block">Sample Rate</label><select id="sample-rate" class="input-field text-sm w-24"><option value="44100">44100 Hz</option><option value="48000">48000 Hz</option><option value="22050">22050 Hz</option></select></div>
+        <div class="self-end"><button id="convert-btn" class="btn-primary text-sm">Konversi & Download</button></div>
+      </div>
+
+      <div id="progress-area" class="hidden">
+        <div class="h-2 bg-matte-200 dark:bg-matte-700 rounded-full overflow-hidden"><div id="progress-bar" class="h-full bg-accent-blue rounded-full" style="width:0%"></div></div>
+        <p id="status-text" class="text-sm text-matte-500 mt-2 text-center"></p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+  let audioBuf;
+
+  document.getElementById('file-input').addEventListener('change', handler);
+  const dz = document.getElementById('drop-zone');
+  dz.addEventListener('click', () => document.getElementById('file-input').click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('border-accent-blue'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('border-accent-blue'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('border-accent-blue'); handler({ target: { files: e.dataTransfer.files } }); });
+
+  async function handler(e) {
+    const f = e.target.files[0]; if (!f) return;
+    document.getElementById('progress-area').classList.remove('hidden');
+    document.getElementById('status-text').textContent = 'Mendekode audio...';
+    const ctx = new AudioContext();
+    audioBuf = await ctx.decodeAudioData(await f.arrayBuffer());
+    ctx.close();
+    document.getElementById('progress-area').classList.add('hidden');
+    document.getElementById('controls').classList.remove('hidden');
+    dz.querySelector('span').textContent = f.name + ' (' + audioBuf.duration.toFixed(1) + 's)';
+  }
+
+  document.getElementById('convert-btn').addEventListener('click', async () => {
+    if (!audioBuf) return;
+    const fmt = document.getElementById('format').value;
+    const sr = parseInt(document.getElementById('sample-rate').value) || 44100;
+
+    document.getElementById('progress-area').classList.remove('hidden');
+    document.getElementById('status-text').textContent = 'Mengkonversi...';
+
+    const offlineCtx = new OfflineAudioContext(audioBuf.numberOfChannels, audioBuf.duration * sr, sr);
+    const source = offlineCtx.createBufferSource(); source.buffer = audioBuf;
+    source.connect(offlineCtx.destination); source.start();
+
+    const rendered = await offlineCtx.startRendering();
+    document.getElementById('progress-bar').style.width = '80%';
+
+    // Encode to WAV
+    const wav = encodeWAV(rendered);
+    const blob = new Blob([wav], { type: fmt==='wav'?'audio/wav':'audio/webm' });
+    const ext = fmt==='wav'?'wav':'webm';
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'converted.'+ext; a.click();
+
+    document.getElementById('status-text').textContent = 'Selesai!';
+    showToast?.(_tToast?.('Audio dikonversi!','Audio converted!'),'success');
+    setTimeout(() => document.getElementById('progress-area').classList.add('hidden'), 2000);
+  });
+
+  function encodeWAV(buffer) {
+    const numChannels = buffer.numberOfChannels;
+    const length = buffer.length * numChannels * 2 + 44;
+    const view = new DataView(new ArrayBuffer(length));
+    function w(s,i,isStr) { for(let j=0;j<(isStr?s.length:1);j++) view.setUint8(i++,isStr?s.charCodeAt(j):s); return i; }
+    let off = 0; off = w('RIFF', off, 1); view.setUint32(off, length-8, true); off+=4; off = w('WAVE', off, 1);
+    off = w('fmt ', off, 1); view.setUint32(off, 16, true); off+=4; view.setUint16(off, 1, true); off+=2;
+    view.setUint16(off, numChannels, true); off+=2; view.setUint32(off, buffer.sampleRate, true); off+=4;
+    view.setUint32(off, buffer.sampleRate*numChannels*2, true); off+=4;
+    view.setUint16(off, numChannels*2, true); off+=2; view.setUint16(off, 16, true); off+=2;
+    off = w('data', off, 1); view.setUint32(off, buffer.length*numChannels*2, true); off+=4;
+
+    const interleaved = new Float32Array(buffer.length * numChannels);
+    for (let c=0; c<numChannels; c++) { const ch = buffer.getChannelData(c); for (let i=0; i<buffer.length; i++) interleaved[i*numChannels+c] = ch[i]; }
+    for (let i=0; i<interleaved.length; i++) { const s = Math.max(-1, Math.min(1, interleaved[i])); view.setInt16(off, s<0?s*0x8000:s*0x7FFF, true); off+=2; }
+    return new Uint8Array(view.buffer);
+  }
+</script>
