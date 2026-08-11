@@ -2213,22 +2213,73 @@ export const translations: Record<string, { id: string; en: string }> = {
   'collage.border': { id: 'Border', en: 'Border' },
   'collage.add': { id: 'Tambah Foto', en: 'Add Photos' },
   'collage.download': { id: 'Download', en: 'Download' },
+
+  // ---- Tool keys Batch 8 ----
+  'tool.pdf_compare': { id: 'PDF Compare', en: 'PDF Compare' },
+  'tool.pdf_compare_desc': { id: 'Bandingkan 2 PDF side-by-side.', en: 'Compare 2 PDFs side-by-side.' },
+  'tool.pdf_booklet': { id: 'PDF Booklet', en: 'PDF Booklet' },
+  'tool.pdf_booklet_desc': { id: 'Susun halaman untuk cetak booklet A5.', en: 'Arrange pages for A5 booklet printing.' },
+  'tool.palette_extractor': { id: 'Palette Extractor', en: 'Palette Extractor' },
+  'tool.palette_extractor_desc': { id: 'Ekstrak palet warna dominan dari gambar.', en: 'Extract dominant color palette from images.' },
+  'tool.qr_scanner': { id: 'QR Scanner', en: 'QR Scanner' },
+  'tool.qr_scanner_desc': { id: 'Scan QR code dari kamera atau gambar.', en: 'Scan QR codes from camera or images.' },
+  'tool.color_harmony': { id: 'Color Harmony', en: 'Color Harmony' },
+  'tool.color_harmony_desc': { id: 'Temukan harmoni warna: komplementer, triadic.', en: 'Find color harmonies: complementary, triadic.' },
+  'tool.contrast_checker': { id: 'Contrast Checker', en: 'Contrast Checker' },
+  'tool.contrast_checker_desc': { id: 'Cek kontras warna WCAG accessibility.', en: 'Check WCAG color contrast accessibility.' },
+  'tool.grid_playground': { id: 'CSS Grid Playground', en: 'CSS Grid Playground' },
+  'tool.grid_playground_desc': { id: 'Visual playground CSS Grid + export.', en: 'Visual CSS Grid playground + export.' },
+  'tool.json_schema': { id: 'JSON Schema Validator', en: 'JSON Schema Validator' },
+  'tool.json_schema_desc': { id: 'Validasi JSON dengan skema custom.', en: 'Validate JSON with custom schema.' },
+  'tool.morse_code': { id: 'Morse Code', en: 'Morse Code' },
+  'tool.morse_code_desc': { id: 'Konversi teks kode Morse.', en: 'Convert text to/from Morse code.' },
+  'tool.rot13': { id: 'ROT13 Cipher', en: 'ROT13 Cipher' },
+  'tool.rot13_desc': { id: 'Enkripsi/dekripsi ROT13 & Caesar.', en: 'Encrypt/decrypt ROT13 & Caesar cipher.' },
+
+  // ---- Header keys Batch 8 ----
+  'header.pdf_compare': { id: 'PDF Compare', en: 'PDF Compare' },
+  'header.pdf_compare_desc': { id: 'Bandingkan 2 file PDF side-by-side.', en: 'Compare 2 PDF files side-by-side.' },
+  'header.pdf_booklet': { id: 'PDF Booklet', en: 'PDF Booklet' },
+  'header.pdf_booklet_desc': { id: 'Susun halaman untuk cetak booklet A5.', en: 'Arrange pages for A5 booklet printing.' },
+  'header.palette_extractor': { id: 'Palette Extractor', en: 'Palette Extractor' },
+  'header.palette_extractor_desc': { id: 'Ekstrak palet warna dominan dari gambar.', en: 'Extract dominant color palette from images.' },
+  'header.qr_scanner': { id: 'QR Scanner', en: 'QR Scanner' },
+  'header.qr_scanner_desc': { id: 'Scan QR code dari kamera atau gambar.', en: 'Scan QR codes from camera or images.' },
+  'header.color_harmony': { id: 'Color Harmony Generator', en: 'Color Harmony Generator' },
+  'header.color_harmony_desc': { id: 'Temukan harmoni warna: komplementer, triadic, analogous.', en: 'Find color harmonies: complementary, triadic, analogous.' },
+  'header.contrast_checker': { id: 'WCAG Contrast Checker', en: 'WCAG Contrast Checker' },
+  'header.contrast_checker_desc': { id: 'Cek kontras warna untuk accessibility WCAG.', en: 'Check color contrast for WCAG accessibility.' },
+  'header.grid_playground': { id: 'CSS Grid Playground', en: 'CSS Grid Playground' },
+  'header.grid_playground_desc': { id: 'Visual playground CSS Grid: atur container & items, export CSS.', en: 'Visual CSS Grid playground: configure container & items, export CSS.' },
+  'header.json_schema': { id: 'JSON Schema Validator', en: 'JSON Schema Validator' },
+  'header.json_schema_desc': { id: 'Validasi JSON dengan skema custom.', en: 'Validate JSON with custom schema.' },
+  'header.morse_code': { id: 'Morse Code Converter', en: 'Morse Code Converter' },
+  'header.morse_code_desc': { id: 'Konversi teks ke kode Morse dan sebaliknya.', en: 'Convert text to Morse code and vice versa.' },
+  'header.rot13': { id: 'ROT13 & Caesar Cipher', en: 'ROT13 & Caesar Cipher' },
+  'header.rot13_desc': { id: 'Enkripsi dan dekripsi dengan ROT13 atau Caesar cipher.', en: 'Encrypt and decrypt with ROT13 or Caesar cipher.' },
 };
 
-export function getLang(): Lang {
-  if (typeof window === 'undefined') return 'id';
-  return (localStorage.getItem('lang') as Lang) || 'id';
-}
-
-export function setLang(lang: Lang) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('lang', lang);
-    document.documentElement.lang = lang;
+export function t(key, fallback) {
+  try {
+    var lang = (typeof localStorage !== 'undefined' && localStorage.getItem('lang')) || 'id';
+    var entry = translations[key];
+    if (entry) return entry[lang] || entry.id || fallback || key;
+    return fallback || key;
+  } catch (e) {
+    return fallback || key;
   }
 }
 
-export function t(key: string, fallback?: string): string {
-  const lang = getLang();
-  const entry = translations[key];
-  return entry ? entry[lang] : (fallback || key);
+export function getLang() {
+  try {
+    return (typeof localStorage !== 'undefined' && localStorage.getItem('lang')) || 'id';
+  } catch (e) {
+    return 'id';
+  }
+}
+
+export function setLang(lang) {
+  try {
+    localStorage.setItem('lang', lang);
+  } catch (e) {}
 }

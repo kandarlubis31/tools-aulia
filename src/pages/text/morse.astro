@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Morse Code">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader title="Morse Code Converter" titleKey="header.morse_code" desc="Konversi teks ke kode Morse dan sebaliknya." descKey="header.morse_code_desc" icon='<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/><circle cx="6" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>' gradient="from-cyan-500 to-blue-600" />
+    <div class="card-base p-8 animate-fade-in">
+      <div class="flex gap-2 mb-4">
+        <button id="to-morse" class="flex-1 py-2 bg-cyan-600 text-white rounded-xl font-bold text-sm">Teks → Morse</button>
+        <button id="to-text" class="flex-1 py-2 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold text-sm">Morse → Teks</button>
+      </div>
+      <textarea id="input" rows="4" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4" placeholder="Masukkan teks..."></textarea>
+      <textarea id="output" rows="4" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4" placeholder="Hasil..." readonly></textarea>
+      <div class="flex gap-2">
+        <button id="copy-btn" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-cyan-100 transition-colors">📋 Copy</button>
+        <button id="play-btn" class="flex-1 py-3 bg-cyan-600 text-white rounded-xl font-bold hover:bg-cyan-700 transition-colors">🔊 Play Audio</button>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+<script>
+  const CHAR_TO_MORSE = { 'A':'.-', 'B':'-...', 'C':'-.-.', 'D':'-..', 'E':'.', 'F':'..-.', 'G':'--.', 'H':'....', 'I':'..', 'J':'.---', 'K':'-.-', 'L':'.-..', 'M':'--', 'N':'-.', 'O':'---', 'P':'.--.', 'Q':'--.-', 'R':'.-.', 'S':'...', 'T':'-', 'U':'..-', 'V':'...-', 'W':'.--', 'X':'-..-', 'Y':'-.--', 'Z':'--..', '0':'-----', '1':'.----', '2':'..---', '3':'...--', '4':'....-', '5':'.....', '6':'-....', '7':'--...', '8':'---..', '9':'----.', '.':'.-.-.-', ',':'--..--', '?':'..--..', '!':'-.-.--', '/':'-..-.', '(':'.--.-.', ')':'-.--.-', '&':'.-...', ':':'---...', ';':'-.-.-.', '=':'-...-', '+':'.-.-.', '-':'-....-', '_':'..--.-', '"':'.-..-.', '$':'...-..-', '@':'.--.-.', ' ':'/'};
+  const MORSE_TO_CHAR = {};
+  for (const [k, v] of Object.entries(CHAR_TO_MORSE)) MORSE_TO_CHAR[v] = k;
+  function textToMorse(text) {
+    return text.toUpperCase().split('').map(c => CHAR_TO_MORSE[c] || c).join(' ');
+  }
+  function morseToText(morse) {
+    return morse.split(' ').map(c => MORSE_TO_CHAR[c] || (c === '/' ? ' ' : c)).join('');
+  }
+  document.getElementById('to-morse').onclick = () => { document.getElementById('output').value = textToMorse(document.getElementById('input').value); };
+  document.getElementById('to-text').onclick = () => { document.getElementById('output').value = morseToText(document.getElementById('input').value); };
+  document.getElementById('copy-btn').onclick = () => { navigator.clipboard.writeText(document.getElementById('output').value); };
+  document.getElementById('play-btn').onclick = () => {
+    const morse = document.getElementById('output').value;
+    if (!morse) return;
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    let t = ctx.currentTime;
+    for (const c of morse) {
+      if (c === '.') { const o = ctx.createOscillator(); o.connect(ctx.destination); o.start(t); o.stop(t + 0.1); t += 0.15; }
+      else if (c === '-') { const o = ctx.createOscillator(); o.connect(ctx.destination); o.start(t); o.stop(t + 0.3); t += 0.35; }
+      else if (c === ' ') t += 0.2;
+      else if (c === '/') t += 0.4;
+    }
+  };
+</script>

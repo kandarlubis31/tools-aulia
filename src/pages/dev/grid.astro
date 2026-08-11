@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="CSS Grid Playground">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader title="CSS Grid Playground" titleKey="header.grid_playground" desc="Visual playground CSS Grid: atur container & items, export CSS." descKey="header.grid_playground_desc" icon='<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>' gradient="from-blue-500 to-indigo-600" />
+    <div class="grid gap-8 animate-fade-in">
+      <div class="card-base p-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div><label class="text-xs text-matte-500 mb-1 block">Columns</label><input id="cols" type="number" value="3" min="1" max="12" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">Rows</label><input id="rows" type="number" value="3" min="1" max="12" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">Gap</label><input id="gap" type="number" value="8" min="0" max="40" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">Column Size</label><select id="col-size" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold"><option value="1fr">1fr</option><option value="auto">auto</option><option value="minmax(100px,1fr)">minmax</option></select></div>
+        </div>
+        <div class="flex gap-2"><button id="add-item" class="px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-lg text-sm font-bold">+ Item</button><button id="reset" class="px-3 py-2 bg-matte-200 dark:bg-matte-700 text-matte-500 rounded-lg text-sm font-bold">Reset</button></div>
+      </div>
+      <div class="card-base p-6"><h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4">Preview</h3><div id="grid-container" class="min-h-[200px] p-4 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-xl bg-matte-50 dark:bg-surface-hover"></div></div>
+      <div class="card-base p-6"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-matte-800 dark:text-white">Generated CSS</h3><button id="copy-css" class="text-xs px-3 py-1 bg-matte-200 dark:bg-matte-700 rounded-full hover:bg-blue-100 transition-colors">📋 Copy</button></div><pre id="css-output" class="p-4 bg-matte-100 dark:bg-surface-hover rounded-xl font-mono text-sm text-matte-700 dark:text-matte-300 overflow-x-auto whitespace-pre-wrap"></pre></div>
+    </div>
+  </div>
+</BaseLayout>
+<script>
+  let itemCount = 9;
+  const colors = ['bg-blue-400','bg-pink-400','bg-emerald-400','bg-amber-400','bg-cyan-400','bg-rose-400','bg-indigo-400','bg-violet-400','bg-teal-400','bg-orange-400','bg-lime-400','bg-sky-400'];
+  function render() {
+    const cols = document.getElementById('cols').value;
+    const rows = document.getElementById('rows').value;
+    const gap = document.getElementById('gap').value;
+    const colSize = document.getElementById('col-size').value;
+    const el = document.getElementById('grid-container');
+    el.style.display = 'grid';
+    el.style.gridTemplateColumns = 'repeat(' + cols + ', ' + colSize + ')';
+    el.style.gridTemplateRows = 'repeat(' + rows + ', auto)';
+    el.style.gap = gap + 'px';
+    el.innerHTML = '';
+    for (let i = 1; i <= itemCount; i++) {
+      const item = document.createElement('div');
+      item.className = colors[(i-1) % colors.length] + ' text-white font-bold rounded-lg p-4 text-center text-sm min-h-[40px] flex items-center justify-center';
+      item.textContent = i;
+      el.appendChild(item);
+    }
+    var css = '.grid {\n  display: grid;\n  grid-template-columns: repeat(' + cols + ', ' + colSize + ');\n  grid-template-rows: repeat(' + rows + ', auto);\n  gap: ' + gap + 'px;\n}';
+    document.getElementById('css-output').textContent = css;
+  }
+  document.querySelectorAll('select, input').forEach(el => { el.addEventListener('change', render); el.addEventListener('input', render); });
+  document.getElementById('add-item').onclick = () => { itemCount++; render(); };
+  document.getElementById('reset').onclick = () => { itemCount = 9; document.getElementById('cols').value = 3; document.getElementById('rows').value = 3; document.getElementById('gap').value = 8; document.getElementById('col-size').value = '1fr'; render(); };
+  document.getElementById('copy-css').onclick = () => { navigator.clipboard.writeText(document.getElementById('css-output').textContent); };
+  render();
+</script>

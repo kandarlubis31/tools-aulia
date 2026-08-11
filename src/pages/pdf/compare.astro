@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="PDF Compare">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader title="PDF Compare" titleKey="header.pdf_compare" desc="Bandingkan 2 file PDF side-by-side untuk melihat perbedaan." descKey="header.pdf_compare_desc" icon='<rect x="2" y="3" width="8" height="18" rx="2"/><rect x="14" y="3" width="8" height="18" rx="2"/><line x1="12" y1="7" x2="12" y2="17"/>' gradient="from-indigo-500 to-violet-600" />
+    <div class="grid gap-6 animate-fade-in">
+      <div class="grid grid-cols-2 gap-4">
+        <div id="drop-a" class="border-2 border-dashed border-indigo-300 dark:border-indigo-700 rounded-2xl p-8 text-center cursor-pointer hover:border-indigo-400 transition-colors"><input type="file" id="file-a" accept=".pdf" class="hidden" /><p class="text-matte-500 font-bold">📄 PDF A</p><p class="text-xs text-matte-400 mt-1" id="name-a">Drop atau klik</p></div>
+        <div id="drop-b" class="border-2 border-dashed border-indigo-300 dark:border-indigo-700 rounded-2xl p-8 text-center cursor-pointer hover:border-indigo-400 transition-colors"><input type="file" id="file-b" accept=".pdf" class="hidden" /><p class="text-matte-500 font-bold">📄 PDF B</p><p class="text-xs text-matte-400 mt-1" id="name-b">Drop atau klik</p></div>
+      </div>
+      <div class="flex gap-4">
+        <button id="compare" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors">🔍 Bandingkan</button>
+        <select id="view" class="p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold"><option value="side">Side by Side</option><option value="overlay">Overlay</option></select>
+      </div>
+      <div id="result" class="hidden"><div id="canvas-container" class="flex gap-2 overflow-x-auto p-2 bg-matte-100 dark:bg-surface-hover rounded-xl"></div><div id="stats" class="mt-4 p-4 bg-matte-50 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border"></div></div>
+    </div>
+  </div>
+</BaseLayout>
+<script>
+  let pdfA = null, pdfB = null;
+  function setupDrop(id, fileIdx) {
+    const drop = document.getElementById('drop-' + id);
+    const input = document.getElementById('file-' + id);
+    drop.onclick = () => input.click();
+    drop.ondragover = e => { e.preventDefault(); drop.classList.add('border-indigo-500'); };
+    drop.ondragleave = () => drop.classList.remove('border-indigo-500');
+    drop.ondrop = e => { e.preventDefault(); drop.classList.remove('border-indigo-500'); handleFile(e.dataTransfer.files[0], id); };
+    input.onchange = e => handleFile(e.target.files[0], id);
+  }
+  function handleFile(file, id) {
+    if (!file || file.type !== 'application/pdf') return;
+    document.getElementById('name-' + id).textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = async e => {
+      const pdfjsLib = await window.pdfjsLib;
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(e.target.result) }).promise;
+      if (id === 'a') pdfA = pdf; else pdfB = pdf;
+    };
+    reader.readAsArrayBuffer(file);
+  }
+  async function renderPage(pdf, pageNum, canvas) {
+    const page = await pdf.getPage(pageNum);
+    const scale = 1.5;
+    const vp = page.getViewport({ scale });
+    canvas.width = vp.width;
+    canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+  }
+  document.getElementById('compare').onclick = async () => {
+    if (!pdfA || !pdfB) return alert('Upload kedua PDF dulu!');
+    const container = document.getElementById('canvas-container');
+    container.innerHTML = '';
+    const maxPages = Math.max(pdfA.numPages, pdfB.numPages);
+    for (let i = 1; i <= Math.min(maxPages, 10); i++) {
+      const wrap = document.createElement('div');
+      wrap.className = 'flex-shrink-0';
+      const label = document.createElement('p');
+      label.className = 'text-xs text-center text-matte-500 mb-1 font-bold';
+      label.textContent = 'Hal ' + i;
+      wrap.appendChild(label);
+      if (i <= pdfA.numPages) { const c = document.createElement('canvas'); c.className = 'border rounded-lg'; wrap.appendChild(c); renderPage(pdfA, i, c); }
+      if (i <= pdfB.numPages) { const c = document.createElement('canvas'); c.className = 'border rounded-lg'; wrap.appendChild(c); renderPage(pdfB, i, c); }
+      container.appendChild(wrap);
+    }
+    document.getElementById('stats').innerHTML = '<p class="text-sm text-matte-500">PDF A: <strong>' + pdfA.numPages + '</strong> halaman | PDF B: <strong>' + pdfB.numPages + '</strong> halaman | Ditampilkan: <strong>' + Math.min(maxPages, 10) + '</strong> halaman</p>';
+    document.getElementById('result').classList.remove('hidden');
+  };
+  setupDrop('a'); setupDrop('b');
+</script>

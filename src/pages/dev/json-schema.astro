@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="JSON Schema Validator">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader title="JSON Schema Validator" titleKey="header.json_schema" desc="Validasi JSON dengan skema custom." descKey="header.json_schema_desc" icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/>' gradient="from-rose-500 to-pink-600" />
+    <div class="card-base p-8 animate-fade-in">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div><label class="text-xs text-matte-500 mb-1 block">Schema (JSON)</label><textarea id="schema" rows="8" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-xs resize-y" placeholder='{"type": "object", "properties": {"name": {"type": "string"}, "age": {"type": "number", "minimum": 0}}}'></textarea></div>
+        <div><label class="text-xs text-matte-500 mb-1 block">Data (JSON)</label><textarea id="data" rows="8" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-xs resize-y" placeholder='{"name": "Budi", "age": 25}'></textarea></div>
+      </div>
+      <button id="validate" class="w-full py-3 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-colors mb-4">✅ Validasi</button>
+      <div id="result" class="p-4 rounded-xl font-mono text-sm hidden"></div>
+    </div>
+  </div>
+</BaseLayout>
+<script>
+  function validate(schema, data, path) {
+    const errors = [];
+    path = path || '';
+    if (schema.type) {
+      const types = Array.isArray(schema.type) ? schema.type : [schema.type];
+      const actual = Array.isArray(data) ? 'array' : typeof data;
+      if (!types.includes(actual)) errors.push(path + ': expected ' + types.join('|') + ', got ' + actual);
+    }
+    if (schema.properties && typeof data === 'object' && !Array.isArray(data)) {
+      for (const [key, subSchema] of Object.entries(schema.properties)) {
+        if (data.hasOwnProperty(key)) {
+          errors.push(...validate(subSchema, data[key], path ? path+'.'+key : key));
+        } else if (schema.required && schema.required.includes(key)) {
+          errors.push(path + '.' + key + ': required but missing');
+        }
+      }
+    }
+    if (schema.minimum !== undefined && typeof data === 'number' && data < schema.minimum) errors.push(path + ': must be >= ' + schema.minimum);
+    if (schema.maximum !== undefined && typeof data === 'number' && data > schema.maximum) errors.push(path + ': must be <= ' + schema.maximum);
+    if (schema.minLength !== undefined && typeof data === 'string' && data.length < schema.minLength) errors.push(path + ': length must be >= ' + schema.minLength);
+    if (schema.maxLength !== undefined && typeof data === 'string' && data.length > schema.maxLength) errors.push(path + ': length must be <= ' + schema.maxLength);
+    if (schema.enum && !schema.enum.includes(data)) errors.push(path + ': must be one of [' + schema.enum.join(', ') + ']');
+    return errors;
+  }
+  document.getElementById('validate').onclick = () => {
+    const resultEl = document.getElementById('result');
+    try {
+      const schema = JSON.parse(document.getElementById('schema').value);
+      const data = JSON.parse(document.getElementById('data').value);
+      const errors = validate(schema, data);
+      resultEl.classList.remove('hidden');
+      if (errors.length === 0) {
+        resultEl.className = 'p-4 rounded-xl font-mono text-sm bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border border-emerald-200 dark:border-emerald-800';
+        resultEl.textContent = '✅ Valid! Tidak ada error.';
+      } else {
+        resultEl.className = 'p-4 rounded-xl font-mono text-sm bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-800';
+        resultEl.textContent = errors.length + ' error(s):\n' + errors.join('\n');
+      }
+    } catch(e) {
+      resultEl.classList.remove('hidden');
+      resultEl.className = 'p-4 rounded-xl font-mono text-sm bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-800';
+      resultEl.textContent = 'Parse error: ' + e.message;
+    }
+  };
+</script>
