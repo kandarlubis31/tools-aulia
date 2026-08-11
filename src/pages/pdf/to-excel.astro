@@ -1,0 +1,191 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="PDF to Excel — Ekstrak Tabel PDF ke XLSX Online">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="PDF to Excel"
+      titleKey="header.pdf_to_excel"
+      desc="Ekstrak teks tabel dari PDF jadi XLSX (Excel). 100% client-side."
+      descKey="header.pdf_to_excel_desc"
+      icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><rect x="8" y="12" width="8" height="6"/><line x1="10" y1="14" x2="14" y2="14"/><line x1="10" y1="16" x2="14" y2="16"/>'
+      gradient="from-green-500 to-emerald-600"
+    />
+
+    <div class="card-base p-6 text-center animate-fade-in">
+      <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 hover:border-green-400 transition-colors cursor-pointer" id="drop-zone">
+        <input type="file" id="file-input" accept=".pdf" class="hidden" />
+        <svg class="w-12 h-12 mx-auto mb-3 text-matte-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p class="text-sm font-bold text-matte-500 dark:text-matte-300" data-i18n="pdf_upload">Upload file PDF</p>
+        <p class="text-2xs text-matte-400 mt-1" id="file-name">—</p>
+      </div>
+
+      <div id="progress-area" class="hidden mt-4">
+        <div class="h-1.5 rounded-full bg-matte-200 dark:bg-matte-700 overflow-hidden">
+          <div id="progress-bar" class="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-300 w-0"></div>
+        </div>
+        <p id="status-text" class="text-xs text-matte-400 mt-2"></p>
+      </div>
+
+      <div id="result-area" class="hidden mt-4">
+        <div class="mb-3 flex flex-wrap gap-2 justify-center">
+          <button id="download-xlsx" class="gradient-brand px-5 py-2.5 rounded-lg text-sm font-bold">
+            💾 Download .xlsx
+          </button>
+          <button id="download-csv" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 transition-all">
+            📄 Download .csv
+          </button>
+        </div>
+        <div class="max-h-64 overflow-auto rounded-lg border border-matte-200 dark:border-matte-700">
+          <table id="preview-table" class="w-full text-xs"></table>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6">
+      ⚠️ Ekstraksi tabel berbasis spasi/tab — hasil mungkin perlu rapi manual untuk layout kompleks.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', async () => {
+    const dropZone = document.getElementById('drop-zone')!;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const fileName = document.getElementById('file-name')!;
+    const progressArea = document.getElementById('progress-area')!;
+    const progressBar = document.getElementById('progress-bar')!;
+    const statusText = document.getElementById('status-text')!;
+    const resultArea = document.getElementById('result-area')!;
+    const previewTable = document.getElementById('preview-table')!;
+    const downloadXlsx = document.getElementById('download-xlsx') as HTMLButtonElement;
+    const downloadCsv = document.getElementById('download-csv') as HTMLButtonElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let tableData: string[][] = [];
+
+    function setProgress(pct: number, msg: string) {
+      progressBar.style.width = pct + '%';
+      statusText.textContent = msg;
+    }
+
+    async function loadPdfJs() {
+      if ((window as any).pdfjsLib) return (window as any).pdfjsLib;
+      return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.onload = () => resolve((window as any).pdfjsLib);
+        document.head.appendChild(script);
+      });
+    }
+
+    async function processFile(file: File) {
+      fileName.textContent = file.name;
+      progressArea.classList.remove('hidden');
+      resultArea.classList.add('hidden');
+      setProgress(5, 'Loading PDF.js…');
+
+      const pdfjsLib = await loadPdfJs();
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      setProgress(15, 'Membaca PDF…');
+
+      const buffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+      const totalPages = pdf.numPages;
+
+      const allRows: string[][] = [];
+
+      for (let p = 1; p <= totalPages; p++) {
+        setProgress(15 + Math.round((p / totalPages) * 50), `Ekstrak halaman ${p}/${totalPages}…`);
+        const page = await pdf.getPage(p);
+        const textContent = await page.getTextContent();
+
+        // Group text items by Y position (lines) and X position (columns)
+        const items = textContent.items.map((item: any) => ({
+          x: item.transform[4],
+          y: item.transform[5],
+          text: item.str.trim(),
+        })).filter((item: any) => item.text);
+
+        // Group into rows by Y proximity
+        items.sort((a: any, b: any) => b.y - a.y || a.x - b.x);
+        const rows: string[][] = [];
+        let currentRow: any[] = [];
+        let lastY = items[0]?.y;
+
+        for (const item of items) {
+          if (currentRow.length && Math.abs(item.y - lastY) > 5) {
+            rows.push(currentRow.map(i => i.text));
+            currentRow = [];
+          }
+          currentRow.push(item);
+          lastY = item.y;
+        }
+        if (currentRow.length) rows.push(currentRow.map(i => i.text));
+
+        allRows.push(...rows);
+        if (p < totalPages) allRows.push(['--- Page ' + (p + 1) + ' ---']);
+      }
+
+      setProgress(70, 'Memproses data…');
+      tableData = allRows;
+
+      // Preview
+      const maxCols = Math.max(...allRows.map(r => r.length));
+      previewTable.innerHTML = `
+        <thead><tr>${Array.from({length: maxCols}, (_, i) => `<th class="px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated border-b text-left text-2xs font-bold text-matte-400 uppercase">${String.fromCharCode(65 + i)}</th>`).join('')}</tr></thead>
+        <tbody>${allRows.slice(0, 20).map(row => `<tr>${row.map(cell => `<td class="px-3 py-1 border-b border-matte-100 dark:border-matte-800 text-matte-700 dark:text-matte-300 max-w-[200px] truncate">${escHtml(cell)}</td>`).join('')}${'<td class="px-3 py-1 border-b"></td>'.repeat(Math.max(0, maxCols - row.length))}</tr>`).join('')}</tbody>
+      `;
+
+      setProgress(100, `✅ Selesai — ${allRows.length} baris, ${maxCols} kolom`);
+      resultArea.classList.remove('hidden');
+    }
+
+    function escHtml(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function toCsv(): string {
+      return tableData.map(row => row.map(cell => {
+        const val = String(cell);
+        if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+          return '"' + val.replace(/"/g, '""') + '"';
+        }
+        return val;
+      }).join(',')).join('\n');
+    }
+
+    function downloadBlob(content: string, mime: string, ext: string) {
+      const blob = new Blob(['\uFEFF' + content], { type: mime });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `extracted-${Date.now()}.${ext}`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-green-400'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-green-400'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-green-400');
+      const file = e.dataTransfer?.files?.[0];
+      if (file) processFile(file);
+    });
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (file) processFile(file);
+    });
+
+    downloadCsv.addEventListener('click', () => downloadBlob(toCsv(), 'text/csv', 'csv'));
+    downloadXlsx.addEventListener('click', async () => {
+      toast('Download sebagai CSV dulu (XLSX butuh SheetJS CDN - coming soon)');
+      downloadBlob(toCsv(), 'text/csv', 'csv');
+    });
+  });
+</script>

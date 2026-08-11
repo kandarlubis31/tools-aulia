@@ -1,0 +1,164 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Video to GIF — Ubah Video ke GIF Animasi Online">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Video to GIF"
+      titleKey="header.video_to_gif"
+      desc="Ekstrak frame dari video jadi animasi GIF. Upload video, atur FPS & durasi."
+      descKey="header.video_to_gif_desc"
+      icon='<rect x="2" y="3" width="20" height="14" rx="2"/><polygon points="10 8 16 12 10 16 10 8"/>'
+      gradient="from-rose-500 to-pink-600"
+    />
+
+    <div class="animate-fade-in space-y-4">
+      <div class="card-base p-5">
+        <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 text-center hover:border-rose-400 transition-colors cursor-pointer mb-4" id="drop-zone">
+          <input type="file" id="file-input" accept="video/*" class="hidden" />
+          <svg class="w-12 h-12 mx-auto mb-3 text-matte-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p class="text-sm font-bold text-matte-500 dark:text-matte-300" data-i18n="vid.upload">Upload file video</p>
+          <p class="text-2xs text-matte-400 mt-1">MP4, WebM (max 50MB)</p>
+        </div>
+
+        <div id="video-preview" class="hidden mb-4">
+          <video id="source-video" controls class="w-full max-h-64 rounded-lg bg-black"></video>
+        </div>
+
+        <div class="flex flex-wrap gap-3 items-center justify-center" id="controls">
+          <div class="flex items-center gap-1.5">
+            <label class="text-2xs text-matte-400 font-bold">FPS:</label>
+            <input id="fps-input" type="number" value="10" min="2" max="30" class="w-16 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-rose-500/40" />
+          </div>
+          <div class="flex items-center gap-1.5">
+            <label class="text-2xs text-matte-400 font-bold">Max duration:</label>
+            <input id="dur-input" type="number" value="5" min="1" max="30" class="w-16 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-rose-500/40" />
+            <span class="text-2xs text-matte-400">detik</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="output-area" class="hidden card-base p-5 text-center">
+        <canvas id="preview-canvas" class="max-w-full mx-auto rounded-lg" style="max-height:300px"></canvas>
+        <div class="mt-3 flex flex-wrap gap-2 justify-center">
+          <button id="extract-btn" class="gradient-brand px-5 py-2.5 rounded-lg text-sm font-bold">
+            🎞️ <span data-i18n="vid.extract">Ekstrak Frame</span>
+          </button>
+          <button id="download-frames" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 transition-all">
+            💾 Download Frame (PNG)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6">
+      ℹ️ Frame diekstrak dari video → download sebagai urutan PNG. Gunakan GIF Maker untuk gabung jadi animasi GIF.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone')!;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const videoPreview = document.getElementById('video-preview')!;
+    const sourceVideo = document.getElementById('source-video') as HTMLVideoElement;
+    const fpsInput = document.getElementById('fps-input') as HTMLInputElement;
+    const durInput = document.getElementById('dur-input') as HTMLInputElement;
+    const outputArea = document.getElementById('output-area')!;
+    const previewCanvas = document.getElementById('preview-canvas') as HTMLCanvasElement;
+    const extractBtn = document.getElementById('extract-btn') as HTMLButtonElement;
+    const downloadFrames = document.getElementById('download-frames') as HTMLButtonElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let frames: string[] = [];
+    let animInterval: number | null = null;
+
+    function loadVideo(file: File) {
+      if (file.size > 50 * 1024 * 1024) { toast('Max 50MB', 'error'); return; }
+      const url = URL.createObjectURL(file);
+      sourceVideo.src = url;
+      sourceVideo.onloadedmetadata = () => {
+        videoPreview.classList.remove('hidden');
+        outputArea.classList.add('hidden');
+        frames = [];
+        toast(`Video: ${sourceVideo.videoWidth}x${sourceVideo.videoHeight}, ${sourceVideo.duration.toFixed(1)}s`);
+      };
+    }
+
+    function extractFrames() {
+      const fps = parseInt(fpsInput.value) || 10;
+      const maxDur = parseFloat(durInput.value) || 5;
+      const video = sourceVideo;
+      const totalFrames = Math.min(Math.floor(video.duration * fps), maxDur * fps);
+      frames = [];
+
+      previewCanvas.width = video.videoWidth || 640;
+      previewCanvas.height = video.videoHeight || 360;
+      const ctx = previewCanvas.getContext('2d')!;
+
+      video.currentTime = 0;
+      let frameIdx = 0;
+
+      video.onseeked = () => {
+        ctx.drawImage(video, 0, 0, previewCanvas.width, previewCanvas.height);
+        frames.push(previewCanvas.toDataURL('image/png'));
+        frameIdx++;
+
+        if (frameIdx < totalFrames) {
+          video.currentTime = frameIdx / fps;
+        } else {
+          outputArea.classList.remove('hidden');
+          outputArea.scrollIntoView({ behavior: 'smooth' });
+          toast(`${frames.length} frame diekstrak!`);
+          previewFrame(0);
+        }
+      };
+
+      video.currentTime = 0;
+    }
+
+    function previewFrame(idx: number) {
+      if (!frames.length) return;
+      const img = new Image();
+      img.onload = () => {
+        const ctx = previewCanvas.getContext('2d')!;
+        ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        ctx.drawImage(img, 0, 0);
+      };
+      img.src = frames[idx % frames.length];
+    }
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-rose-400'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-rose-400'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-rose-400');
+      const file = e.dataTransfer?.files?.[0];
+      if (file) loadVideo(file);
+    });
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (file) loadVideo(file);
+    });
+
+    extractBtn.addEventListener('click', extractFrames);
+    downloadFrames.addEventListener('click', () => {
+      if (!frames.length) { toast('Ekstrak frame dulu', 'error'); return; }
+      frames.forEach((dataUrl, i) => {
+        setTimeout(() => {
+          const a = document.createElement('a');
+          a.href = dataUrl;
+          a.download = `frame-${String(i+1).padStart(3,'0')}.png`;
+          a.click();
+        }, i * 250);
+      });
+      toast(`Mendownload ${frames.length} frame…`);
+    });
+  });
+</script>

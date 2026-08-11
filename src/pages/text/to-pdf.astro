@@ -1,0 +1,148 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Text to PDF — Konversi Teks ke PDF Online">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Text to PDF"
+      titleKey="header.text_to_pdf"
+      desc="Konversi teks plain atau markdown jadi PDF. Atur font size & margin."
+      descKey="header.text_to_pdf_desc"
+      icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'
+      gradient="from-teal-500 to-emerald-600"
+    />
+
+    <div class="card-base p-5 animate-fade-in">
+      <textarea id="text-input" rows="12" placeholder="Tulis atau paste teks di sini…
+Kamu bisa tulis bebas, gunakan
+line break untuk paragraf baru."
+        class="w-full px-4 py-3 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-teal-500/40 resize-y mb-4"></textarea>
+
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div>
+          <label class="text-2xs text-matte-400 font-bold block mb-1">Font Size</label>
+          <input id="size-input" type="number" value="12" min="8" max="24" class="w-full px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-teal-500/40" />
+        </div>
+        <div>
+          <label class="text-2xs text-matte-400 font-bold block mb-1">Margin (px)</label>
+          <input id="margin-input" type="number" value="50" min="20" max="100" class="w-full px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-teal-500/40" />
+        </div>
+        <div class="flex items-end">
+          <button id="convert-btn" class="w-full gradient-brand px-4 py-2 rounded-lg text-sm font-bold">
+            🔄 Convert to PDF
+          </button>
+        </div>
+      </div>
+
+      <button id="download-btn" class="hidden gradient-brand px-6 py-3 rounded-lg text-sm font-bold">
+        💾 Download PDF
+      </button>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6">
+      ℹ️ Menggunakan pdf-lib untuk embed teks ke halaman PDF A4. Font default: Helvetica.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const textInput = document.getElementById('text-input') as HTMLTextAreaElement;
+    const sizeInput = document.getElementById('size-input') as HTMLInputElement;
+    const marginInput = document.getElementById('margin-input') as HTMLInputElement;
+    const convertBtn = document.getElementById('convert-btn') as HTMLButtonElement;
+    const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let pdfBytes: Uint8Array | null = null;
+
+    async function loadPdfLib() {
+      if ((window as any).PDFLib) return (window as any).PDFLib;
+      return new Promise((resolve) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+        s.onload = () => resolve((window as any).PDFLib);
+        document.head.appendChild(s);
+      });
+    }
+
+    function wrapText(text: string, maxWidth: number, fontSize: number): string[] {
+      const lines: string[] = [];
+      const paragraphs = text.split('\n');
+      for (const para of paragraphs) {
+        if (!para.trim()) { lines.push(''); continue; }
+        const words = para.split(' ');
+        let line = '';
+        for (const word of words) {
+          const testLine = line ? line + ' ' + word : word;
+          if (testLine.length * (fontSize * 0.6) > maxWidth) {
+            lines.push(line);
+            line = word;
+          } else {
+            line = testLine;
+          }
+        }
+        if (line) lines.push(line);
+      }
+      return lines;
+    }
+
+    async function convert() {
+      const text = textInput.value.trim();
+      if (!text) { toast('Tulis teks dulu', 'error'); return; }
+
+      convertBtn.disabled = true;
+      convertBtn.innerHTML = '⏳ …';
+      downloadBtn.classList.add('hidden');
+
+      const PDFLib = await loadPdfLib();
+      const doc = await PDFLib.PDFDocument.create();
+      const font = await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+      const fontSize = parseInt(sizeInput.value) || 12;
+      const margin = parseInt(marginInput.value) || 50;
+
+      const pageWidth = 595;
+      const pageHeight = 842;
+      const textWidth = pageWidth - margin * 2;
+      const lineHeight = fontSize * 1.5;
+
+      const allLines = wrapText(text, textWidth, fontSize);
+      const linesPerPage = Math.floor((pageHeight - margin * 2) / lineHeight);
+      const totalPages = Math.ceil(allLines.length / linesPerPage);
+
+      for (let p = 0; p < totalPages; p++) {
+        const page = doc.addPage([pageWidth, pageHeight]);
+        const startLine = p * linesPerPage;
+        const pageLines = allLines.slice(startLine, startLine + linesPerPage);
+        const yStart = pageHeight - margin;
+        pageLines.forEach((line, i) => {
+          if (line !== '') {
+            page.drawText(line, { x: margin, y: yStart - i * lineHeight, size: fontSize, font });
+          }
+        });
+      }
+
+      pdfBytes = await doc.save();
+      downloadBtn.classList.remove('hidden');
+      convertBtn.innerHTML = '✅ Converted';
+      convertBtn.disabled = false;
+      toast(`${totalPages} halaman PDF dibuat!`);
+    }
+
+    convertBtn.addEventListener('click', convert);
+    downloadBtn.addEventListener('click', () => {
+      if (!pdfBytes) return;
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `text-${Date.now()}.pdf`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast('PDF didownload!');
+    });
+  });
+</script>

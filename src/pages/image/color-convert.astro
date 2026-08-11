@@ -1,0 +1,176 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Color Converter — Konversi Warna HEX RGB HSL Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Color Converter"
+      titleKey="header.color_convert"
+      desc="Konversi warna real-time: HEX ↔ RGB ↔ HSL. Color picker + preview."
+      descKey="header.color_convert_desc"
+      icon='<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="22"/><line x1="2" y1="12" x2="7" y2="12"/>'
+      gradient="from-pink-500 to-violet-600"
+    />
+
+    <div class="animate-fade-in space-y-4">
+      <div class="card-base p-5">
+        <!-- Color preview -->
+        <div id="color-preview" class="w-full h-24 rounded-xl mb-4 shadow-inner transition-colors duration-200" style="background:#3b82f6"></div>
+
+        <!-- Inputs -->
+        <div class="grid sm:grid-cols-3 gap-3 mb-3">
+          <div>
+            <label class="text-2xs text-matte-400 font-bold block mb-1">HEX</label>
+            <div class="flex">
+              <span class="px-2 py-2 rounded-l-lg bg-matte-100 dark:bg-surface-elevated text-xs font-mono text-matte-400 border border-r-0 border-matte-200 dark:border-matte-700">#</span>
+              <input id="hex-input" type="text" value="3b82f6" maxlength="6" class="flex-1 px-2 py-2 rounded-r-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40 uppercase" />
+            </div>
+          </div>
+          <div>
+            <label class="text-2xs text-matte-400 font-bold block mb-1">RGB</label>
+            <div class="flex items-center gap-1">
+              <input id="r-input" type="number" value="59" min="0" max="255" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40 text-center" />
+              <input id="g-input" type="number" value="130" min="0" max="255" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40 text-center" />
+              <input id="b-input" type="number" value="246" min="0" max="255" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40 text-center" />
+            </div>
+          </div>
+          <div>
+            <label class="text-2xs text-matte-400 font-bold block mb-1">HSL</label>
+            <div class="flex items-center gap-1">
+              <input id="h-input" type="number" value="217" min="0" max="360" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40 text-center" />
+              <input id="s-input" type="number" value="91" min="0" max="100" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40 text-center" />
+              <input id="l-input" type="number" value="60" min="0" max="100" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40 text-center" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Color picker -->
+        <div class="flex items-center gap-2">
+          <input id="picker" type="color" value="#3b82f6" class="w-10 h-10 rounded-lg cursor-pointer border border-matte-200 dark:border-matte-700" />
+          <span class="text-2xs text-matte-400">Color picker</span>
+          <button id="copy-btn" class="ml-auto px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 transition-all">
+            📋 Copy HEX
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const hexInput = document.getElementById('hex-input') as HTMLInputElement;
+    const rInput = document.getElementById('r-input') as HTMLInputElement;
+    const gInput = document.getElementById('g-input') as HTMLInputElement;
+    const bInput = document.getElementById('b-input') as HTMLInputElement;
+    const hInput = document.getElementById('h-input') as HTMLInputElement;
+    const sInput = document.getElementById('s-input') as HTMLInputElement;
+    const lInput = document.getElementById('l-input') as HTMLInputElement;
+    const picker = document.getElementById('picker') as HTMLInputElement;
+    const preview = document.getElementById('color-preview')!;
+    const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let updating = false;
+
+    function rgbToHex(r: number, g: number, b: number): string {
+      return [r, g, b].map(x => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('');
+    }
+
+    function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+      const rn = r / 255, gn = g / 255, bn = b / 255;
+      const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
+      let h = 0, s = 0;
+      const l = (max + min) / 2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case rn: h = ((gn - bn) / d + (gn < bn ? 6 : 0)) / 6; break;
+          case gn: h = ((bn - rn) / d + 2) / 6; break;
+          case bn: h = ((rn - gn) / d + 4) / 6; break;
+        }
+      }
+      return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+    }
+
+    function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+      const sn = s / 100, ln = l / 100;
+      const c = (1 - Math.abs(2 * ln - 1)) * sn;
+      const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+      const m = ln - c / 2;
+      let r = 0, g = 0, b = 0;
+      if (h < 60) { r = c; g = x; }
+      else if (h < 120) { r = x; g = c; }
+      else if (h < 180) { g = c; b = x; }
+      else if (h < 240) { g = x; b = c; }
+      else if (h < 300) { r = x; b = c; }
+      else { r = c; b = x; }
+      return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
+    }
+
+    function setFromRgb(r: number, g: number, b: number) {
+      if (updating) return;
+      updating = true;
+      const hex = rgbToHex(r, g, b);
+      const [h, s, l] = rgbToHsl(r, g, b);
+      hexInput.value = hex;
+      rInput.value = String(r);
+      gInput.value = String(g);
+      bInput.value = String(b);
+      hInput.value = String(h);
+      sInput.value = String(s);
+      lInput.value = String(l);
+      const color = '#' + hex;
+      picker.value = color;
+      preview.style.background = color;
+      updating = false;
+    }
+
+    hexInput.addEventListener('input', () => {
+      const hex = hexInput.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+      hexInput.value = hex;
+      if (hex.length !== 6) return;
+      if (updating) return;
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      setFromRgb(r, g, b);
+    });
+
+    [rInput, gInput, bInput].forEach(inp => {
+      inp.addEventListener('input', () => {
+        if (updating) return;
+        setFromRgb(parseInt(rInput.value) || 0, parseInt(gInput.value) || 0, parseInt(bInput.value) || 0);
+      });
+    });
+
+    [hInput, sInput, lInput].forEach(inp => {
+      inp.addEventListener('input', () => {
+        if (updating) return;
+        const [r, g, b] = hslToRgb(parseInt(hInput.value) || 0, parseInt(sInput.value) || 0, parseInt(lInput.value) || 0);
+        setFromRgb(r, g, b);
+      });
+    });
+
+    picker.addEventListener('input', () => {
+      const hex = picker.value.slice(1);
+      hexInput.value = hex;
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      setFromRgb(r, g, b);
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText('#' + hexInput.value);
+        toast('HEX tersalin!');
+      } catch { toast('Gagal menyalin', 'error'); }
+    });
+  });
+</script>

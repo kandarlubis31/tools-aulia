@@ -1,0 +1,156 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Image to PDF — Gabung Gambar ke PDF Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Image to PDF"
+      titleKey="header.image_to_pdf"
+      desc="Konversi & gabung multiple gambar (PNG/JPG/WEBP) ke satu file PDF."
+      descKey="header.image_to_pdf_desc"
+      icon='<rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="11 3 11 11 14 8 17 11 17 3"/>'
+      gradient="from-blue-500 to-indigo-600"
+    />
+
+    <div class="card-base p-6 text-center animate-fade-in">
+      <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 hover:border-blue-400 transition-colors cursor-pointer mb-4" id="drop-zone">
+        <input type="file" id="file-input" accept="image/*" multiple class="hidden" />
+        <svg class="w-12 h-12 mx-auto mb-3 text-matte-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p class="text-sm font-bold text-matte-500 dark:text-matte-300">Pilih gambar untuk digabung ke PDF</p>
+        <p class="text-2xs text-matte-400 mt-1">PNG, JPG, WEBP</p>
+      </div>
+
+      <div id="files-list" class="flex flex-wrap gap-2 justify-center mb-4 min-h-[40px]"></div>
+      <span id="files-count" class="text-2xs text-matte-400 block mb-3"></span>
+
+      <div class="flex items-center justify-center gap-4 mb-4 flex-wrap">
+        <label class="flex items-center gap-1.5 text-2xs text-matte-400 font-bold">
+          <input id="fit-check" type="checkbox" class="rounded" checked />
+          Fit to page (A4)
+        </label>
+      </div>
+
+      <button id="convert-btn" class="gradient-brand px-8 py-3 rounded-lg text-sm font-bold disabled:opacity-50" disabled>
+        🔄 Convert to PDF
+      </button>
+
+      <button id="download-btn" class="hidden gradient-brand px-8 py-3 rounded-lg text-sm font-bold mt-3">
+        💾 Download PDF
+      </button>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone')!;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const filesList = document.getElementById('files-list')!;
+    const filesCount = document.getElementById('files-count')!;
+    const convertBtn = document.getElementById('convert-btn') as HTMLButtonElement;
+    const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+    const fitCheck = document.getElementById('fit-check') as HTMLInputElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let imageFiles: File[] = [];
+    let pdfBytes: Uint8Array | null = null;
+
+    async function loadPdfLib() {
+      if ((window as any).PDFLib) return (window as any).PDFLib;
+      return new Promise((resolve) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+        s.onload = () => resolve((window as any).PDFLib);
+        document.head.appendChild(s);
+      });
+    }
+
+    function addFiles(files: FileList | File[]) {
+      const arr = Array.from(files).filter(f => f.type.startsWith('image/'));
+      imageFiles.push(...arr);
+      imageFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+      filesList.innerHTML = imageFiles.map((f, i) => `
+        <div class="relative group">
+          <img src="${URL.createObjectURL(f)}" class="w-16 h-16 object-cover rounded-lg border-2 border-matte-200 dark:border-matte-700" />
+          <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-blue-500 text-white text-2xs flex items-center justify-center font-bold">${i+1}</span>
+          <button class="del-btn absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-2xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" data-idx="${i}">x</button>
+        </div>`).join('');
+
+      filesList.querySelectorAll('.del-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt((btn as HTMLElement).dataset.idx!);
+          imageFiles.splice(idx, 1);
+          pdfBytes = null;
+          downloadBtn.classList.add('hidden');
+          addFiles([]);
+        });
+      });
+
+      filesCount.textContent = `${imageFiles.length} gambar`;
+      convertBtn.disabled = imageFiles.length < 1;
+    }
+
+    async function convert() {
+      if (!imageFiles.length) return;
+      convertBtn.disabled = true;
+      convertBtn.innerHTML = '⏳ Converting…';
+      const PDFLib = await loadPdfLib();
+      const doc = await PDFLib.PDFDocument.create();
+
+      for (const file of imageFiles) {
+        const buffer = await file.arrayBuffer();
+        let img;
+        if (file.type === 'image/png') {
+          img = await doc.embedPng(new Uint8Array(buffer));
+        } else {
+          img = await doc.embedJpg(new Uint8Array(buffer));
+        }
+
+        const page = doc.addPage(fitCheck.checked ? [595, 842] : [img.width, img.height]);
+        if (fitCheck.checked) {
+          const scale = Math.min(575 / img.width, 822 / img.height);
+          const x = (595 - img.width * scale) / 2;
+          const y = (842 - img.height * scale) / 2;
+          page.drawImage(img, { x, y, width: img.width * scale, height: img.height * scale });
+        } else {
+          page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+        }
+      }
+
+      pdfBytes = await doc.save();
+      convertBtn.innerHTML = '✅ Converted';
+      downloadBtn.classList.remove('hidden');
+      toast(`${imageFiles.length} gambar → PDF`);
+    }
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-blue-400'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-blue-400'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-blue-400');
+      if (e.dataTransfer?.files) addFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files) addFiles(fileInput.files);
+      fileInput.value = '';
+    });
+
+    convertBtn.addEventListener('click', convert);
+    downloadBtn.addEventListener('click', () => {
+      if (!pdfBytes) return;
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `images-${Date.now()}.pdf`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast('PDF didownload!');
+    });
+  });
+</script>

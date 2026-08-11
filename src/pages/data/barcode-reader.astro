@@ -1,0 +1,163 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Barcode Reader — Scan Barcode & QR Code Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Barcode Reader"
+      titleKey="header.barcode_reader"
+      desc="Scan barcode / QR code dari kamera atau upload gambar."
+      descKey="header.barcode_reader_desc"
+      icon='<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>'
+      gradient="from-indigo-500 to-violet-600"
+    />
+
+    <div class="animate-fade-in space-y-4">
+      <div class="card-base p-5 text-center">
+        <div class="flex gap-2 justify-center mb-4">
+          <button id="camera-btn" class="gradient-brand px-5 py-2.5 rounded-lg text-sm font-bold">
+            📷 <span data-i18n="barcode.camera">Buka Kamera</span>
+          </button>
+          <button id="upload-btn" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 transition-all">
+            📁 <span data-i18n="barcode.upload">Upload Gambar</span>
+          </button>
+          <input type="file" id="file-input" accept="image/*" class="hidden" />
+        </div>
+
+        <div id="camera-area" class="hidden mb-4">
+          <video id="camera-video" autoplay playsinline class="w-full max-w-sm mx-auto rounded-lg bg-black"></video>
+          <canvas id="camera-canvas" class="hidden"></canvas>
+        </div>
+
+        <div id="upload-preview" class="hidden mb-4">
+          <img id="upload-img" class="max-w-full max-h-64 mx-auto rounded-lg" />
+        </div>
+
+        <div id="result-area" class="hidden p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
+          <p class="text-2xs text-emerald-500 dark:text-emerald-300 uppercase tracking-wider font-bold mb-1" data-i18n="barcode.result">Hasil Scan</p>
+          <p id="result-text" class="text-lg font-bold font-mono text-emerald-700 dark:text-emerald-300 break-all"></p>
+          <button id="copy-btn" class="mt-2 px-3 py-1.5 rounded-lg text-2xs font-bold bg-emerald-100 dark:bg-emerald-800/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 transition-all">📋 Copy</button>
+        </div>
+      </div>
+
+      <p class="text-center text-xs text-matte-400">
+        ℹ️ Gunakan BarcodeDetector API (Chrome) atau scan manual dari gambar. Format: QR, CODE-128, EAN, UPC, DataMatrix.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const cameraBtn = document.getElementById('camera-btn') as HTMLButtonElement;
+    const uploadBtn = document.getElementById('upload-btn') as HTMLButtonElement;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const cameraArea = document.getElementById('camera-area')!;
+    const cameraVideo = document.getElementById('camera-video') as HTMLVideoElement;
+    const cameraCanvas = document.getElementById('camera-canvas') as HTMLCanvasElement;
+    const uploadPreview = document.getElementById('upload-preview')!;
+    const uploadImg = document.getElementById('upload-img') as HTMLImageElement;
+    const resultArea = document.getElementById('result-area')!;
+    const resultText = document.getElementById('result-text')!;
+    const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let stream: MediaStream | null = null;
+    let scanInterval: number | null = null;
+
+    function showResult(text: string) {
+      resultText.textContent = text;
+      resultArea.classList.remove('hidden');
+    }
+
+    // Try native BarcodeDetector API first
+    async function detectFromCanvas(canvas: HTMLCanvasElement): Promise<string | null> {
+      // @ts-ignore
+      if ('BarcodeDetector' in window) {
+        try {
+          // @ts-ignore
+          const detector = new BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39', 'data_matrix'] });
+          const barcodes = await detector.detect(canvas);
+          if (barcodes.length) return barcodes[0].rawValue;
+        } catch { /* fallback */ }
+      }
+      return null;
+    }
+
+    async function openCamera() {
+      cameraArea.classList.remove('hidden');
+      uploadPreview.classList.add('hidden');
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        cameraVideo.srcObject = stream;
+        await cameraVideo.play();
+
+        // Scan frames
+        scanInterval = window.setInterval(async () => {
+          if (!stream) return;
+          const ctx = cameraCanvas.getContext('2d')!;
+          cameraCanvas.width = cameraVideo.videoWidth || 640;
+          cameraCanvas.height = cameraVideo.videoHeight || 480;
+          ctx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+          const result = await detectFromCanvas(cameraCanvas);
+          if (result) {
+            showResult(result);
+            stopCamera();
+          }
+        }, 500);
+      } catch (e: any) {
+        toast('Kamera tidak tersedia: ' + e.message, 'error');
+      }
+    }
+
+    function stopCamera() {
+      if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+      cameraArea.classList.add('hidden');
+    }
+
+    async function scanImage(file: File) {
+      uploadPreview.classList.remove('hidden');
+      const reader = new FileReader();
+      reader.onload = async () => {
+        uploadImg.src = reader.result as string;
+        uploadImg.onload = async () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = uploadImg.naturalWidth;
+          canvas.height = uploadImg.naturalHeight;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(uploadImg, 0, 0);
+          const result = await detectFromCanvas(canvas);
+          if (result) {
+            showResult(result);
+          } else {
+            toast('Barcode tidak terdeteksi di gambar', 'error');
+          }
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+
+    cameraBtn.addEventListener('click', () => {
+      if (stream) { stopCamera(); return; }
+      openCamera();
+    });
+
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (file) scanImage(file);
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(resultText.textContent || '');
+        toast('Hasil tersalin!');
+      } catch { toast('Gagal menyalin', 'error'); }
+    });
+  });
+</script>

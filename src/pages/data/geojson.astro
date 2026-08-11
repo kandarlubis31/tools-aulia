@@ -1,0 +1,141 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="GeoJSON Viewer — Preview Peta GeoJSON Online">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="GeoJSON Viewer"
+      titleKey="header.geojson"
+      desc="Preview GeoJSON di peta interaktif. Upload file atau paste. Powered by Leaflet."
+      descKey="header.geojson_desc"
+      icon='<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'
+      gradient="from-blue-500 to-sky-600"
+    />
+
+    <div class="animate-fade-in space-y-4">
+      <div class="card-base p-5">
+        <div class="flex gap-2 mb-3">
+          <button id="upload-btn" class="px-4 py-2 rounded-lg text-sm font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 transition-all">
+            📁 Upload GeoJSON
+          </button>
+          <input type="file" id="file-input" accept=".json,.geojson" class="hidden" />
+          <button id="paste-btn" class="px-4 py-2 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 transition-all">
+            📋 Paste
+          </button>
+        </div>
+        <textarea id="geojson-input" rows="6" placeholder='{"type": "FeatureCollection", "features": [...]}'
+          class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-500/40 resize-y hidden"></textarea>
+        <p id="geojson-info" class="text-2xs text-matte-400 mt-1 hidden"></p>
+      </div>
+
+      <div class="card-base p-0 overflow-hidden">
+        <div id="map" class="w-full rounded-lg" style="height: 400px; background: #e5e7eb;"></div>
+      </div>
+
+      <p class="text-center text-xs text-matte-400">
+        ℹ️ Powered by Leaflet + OpenStreetMap. GeoJSON diproses 100% di browser.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const uploadBtn = document.getElementById('upload-btn') as HTMLButtonElement;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const pasteBtn = document.getElementById('paste-btn') as HTMLButtonElement;
+    const geojsonInput = document.getElementById('geojson-input') as HTMLTextAreaElement;
+    const geojsonInfo = document.getElementById('geojson-info')!;
+    const mapDiv = document.getElementById('map')!;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let map: any = null;
+    let geoLayer: any = null;
+
+    async function loadLeaflet(): Promise<any> {
+      if ((window as any).L) return (window as any).L;
+      return new Promise((resolve) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+        document.head.appendChild(link);
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+        s.onload = () => resolve((window as any).L);
+        document.head.appendChild(s);
+      });
+    }
+
+    function initMap() {
+      if (map) return;
+      const L = (window as any).L;
+      if (!L) return;
+      map = L.map(mapDiv).setView([-2.5, 118], 5);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19,
+      }).addTo(map);
+    }
+
+    function renderGeoJSON(data: any) {
+      const L = (window as any).L;
+      if (!L || !map) return;
+
+      if (geoLayer) map.removeLayer(geoLayer);
+
+      try {
+        geoLayer = L.geoJSON(data, {
+          style: { color: '#3b82f6', weight: 2, fillOpacity: 0.3 },
+        }).addTo(map);
+
+        const bounds = geoLayer.getBounds();
+        if (bounds.isValid()) map.fitBounds(bounds, { padding: [20, 20] });
+
+        const features = data.type === 'FeatureCollection' ? data.features : [data];
+        geojsonInfo.textContent = `${features.length} feature(s)`;
+        geojsonInfo.classList.remove('hidden');
+        toast('GeoJSON ditampilkan!');
+      } catch (e: any) {
+        toast('GeoJSON tidak valid: ' + e.message, 'error');
+      }
+    }
+
+    async function handleGeoJSON(text: string) {
+      try {
+        const data = JSON.parse(text);
+        await loadLeaflet();
+        initMap();
+        renderGeoJSON(data);
+        geojsonInput.value = text;
+        geojsonInput.classList.remove('hidden');
+      } catch {
+        toast('JSON tidak valid', 'error');
+      }
+    }
+
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => handleGeoJSON(reader.result as string);
+      reader.readAsText(file);
+    });
+
+    pasteBtn.addEventListener('click', () => {
+      if (geojsonInput.classList.contains('hidden')) {
+        geojsonInput.classList.remove('hidden');
+        geojsonInput.focus();
+      } else {
+        handleGeoJSON(geojsonInput.value.trim());
+      }
+    });
+
+    // Try autoload map
+    loadLeaflet().then(() => initMap());
+  });
+</script>

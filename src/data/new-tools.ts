@@ -7,6 +7,17 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  // ---- Batch 11 (10 tools: PDF + Data + Media + Image + Text) ----
+  '/pdf/to-excel',
+  '/pdf/optimizer',
+  '/pdf/repair',
+  '/data/geojson',
+  '/data/barcode-reader',
+  '/media/video-to-gif',
+  '/media/beat-maker',
+  '/image/to-pdf',
+  '/text/to-pdf',
+  '/image/color-convert',
   // ---- Batch 10 (10 tools: Media + Life + Text) ----
   '/media/metronome',
   '/media/tone-generator',

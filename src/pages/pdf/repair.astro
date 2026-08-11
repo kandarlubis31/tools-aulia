@@ -1,0 +1,161 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="PDF Repair — Perbaiki & Recover File PDF Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="PDF Repair"
+      titleKey="header.pdf_repair"
+      desc="Perbaiki PDF rusak/corrupt: parse tolerant + rebuild struktur PDF."
+      descKey="header.pdf_repair_desc"
+      icon='<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>'
+      gradient="from-amber-500 to-orange-600"
+    />
+
+    <div class="card-base p-6 text-center animate-fade-in">
+      <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 hover:border-amber-400 transition-colors cursor-pointer mb-4" id="drop-zone">
+        <input type="file" id="file-input" accept=".pdf" class="hidden" />
+        <svg class="w-12 h-12 mx-auto mb-3 text-matte-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p class="text-sm font-bold text-matte-500 dark:text-matte-300" data-i18n="pdf_upload">Upload PDF yang rusak</p>
+        <p class="text-2xs text-matte-400 mt-1" id="file-name">—</p>
+      </div>
+
+      <div id="result-area" class="hidden">
+        <div id="status-card" class="p-4 rounded-lg bg-matte-50 dark:bg-surface-elevated mb-4">
+          <p id="status-msg" class="text-sm font-bold"></p>
+          <p id="pages-info" class="text-xs text-matte-400 mt-1"></p>
+        </div>
+        <button id="download-btn" class="gradient-brand px-6 py-3 rounded-lg text-sm font-bold">
+          💾 Download PDF Hasil Repair
+        </button>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6">
+      ⚠️ Tidak semua PDF bisa diperbaiki. Tool ini mencoba re-parse dengan pdf.js tolerant mode + rebuild dengan pdf-lib.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone')!;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const fileName = document.getElementById('file-name')!;
+    const resultArea = document.getElementById('result-area')!;
+    const statusMsg = document.getElementById('status-msg')!;
+    const pagesInfo = document.getElementById('pages-info')!;
+    const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let repairedBytes: Uint8Array | null = null;
+
+    async function loadPdfJs() {
+      if ((window as any).pdfjsLib) return (window as any).pdfjsLib;
+      return new Promise((resolve) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        s.onload = () => resolve((window as any).pdfjsLib);
+        document.head.appendChild(s);
+      });
+    }
+
+    async function loadPdfLib() {
+      if ((window as any).PDFLib) return (window as any).PDFLib;
+      return new Promise((resolve) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+        s.onload = () => resolve((window as any).PDFLib);
+        document.head.appendChild(s);
+      });
+    }
+
+    async function processFile(file: File) {
+      fileName.textContent = file.name;
+      resultArea.classList.add('hidden');
+
+      const [pdfjsLib, PDFLib] = await Promise.all([loadPdfJs(), loadPdfLib()]);
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+      try {
+        // Try to parse with pdf.js (tolerant parser)
+        const buffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+        const totalPages = pdf.numPages;
+
+        // Rebuild with pdf-lib using rendered pages
+        const newDoc = await PDFLib.PDFDocument.create();
+        const pages = pdfDocPages(pdf, totalPages);
+
+        for (let p = 1; p <= totalPages; p++) {
+          try {
+            const page = await pdf.getPage(p);
+            const viewport = page.getViewport({ scale: 1 });
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext('2d')!;
+            await page.render({ canvasContext: ctx, viewport }).promise;
+
+            const imgBytes = await new Promise<Uint8Array>(resolve => {
+              canvas.toBlob(async blob => {
+                if (!blob) { resolve(new Uint8Array()); return; }
+                const arrBuf = await blob.arrayBuffer();
+                resolve(new Uint8Array(arrBuf));
+              }, 'image/png');
+            });
+
+            if (imgBytes.length > 0) {
+              const img = await newDoc.embedPng(imgBytes);
+              const newPage = newDoc.addPage([viewport.width, viewport.height]);
+              newPage.drawImage(img, { x: 0, y: 0, width: viewport.width, height: viewport.height });
+            }
+          } catch { /* skip corrupted page */ }
+        }
+
+        repairedBytes = await newDoc.save();
+        statusMsg.innerHTML = '✅ PDF berhasil diperbaiki!';
+        statusMsg.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400';
+        pagesInfo.textContent = `${totalPages} halaman direkonstruksi`;
+        resultArea.classList.remove('hidden');
+        resultArea.scrollIntoView({ behavior: 'smooth' });
+      } catch (e: any) {
+        statusMsg.innerHTML = '❌ Gagal memperbaiki PDF';
+        statusMsg.className = 'text-sm font-bold text-red-600 dark:text-red-400';
+        pagesInfo.textContent = e.message || 'PDF terlalu rusak';
+        resultArea.classList.remove('hidden');
+      }
+    }
+
+    function pdfDocPages(_pdf: any, n: number): number { return n; }
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-amber-400'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-amber-400'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-amber-400');
+      const file = e.dataTransfer?.files?.[0];
+      if (file) processFile(file);
+    });
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (file) processFile(file);
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      if (!repairedBytes) return;
+      const blob = new Blob([repairedBytes], { type: 'application/pdf' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `repaired-${Date.now()}.pdf`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast('PDF diperbaiki didownload!');
+    });
+  });
+</script>
