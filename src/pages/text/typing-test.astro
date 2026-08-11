@@ -284,7 +284,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const elapsed = (Date.now() - startTime) / 1000;
       const remaining = Math.max(0, duration - elapsed);
       const mins = elapsed / 60;
-      const wpm = mins > 0 ? Math.round((correctKeystrokes / 5) / mins) : 0;
+      const wpm = computeWpm();
       const cpm = mins > 0 ? Math.round(correctKeystrokes / mins) : 0;
       const acc = totalKeystrokes > 0 ? Math.round((correctKeystrokes / totalKeystrokes) * 100) : 100;
       statWpm.textContent = String(wpm);
