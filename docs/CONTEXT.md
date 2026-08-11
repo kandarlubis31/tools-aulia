@@ -117,16 +117,17 @@ Hero (compact: 8px padding, inline stats, no buttons)
 
 - **Unit tests:** 43 tests (6 files) — vitest
 - **Guardrail:** `scripts/check-client-side.mjs` — verifies client-side processing
-- **Build:** `pnpm astro build` → Vercel adapter (~57s, 264 precache entries, ~26MB)
+- **Build:** `pnpm astro build` → Vercel adapter (~61s, 319 precache entries, ~31.7MB)
 - **CI:** Vercel auto-deploy on push to main
 
 ---
 
 ## Plan Status
 
-- **Plan 100 Tools:** `docs/plan-new-tools.md`
-- **B1-B11:** ✅ SELESAI (110 tools added: 58 → 168)
-- **🎉 Target 158 TERCAPAI + 10 bonus!** — 12 kategori, 168 tools
+- **Plan 100 Tools:** `docs/plan-new-tools.md` — ✅ COMPLETE (110 tools, 58 → 168)
+- **Plan 59 Tools:** `docs/plan-59-tools.md` — 🔥 IN PROGRESS (50/59, 168 → 218)
+- **B12-B16:** ✅ SELESAI (50 tools added)
+- **218 tools** — 12 kategori, 319 precache entries
 - **UI/UX Optimization:** ✅ SELESAI (Aug 2026) — compact hero, dense grid, hover lift, no tilt JS
 
 ---
