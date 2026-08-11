@@ -380,3 +380,34 @@ Infra: new life category (4 tools) · media 3 to 8 · 20 i18n keys baru.
 | Total | 100 | 58 to 158 |
 
 Final: 12 kategori · 158 tools · 254 precache · 24.8MB · build 46s
+
+### Batch 11 — Sisa Plan + Bonus (SELESAI · 10 tools · 158 → 168 tools)
+
+**Build ✅ 57s · precache 264 entries · 168 tools total · 100-plan + 10 bonus!**
+
+| Tool | Halaman | Highlight |
+|------|---------|-----------|
+| PDF to Excel | /pdf/to-excel | pdf.js text extraction to CSV/XLSX table |
+| PDF Optimizer | /pdf/optimizer | pdf-lib strip metadata + deflate compression |
+| PDF Repair | /pdf/repair | tolerant parse + pdf-lib rebuild corrupt PDF |
+| GeoJSON Viewer | /data/geojson | Leaflet CDN + OpenStreetMap interactive map |
+| Barcode Reader | /data/barcode-reader | BarcodeDetector API + camera/image scan |
+| Video to GIF | /media/video-to-gif | video frame extraction to PNG sequence |
+| Beat Maker | /media/beat-maker | 4-track x 8-step drum machine (WebAudio) |
+| Image to PDF | /image/to-pdf | pdf-lib combine multiple images into PDF |
+| Text to PDF | /text/to-pdf | plain text to A4 PDF, font size + margin |
+| Color Converter | /image/color-convert | HEX/RGB/HSL live converter + color picker |
+
+Infra: PDF 25→28 · Image 16→18 · Text 12→13 · Data 8→10 · Media 8→10 · 20 i18n keys.
+
+---
+
+## Updated Summary
+
+| Batch | Tools | Status |
+|-------|-------|--------|
+| B1-B10 | 100 | Done (100-plan complete) |
+| B11 | 10 (7 plan + 3 bonus) | Done |
+| Total | 110 | 58 → 168 |
+
+Final: 12 kategori · 168 tools · 264 precache · 26MB · build 57s
