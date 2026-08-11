@@ -1,0 +1,98 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Speech to Text">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader
+      title="Speech to Text"
+      titleKey="header.speech_to_text"
+      desc="Transkripsi suara ke teks secara real-time menggunakan Web Speech API."
+      descKey="header.speech_to_text_desc"
+      icon='<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>'
+      gradient="from-orange-500 to-red-600"
+    />
+
+    <div class="card-base p-8 animate-fade-in">
+      <div class="flex items-center gap-4 mb-6">
+        <select id="lang" class="p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
+          <option value="id-ID">🇮🇩 Indonesia</option>
+          <option value="en-US">🇺🇸 English</option>
+        </select>
+        <button id="start-btn" class="flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-colors">
+          <span id="mic-icon">🎙️</span> <span id="btn-text">Mulai Rekam</span>
+        </button>
+        <button id="clear-btn" class="px-4 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">🗑️</button>
+        <button id="copy-btn" class="px-4 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-lime-100 dark:hover:bg-lime-900/30 transition-colors">📋</button>
+      </div>
+      <div id="status" class="text-sm text-matte-400 mb-4">Klik tombol di atas untuk mulai transkripsi suara</div>
+      <textarea id="output" rows="12" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y focus:border-orange-500 transition-colors" placeholder="Hasil transkripsi akan muncul di sini..."></textarea>
+      <div class="flex justify-between items-center mt-2">
+        <span id="word-count" class="text-xs text-matte-400">0 kata · 0 karakter</span>
+        <span class="text-xs text-matte-400">Teks bisa diedit manual setelah transkripsi</span>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let isRecording = false;
+  const output = document.getElementById('output');
+  const status = document.getElementById('status');
+  const btnText = document.getElementById('btn-text');
+  const micIcon = document.getElementById('mic-icon');
+  function updateCount() {
+    const t = output.value.trim();
+    const words = t ? t.split(/\s+/).length : 0;
+    document.getElementById('word-count').textContent = `${words} kata · ${t.length} karakter`;
+  }
+  output.addEventListener('input', updateCount);
+  if (!SpeechRecognition) {
+    status.textContent = '⚠️ Browser tidak mendukung Web Speech API. Gunakan Chrome/Edge.';
+    document.getElementById('start-btn').disabled = true;
+  } else {
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'id-ID';
+    let finalTranscript = '';
+    recognition.onresult = (e) => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + ' ';
+        else interim += e.results[i][0].transcript;
+      }
+      output.value = finalTranscript + interim;
+      updateCount();
+    };
+    recognition.onend = () => { if (isRecording) recognition.start(); };
+    recognition.onerror = (e) => { status.textContent = `Error: ${e.error}`; };
+  }
+  document.getElementById('lang').onchange = (e) => { if (recognition) recognition.lang = e.target.value; };
+  document.getElementById('start-btn').onclick = () => {
+    if (!recognition) return;
+    isRecording = !isRecording;
+    if (isRecording) {
+      recognition.start();
+      micIcon.textContent = '🔴';
+      btnText.textContent = 'Stop';
+      status.textContent = '🎙️ Sedang merekam... bicara sekarang';
+      document.getElementById('start-btn').className = 'flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors';
+    } else {
+      recognition.stop();
+      micIcon.textContent = '🎙️';
+      btnText.textContent = 'Mulai Rekam';
+      status.textContent = '⏹️ Rekaman dihentikan';
+      document.getElementById('start-btn').className = 'flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-colors';
+    }
+  };
+  document.getElementById('clear-btn').onclick = () => { output.value = ''; updateCount(); };
+  document.getElementById('copy-btn').onclick = () => {
+    navigator.clipboard.writeText(output.value);
+    document.getElementById('copy-btn').textContent = '✅';
+    setTimeout(() => document.getElementById('copy-btn').textContent = '📋', 1500);
+  };
+</script>

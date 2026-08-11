@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="BMR & Calorie Calculator">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader
+      title="Kalkulator BMR & Kalori"
+      titleKey="header.bmr_calc"
+      desc="Hitung Basal Metabolic Rate dan kebutuhan kalori harian menggunakan rumus Mifflin-St Jeor."
+      descKey="header.bmr_calc_desc"
+      icon='<path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5a4 4 0 0 1-7 0"/>'
+      gradient="from-red-500 to-orange-600"
+    />
+
+    <div class="card-base p-8 animate-fade-in">
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <div><label class="text-xs text-matte-500 mb-1 block">Jenis Kelamin</label>
+          <select id="gender" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
+            <option value="male">Laki-laki</option>
+            <option value="female">Perempuan</option>
+          </select></div>
+        <div><label class="text-xs text-matte-500 mb-1 block">Usia (tahun)</label><input id="age" type="number" value="25" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label class="text-xs text-matte-500 mb-1 block">Berat (kg)</label><input id="weight" type="number" value="70" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label class="text-xs text-matte-500 mb-1 block">Tinggi (cm)</label><input id="height" type="number" value="170" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label class="text-xs text-matte-500 mb-1 block">Aktivitas</label>
+          <select id="activity" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
+            <option value="1.2">Sedentary (tidak olahraga)</option>
+            <option value="1.375">Ringan (1-3x/minggu)</option>
+            <option value="1.55" selected>Sedang (3-5x/minggu)</option>
+            <option value="1.725">Berat (6-7x/minggu)</option>
+            <option value="1.9">Sangat Berat (2x/hari)</option>
+          </select></div>
+        <div class="flex items-end"><button id="calc" class="w-full py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors">Hitung</button></div>
+      </div>
+
+      <div id="result" class="hidden mt-6 p-6 bg-matte-50 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl"><span class="text-2xl font-black text-red-500" id="bmr-val">0</span><br/><span class="text-xs text-matte-500">BMR (kalori)</span></div>
+          <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl"><span class="text-2xl font-black text-orange-500" id="tdee-val">0</span><br/><span class="text-xs text-matte-500">TDEE (kalori/hari)</span></div>
+          <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl"><span class="text-2xl font-black text-emerald-500" id="loss-val">0</span><br/><span class="text-xs text-matte-500">Defisit (−500)</span></div>
+          <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl"><span class="text-2xl font-black text-blue-500" id="gain-val">0</span><br/><span class="text-xs text-matte-500">Surplus (+500)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.getElementById('calc').onclick = () => {
+    const g = document.getElementById('gender').value;
+    const a = +document.getElementById('age').value;
+    const w = +document.getElementById('weight').value;
+    const h = +document.getElementById('height').value;
+    const act = +document.getElementById('activity').value;
+    let bmr;
+    if (g === 'male') bmr = 10 * w + 6.25 * h - 5 * a + 5;
+    else bmr = 10 * w + 6.25 * h - 5 * a - 161;
+    bmr = Math.round(bmr);
+    const tdee = Math.round(bmr * act);
+    document.getElementById('bmr-val').textContent = bmr;
+    document.getElementById('tdee-val').textContent = tdee;
+    document.getElementById('loss-val').textContent = (tdee - 500);
+    document.getElementById('gain-val').textContent = (tdee + 500);
+    document.getElementById('result').classList.remove('hidden');
+  };
+</script>

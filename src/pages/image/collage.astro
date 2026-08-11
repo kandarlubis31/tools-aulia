@@ -1,0 +1,139 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Image Collage">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader
+      title="Image Collage"
+      titleKey="header.image_collage"
+      desc="Gabung beberapa foto menjadi kolase grid dengan layout dan gaya yang bisa dikustomisasi."
+      descKey="header.image_collage_desc"
+      icon='<rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="18" height="8"/>'
+      gradient="from-rose-500 to-pink-600"
+    />
+
+    <div class="card-base p-8 animate-fade-in">
+      <!-- Drop Zone -->
+      <div id="drop-zone" class="border-2 border-dashed border-rose-300 dark:border-rose-700 rounded-2xl p-12 text-center hover:border-rose-400 dark:hover:border-rose-500 transition-colors cursor-pointer mb-6 bg-matte-50 dark:bg-surface-hover">
+        <input type="file" id="file-input" accept="image/*" multiple class="hidden" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto text-rose-400 mb-4"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <p class="text-matte-500 font-bold" data-i18n="upload.drop_image">Drop gambar di sini atau klik untuk pilih</p>
+        <p class="text-xs text-matte-400 mt-2">Minimal 2 gambar, maksimal 12 gambar</p>
+      </div>
+
+      <!-- Settings -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div><label class="text-xs text-matte-500 mb-1 block">Layout</label>
+          <select id="layout" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
+            <option value="grid">Grid Equal</option>
+            <option value="2-1">2:1 (2 besar, 1 kecil)</option>
+            <option value="mosaic">Mosaic</option>
+          </select></div>
+        <div><label class="text-xs text-matte-500 mb-1 block">Gap (px)</label><input id="gap" type="number" value="8" min="0" max="20" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label class="text-xs text-matte-500 mb-1 block">Corner Radius</label><input id="radius" type="number" value="8" min="0" max="30" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label class="text-xs text-matte-500 mb-1 block">Background</label>
+          <select id="bg-color" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
+            <option value="#ffffff">White</option>
+            <option value="#000000">Black</option>
+            <option value="#f3f4f6">Gray</option>
+            <option value="transparent">Transparent</option>
+          </select></div>
+      </div>
+
+      <!-- Image List -->
+      <div id="image-list" class="flex flex-wrap gap-2 mb-6"></div>
+
+      <!-- Preview -->
+      <div class="flex justify-center mb-6">
+        <canvas id="collage-canvas" class="max-w-full border rounded-xl"></canvas>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-2">
+        <button id="build" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-colors">🔨 Build Collage</button>
+        <button id="download" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-700 dark:text-matte-300 rounded-xl font-bold hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors" disabled>📥 Download PNG</button>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const images = [];
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  
+  dropZone.onclick = () => fileInput.click();
+  dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('border-rose-500'); };
+  dropZone.ondragleave = () => dropZone.classList.remove('border-rose-500');
+  dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.remove('border-rose-500'); handleFiles(e.dataTransfer.files); };
+  fileInput.onchange = (e) => handleFiles(e.target.files);
+  
+  function handleFiles(files) {
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) continue;
+      if (images.length >= 12) break;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => { images.push(img); renderList(); };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+  
+  function renderList() {
+    const el = document.getElementById('image-list');
+    el.innerHTML = images.map((img, i) => `
+      <div class="relative group">
+        <img src="${img.src}" class="w-20 h-20 object-cover rounded-lg border-2 border-matte-200 dark:border-matte-700" />
+        <button class="remove-btn absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity" data-idx="${i}">✕</button>
+      </div>
+    `).join('');
+    el.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.onclick = (e) => { images.splice(+e.target.dataset.idx, 1); renderList(); };
+    });
+  }
+  
+  document.getElementById('build').onclick = () => {
+    if (images.length < 2) return alert('Minimal 2 gambar');
+    const canvas = document.getElementById('collage-canvas');
+    const ctx = canvas.getContext('2d');
+    const gap = +document.getElementById('gap').value;
+    const radius = +document.getElementById('radius').value;
+    const bgColor = document.getElementById('bg-color').value;
+    const layout = document.getElementById('layout').value;
+    const cols = layout === '2-1' ? 2 : Math.ceil(Math.sqrt(images.length));
+    const rows = Math.ceil(images.length / cols);
+    const cellW = 400, cellH = 300;
+    canvas.width = cols * cellW + (cols + 1) * gap;
+    canvas.height = rows * cellH + (rows + 1) * gap;
+    ctx.fillStyle = bgColor === 'transparent' ? 'transparent' : bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    images.forEach((img, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = gap + col * (cellW + gap);
+      const y = gap + row * (cellH + gap);
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(x, y, cellW, cellH, radius);
+      ctx.clip();
+      const scale = Math.max(cellW / img.width, cellH / img.height);
+      const w = img.width * scale, h = img.height * scale;
+      ctx.drawImage(img, x + (cellW - w) / 2, y + (cellH - h) / 2, w, h);
+      ctx.restore();
+    });
+    document.getElementById('download').disabled = false;
+  };
+  
+  document.getElementById('download').onclick = () => {
+    const canvas = document.getElementById('collage-canvas');
+    const link = document.createElement('a');
+    link.download = 'collage.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+</script>

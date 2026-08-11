@@ -1,0 +1,100 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Language Detector">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader
+      title="Detektor Bahasa"
+      titleKey="header.lang_detector"
+      desc="Deteksi bahasa teks menggunakan analisis n-gram dan statistik frekuensi."
+      descKey="header.lang_detector_desc"
+      icon='<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <div class="card-base p-8 animate-fade-in">
+      <textarea id="input" rows="6" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4 focus:border-emerald-500 transition-colors" placeholder="Masukkan teks untuk dideteksi bahasanya..."></textarea>
+      <button id="detect" class="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors">🔍 Deteksi Bahasa</button>
+      <div id="result" class="mt-6 hidden"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const langProfiles = {
+    'id': { name: '🇮🇩 Indonesia', common: ['yang','dan','di','ini','untuk','dengan','pada','adalah','dari','itu','tidak','akan','juga','oleh','bisa','sudah','ada','lebih','mereka','saya','kami','anda','ia','belum','karena','jika','atau','hanya','setiap'], weight: 1.0 },
+    'en': { name: '🇺🇸 English', common: ['the','of','and','to','a','in','is','you','that','it','he','was','for','on','are','as','with','his','they','i','at','be','this','have','from','or','one','had','by','but','not','what','all','were','we','when','your','can','said','there','use'], weight: 1.0 },
+    'ms': { name: '🇲🇾 Malay', common: ['yang','dan','di','ini','untuk','dengan','pada','adalah','dari','tidak','akan','juga','oleh','bisa','sudah','ada','lebih','mereka','saya','kami','anda','belum','karena','jika','atau','hanya','telah','orang','baik'], weight: 0.95 },
+    'jv': { name: '🇯awa Jawa', common: ['ing','lan','kang','saking','iku','iki','ten','wong','ora','padha','kulo','sampeyan','sampun','dereng','mangke','sami','dados','anging','amargi','menawi','utawi','manawi','kula','panjenengan','miturut','lajeng','sanes','namung','mBoten','tigang'], weight: 0.9 },
+    'su': { name: ' Sundanese', common: ['sareng','ka','di','nu','mah','ta','mah','ge','mah','ieu','éta','anjir','teh','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah'], weight: 0.7 },
+    'de': { name: '🇩🇪 Deutsch', common: ['der','die','und','in','den','von','zu','das','mit','sich','des','auf','ist','ein','eine','als','auch','es','an','werden','aus','er','hat','dass','sie','nach','wird','bei','einer','um'], weight: 1.0 },
+    'es': { name: '🇪🇸 Español', common: ['que','de','la','el','en','y','los','del','las','un','por','con','una','para','al','lo','como','más','pero','sus','le','ha','este','ya','o','fue','este','ha','si','porque','esta','son','entre','cuando','muy','sin','sobre','ser','tiene','cada'], weight: 1.0 },
+    'fr': { name: '🇫🇷 Français', common: ['le','de','les','des','une','est','et','en','que','qui','dans','du','ce','il','pas','pour','sur','sont','avec','plus','par','au','fait','tout','mais','comme','on','peut','aussi','bien','non','oui','cette','ces','ou','moins','entre','même','autre','très'], weight: 1.0 },
+    'ar': { name: '🇸🇦 العربية', common: ['من','في','على','هذا','التي','لا','كان','إلى','أن','إذا','كل','بل','هناك','حتى','لقد','حيث','كما','وبعد','ذلك','وقد','وما','وهو','وكان','ولم','وكان'], weight: 0.9 },
+    'zh': { name: '🇨🇳 中文', common: ['的','了','在','是','我','有','和','就','不','人','都','一','一个','上','也','很','到','说','要','去','你','会','着','没有','看','好','自己','这'], weight: 0.8 },
+    'ja': { name: '🇯🇵 日本語', common: ['の','に','は','を','た','が','で','て','と','し','れ','さ','ある','いる','も','する','から','な','こと','として','い','や','れる','など','なっ','ない','この','ため','その','あっ','よう','また','もの','という','あり','まで','られ','なる','へ','か','だ','これ','によって','により','おり','より','による','ず','なり','られる','において','ば','なかっ','なく','しかし','について','せ','だっ','そう','て','について','ず','なり','られる','において','ば','なかっ','なく','しかし','について','せ','だっ','そう'], weight: 0.8 },
+    'ko': { name: '🇰🇷 한국어', common: ['의','에','를','이','는','가','과','로','에서','하고','으로','도','한','으로','에게','보다','만','부터','까지','처럼','처럼','하고','하고','하고','하고','하고','하고','하고','하고','하고','하고'], weight: 0.8 },
+    'ru': { name: '🇷🇺 Русский', common: ['в','на','и','не','что','он','как','но','та','бы','по','только','его','если','уже','или','ни','быть','было','вот','все','она','так','его','да','что','ты','к','у','же','вы','за','бы','по','только','ее','мне','было','вот','от','меня','еще','нет','о','из','ему','теперь','когда','даже','ну','ли','если','уже','или','ни','быть','было'], weight: 1.0 }
+  };
+
+  function detectLanguage(text) {
+    const words = text.toLowerCase().replace(/[^a-z\u0600-\u06FF\u4E00-\u9FFF\u3040-\u309F\uAC00-\uD7AF\u0400-\u04FF]+/g, ' ').split(/\s+/).filter(w => w.length > 0);
+    if (words.length === 0) return [];
+    
+    const scores = {};
+    for (const [lang, profile] of Object.entries(langProfiles)) {
+      let score = 0;
+      for (const word of words) {
+        const idx = profile.common.indexOf(word);
+        if (idx !== -1) score += (profile.common.length - idx);
+      }
+      scores[lang] = (score / words.length) * profile.weight;
+    }
+    
+    // Check character patterns for non-Latin scripts
+    if (/[؀-ۿ]/.test(text)) scores['ar'] = (scores['ar'] || 0) + 3;
+    if (/[一-鿿]/.test(text)) scores['zh'] = (scores['zh'] || 0) + 3;
+    if (/[぀-ゟ]/.test(text)) scores['ja'] = (scores['ja'] || 0) + 3;
+    if (/[가-힯]/.test(text)) scores['ko'] = (scores['ko'] || 0) + 3;
+    if (/[Ѐ-ӿ]/.test(text)) scores['ru'] = (scores['ru'] || 0) + 3;
+    
+    return Object.entries(scores)
+      .filter(([_, s]) => s > 0)
+      .sort((a, b) => b[1] - a[1])
+      .map(([lang, score]) => ({ lang, name: langProfiles[lang].name, score, pct: 0 }))
+      .slice(0, 5)
+      .map((item, i, arr) => {
+        const total = arr.reduce((s, x) => s + x.score, 0);
+        item.pct = total > 0 ? Math.round((item.score / total) * 100) : 0;
+        return item;
+      });
+  }
+
+  document.getElementById('detect').onclick = () => {
+    const text = document.getElementById('input').value.trim();
+    const resultEl = document.getElementById('result');
+    if (!text) { resultEl.classList.add('hidden'); return; }
+    const results = detectLanguage(text);
+    resultEl.classList.remove('hidden');
+    if (results.length === 0) {
+      resultEl.innerHTML = '<p class="text-matte-500 text-center">Tidak dapat mendeteksi bahasa. Coba masukkan lebih banyak teks.</p>';
+      return;
+    }
+    resultEl.innerHTML = results.map((r, i) => `
+      <div class="flex items-center gap-4 mb-3 ${i === 0 ? 'p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl' : 'p-2'}">
+        <span class="text-2xl">${r.name.split(' ')[0]}</span>
+        <div class="flex-1">
+          <div class="flex justify-between mb-1">
+            <span class="font-bold text-matte-800 dark:text-white">${r.name.split(' ').slice(1).join(' ')}</span>
+            <span class="font-bold ${i === 0 ? 'text-emerald-600' : 'text-matte-400'}">${r.pct}%</span>
+          </div>
+          <div class="w-full bg-matte-200 dark:bg-matte-700 rounded-full h-2">
+            <div class="${i === 0 ? 'bg-emerald-500' : 'bg-matte-400'} h-2 rounded-full transition-all" style="width:${r.pct}%"></div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  };
+</script>

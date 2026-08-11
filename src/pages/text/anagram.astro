@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Anagram Solver">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader
+      title="Anagram Solver"
+      titleKey="header.anagram_solver"
+      desc="Temukan semua anagram dari kata masukan menggunakan kamus built-in."
+      descKey="header.anagram_solver_desc"
+      icon='<path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/>'
+      gradient="from-sky-500 to-blue-600"
+    />
+
+    <div class="card-base p-8 animate-fade-in">
+      <div class="flex gap-4 mb-6">
+        <input id="word" type="text" class="flex-1 p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold text-lg focus:border-sky-500 transition-colors" placeholder="Ketik kata... (contoh: KOTAK)" maxlength="20" />
+        <button id="solve" class="px-6 py-4 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 transition-colors">🔍 Cari</button>
+      </div>
+      <div class="flex gap-4 mb-4">
+        <input id="custom-input" type="text" class="flex-1 p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border text-sm" placeholder="Atau masukkan daftar kata sendiri, pisahkan koma (contoh: KOTAK,TOKAT,KATO)" />
+        <button id="solve-custom" class="px-4 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors text-sm">Cari Custom</button>
+      </div>
+      <div id="result" class="mt-6 hidden"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const WORDS = ['AKU','KITA','MEREKA','KAMI','ANDA','DIA','IA','KAMU','BISA','SUDAH','BELUM','HARUS','MAU','TIDAK','JUGA','ADA','JADI','BAIK','BESAR','KECIL','TINGGI','PENDEK','PANJANG','LUAS','SEMPIT','LEBAR','HAMPIR','JAUH','DEKAT','CEPAT','LAMBAT','BARU','LAMA','MUDA','TUA','KAYA','MISKIN','KUAT','LEMAH','SEHAT','SAKIT','CANTIK','JELEK','BAGUS','JAHAT','BENAR','SALAH','MUDAH','SULIT','GAMPANG','KERAS','HALUS','TIPIS','TEBAL','BERAT','RINGAN','PANAS','DINGIN','HANGAT','SEJUK','TERANG','GELAP','BESOK','KEMARIN','HARI','MINGGU','BULAN','TAHUN','JAM','MENIT','DETIK','WAKTU','KINI','SEKARANG','NANTI','KEMUDIAN','AWAL','AKHIR','MASUK','KELUAR','NAIK','TURUN','JALAN','LARI','TERBANG','RENANG','DUDUK','BERDIRI','TIDUR','BANGUN','MAKAN','MINUM','MINUM','BACA','TULIS','Lihat','DENGAR','BAU','RASA','SENTUH','PEGANG','BUKA','TUTUP','NYALAH','MATI','HIDUP','MULAI','SELESAI','LANJUT','HENTI','MUNDUR','MAJU','SIANG','MALAM','PAGI','SORE','SORE','CUACA','HUJAN','PANAS','DINGIN','AWAN','MATAHARI','BULAN','BINTANG','LANGIT','TANAH','AIR','API','ANGIN','GUNUNG','LAUT','SUNGAI','DANAU','HUTAN','PANTAI','PULAU','JALAN','KOTA','DESA','RUMAH','SEKOLAH','KANTOR','PASAR','TOKO','RUMAH','KAMAR','DAPUR','TAMAN','KEBUN','SAWAH','JEMBATAN','JALAN','MOBIL','KERETA','PESAWAT','KAPAL','SEPEDA','BUS','TAKSI','OJEK','BECAK','KERETA','JURU','GURU','DOKTER','POLISI','TENTARA','PETANI','PEDAGANG','INSINYUR','PROGRAMMER','DESAINER','PENULIS','ARTIS','AKTOR','PEMAIN','PELATIH','JUARA','PERAWAT','BERSIH','KOTOR','RAMAI','SEPI','AMAN','BAHAYA','MUDAH','SEHAT','Sakit','GINA','JAHAT','BAIK','JUJUR','DUSTA','SETIA','KHIANAT','RAHASIA','UMUM','KHUSUS','BEBAS','TERBATAS','GRATIS','BERBAYAR','PENUH','KOSONG','LENGKAP','TERPISAH','BERSAMA','SENDIRI','SEMUA','SEBAGIAN','SEMUA','SETIAP','BEberapa','TIDAK ADA','TIDAK SAMA','SAMA','BERBEDA','SERUPA','BERLAWANAN','OPPOSITE','NORMAL','ANEH','BIASA','LUAR BIASA','ISTIMEWA','UMUM','KHUSUS','LOKAL','GLOBAL','PUSAT','PINGGIR','DEPAN','BELAKANG','ATAS','BAWAH','KIRI','KANAN','DALAM','LUAR','MASUK','KELUAR','NAIK','TURUN','BERDIRI','DUDUK','BARING','TIDUR','BANGUN','BERSIAP','BERANGKAT','SAMPAI','PULANG','PERGI','DATANG','BERSAMA','SENDIRIAN','BERDUA','BER3','BER4','BER5'];
+
+  function findAnagrams(word, dict) {
+    const sorted = word.toUpperCase().split('').sort().join('');
+    return dict.filter(w => w.length === word.length && w.toUpperCase().split('').sort().join('') === sorted && w.toUpperCase() !== word.toUpperCase());
+  }
+
+  function solve(word, dict) {
+    const anagrams = findAnagrams(word, dict);
+    const resultEl = document.getElementById('result');
+    resultEl.classList.remove('hidden');
+    if (anagrams.length === 0) {
+      resultEl.innerHTML = `<div class="text-center p-6 bg-matte-50 dark:bg-surface-hover rounded-xl"><p class="text-matte-500">Tidak ditemukan anagram untuk "<strong>${word}</strong>" dalam kamus.</p><p class="text-xs text-matte-400 mt-2">Coba kata lain atau masukkan daftar custom.</p></div>`;
+    } else {
+      resultEl.innerHTML = `
+        <p class="text-sm text-matte-500 mb-3">Ditemukan <strong class="text-sky-600">${anagrams.length}</strong> anagram dari "${word}":</p>
+        <div class="flex flex-wrap gap-2">
+          ${anagrams.map(w => `<span class="px-3 py-1 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 rounded-full text-sm font-bold">${w}</span>`).join('')}
+        </div>`;
+    }
+  }
+
+  document.getElementById('solve').onclick = () => {
+    const word = document.getElementById('word').value.trim();
+    if (word) solve(word, WORDS);
+  };
+  document.getElementById('word').onkeydown = (e) => {
+    if (e.key === 'Enter') { const w = e.target.value.trim(); if (w) solve(w, WORDS); }
+  };
+  document.getElementById('solve-custom').onclick = () => {
+    const input = document.getElementById('custom-input').value.trim();
+    const word = document.getElementById('word').value.trim();
+    if (!word || !input) return;
+    const customDict = input.split(',').map(w => w.trim().toUpperCase()).filter(w => w.length > 0);
+    solve(word, customDict);
+  };
+</script>

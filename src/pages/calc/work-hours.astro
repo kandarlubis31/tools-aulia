@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Work Hours Calculator">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader
+      title="Kalkulator Jam Kerja"
+      titleKey="header.work_hours"
+      desc="Hitung jam kerja harian, mingguan, dan lembur dengan cepat."
+      descKey="header.work_hours_desc"
+      icon='<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'
+      gradient="from-cyan-500 to-blue-600"
+    />
+
+    <div class="grid gap-8 animate-fade-in">
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">Jam Kerja Harian</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div><label class="text-xs text-matte-500 mb-1 block">Masuk</label><input id="start" type="time" value="08:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">Istirahat Mulai</label><input id="break-start" type="time" value="12:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">Istirahat Selesai</label><input id="break-end" type="time" value="13:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">Pulang</label><input id="end" type="time" value="17:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        </div>
+        <button id="calc-daily" class="w-full py-3 bg-cyan-600 text-white rounded-xl font-bold hover:bg-cyan-700 transition-colors">Hitung Jam Kerja</button>
+        <div id="result-daily" class="mt-6 p-4 bg-matte-50 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border hidden"></div>
+      </div>
+
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">Lembur Mingguan</h3>
+        <div class="grid grid-cols-7 gap-2 mb-4">
+          <input type="number" id="h-mon" placeholder="Sen" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
+          <input type="number" id="h-tue" placeholder="Sel" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
+          <input type="number" id="h-wed" placeholder="Rab" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
+          <input type="number" id="h-thu" placeholder="Kam" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
+          <input type="number" id="h-fri" placeholder="Jum" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
+          <input type="number" id="h-sat" placeholder="Sab" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="0" />
+          <input type="number" id="h-sun" placeholder="Min" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="0" />
+        </div>
+        <div class="flex items-center gap-4 mb-4">
+          <label class="text-sm text-matte-500">Jam kerja normal/minggu: <input id="normal-hrs" type="number" value="40" class="w-16 p-2 border rounded-lg text-center dark:bg-surface-hover dark:border-surface-border" /></label>
+          <label class="text-sm text-matte-500">Upah/jam (Rp): <input id="rate" type="number" value="50000" class="w-32 p-2 border rounded-lg text-center dark:bg-surface-hover dark:border-surface-border" /></label>
+        </div>
+        <button id="calc-weekly" class="w-full py-3 bg-cyan-600 text-white rounded-xl font-bold hover:bg-cyan-700 transition-colors">Hitung Mingguan</button>
+        <div id="result-weekly" class="mt-6 p-4 bg-matte-50 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border hidden"></div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  function toMin(t) { const [h,m] = t.split(':').map(Number); return h*60+m; }
+  function fmtDur(min) { const h = Math.floor(min/60), m = min%60; return `${h}j ${m}m`; }
+  function fmtRp(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
+  document.getElementById('calc-daily').onclick = () => {
+    const s = toMin(document.getElementById('start').value);
+    const bs = toMin(document.getElementById('break-start').value);
+    const be = toMin(document.getElementById('break-end').value);
+    const e = toMin(document.getElementById('end').value);
+    const total = e - s;
+    const brk = be - bs;
+    const work = total - brk;
+    const el = document.getElementById('result-daily');
+    el.classList.remove('hidden');
+    el.innerHTML = `
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div><span class="text-2xl font-black text-cyan-600">${fmtDur(total)}</span><br/><span class="text-xs text-matte-500">Total di kantor</span></div>
+        <div><span class="text-2xl font-black text-amber-500">${fmtDur(brk)}</span><br/><span class="text-xs text-matte-500">Istirahat</span></div>
+        <div><span class="text-2xl font-black text-emerald-500">${fmtDur(work)}</span><br/><span class="text-xs text-matte-500">Jam kerja efektif</span></div>
+        <div><span class="text-2xl font-black text-blue-500">${(work/60).toFixed(1)}h</span><br/><span class="text-xs text-matte-500">Dalam jam desimal</span></div>
+      </div>`;
+  };
+  document.getElementById('calc-weekly').onclick = () => {
+    const ids = ['h-mon','h-tue','h-wed','h-thu','h-fri','h-sat','h-sun'];
+    const hrs = ids.map(id => parseFloat(document.getElementById(id).value)||0);
+    const total = hrs.reduce((a,b) => a+b, 0);
+    const normal = parseFloat(document.getElementById('normal-hrs').value)||40;
+    const ot = Math.max(0, total - normal);
+    const rate = parseFloat(document.getElementById('rate').value)||0;
+    const normalPay = Math.min(total, normal) * rate;
+    const otPay = ot * rate * 1.5;
+    const el = document.getElementById('result-weekly');
+    el.classList.remove('hidden');
+    el.innerHTML = `
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div><span class="text-2xl font-black text-cyan-600">${total}h</span><br/><span class="text-xs text-matte-500">Total jam minggu ini</span></div>
+        <div><span class="text-2xl font-black text-amber-500">${ot}h</span><br/><span class="text-xs text-matte-500">Lembur (> ${normal}h)</span></div>
+        <div><span class="text-2xl font-black text-emerald-500">${fmtRp(normalPay)}</span><br/><span class="text-xs text-matte-500">Gaji normal</span></div>
+        <div><span class="text-2xl font-black text-violet-500">${fmtRp(otPay)}</span><br/><span class="text-xs text-matte-500">Upah lembur (×1.5)</span></div>
+      </div>`;
+  };
+</script>

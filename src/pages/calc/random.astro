@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Random Number Generator">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader
+      title="Random Number Generator"
+      titleKey="header.random_gen"
+      desc="Generate angka random dengan range, seed, dan format berbeda."
+      descKey="header.random_gen_desc"
+      icon='<rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 12h10"/><path d="M12 7v10"/>'
+      gradient="from-lime-500 to-emerald-600"
+    />
+
+    <div class="grid gap-8 animate-fade-in">
+      <div class="card-base p-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div><label class="text-xs text-matte-500 mb-1 block">Minimum</label><input id="min" type="number" value="1" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">Maximum</label><input id="max" type="number" value="100" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">Jumlah</label><input id="count" type="number" value="5" min="1" max="1000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">Tipe</label>
+            <select id="type" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
+              <option value="integer">Integer</option>
+              <option value="float">Float (2 desimal)</option>
+            </select></div>
+        </div>
+        <div class="flex gap-2 mb-6">
+          <label class="flex items-center gap-2 text-sm text-matte-500"><input type="checkbox" id="unique" class="rounded" /> Unik (tidak duplikat)</label>
+          <label class="flex items-center gap-2 text-sm text-matte-500 ml-4"><input type="checkbox" id="sort" class="rounded" /> Urutkan</label>
+        </div>
+        <button id="generate" class="w-full py-3 bg-lime-600 text-white rounded-xl font-bold hover:bg-lime-700 transition-colors">Generate</button>
+        <div id="result" class="mt-6 hidden">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-bold text-matte-500">Hasil:</span>
+            <button id="copy-btn" class="text-xs px-3 py-1 bg-matte-200 dark:bg-matte-700 rounded-full hover:bg-lime-100 dark:hover:bg-lime-900/30 transition-colors">📋 Copy</button>
+          </div>
+          <div id="output" class="p-4 bg-matte-50 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border font-mono text-sm break-all text-matte-800 dark:text-matte-200 max-h-64 overflow-y-auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.getElementById('generate').onclick = () => {
+    const min = +document.getElementById('min').value;
+    const max = +document.getElementById('max').value;
+    const count = Math.min(+document.getElementById('count').value, 1000);
+    const type = document.getElementById('type').value;
+    const unique = document.getElementById('unique').checked;
+    const sort = document.getElementById('sort').checked;
+    if (min >= max) return alert('Minimum harus kurang dari Maximum');
+    let nums = [];
+    const range = max - min + 1;
+    if (unique && count > range) return alert('Jumlah melebihi range untuk angka unik');
+    while (nums.length < count) {
+      let n = Math.floor(Math.random() * range) + min;
+      if (type === 'float') n = (Math.random() * (max - min) + min).toFixed(2);
+      if (!unique || !nums.includes(n)) nums.push(n);
+    }
+    if (sort) nums.sort((a,b) => +a - +b);
+    document.getElementById('output').textContent = nums.join(', ');
+    document.getElementById('result').classList.remove('hidden');
+  };
+  document.getElementById('copy-btn').onclick = () => {
+    navigator.clipboard.writeText(document.getElementById('output').textContent);
+    document.getElementById('copy-btn').textContent = '✅ Copied!';
+    setTimeout(() => document.getElementById('copy-btn').textContent = '📋 Copy', 1500);
+  };
+</script>

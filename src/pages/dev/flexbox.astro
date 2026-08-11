@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Flexbox Playground">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader
+      title="Flexbox Playground"
+      titleKey="header.flexbox"
+      desc="Visual playground untuk belajar flexbox: atur container & items, langsung copy CSS."
+      descKey="header.flexbox_desc"
+      icon='<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="18" height="7"/>'
+      gradient="from-purple-500 to-violet-600"
+    />
+
+    <div class="grid gap-8 animate-fade-in">
+      <!-- Controls -->
+      <div class="card-base p-6">
+        <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4">Container Properties</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div><label class="text-xs text-matte-500 mb-1 block">display</label><select id="display" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold"><option value="flex">flex</option><option value="inline-flex">inline-flex</option></select></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">flex-direction</label><select id="flexDir" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold"><option value="row">row</option><option value="row-reverse">row-reverse</option><option value="column">column</option><option value="column-reverse">column-reverse</option></select></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">flex-wrap</label><select id="flexWrap" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold"><option value="nowrap">nowrap</option><option value="wrap">wrap</option><option value="wrap-reverse">wrap-reverse</option></select></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">justify-content</label><select id="justify" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold"><option value="flex-start">flex-start</option><option value="flex-end">flex-end</option><option value="center">center</option><option value="space-between">space-between</option><option value="space-around">space-around</option><option value="space-evenly">space-evenly</option></select></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">align-items</label><select id="alignItems" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold"><option value="flex-start">flex-start</option><option value="flex-end">flex-end</option><option value="center">center</option><option value="stretch">stretch</option><option value="baseline">baseline</option></select></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">align-content</label><select id="alignContent" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold"><option value="flex-start">flex-start</option><option value="flex-end">flex-end</option><option value="center">center</option><option value="stretch">stretch</option><option value="space-between">space-between</option><option value="space-around">space-around</option></select></div>
+          <div><label class="text-xs text-matte-500 mb-1 block">gap</label><input id="gap" type="number" value="8" min="0" max="40" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold" /></div>
+          <div class="flex items-end gap-2">
+            <button id="add-item" class="px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg text-sm font-bold hover:bg-purple-200">+ Item</button>
+            <button id="reset" class="px-3 py-2 bg-matte-200 dark:bg-matte-700 text-matte-500 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/30">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="card-base p-6">
+        <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4">Preview</h3>
+        <div id="container" class="min-h-[200px] p-4 border-2 border-dashed border-purple-300 dark:border-purple-700 rounded-xl bg-matte-50 dark:bg-surface-hover"></div>
+      </div>
+
+      <!-- Generated CSS -->
+      <div class="card-base p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold text-matte-800 dark:text-white">Generated CSS</h3>
+          <button id="copy-css" class="text-xs px-3 py-1 bg-matte-200 dark:bg-matte-700 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">📋 Copy CSS</button>
+        </div>
+        <pre id="css-output" class="p-4 bg-matte-100 dark:bg-surface-hover rounded-xl font-mono text-sm text-matte-700 dark:text-matte-300 overflow-x-auto whitespace-pre-wrap"></pre>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  let itemCount = 3;
+  const colors = ['bg-purple-400','bg-pink-400','bg-blue-400','bg-emerald-400','bg-amber-400','bg-cyan-400','bg-rose-400','bg-indigo-400'];
+  
+  function renderContainer() {
+    const el = document.getElementById('container');
+    el.style.display = document.getElementById('display').value;
+    el.style.flexDirection = document.getElementById('flexDir').value;
+    el.style.flexWrap = document.getElementById('flexWrap').value;
+    el.style.justifyContent = document.getElementById('justify').value;
+    el.style.alignItems = document.getElementById('alignItems').value;
+    el.style.alignContent = document.getElementById('alignContent').value;
+    el.style.gap = document.getElementById('gap').value + 'px';
+    
+    el.innerHTML = '';
+    for (let i = 1; i <= itemCount; i++) {
+      const item = document.createElement('div');
+      item.className = `${colors[(i-1)%colors.length]} text-white font-bold rounded-lg p-4 text-center text-sm min-w-[60px] min-h-[40px] flex items-center justify-center`;
+      item.textContent = i;
+      el.appendChild(item);
+    }
+    updateCSS();
+  }
+  
+  function updateCSS() {
+    const css = `.container {
+  display: ${document.getElementById('display').value};
+  flex-direction: ${document.getElementById('flexDir').value};
+  flex-wrap: ${document.getElementById('flexWrap').value};
+  justify-content: ${document.getElementById('justify').value};
+  align-items: ${document.getElementById('alignItems').value};
+  align-content: ${document.getElementById('alignContent').value};
+  gap: ${document.getElementById('gap').value}px;
+}`;
+    document.getElementById('css-output').textContent = css;
+  }
+  
+  document.querySelectorAll('select, input').forEach(el => {
+    el.addEventListener('change', renderContainer);
+    el.addEventListener('input', renderContainer);
+  });
+  
+  document.getElementById('add-item').onclick = () => { itemCount++; renderContainer(); };
+  document.getElementById('reset').onclick = () => {
+    itemCount = 3;
+    document.getElementById('display').value = 'flex';
+    document.getElementById('flexDir').value = 'row';
+    document.getElementById('flexWrap').value = 'nowrap';
+    document.getElementById('justify').value = 'flex-start';
+    document.getElementById('alignItems').value = 'stretch';
+    document.getElementById('alignContent').value = 'flex-start';
+    document.getElementById('gap').value = 8;
+    renderContainer();
+  };
+  
+  document.getElementById('copy-css').onclick = () => {
+    navigator.clipboard.writeText(document.getElementById('css-output').textContent);
+    document.getElementById('copy-css').textContent = '✅ Copied!';
+    setTimeout(() => document.getElementById('copy-css').textContent = '📋 Copy CSS', 1500);
+  };
+  
+  renderContainer();
+</script>
