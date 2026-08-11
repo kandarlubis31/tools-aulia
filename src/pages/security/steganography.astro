@@ -1,0 +1,336 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Steganography — Sembunyikan Teks di Gambar">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Steganography"
+      titleKey="header.steganography"
+      desc="Sembunyikan teks rahasia di dalam gambar (LSB steganography)."
+      descKey="header.steganography_desc"
+      icon='<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/><path d="M12 9v3"/><path d="M12 15v.01"/>'
+      gradient="from-violet-500 to-purple-600"
+    />
+
+    <!-- Tabs -->
+    <div class="flex justify-center gap-3 mb-8 animate-fade-in">
+      <button id="tab-hide" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-violet-500 text-white shadow-md transition-all" data-i18n="steg.hide">🔒 Sembunyikan</button>
+      <button id="tab-extract" class="px-6 py-2.5 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-i18n="steg.extract">🔍 Ekstrak</button>
+    </div>
+
+    <!-- Hide mode -->
+    <div id="hide-panel" class="card-base p-6 animate-fade-in">
+      <!-- Drop zone -->
+      <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-surface-border rounded-xl p-8 text-center hover:border-violet-400 dark:hover:border-violet-500 transition-all cursor-pointer mb-4">
+        <input id="file-input" type="file" accept="image/*" class="hidden" />
+        <p class="text-sm text-matte-500 dark:text-matte-400" data-i18n="upload.drop_image">Drop gambar di sini atau klik untuk upload</p>
+        <p id="filename" class="text-xs text-violet-600 dark:text-violet-400 mt-2 font-medium hidden"></p>
+      </div>
+
+      <!-- Preview -->
+      <div id="preview-container" class="hidden mb-4">
+        <img id="preview" class="max-h-48 mx-auto rounded-xl border border-matte-200 dark:border-surface-border" alt="Preview" />
+      </div>
+
+      <!-- Message input -->
+      <label class="section-title mb-2 block" for="secret-message" data-i18n="steg.message">Pesan</label>
+      <textarea id="secret-message" rows="3" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm resize-y" placeholder="Masukkan pesan rahasia..." data-i18n-attr="placeholder"></textarea>
+      <p class="text-2xs text-matte-400 mt-1"><span id="capacity">0</span> / <span id="max-capacity">0</span> karakter</p>
+
+      <button id="hide-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="steg.hide">Sembunyikan</button>
+
+      <!-- Download button -->
+      <div id="download-container" class="hidden mt-4">
+        <button id="download-btn" class="w-full px-4 py-3 rounded-xl font-bold text-sm bg-violet-500 text-white hover:bg-violet-600 transition-all" data-i18n="steg.download">Download gambar</button>
+      </div>
+    </div>
+
+    <!-- Extract mode -->
+    <div id="extract-panel" class="hidden card-base p-6 animate-fade-in">
+      <!-- Drop zone for extract -->
+      <div id="drop-zone-extract" class="border-2 border-dashed border-matte-300 dark:border-surface-border rounded-xl p-8 text-center hover:border-violet-400 dark:hover:border-violet-500 transition-all cursor-pointer mb-4">
+        <input id="file-input-extract" type="file" accept="image/*" class="hidden" />
+        <p class="text-sm text-matte-500 dark:text-matte-400" data-i18n="upload.drop_image">Drop gambar di sini atau klik untuk upload</p>
+        <p id="filename-extract" class="text-xs text-violet-600 dark:text-violet-400 mt-2 font-medium hidden"></p>
+      </div>
+
+      <button id="extract-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="steg.extract">Ekstrak Pesan</button>
+
+      <!-- Result -->
+      <div id="extract-result" class="hidden mt-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title" data-i18n="steg.result">Pesan tersembunyi</span>
+          <button id="copy-message" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="btn.copy">Copy</button>
+        </div>
+        <div id="extracted-message" class="w-full p-4 bg-matte-50 dark:bg-matte-900 rounded-xl text-sm text-matte-700 dark:text-matte-300 border border-matte-200 dark:border-surface-border whitespace-pre-wrap"></div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div id="steg-error" class="hidden mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-xs text-red-600 dark:text-red-400"></div>
+
+    <!-- Note -->
+    <p class="text-2xs text-matte-400 mt-4 text-center" data-i18n="steg.note">Upload gambar, masukkan pesan, download gambar baru.</p>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      let imageData: ImageData | null = null;
+      let canvas: HTMLCanvasElement | null = null;
+      let ctx: CanvasRenderingContext2D | null = null;
+      let extractImageData: ImageData | null = null;
+
+      // Tab switching
+      document.getElementById('tab-hide')?.addEventListener('click', () => {
+        document.getElementById('hide-panel')?.classList.remove('hidden');
+        document.getElementById('extract-panel')?.classList.add('hidden');
+        document.getElementById('tab-hide')!.className = 'px-6 py-2.5 rounded-xl text-sm font-bold bg-violet-500 text-white shadow-md transition-all';
+        document.getElementById('tab-extract')!.className = 'px-6 py-2.5 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
+      });
+
+      document.getElementById('tab-extract')?.addEventListener('click', () => {
+        document.getElementById('hide-panel')?.classList.add('hidden');
+        document.getElementById('extract-panel')?.classList.remove('hidden');
+        document.getElementById('tab-extract')!.className = 'px-6 py-2.5 rounded-xl text-sm font-bold bg-violet-500 text-white shadow-md transition-all';
+        document.getElementById('tab-hide')!.className = 'px-6 py-2.5 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
+      });
+
+      // Load image to canvas
+      function loadImageToCanvas(file: File, imgEl: HTMLImageElement, canvasEl: HTMLCanvasElement, ctxEl: CanvasRenderingContext2D): Promise<ImageData> {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              imgEl.src = e.target?.result as string;
+              imgEl.classList.remove('hidden');
+              canvasEl.width = img.width;
+              canvasEl.height = img.height;
+              ctxEl.drawImage(img, 0, 0);
+              resolve(ctxEl.getImageData(0, 0, img.width, img.height));
+            };
+            img.onerror = () => reject(new Error('Gagal load gambar'));
+            img.src = e.target?.result as string;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // Hide mode - Drop zone
+      const dropZone = document.getElementById('drop-zone');
+      const fileInput = document.getElementById('file-input') as HTMLInputElement;
+      const preview = document.getElementById('preview') as HTMLImageElement;
+      const previewContainer = document.getElementById('preview-container');
+
+      dropZone?.addEventListener('click', () => fileInput?.click());
+      dropZone?.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-violet-500'); });
+      dropZone?.addEventListener('dragleave', () => dropZone.classList.remove('border-violet-500'));
+      dropZone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-violet-500');
+        const file = e.dataTransfer?.files[0];
+        if (file) handleHideFile(file);
+      });
+
+      fileInput?.addEventListener('change', (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) handleHideFile(file);
+      });
+
+      async function handleHideFile(file: File) {
+        if (!file.type.startsWith('image/')) {
+          const errorEl = document.getElementById('steg-error');
+          if (errorEl) { errorEl.textContent = 'File harus gambar!'; errorEl.classList.remove('hidden'); }
+          return;
+        }
+        canvas = document.createElement('canvas');
+        ctx = canvas.getContext('2d')!;
+        try {
+          imageData = await loadImageToCanvas(file, preview, canvas, ctx);
+          previewContainer?.classList.remove('hidden');
+          document.getElementById('filename')!.textContent = file.name;
+          document.getElementById('filename')!.classList.remove('hidden');
+          
+          // Calculate capacity (3 bytes per pixel for RGB, minus 32 bits header)
+          const maxChars = Math.floor((imageData.data.length - 32)/8);
+          document.getElementById('max-capacity')!.textContent = maxChars.toString();
+          document.getElementById('capacity')!.textContent = '0';
+          
+          const errorEl = document.getElementById('steg-error');
+          if (errorEl) errorEl.classList.add('hidden');
+        } catch (e: any) {
+          const errorEl = document.getElementById('steg-error');
+          if (errorEl) { errorEl.textContent = e.message; errorEl.classList.remove('hidden'); }
+        }
+      }
+
+      // Update capacity count
+      document.getElementById('secret-message')?.addEventListener('input', (e) => {
+        const len = (e.target as HTMLTextAreaElement).value.length;
+        document.getElementById('capacity')!.textContent = len.toString();
+      });
+
+      // Extract mode - Drop zone
+      const dropZoneExtract = document.getElementById('drop-zone-extract');
+      const fileInputExtract = document.getElementById('file-input-extract') as HTMLInputElement;
+
+      dropZoneExtract?.addEventListener('click', () => fileInputExtract?.click());
+      dropZoneExtract?.addEventListener('dragover', (e) => { e.preventDefault(); dropZoneExtract.classList.add('border-violet-500'); });
+      dropZoneExtract?.addEventListener('dragleave', () => dropZoneExtract.classList.remove('border-violet-500'));
+      dropZoneExtract?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZoneExtract.classList.remove('border-violet-500');
+        const file = e.dataTransfer?.files[0];
+        if (file) handleExtractFile(file);
+      });
+
+      fileInputExtract?.addEventListener('change', (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) handleExtractFile(file);
+      });
+
+      async function handleExtractFile(file: File) {
+        const extractCanvas = document.createElement('canvas');
+        const extractCtx = extractCanvas.getContext('2d')!;
+        const tempImg = document.getElementById('preview') as HTMLImageElement;
+        try {
+          extractImageData = await loadImageToCanvas(file, tempImg, extractCanvas, extractCtx);
+          document.getElementById('filename-extract')!.textContent = file.name;
+          document.getElementById('filename-extract')!.classList.remove('hidden');
+          const errorEl = document.getElementById('steg-error');
+          if (errorEl) errorEl.classList.add('hidden');
+        } catch (e: any) {
+          const errorEl = document.getElementById('steg-error');
+          if (errorEl) { errorEl.textContent = e.message; errorEl.classList.remove('hidden'); }
+        }
+      }
+
+      // LSB encode
+      function encodeLSB(imageData: ImageData, message: string): ImageData {
+        const data = imageData.data;
+        const msgBytes = new TextEncoder().encode(message);
+        
+        // Store message length in first 32 bits (4 pixels)
+        const len = msgBytes.length;
+        for (let i = 0; i < 32; i++) {
+          const bit = (len >> (31 - i)) & 1;
+          data[i * 4] = (data[i * 4] & 0xFE) | bit;
+        }
+
+        // Store message
+        for (let i = 0; i < msgBytes.length; i++) {
+          for (let bit = 0; bit < 8; bit++) {
+            const pixelIndex = (32 + i * 8 + bit);
+            const byteVal = (msgBytes[i] >> (7 - bit)) & 1;
+            data[pixelIndex * 4] = (data[pixelIndex * 4] & 0xFE) | byteVal;
+          }
+        }
+
+        return imageData;
+      }
+
+      // LSB decode
+      function decodeLSB(imageData: ImageData): string {
+        const data = imageData.data;
+        
+        // Read message length from first 32 bits
+        let len = 0;
+        for (let i = 0; i < 32; i++) {
+          const bit = data[i * 4] & 1;
+          len = (len << 1) | bit;
+        }
+
+        if (len <= 0 || len > 10000) return '';
+
+        // Read message
+        const msgBytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          let byte = 0;
+          for (let bit = 0; bit < 8; bit++) {
+            const pixelIndex = (32 + i * 8 + bit);
+            byte = (byte << 1) | (data[pixelIndex * 4] & 1);
+          }
+          msgBytes[i] = byte;
+        }
+
+        return new TextDecoder().decode(msgBytes);
+      }
+
+      // Hide button
+      document.getElementById('hide-btn')?.addEventListener('click', () => {
+        if (!imageData || !canvas || !ctx) {
+          const errorEl = document.getElementById('steg-error');
+          if (errorEl) { errorEl.textContent = 'Upload gambar terlebih dahulu!'; errorEl.classList.remove('hidden'); }
+          return;
+        }
+
+        const message = (document.getElementById('secret-message') as HTMLTextAreaElement)?.value;
+        if (!message) {
+          const errorEl = document.getElementById('steg-error');
+          if (errorEl) { errorEl.textContent = 'Masukkan pesan!'; errorEl.classList.remove('hidden'); }
+          return;
+        }
+
+        const errorEl = document.getElementById('steg-error');
+        if (errorEl) errorEl.classList.add('hidden');
+
+        try {
+          const newData = new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height);
+          encodeLSB(newData, message);
+          ctx.putImageData(newData, 0, 0);
+          document.getElementById('download-container')?.classList.remove('hidden');
+          toast('Pesan tersembunyi!', 'success');
+        } catch (e: any) {
+          if (errorEl) { errorEl.textContent = e.message; errorEl.classList.remove('hidden'); }
+        }
+      });
+
+      // Download button
+      document.getElementById('download-btn')?.addEventListener('click', () => {
+        if (!canvas) return;
+        const link = document.createElement('a');
+        link.download = 'steganography.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        toast('Gambar didownload!', 'success');
+      });
+
+      // Extract button
+      document.getElementById('extract-btn')?.addEventListener('click', () => {
+        if (!extractImageData) {
+          const errorEl = document.getElementById('steg-error');
+          if (errorEl) { errorEl.textContent = 'Upload gambar terlebih dahulu!'; errorEl.classList.remove('hidden'); }
+          return;
+        }
+
+        const errorEl = document.getElementById('steg-error');
+        if (errorEl) errorEl.classList.add('hidden');
+
+        try {
+          const message = decodeLSB(extractImageData);
+          const resultEl = document.getElementById('extracted-message');
+          const resultContainer = document.getElementById('extract-result');
+          if (resultEl) resultEl.textContent = message || 'Tidak ada pesan ditemukan.';
+          if (resultContainer) resultContainer.classList.remove('hidden');
+          if (message) toast('Pesan ditemukan!', 'success');
+          else toast('Tidak ada pesan tersembunyi.', 'info');
+        } catch (e: any) {
+          if (errorEl) { errorEl.textContent = e.message; errorEl.classList.remove('hidden'); }
+        }
+      });
+
+      // Copy message
+      document.getElementById('copy-message')?.addEventListener('click', () => {
+        const message = document.getElementById('extracted-message')?.textContent;
+        if (message) {
+          navigator.clipboard.writeText(message);
+          toast('Pesan disalin!', 'success');
+        }
+      });
+    });
+  </script>
+</BaseLayout>

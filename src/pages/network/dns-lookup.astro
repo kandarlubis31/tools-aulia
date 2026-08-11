@@ -1,0 +1,157 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="DNS Lookup — Cari Rekam DNS Domain">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="DNS Lookup"
+      titleKey="header.dns_lookup"
+      desc="Cari rekam DNS untuk domain: A, AAAA, MX, CNAME, TXT, NS."
+      descKey="header.dns_lookup_desc"
+      icon='<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>'
+      gradient="from-teal-500 to-cyan-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Domain input -->
+      <label class="section-title mb-2 block" for="dns-domain" data-i18n="dns.domain">Domain</label>
+      <input id="dns-domain" type="text" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-teal-500 transition-colors text-sm" placeholder="example.com" autocomplete="off" />
+
+      <!-- Record type selector -->
+      <label class="section-title mb-2 mt-4 block" data-i18n="dns.type">Tipe</label>
+      <div class="flex flex-wrap gap-2">
+        <button id="type-a" class="px-4 py-2 rounded-xl text-sm font-bold bg-teal-500 text-white shadow-md transition-all" data-type="A">A</button>
+        <button id="type-aaaa" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-type="AAAA">AAAA</button>
+        <button id="type-mx" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-type="MX">MX</button>
+        <button id="type-cname" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-type="CNAME">CNAME</button>
+        <button id="type-txt" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-type="TXT">TXT</button>
+        <button id="type-ns" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-type="NS">NS</button>
+      </div>
+
+      <button id="lookup-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="dns.lookup">Cari</button>
+
+      <!-- Results -->
+      <div id="dns-results" class="hidden mt-6">
+        <div class="flex items-center justify-between mb-3">
+          <span class="section-title" data-i18n="dns.result">Hasil DNS</span>
+          <button id="copy-results" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="btn.copy">Copy</button>
+        </div>
+        <div id="dns-records" class="space-y-2"></div>
+      </div>
+
+      <!-- Loading -->
+      <div id="dns-loading" class="hidden mt-6 text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-teal-500 border-r-transparent"></div>
+        <p class="text-sm text-matte-500 mt-2" data-i18n="loading">Memuat...</p>
+      </div>
+
+      <!-- Error -->
+      <div id="dns-error" class="hidden mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-xs text-red-600 dark:text-red-400"></div>
+
+      <!-- Note -->
+      <p class="text-2xs text-matte-400 mt-4" data-i18n="dns.note">Masukkan domain, pilih tipe rekam (A, AAAA, MX, CNAME, TXT, NS).</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      let recordType = 'A';
+
+      // Type buttons
+      document.querySelectorAll('[data-type]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-type]').forEach(b => {
+            b.className = 'px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
+          });
+          btn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-teal-500 text-white shadow-md transition-all';
+          recordType = (btn as HTMLElement).dataset.type!;
+        });
+      });
+
+      // Lookup button
+      document.getElementById('lookup-btn')?.addEventListener('click', async () => {
+        const domain = (document.getElementById('dns-domain') as HTMLInputElement)?.value.trim();
+        const errorEl = document.getElementById('dns-error');
+        const loadingEl = document.getElementById('dns-loading');
+        const resultsEl = document.getElementById('dns-results');
+        const recordsEl = document.getElementById('dns-records');
+
+        if (!domain) {
+          if (errorEl) { errorEl.textContent = 'Masukkan domain!'; errorEl.classList.remove('hidden'); }
+          return;
+        }
+
+        // Validate domain
+        if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/.test(domain)) {
+          if (errorEl) { errorEl.textContent = 'Format domain tidak valid!'; errorEl.classList.remove('hidden'); }
+          return;
+        }
+
+        if (errorEl) errorEl.classList.add('hidden');
+        loadingEl?.classList.remove('hidden');
+        resultsEl?.classList.add('hidden');
+
+        try {
+          // Use Cloudflare DNS over HTTPS
+          const response = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=${recordType}`, {
+            headers: { 'Accept': 'application/dns-json' }
+          });
+
+          if (!response.ok) throw new Error('Gagal mengambil data DNS');
+
+          const data = await response.json();
+          
+          if (data.Status !== 0) {
+            throw new Error(`DNS query failed with status: ${data.Status}`);
+          }
+
+          if (data.Answer && data.Answer.length > 0) {
+            recordsEl!.innerHTML = '';
+            data.Answer.forEach((record: any) => {
+              const div = document.createElement('div');
+              div.className = 'p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border';
+              div.innerHTML = `
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-teal-600 dark:text-teal-400">${record.type}</span>
+                  <span class="text-2xs text-matte-400">TTL: ${record.TTL}s</span>
+                </div>
+                <p class="text-sm font-mono text-matte-700 dark:text-matte-300 mt-1 break-all">${record.data}</p>
+              `;
+              recordsEl!.appendChild(div);
+            });
+            resultsEl?.classList.remove('hidden');
+            toast(`${data.Answer.length} rekam ditemukan!`, 'success');
+          } else {
+            if (recordsEl) recordsEl.innerHTML = '<p class="text-sm text-matte-500 text-center py-4">Tidak ada rekam ditemukan.</p>';
+            resultsEl?.classList.remove('hidden');
+            toast('Tidak ada rekam ditemukan.', 'info');
+          }
+        } catch (e: any) {
+          if (errorEl) { errorEl.textContent = e.message || 'Error lookup DNS'; errorEl.classList.remove('hidden'); }
+        } finally {
+          loadingEl?.classList.add('hidden');
+        }
+      });
+
+      // Copy results
+      document.getElementById('copy-results')?.addEventListener('click', () => {
+        const records = document.getElementById('dns-records')?.textContent;
+        if (records) {
+          navigator.clipboard.writeText(records.trim());
+          toast('Hasil disalin!', 'success');
+        }
+      });
+
+      // Enter key
+      document.getElementById('dns-domain')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          document.getElementById('lookup-btn')?.click();
+        }
+      });
+    });
+  </script>
+</BaseLayout>

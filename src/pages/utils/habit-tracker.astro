@@ -1,0 +1,257 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Habit Tracker — Lacak Kebiasaan Harian">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Habit Tracker"
+      titleKey="header.habit_tracker"
+      desc="Lacak kebiasaan harian: tambah habit, centang harian, lihat streak & progress."
+      descKey="header.habit_tracker_desc"
+      icon='<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>'
+      gradient="from-green-500 to-emerald-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Add habit form -->
+      <div class="flex gap-2 mb-6">
+        <input id="habit-input" type="text" class="flex-1 px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-green-500 transition-colors text-sm" placeholder="Tambah habit baru..." data-i18n-attr="placeholder" autocomplete="off" />
+        <button id="add-habit-btn" class="px-6 py-3 gradient-brand rounded-xl font-bold text-sm" data-i18n="habit.add">Tambah</button>
+      </div>
+
+      <!-- Date display -->
+      <div class="flex items-center justify-between mb-4">
+        <button id="prev-day" class="p-2 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all">
+          <svg class="w-5 h-5 text-matte-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="text-center">
+          <p id="current-date" class="font-bold text-matte-700 dark:text-matte-300"></p>
+          <p id="day-streak" class="text-2xs text-green-600 dark:text-green-400 font-medium"></p>
+        </div>
+        <button id="next-day" class="p-2 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all">
+          <svg class="w-5 h-5 text-matte-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Habits list -->
+      <div id="habits-list" class="space-y-3"></div>
+
+      <!-- Empty state -->
+      <div id="empty-state" class="text-center py-8">
+        <p class="text-4xl mb-3">📝</p>
+        <p class="text-sm text-matte-500" data-i18n="habit.note">Tambah habit baru, centang harian, lihat streak.</p>
+      </div>
+
+      <!-- Stats -->
+      <div id="habit-stats" class="hidden mt-6 grid grid-cols-3 gap-3">
+        <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+          <p class="text-2xs text-matte-400">Total Habits</p>
+          <p id="stat-total" class="text-lg font-bold text-green-600 dark:text-green-400">0</p>
+        </div>
+        <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+          <p class="text-2xs text-matte-400">Selesai Hari Ini</p>
+          <p id="stat-done" class="text-lg font-bold text-green-600 dark:text-green-400">0</p>
+        </div>
+        <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+          <p class="text-2xs text-matte-400">Best Streak</p>
+          <p id="stat-streak" class="text-lg font-bold text-green-600 dark:text-green-400">0</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      interface Habit {
+        id: string;
+        name: string;
+        completedDates: string[];
+        createdAt: string;
+      }
+
+      let habits: Habit[] = JSON.parse(localStorage.getItem('habit-tracker') || '[]');
+      let currentDate = new Date();
+
+      function saveHabits() {
+        localStorage.setItem('habit-tracker', JSON.stringify(habits));
+      }
+
+      function formatDate(date: Date): string {
+        return date.toISOString().split('T')[0];
+      }
+
+      function formatDateDisplay(date: Date): string {
+        return date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      }
+
+      function isToday(date: Date): boolean {
+        return formatDate(date) === formatDate(new Date());
+      }
+
+      function calculateStreak(habit: Habit): number {
+        let streak = 0;
+        let checkDate = new Date();
+        
+        while (true) {
+          const dateStr = formatDate(checkDate);
+          if (habit.completedDates.includes(dateStr)) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+          } else {
+            break;
+          }
+        }
+        return streak;
+      }
+
+      function calculateBestStreak(habit: Habit): number {
+        if (habit.completedDates.length === 0) return 0;
+        
+        const sorted = [...habit.completedDates].sort();
+        let bestStreak = 1;
+        let currentStreak = 1;
+
+        for (let i = 1; i < sorted.length; i++) {
+          const prev = new Date(sorted[i - 1]);
+          const curr = new Date(sorted[i]);
+          const diffDays = (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
+          
+          if (diffDays === 1) {
+            currentStreak++;
+            bestStreak = Math.max(bestStreak, currentStreak);
+          } else if (diffDays > 1) {
+            currentStreak = 1;
+          }
+        }
+        return bestStreak;
+      }
+
+      function renderHabits() {
+        const listEl = document.getElementById('habits-list');
+        const emptyEl = document.getElementById('empty-state');
+        const statsEl = document.getElementById('habit-stats');
+        const dateStr = formatDate(currentDate);
+
+        if (habits.length === 0) {
+          listEl!.innerHTML = '';
+          emptyEl?.classList.remove('hidden');
+          statsEl?.classList.add('hidden');
+          return;
+        }
+
+        emptyEl?.classList.add('hidden');
+        statsEl?.classList.remove('hidden');
+
+        listEl!.innerHTML = habits.map(habit => {
+          const isCompleted = habit.completedDates.includes(dateStr);
+          const streak = calculateStreak(habit);
+          
+          return `
+            <div class="flex items-center gap-3 p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border">
+              <button class="habit-check w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isCompleted ? 'bg-green-500 text-white' : 'bg-matte-200 dark:bg-surface-elevated text-matte-400 hover:bg-green-100 dark:hover:bg-green-900/30'}" data-id="${habit.id}">
+                ${isCompleted ? '✓' : ''}
+              </button>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-matte-700 dark:text-matte-300">${habit.name}</p>
+                <p class="text-2xs text-matte-400">${isToday(currentDate) && streak > 0 ? `🔥 ${streak} hari streak` : habit.completedDates.length} selesai</p>
+              </div>
+              <button class="habit-delete p-2 text-matte-400 hover:text-red-500 transition-all" data-id="${habit.id}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+          `;
+        }).join('');
+
+        // Update stats
+        document.getElementById('stat-total')!.textContent = habits.length.toString();
+        document.getElementById('stat-done')!.textContent = habits.filter(h => h.completedDates.includes(dateStr)).length.toString();
+        document.getElementById('stat-streak')!.textContent = Math.max(...habits.map(h => calculateBestStreak(h)), 0).toString();
+
+        // Update date display
+        document.getElementById('current-date')!.textContent = formatDateDisplay(currentDate);
+        const todayStreak = habits.filter(h => h.completedDates.includes(dateStr)).length;
+        document.getElementById('day-streak')!.textContent = isToday(currentDate) ? `${todayStreak}/${habits.length} selesai` : '';
+      }
+
+      // Add habit
+      document.getElementById('add-habit-btn')?.addEventListener('click', () => {
+        const input = document.getElementById('habit-input') as HTMLInputElement;
+        const name = input.value.trim();
+        
+        if (!name) {
+          toast('Masukkan nama habit!', 'error');
+          return;
+        }
+
+        const habit: Habit = {
+          id: Date.now().toString(),
+          name,
+          completedDates: [],
+          createdAt: new Date().toISOString()
+        };
+
+        habits.push(habit);
+        saveHabits();
+        input.value = '';
+        renderHabits();
+        toast('Habit ditambahkan!', 'success');
+      });
+
+      // Enter key
+      document.getElementById('habit-input')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          document.getElementById('add-habit-btn')?.click();
+        }
+      });
+
+      // Toggle habit completion
+      document.getElementById('habits-list')?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const checkBtn = target.closest('.habit-check');
+        const deleteBtn = target.closest('.habit-delete');
+
+        if (checkBtn) {
+          const id = (checkBtn as HTMLElement).dataset.id;
+          const habit = habits.find(h => h.id === id);
+          if (habit) {
+            const dateStr = formatDate(currentDate);
+            const index = habit.completedDates.indexOf(dateStr);
+            if (index > -1) {
+              habit.completedDates.splice(index, 1);
+            } else {
+              habit.completedDates.push(dateStr);
+            }
+            saveHabits();
+            renderHabits();
+          }
+        }
+
+        if (deleteBtn) {
+          const id = (deleteBtn as HTMLElement).dataset.id;
+          habits = habits.filter(h => h.id !== id);
+          saveHabits();
+          renderHabits();
+          toast('Habit dihapus!', 'success');
+        }
+      });
+
+      // Date navigation
+      document.getElementById('prev-day')?.addEventListener('click', () => {
+        currentDate.setDate(currentDate.getDate() - 1);
+        renderHabits();
+      });
+
+      document.getElementById('next-day')?.addEventListener('click', () => {
+        currentDate.setDate(currentDate.getDate() + 1);
+        renderHabits();
+      });
+
+      // Initial render
+      renderHabits();
+    });
+  </script>
+</BaseLayout>

@@ -1,0 +1,310 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Expense Tracker — Catat Pengeluaran">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Expense Tracker"
+      titleKey="header.expense_tracker"
+      desc="Catat pengeluaran harian: kategori, nominal, tanggal. Lihat grafik bulanan & total."
+      descKey="header.expense_tracker_desc"
+      icon='<path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
+      gradient="from-rose-500 to-pink-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Add expense form -->
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="section-title mb-1 block" for="expense-amount" data-i18n="expense.amount">Nominal</label>
+          <input id="expense-amount" type="number" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-rose-500 transition-colors text-sm" placeholder="0" autocomplete="off" />
+        </div>
+        <div>
+          <label class="section-title mb-1 block" for="expense-category" data-i18n="expense.category">Kategori</label>
+          <select id="expense-category" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-rose-500 transition-colors text-sm">
+            <option value="makanan">🍔 Makanan</option>
+            <option value="transport">🚗 Transport</option>
+            <option value="belanja">🛒 Belanja</option>
+            <option value="hiburan">🎮 Hiburan</option>
+            <option value="kesehatan">💊 Kesehatan</option>
+            <option value="pendidikan">📚 Pendidikan</option>
+            <option value="tagihan">💳 Tagihan</option>
+            <option value="lainnya">📦 Lainnya</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="section-title mb-1 block" for="expense-date" data-i18n="expense.date">Tanggal</label>
+          <input id="expense-date" type="date" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-rose-500 transition-colors text-sm" />
+        </div>
+        <div class="flex items-end">
+          <button id="add-expense-btn" class="w-full py-3 gradient-brand rounded-xl font-bold text-sm" data-i18n="expense.add">Tambah</button>
+        </div>
+      </div>
+
+      <!-- Month navigation -->
+      <div class="flex items-center justify-between mb-4">
+        <button id="prev-month" class="p-2 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all">
+          <svg class="w-5 h-5 text-matte-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <p id="current-month" class="font-bold text-matte-700 dark:text-matte-300"></p>
+        <button id="next-month" class="p-2 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all">
+          <svg class="w-5 h-5 text-matte-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Chart -->
+      <div id="chart-container" class="mb-6">
+        <canvas id="expense-chart" class="w-full h-48"></canvas>
+      </div>
+
+      <!-- Total -->
+      <div class="flex items-center justify-between p-4 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border mb-4">
+        <span class="section-title" data-i18n="expense.total">Total</span>
+        <span id="total-amount" class="text-lg font-bold text-rose-600 dark:text-rose-400">Rp 0</span>
+      </div>
+
+      <!-- Expenses list -->
+      <div id="expenses-list" class="space-y-2"></div>
+
+      <!-- Empty state -->
+      <div id="empty-state" class="text-center py-8">
+        <p class="text-4xl mb-3">💸</p>
+        <p class="text-sm text-matte-500" data-i18n="expense.note">Catat pengeluaran harian, lihat grafik bulanan.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      interface Expense {
+        id: string;
+        amount: number;
+        category: string;
+        date: string;
+      }
+
+      let expenses: Expense[] = JSON.parse(localStorage.getItem('expense-tracker') || '[]');
+      let currentMonth = new Date();
+
+      const categoryEmojis: Record<string, string> = {
+        makanan: '🍔',
+        transport: '🚗',
+        belanja: '🛒',
+        hiburan: '🎮',
+        kesehatan: '💊',
+        pendidikan: '📚',
+        tagihan: '💳',
+        lainnya: '📦'
+      };
+
+      function saveExpenses() {
+        localStorage.setItem('expense-tracker', JSON.stringify(expenses));
+      }
+
+      function formatCurrency(amount: number): string {
+        return 'Rp ' + amount.toLocaleString('id-ID');
+      }
+
+      function getMonthExpenses(): Expense[] {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+        return expenses.filter(e => {
+          const d = new Date(e.date);
+          return d.getFullYear() === year && d.getMonth() === month;
+        });
+      }
+
+      function renderChart() {
+        const canvas = document.getElementById('expense-chart') as HTMLCanvasElement;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const monthExpenses = getMonthExpenses();
+        const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+        
+        // Aggregate by day
+        const dailyTotals = new Array(daysInMonth).fill(0);
+        monthExpenses.forEach(expense => {
+          const day = new Date(expense.date).getDate() - 1;
+          dailyTotals[day] += expense.amount;
+        });
+
+        const maxAmount = Math.max(...dailyTotals, 1);
+        const width = canvas.width = canvas.offsetWidth;
+        const height = canvas.height = 192;
+        const padding = { top: 20, right: 20, bottom: 30, left: 60 };
+        const chartWidth = width - padding.left - padding.right;
+        const chartHeight = height - padding.top - padding.bottom;
+
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+
+        // Draw grid lines
+        ctx.strokeStyle = '#e5e7eb';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+          const y = padding.top + (chartHeight / 4) * i;
+          ctx.beginPath();
+          ctx.moveTo(padding.left, y);
+          ctx.lineTo(width - padding.right, y);
+          ctx.stroke();
+          
+          // Y-axis labels
+          const value = Math.round(maxAmount - (maxAmount / 4) * i);
+          ctx.fillStyle = '#9ca3af';
+          ctx.font = '10px sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(formatCurrency(value), padding.left - 5, y + 3);
+        }
+
+        // Draw bars
+        const barWidth = chartWidth / daysInMonth - 2;
+        ctx.fillStyle = '#f43f5e';
+        
+        dailyTotals.forEach((total, i) => {
+          if (total > 0) {
+            const barHeight = (total / maxAmount) * chartHeight;
+            const x = padding.left + (chartWidth / daysInMonth) * i + 1;
+            const y = padding.top + chartHeight - barHeight;
+            
+            ctx.beginPath();
+            ctx.fillRect(x, y, barWidth, barHeight);
+            ctx.fill();
+          }
+        });
+
+        // X-axis labels (every 5 days)
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        for (let i = 0; i < daysInMonth; i += 5) {
+          const x = padding.left + (chartWidth / daysInMonth) * i + barWidth / 2;
+          ctx.fillText((i + 1).toString(), x, height - 10);
+        }
+      }
+
+      function renderExpenses() {
+        const listEl = document.getElementById('expenses-list');
+        const emptyEl = document.getElementById('empty-state');
+        const monthExpenses = getMonthExpenses();
+
+        if (monthExpenses.length === 0) {
+          listEl!.innerHTML = '';
+          emptyEl?.classList.remove('hidden');
+          return;
+        }
+
+        emptyEl?.classList.add('hidden');
+
+        // Sort by date descending
+        const sorted = [...monthExpenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        listEl!.innerHTML = sorted.map(expense => `
+          <div class="flex items-center gap-3 p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border">
+            <span class="text-2xl">${categoryEmojis[expense.category] || '📦'}</span>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-matte-700 dark:text-matte-300">${expense.category.charAt(0).toUpperCase() + expense.category.slice(1)}</p>
+              <p class="text-2xs text-matte-400">${new Date(expense.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</p>
+            </div>
+            <p class="text-sm font-bold text-rose-600 dark:text-rose-400">${formatCurrency(expense.amount)}</p>
+            <button class="expense-delete p-2 text-matte-400 hover:text-red-500 transition-all" data-id="${expense.id}">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        `).join('');
+
+        // Update total
+        const total = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
+        document.getElementById('total-amount')!.textContent = formatCurrency(total);
+      }
+
+      // Set default date to today
+      const dateInput = document.getElementById('expense-date') as HTMLInputElement;
+      dateInput.value = new Date().toISOString().split('T')[0];
+
+      // Add expense
+      document.getElementById('add-expense-btn')?.addEventListener('click', () => {
+        const amount = parseFloat((document.getElementById('expense-amount') as HTMLInputElement)?.value);
+        const category = (document.getElementById('expense-category') as HTMLSelectElement)?.value;
+        const date = (document.getElementById('expense-date') as HTMLInputElement)?.value;
+
+        if (!amount || amount <= 0) {
+          toast('Masukkan nominal yang valid!', 'error');
+          return;
+        }
+
+        if (!date) {
+          toast('Pilih tanggal!', 'error');
+          return;
+        }
+
+        const expense: Expense = {
+          id: Date.now().toString(),
+          amount,
+          category,
+          date
+        };
+
+        expenses.push(expense);
+        saveExpenses();
+        
+        // Reset form
+        (document.getElementById('expense-amount') as HTMLInputElement).value = '';
+        
+        renderExpenses();
+        renderChart();
+        toast('Pengeluaran ditambahkan!', 'success');
+      });
+
+      // Delete expense
+      document.getElementById('expenses-list')?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const deleteBtn = target.closest('.expense-delete');
+
+        if (deleteBtn) {
+          const id = (deleteBtn as HTMLElement).dataset.id;
+          expenses = expenses.filter(e => e.id !== id);
+          saveExpenses();
+          renderExpenses();
+          renderChart();
+          toast('Pengeluaran dihapus!', 'success');
+        }
+      });
+
+      // Month navigation
+      document.getElementById('prev-month')?.addEventListener('click', () => {
+        currentMonth.setMonth(currentMonth.getMonth() - 1);
+        renderMonth();
+        renderExpenses();
+        renderChart();
+      });
+
+      document.getElementById('next-month')?.addEventListener('click', () => {
+        currentMonth.setMonth(currentMonth.getMonth() + 1);
+        renderMonth();
+        renderExpenses();
+        renderChart();
+      });
+
+      function renderMonth() {
+        document.getElementById('current-month')!.textContent = currentMonth.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+      }
+
+      // Initial render
+      renderMonth();
+      renderExpenses();
+      setTimeout(renderChart, 100);
+
+      // Resize chart on window resize
+      window.addEventListener('resize', renderChart);
+    });
+  </script>
+</BaseLayout>

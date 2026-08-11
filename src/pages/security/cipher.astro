@@ -1,0 +1,257 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Cipher — Enkripsi & Dekripsi Teks">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Cipher (AES/DES)"
+      titleKey="header.cipher"
+      desc="Enkripsi dan dekripsi teks dengan AES/DES. Pilih mode CBC/ECB/GCM, masukkan key & IV."
+      descKey="header.cipher_desc"
+      icon='<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Algorithm selector -->
+      <label class="section-title mb-2 block" data-i18n="cipher.algorithm">Algoritma</label>
+      <div class="flex gap-2 mb-4">
+        <button id="alg-aes" class="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all" data-alg="aes">AES</button>
+        <button id="alg-des" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-alg="des">DES</button>
+        <button id="alg-3des" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-alg="3des">3DES</button>
+      </div>
+
+      <!-- Mode selector -->
+      <label class="section-title mb-2 block" data-i18n="cipher.mode">Mode</label>
+      <div class="flex gap-2 mb-4">
+        <button id="mode-cbc" class="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all" data-mode="cbc">CBC</button>
+        <button id="mode-ecb" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-mode="ecb">ECB</button>
+        <button id="mode-gcm" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-mode="gcm">GCM</button>
+      </div>
+
+      <!-- Key input -->
+      <label class="section-title mb-2 block" for="cipher-key" data-i18n="cipher.key">Key</label>
+      <input id="cipher-key" type="text" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono" placeholder="Masukkan key..." autocomplete="off" />
+      <p id="key-hint" class="text-2xs text-matte-400 mt-1">AES-128: 16 char, AES-256: 32 char, DES: 8 char, 3DES: 24 char</p>
+
+      <!-- IV input -->
+      <div id="iv-container">
+        <label class="section-title mb-2 mt-4 block" for="cipher-iv" data-i18n="cipher.iv">IV (Initialization Vector)</label>
+        <input id="cipher-iv" type="text" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono" placeholder="Masukkan IV..." autocomplete="off" />
+        <p id="iv-hint" class="text-2xs text-matte-400 mt-1">AES: 16 char, DES: 8 char (ECB tidak perlu IV)</p>
+      </div>
+
+      <!-- Input text -->
+      <label class="section-title mb-2 mt-5 block" for="cipher-input" data-i18n="cipher.input">Teks input</label>
+      <textarea id="cipher-input" rows="4" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm resize-y font-mono" placeholder="Masukkan teks..." data-i18n-attr="placeholder"></textarea>
+
+      <!-- Action buttons -->
+      <div class="flex gap-3 mt-4">
+        <button id="encrypt-btn" class="flex-1 gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="cipher.encrypt">Enkripsi</button>
+        <button id="decrypt-btn" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="cipher.decrypt">Dekripsi</button>
+      </div>
+
+      <!-- Output -->
+      <div id="cipher-output-container" class="hidden mt-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title" data-i18n="cipher.output">Hasil</span>
+          <button id="copy-output" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="cipher.copy">Salin hasil</button>
+        </div>
+        <code id="cipher-output" class="block w-full p-4 bg-matte-50 dark:bg-matte-900 rounded-xl text-xs font-mono text-emerald-600 dark:text-emerald-400 break-all border border-matte-200 dark:border-surface-border whitespace-pre-wrap"></code>
+      </div>
+
+      <!-- Error -->
+      <div id="cipher-error" class="hidden mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-xs text-red-600 dark:text-red-400"></div>
+
+      <!-- Note -->
+      <p class="text-2xs text-matte-400 mt-4" data-i18n="cipher.note">Pilih algoritma, mode, masukkan key & IV, lalu enkripsi/dekripsi.</p>
+      <p class="text-2xs text-amber-500 dark:text-amber-400 mt-2">⚠️ DES/3DES menggunakan XOR sederhana (bukan implementasi asli). Hanya untuk keperluan demo/testing. Gunakan AES untuk enkripsi yang aman.</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      let algorithm = 'aes';
+      let mode = 'cbc';
+
+      // Algorithm buttons
+      document.querySelectorAll('[data-alg]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-alg]').forEach(b => {
+            b.className = 'px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
+          });
+          btn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all';
+          algorithm = (btn as HTMLElement).dataset.alg!;
+          updateHints();
+        });
+      });
+
+      // Mode buttons
+      document.querySelectorAll('[data-mode]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-mode]').forEach(b => {
+            b.className = 'px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
+          });
+          btn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all';
+          mode = (btn as HTMLElement).dataset.mode!;
+          const ivContainer = document.getElementById('iv-container');
+          if (ivContainer) ivContainer.style.display = mode === 'ecb' ? 'none' : 'block';
+        });
+      });
+
+      function updateHints() {
+        const keyHint = document.getElementById('key-hint');
+        const ivHint = document.getElementById('iv-hint');
+        if (keyHint) {
+          if (algorithm === 'aes') keyHint.textContent = 'AES-128: 16 char, AES-256: 32 char';
+          else if (algorithm === 'des') keyHint.textContent = 'DES: 8 char';
+          else keyHint.textContent = '3DES: 24 char';
+        }
+        if (ivHint) {
+          if (algorithm === 'des') ivHint.textContent = 'DES: 8 char';
+          else ivHint.textContent = 'AES: 16 char (ECB tidak perlu IV)';
+        }
+      }
+
+      function arrayBufferToBase64(buffer: ArrayBuffer) {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        return btoa(binary);
+      }
+
+      function base64ToArrayBuffer(base64: string) {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return bytes.buffer;
+      }
+
+      // Use Web Crypto API for AES
+      async function aesEncrypt(text: string, keyStr: string, ivStr: string, mode: string) {
+        const enc = new TextEncoder();
+        const keyBytes = enc.encode(keyStr.padEnd(32, '\0').slice(0, 32));
+        const ivBytes = enc.encode(ivStr.padEnd(16, '\0').slice(0, 16));
+
+        const cryptoKey = await crypto.subtle.importKey(
+          'raw', keyBytes, { name: 'AES-CBC' }, false, ['encrypt']
+        );
+
+        const algo = mode === 'gcm' ? 'AES-GCM' : 'AES-CBC';
+        const params = mode === 'gcm' ? { name: algo, iv: ivBytes } : { name: algo, iv: ivBytes };
+        const key = await crypto.subtle.importKey('raw', keyBytes, { name: algo }, false, ['encrypt']);
+        const result = await crypto.subtle.encrypt(params, key, enc.encode(text));
+        return arrayBufferToBase64(result);
+      }
+
+      async function aesDecrypt(cipherBase64: string, keyStr: string, ivStr: string, mode: string) {
+        const enc = new TextEncoder();
+        const dec = new TextDecoder();
+        const keyBytes = enc.encode(keyStr.padEnd(32, '\0').slice(0, 32));
+        const ivBytes = enc.encode(ivStr.padEnd(16, '\0').slice(0, 16));
+
+        const algo = mode === 'gcm' ? 'AES-GCM' : 'AES-CBC';
+        const params = mode === 'gcm' ? { name: algo, iv: ivBytes } : { name: algo, iv: ivBytes };
+        const key = await crypto.subtle.importKey('raw', keyBytes, { name: algo }, false, ['decrypt']);
+        const result = await crypto.subtle.decrypt(params, key, base64ToArrayBuffer(cipherBase64));
+        return dec.decode(result);
+      }
+
+      // Simple DES/3DES using SubtleCrypto (only supports AES natively)
+      // For DES/3DES we use a simple XOR-based demo (not production secure)
+      function desEncrypt(text: string, keyStr: string, _ivStr: string) {
+        const enc = new TextEncoder();
+        const keyBytes = enc.encode(keyStr.padEnd(8, '\0').slice(0, 8));
+        const textBytes = enc.encode(text);
+        const result = new Uint8Array(textBytes.length);
+        for (let i = 0; i < textBytes.length; i++) {
+          result[i] = textBytes[i] ^ keyBytes[i % keyBytes.length];
+        }
+        return arrayBufferToBase64(result.buffer);
+      }
+
+      function desDecrypt(cipherBase64: string, keyStr: string, _ivStr: string) {
+        const keyBytes = new TextEncoder().encode(keyStr.padEnd(8, '\0').slice(0, 8));
+        const cipherBytes = new Uint8Array(base64ToArrayBuffer(cipherBase64));
+        const result = new Uint8Array(cipherBytes.length);
+        for (let i = 0; i < cipherBytes.length; i++) {
+          result[i] = cipherBytes[i] ^ keyBytes[i % keyBytes.length];
+        }
+        return new TextDecoder().decode(result);
+      }
+
+      // Encrypt button
+      document.getElementById('encrypt-btn')?.addEventListener('click', async () => {
+        const text = (document.getElementById('cipher-input') as HTMLTextAreaElement)?.value;
+        const key = (document.getElementById('cipher-key') as HTMLInputElement)?.value;
+        const iv = (document.getElementById('cipher-iv') as HTMLInputElement)?.value;
+        const errorEl = document.getElementById('cipher-error');
+        const outputContainer = document.getElementById('cipher-output-container');
+        const outputEl = document.getElementById('cipher-output');
+
+        if (!text || !key) {
+          if (errorEl) { errorEl.textContent = 'Masukkan teks dan key!'; errorEl.classList.remove('hidden'); }
+          return;
+        }
+
+        try {
+          if (errorEl) errorEl.classList.add('hidden');
+          let result: string;
+          if (algorithm === 'aes') {
+            result = await aesEncrypt(text, key, iv, mode);
+          } else {
+            result = desEncrypt(text, key, iv);
+          }
+          if (outputEl) outputEl.textContent = result;
+          if (outputContainer) outputContainer.classList.remove('hidden');
+          toast('Teks terenkripsi!', 'success');
+        } catch (e: any) {
+          if (errorEl) { errorEl.textContent = e.message || 'Error enkripsi'; errorEl.classList.remove('hidden'); }
+        }
+      });
+
+      // Decrypt button
+      document.getElementById('decrypt-btn')?.addEventListener('click', async () => {
+        const text = (document.getElementById('cipher-input') as HTMLTextAreaElement)?.value;
+        const key = (document.getElementById('cipher-key') as HTMLInputElement)?.value;
+        const iv = (document.getElementById('cipher-iv') as HTMLInputElement)?.value;
+        const errorEl = document.getElementById('cipher-error');
+        const outputContainer = document.getElementById('cipher-output-container');
+        const outputEl = document.getElementById('cipher-output');
+
+        if (!text || !key) {
+          if (errorEl) { errorEl.textContent = 'Masukkan ciphertext dan key!'; errorEl.classList.remove('hidden'); }
+          return;
+        }
+
+        try {
+          if (errorEl) errorEl.classList.add('hidden');
+          let result: string;
+          if (algorithm === 'aes') {
+            result = await aesDecrypt(text, key, iv, mode);
+          } else {
+            result = desDecrypt(text, key, iv);
+          }
+          if (outputEl) outputEl.textContent = result;
+          if (outputContainer) outputContainer.classList.remove('hidden');
+          toast('Teks didekripsi!', 'success');
+        } catch (e: any) {
+          if (errorEl) { errorEl.textContent = e.message || 'Error dekripsi'; errorEl.classList.remove('hidden'); }
+        }
+      });
+
+      // Copy output
+      document.getElementById('copy-output')?.addEventListener('click', () => {
+        const output = document.getElementById('cipher-output')?.textContent;
+        if (output) {
+          navigator.clipboard.writeText(output);
+          toast('Disalin!', 'success');
+        }
+      });
+    });
+  </script>
+</BaseLayout>

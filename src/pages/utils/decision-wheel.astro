@@ -1,0 +1,213 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Decision Wheel — Putar Roda Keputusan">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Decision Wheel"
+      titleKey="header.decision_wheel"
+      desc="Putar roda untuk pilih keputusan: masukkan opsi, putar, dapatkan hasil acak."
+      descKey="header.decision_wheel_desc"
+      icon='<circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2v10l7-5"/>'
+      gradient="from-purple-500 to-violet-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Wheel container -->
+      <div class="relative w-64 h-64 mx-auto mb-8">
+        <!-- Pointer -->
+        <div class="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-r-[10px] border-t-[20px] border-l-transparent border-r-transparent border-t-purple-600 z-10"></div>
+        
+        <!-- Wheel -->
+        <canvas id="wheel-canvas" class="w-64 h-64 rounded-full border-4 border-purple-500 shadow-lg transition-transform duration-1000 ease-out"></canvas>
+        
+        <!-- Center circle -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white dark:bg-surface-elevated rounded-full border-4 border-purple-500 shadow-md flex items-center justify-center">
+          <span class="text-2xl">🎯</span>
+        </div>
+      </div>
+
+      <!-- Options input -->
+      <div class="mb-4">
+        <label class="section-title mb-2 block" data-i18n="wheel.add">Tambah Opsi</label>
+        <div class="flex gap-2">
+          <input id="option-input" type="text" class="flex-1 px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-purple-500 transition-colors text-sm" placeholder="Masukkan opsi..." data-i18n-attr="placeholder" autocomplete="off" />
+          <button id="add-option-btn" class="px-4 py-3 gradient-brand rounded-xl font-bold text-sm">+</button>
+        </div>
+      </div>
+
+      <!-- Options list -->
+      <div id="options-list" class="flex flex-wrap gap-2 mb-6"></div>
+
+      <!-- Spin button -->
+      <button id="spin-btn" class="w-full gradient-brand py-3 rounded-xl font-bold text-sm text-lg" data-i18n="wheel.spin">Putar!</button>
+
+      <!-- Result -->
+      <div id="wheel-result" class="hidden mt-6 text-center">
+        <p class="text-2xs text-matte-400 mb-2" data-i18n="wheel.result">Hasil putaran</p>
+        <p id="result-text" class="text-3xl font-bold text-purple-600 dark:text-purple-400"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      let options: string[] = ['Option 1', 'Option 2', 'Option 3'];
+      let currentRotation = 0;
+      let isSpinning = false;
+
+      const colors = ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe', '#7c3aed', '#6d28d9', '#5b21b6'];
+
+      function renderWheel() {
+        const canvas = document.getElementById('wheel-canvas') as HTMLCanvasElement;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const size = 256;
+        canvas.width = size;
+        canvas.height = size;
+        const centerX = size / 2;
+        const centerY = size / 2;
+        const radius = size / 2 - 4;
+
+        if (options.length === 0) {
+          ctx.fillStyle = '#e5e7eb';
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+          ctx.fill();
+          return;
+        }
+
+        const sliceAngle = (2 * Math.PI) / options.length;
+
+        options.forEach((option, i) => {
+          const startAngle = i * sliceAngle - Math.PI / 2;
+          const endAngle = startAngle + sliceAngle;
+
+          // Draw slice
+          ctx.fillStyle = colors[i % colors.length];
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+          ctx.closePath();
+          ctx.fill();
+
+          // Draw text
+          ctx.save();
+          ctx.translate(centerX, centerY);
+          ctx.rotate(startAngle + sliceAngle / 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          // Truncate text if too long
+          const maxLen = 12;
+          const text = option.length > maxLen ? option.slice(0, maxLen) + '...' : option;
+          ctx.fillText(text, radius * 0.6, 0);
+          ctx.restore();
+        });
+
+        // Draw border
+        ctx.strokeStyle = '#7c3aed';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      function renderOptions() {
+        const listEl = document.getElementById('options-list');
+        listEl!.innerHTML = options.map((opt, i) => `
+          <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm">
+            ${opt}
+            <button class="remove-option ml-1 text-purple-400 hover:text-purple-600 dark:hover:text-purple-200" data-index="${i}">×</button>
+          </span>
+        `).join('');
+      }
+
+      // Add option
+      document.getElementById('add-option-btn')?.addEventListener('click', () => {
+        const input = document.getElementById('option-input') as HTMLInputElement;
+        const value = input.value.trim();
+        
+        if (!value) {
+          toast('Masukkan opsi!', 'error');
+          return;
+        }
+
+        if (options.length >= 10) {
+          toast('Maksimal 10 opsi!', 'error');
+          return;
+        }
+
+        options.push(value);
+        input.value = '';
+        renderOptions();
+        renderWheel();
+        toast('Opsi ditambahkan!', 'success');
+      });
+
+      // Enter key
+      document.getElementById('option-input')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          document.getElementById('add-option-btn')?.click();
+        }
+      });
+
+      // Remove option
+      document.getElementById('options-list')?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const removeBtn = target.closest('.remove-option');
+        if (removeBtn) {
+          const index = parseInt((removeBtn as HTMLElement).dataset.index!);
+          options.splice(index, 1);
+          renderOptions();
+          renderWheel();
+        }
+      });
+
+      // Spin wheel
+      document.getElementById('spin-btn')?.addEventListener('click', () => {
+        if (isSpinning || options.length < 2) {
+          if (options.length < 2) toast('Minimal 2 opsi!', 'error');
+          return;
+        }
+
+        isSpinning = true;
+        const canvas = document.getElementById('wheel-canvas') as HTMLCanvasElement;
+        
+        // Random spin
+        const spins = 5 + Math.random() * 5;
+        const randomAngle = Math.random() * 360;
+        const totalRotation = spins * 360 + randomAngle;
+        
+        currentRotation += totalRotation;
+        canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+        // Calculate result after spin
+        setTimeout(() => {
+          const normalizedAngle = (currentRotation % 360);
+          const sliceAngle = 360 / options.length;
+          const selectedIndex = Math.floor((360 - normalizedAngle + sliceAngle / 2) % 360 / sliceAngle);
+          const result = options[selectedIndex % options.length];
+
+          document.getElementById('result-text')!.textContent = result;
+          document.getElementById('wheel-result')?.classList.remove('hidden');
+          
+          isSpinning = false;
+          toast(`Hasil: ${result}!`, 'success');
+        }, 1100);
+      });
+
+      // Initial render
+      renderOptions();
+      renderWheel();
+    });
+  </script>
+</BaseLayout>

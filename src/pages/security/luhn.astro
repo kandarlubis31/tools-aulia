@@ -1,0 +1,137 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Luhn Calculator — Validasi Nomor Kartu">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Luhn Calculator"
+      titleKey="header.luhn_calc"
+      desc="Validasi nomor kartu kredit/debit dengan Luhn algorithm."
+      descKey="header.luhn_calc_desc"
+      icon='<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>'
+      gradient="from-amber-500 to-orange-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Card number input -->
+      <label class="section-title mb-2 block" for="card-number" data-i18n="luhn.input">Nomor kartu</label>
+      <input id="card-number" type="text" class="w-full px-4 py-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-amber-500 transition-colors text-lg font-mono tracking-wider" placeholder="4242 4242 4242 4242" autocomplete="off" inputmode="numeric" />
+
+      <button id="validate-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="luhn.check">Validasi</button>
+
+      <!-- Result -->
+      <div id="luhn-result" class="hidden mt-6 text-center">
+        <div id="result-icon" class="text-5xl mb-3"></div>
+        <p id="result-text" class="text-lg font-bold"></p>
+        <div id="checksum-display" class="mt-4 p-4 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border">
+          <p class="text-2xs text-matte-400 mb-1" data-i18n="luhn.checksum">Checksum</p>
+          <p id="checksum-value" class="text-sm font-mono text-amber-600 dark:text-amber-400"></p>
+        </div>
+      </div>
+
+      <!-- Info cards -->
+      <div class="grid grid-cols-2 gap-3 mt-6">
+        <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border">
+          <p class="text-2xs text-matte-400">Algoritma</p>
+          <p class="text-sm font-bold text-matte-700 dark:text-matte-300">Luhn (mod 10)</p>
+        </div>
+        <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border">
+          <p class="text-2xs text-matte-400">Digunakan untuk</p>
+          <p class="text-sm font-bold text-matte-700 dark:text-matte-300">Kartu kredit/debit</p>
+        </div>
+      </div>
+
+      <!-- Note -->
+      <p class="text-2xs text-matte-400 mt-4" data-i18n="luhn.note">Masukkan nomor kartu kredit/debit, dapatkan hasil validasi Luhn.</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      // Luhn algorithm
+      function luhnCheck(num: string): { valid: boolean; checksum: string } {
+        // Remove spaces and dashes
+        const cleaned = num.replace(/[\s-]/g, '');
+        
+        // Check if all digits
+        if (!/^\d+$/.test(cleaned)) {
+          return { valid: false, checksum: 'Bukan angka valid' };
+        }
+
+        // Check length
+        if (cleaned.length < 13 || cleaned.length > 19) {
+          return { valid: false, checksum: 'Panjang nomor tidak valid (13-19 digit)' };
+        }
+
+        let sum = 0;
+        let isEven = false;
+
+        // Process from right to left
+        for (let i = cleaned.length - 1; i >= 0; i--) {
+          let digit = parseInt(cleaned[i], 10);
+
+          if (isEven) {
+            digit *= 2;
+            if (digit > 9) digit -= 9;
+          }
+
+          sum += digit;
+          isEven = !isEven;
+        }
+
+        const valid = sum % 10 === 0;
+        const checkDigit = valid ? cleaned[cleaned.length - 1] : (10 - (sum % 10)).toString();
+
+        return {
+          valid,
+          checksum: `Sum: ${sum} | Mod 10: ${sum % 10} | Check digit: ${checkDigit}`
+        };
+      }
+
+      // Validate button
+      document.getElementById('validate-btn')?.addEventListener('click', () => {
+        const input = (document.getElementById('card-number') as HTMLInputElement)?.value;
+        const resultEl = document.getElementById('luhn-result');
+        const iconEl = document.getElementById('result-icon');
+        const textEl = document.getElementById('result-text');
+        const checksumEl = document.getElementById('checksum-value');
+
+        if (!input) {
+          toast('Masukkan nomor kartu!', 'error');
+          return;
+        }
+
+        const { valid, checksum } = luhnCheck(input);
+
+        if (iconEl) iconEl.textContent = valid ? '✅' : '❌';
+        if (textEl) {
+          textEl.textContent = valid ? 'Nomor valid!' : 'Nomor tidak valid';
+          textEl.className = `text-lg font-bold ${valid ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`;
+        }
+        if (checksumEl) checksumEl.textContent = checksum;
+        resultEl?.classList.remove('hidden');
+
+        toast(valid ? 'Nomor valid!' : 'Nomor tidak valid', valid ? 'success' : 'error');
+      });
+
+      // Auto-format input
+      document.getElementById('card-number')?.addEventListener('input', (e) => {
+        const input = e.target as HTMLInputElement;
+        let value = input.value.replace(/\D/g, '');
+        value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+        input.value = value;
+      });
+
+      // Enter key
+      document.getElementById('card-number')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          document.getElementById('validate-btn')?.click();
+        }
+      });
+    });
+  </script>
+</BaseLayout>

@@ -1,0 +1,172 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Timezone Converter — Konversi Waktu Zona">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Timezone Converter"
+      titleKey="header.timezone_converter"
+      desc="Konversi waktu antar zona waktu: pilih zona asal & tujuan, masukkan waktu."
+      descKey="header.timezone_converter_desc"
+      icon='<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'
+      gradient="from-indigo-500 to-blue-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Time input -->
+      <label class="section-title mb-2 block" for="tz-time" data-i18n="tz.time">Waktu</label>
+      <input id="tz-time" type="time" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-indigo-500 transition-colors text-sm" />
+
+      <!-- From timezone -->
+      <label class="section-title mb-2 mt-4 block" for="tz-from" data-i18n="tz.from">Dari zona</label>
+      <select id="tz-from" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-indigo-500 transition-colors text-sm">
+        <option value="Asia/Jakarta">WIB (Jakarta, GMT+7)</option>
+        <option value="Asia/Makassar">WITA (Makassar, GMT+8)</option>
+        <option value="Asia/Jayapura">WIT (Jayapura, GMT+9)</option>
+        <option value="Asia/Tokyo">JST (Tokyo, GMT+9)</option>
+        <option value="Asia/Shanghai">CST (Shanghai, GMT+8)</option>
+        <option value="Asia/Singapore">SGT (Singapore, GMT+8)</option>
+        <option value="Asia/Calcutta">IST (India, GMT+5:30)</option>
+        <option value="Europe/London">GMT (London, GMT+0)</option>
+        <option value="Europe/Paris">CET (Paris, GMT+1)</option>
+        <option value="Europe/Berlin">CET (Berlin, GMT+1)</option>
+        <option value="America/New_York">EST (New York, GMT-5)</option>
+        <option value="America/Chicago">CST (Chicago, GMT-6)</option>
+        <option value="America/Denver">MST (Denver, GMT-7)</option>
+        <option value="America/Los_Angeles">PST (Los Angeles, GMT-8)</option>
+        <option value="Pacific/Auckland">NZST (Auckland, GMT+12)</option>
+        <option value="Australia/Sydney">AEST (Sydney, GMT+10)</option>
+      </select>
+
+      <!-- Swap button -->
+      <div class="flex justify-center my-4">
+        <button id="swap-btn" class="p-2 rounded-full bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">
+          <svg class="w-5 h-5 text-matte-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+        </button>
+      </div>
+
+      <!-- To timezone -->
+      <label class="section-title mb-2 block" for="tz-to" data-i18n="tz.to">Ke zona</label>
+      <select id="tz-to" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-indigo-500 transition-colors text-sm">
+        <option value="America/New_York">EST (New York, GMT-5)</option>
+        <option value="Europe/London">GMT (London, GMT+0)</option>
+        <option value="Europe/Paris">CET (Paris, GMT+1)</option>
+        <option value="Europe/Berlin">CET (Berlin, GMT+1)</option>
+        <option value="Asia/Tokyo">JST (Tokyo, GMT+9)</option>
+        <option value="Asia/Shanghai">CST (Shanghai, GMT+8)</option>
+        <option value="Asia/Singapore">SGT (Singapore, GMT+8)</option>
+        <option value="Asia/Calcutta">IST (India, GMT+5:30)</option>
+        <option value="Asia/Jakarta">WIB (Jakarta, GMT+7)</option>
+        <option value="Asia/Makassar">WITA (Makassar, GMT+8)</option>
+        <option value="Asia/Jayapura">WIT (Jayapura, GMT+9)</option>
+        <option value="America/Chicago">CST (Chicago, GMT-6)</option>
+        <option value="America/Denver">MST (Denver, GMT-7)</option>
+        <option value="America/Los_Angeles">PST (Los Angeles, GMT-8)</option>
+        <option value="Pacific/Auckland">NZST (Auckland, GMT+12)</option>
+        <option value="Australia/Sydney">AEST (Sydney, GMT+10)</option>
+      </select>
+
+      <!-- Convert button -->
+      <button id="convert-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="tz.result">Konversi</button>
+
+      <!-- Result -->
+      <div id="tz-result" class="hidden mt-6">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+            <p class="text-2xs text-matte-400 mb-1">Asal</p>
+            <p id="result-from" class="text-lg font-bold text-indigo-600 dark:text-indigo-400"></p>
+            <p id="result-from-tz" class="text-2xs text-matte-400"></p>
+          </div>
+          <div class="p-4 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+            <p class="text-2xs text-matte-400 mb-1">Tujuan</p>
+            <p id="result-to" class="text-lg font-bold text-indigo-600 dark:text-indigo-400"></p>
+            <p id="result-to-tz" class="text-2xs text-matte-400"></p>
+          </div>
+        </div>
+
+        <!-- Difference -->
+        <div class="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-200 dark:border-indigo-800 text-center">
+          <p class="text-sm text-indigo-600 dark:text-indigo-400">
+            <span id="diff-hours"></span> jam berbeda
+          </p>
+        </div>
+      </div>
+
+      <!-- Note -->
+      <p class="text-2xs text-matte-400 mt-4" data-i18n="tz.note">Pilih zona asal & tujuan, masukkan waktu.</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      // Set default time to now
+      const now = new Date();
+      const timeInput = document.getElementById('tz-time') as HTMLInputElement;
+      timeInput.value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+      // Convert button
+      document.getElementById('convert-btn')?.addEventListener('click', () => {
+        const time = timeInput.value;
+        const fromTz = (document.getElementById('tz-from') as HTMLSelectElement).value;
+        const toTz = (document.getElementById('tz-to') as HTMLSelectElement).value;
+
+        if (!time) {
+          toast('Masukkan waktu!', 'error');
+          return;
+        }
+
+        try {
+          // Create date in source timezone
+          const [hours, minutes] = time.split(':').map(Number);
+          const today = new Date();
+          const dateStr = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}T${time}:00`;
+
+          // Format times
+          const fromTime = new Date(dateStr).toLocaleTimeString('id-ID', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: fromTz 
+          });
+
+          const toTime = new Date(dateStr).toLocaleTimeString('id-ID', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: toTz 
+          });
+
+          // Get timezone abbreviations
+          const fromAbbr = new Date(dateStr).toLocaleString('en-US', { timeZone: fromTz, timeZoneName: 'short' }).split(' ').pop();
+          const toAbbr = new Date(dateStr).toLocaleString('en-US', { timeZone: toTz, timeZoneName: 'short' }).split(' ').pop();
+
+          // Calculate difference
+          const fromOffset = new Date(dateStr).toLocaleString('en-US', { timeZone: fromTz, timeZoneName: 'longOffset' });
+          const toOffset = new Date(dateStr).toLocaleString('en-US', { timeZone: toTz, timeZoneName: 'longOffset' });
+
+          document.getElementById('result-from')!.textContent = fromTime;
+          document.getElementById('result-from-tz')!.textContent = fromAbbr;
+          document.getElementById('result-to')!.textContent = toTime;
+          document.getElementById('result-to-tz')!.textContent = toAbbr;
+          document.getElementById('tz-result')?.classList.remove('hidden');
+
+          toast('Konversi berhasil!', 'success');
+        } catch (e: any) {
+          toast('Error konversi: ' + e.message, 'error');
+        }
+      });
+
+      // Swap button
+      document.getElementById('swap-btn')?.addEventListener('click', () => {
+        const fromSelect = document.getElementById('tz-from') as HTMLSelectElement;
+        const toSelect = document.getElementById('tz-to') as HTMLSelectElement;
+        const temp = fromSelect.value;
+        fromSelect.value = toSelect.value;
+        toSelect.value = temp;
+        toast('Zona ditukar!', 'success');
+      });
+    });
+  </script>
+</BaseLayout>

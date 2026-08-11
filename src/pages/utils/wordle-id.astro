@@ -1,0 +1,293 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Wordle ID — Tebak Kata 5 Huruf Indonesia">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Wordle ID"
+      titleKey="header.wordle_id"
+      desc="Tebak kata 5 huruf Bahasa Indonesia: 6 percobaan, petunjuk warna hijau/kuning/abu-abu."
+      descKey="header.wordle_id_desc"
+      icon='<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h8"/>'
+      gradient="from-yellow-500 to-amber-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Game board -->
+      <div id="game-board" class="grid grid-cols-5 gap-2 max-w-xs mx-auto mb-6"></div>
+
+      <!-- Keyboard -->
+      <div id="keyboard" class="max-w-md mx-auto space-y-2 mb-6">
+        <div class="flex justify-center gap-1">
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="Q">Q</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="W">W</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="E">E</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="R">R</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="T">T</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="Y">Y</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="U">U</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="I">I</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="O">O</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="P">P</button>
+        </div>
+        <div class="flex justify-center gap-1">
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="A">A</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="S">S</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="D">D</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="F">F</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="G">G</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="H">H</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="J">J</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="K">K</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="L">L</button>
+        </div>
+        <div class="flex justify-center gap-1">
+          <button class="key-enter w-14 h-10 rounded-lg text-xs font-bold bg-green-500 text-white hover:bg-green-600 transition-all" data-key="ENTER">ENTER</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="Z">Z</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="X">X</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="C">C</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="V">V</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="B">B</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="N">N</button>
+          <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="M">M</button>
+          <button class="key-backspace w-14 h-10 rounded-lg text-xs font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="BACKSPACE">⌫</button>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div id="game-status" class="text-center hidden">
+        <p id="status-text" class="text-lg font-bold mb-4"></p>
+        <button id="new-game-btn" class="px-6 py-3 gradient-brand rounded-xl font-bold text-sm">Main Lagi</button>
+      </div>
+
+      <!-- Hint -->
+      <p class="text-2xs text-matte-400 mt-4 text-center" data-i18n="wordle.note">Tebak kata 5 huruf Bahasa Indonesia. Hijau = benar posisi, kuning = ada tapi salah posisi, abu-abu = tidak ada.</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      // Indonesian 5-letter words
+      const WORDS = [
+        'RUMAH', 'KUCING', 'ANJING', 'BUNGA', 'POHON',
+        'JALAN', 'KOTAK', 'MEJA', 'KURSI', 'PINTU',
+        'JENDELA', 'DINDING', 'LANTAI', 'ATAP', 'TANAH',
+        'AIR', 'API', 'ANGIN', 'HUJAN', 'MATAHARI',
+        'BULAN', 'BINTANG', 'AWAN', 'GEMINTANG', 'LANGIT',
+        'Laut', 'SUNGAI', 'DANAU', 'GUNUNG', 'LEMBAH',
+        'HUTAN', 'SAVAH', 'GURUN', 'PANTAI', 'PULAU',
+        'MEREKA', 'KAMI', 'KALIAN', 'KITA', 'IA',
+        'DIA', 'ANDA', 'HIDUP', 'MATI', 'BAIK',
+        'BURUK', 'BESAR', 'KECIL', 'PANJANG', 'PENDEK',
+        'TINGGI', 'RENDAH', 'LEBAR', 'SEMPIT', 'TEBAL',
+        'TIPIS', 'BERAT', 'RINGAN', 'KERAS', 'LEMBUT',
+        'PANAS', 'DINGIN', 'HANGAT', 'SEJUK', 'TERANG',
+        'GELAP', 'SUKA', 'BENCI', 'TAHU',
+        'LUPA', 'INGAT', 'PIKIR', 'RASA', 'LIHAT',
+        'DENGAR', 'SENTUH', 'BAU', 'TARUH', 'AMBIL',
+        'BERI', 'MAKAN', 'MINUM', 'TIDUR', 'BANGUN',
+        'JALAN', 'LARI', 'TERBANG', 'RENANG', 'MAIN',
+        'KERJA', 'BELAJAR', 'TULIS', 'BACA', 'HITUNG',
+        'JUMLAH', 'KURANG', 'TAMBAH', 'BAGI', 'KALI',
+        'SATU', 'DUA', 'TIGA', 'EMPAT', 'LIMA',
+        'ENAM', 'TUJUH', 'DELAPAN', 'SEMBILAN', 'SEPULUH',
+        'HARI', 'MINGGU', 'BULAN', 'TAHUN', 'JAM',
+        'MENIT', 'DETIK', 'PAGI', 'SIANG', 'SORE',
+        'MALAM', 'AWAL', 'TENGAH', 'AKHIR', 'BARU',
+        'LAMA', 'SEGERA', 'NANTI', 'KEMARIN',
+        'DEPAN', 'BELAKANG', 'ATAS', 'BAWAH', 'KIRI',
+        'KANAN', 'DALAM', 'LUAR', 'DEKAT', 'JAUH',
+        'SAMA', 'BEDA', 'LENGKAP', 'KURANG', 'CUKUP',
+        'SEMUA', 'SEBAGIAN', 'SETIAP', 'ADA', 'TIDAK',
+        'BELUM', 'MASIH', 'SUDAH', 'PERNAH', 'SELIU'
+      ];
+
+      let targetWord = '';
+      let currentRow = 0;
+      let currentCol = 0;
+      let gameOver = false;
+      let currentGuess = '';
+
+      function getRandomWord() {
+        return WORDS[Math.floor(Math.random() * WORDS.length)].toUpperCase();
+      }
+
+      function initBoard() {
+        const board = document.getElementById('game-board');
+        board!.innerHTML = '';
+        
+        for (let row = 0; row < 6; row++) {
+          for (let col = 0; col < 5; col++) {
+            const cell = document.createElement('div');
+            cell.className = 'w-12 h-12 border-2 border-matte-300 dark:border-surface-border rounded-lg flex items-center justify-center text-xl font-bold text-matte-700 dark:text-matte-300 transition-all';
+            cell.dataset.row = row.toString();
+            cell.dataset.col = col.toString();
+            board!.appendChild(cell);
+          }
+        }
+      }
+
+      function updateCell(row: number, col: number, letter: string) {
+        const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`) as HTMLElement;
+        if (cell) {
+          cell.textContent = letter;
+        }
+      }
+
+      function revealRow(row: number, guess: string) {
+        const target = targetWord.split('');
+        const guessArr = guess.split('');
+        const result: string[] = new Array(5).fill('absent');
+        
+        // First pass: find correct positions
+        guessArr.forEach((letter, i) => {
+          if (letter === target[i]) {
+            result[i] = 'correct';
+            target[i] = '';
+          }
+        });
+
+        // Second pass: find present letters
+        guessArr.forEach((letter, i) => {
+          if (result[i] !== 'correct') {
+            const targetIndex = target.indexOf(letter);
+            if (targetIndex > -1) {
+              result[i] = 'present';
+              target[targetIndex] = '';
+            }
+          }
+        });
+
+        // Apply colors
+        guessArr.forEach((letter, i) => {
+          const cell = document.querySelector(`[data-row="${row}"][data-col="${i}"]`) as HTMLElement;
+          if (cell) {
+            cell.className = cell.className.replace('border-matte-300 dark:border-surface-border', '');
+            if (result[i] === 'correct') {
+              cell.classList.add('bg-green-500', 'text-white', 'border-green-500');
+            } else if (result[i] === 'present') {
+              cell.classList.add('bg-yellow-500', 'text-white', 'border-yellow-500');
+            } else {
+              cell.classList.add('bg-matte-400', 'text-white', 'border-matte-400');
+            }
+          }
+        });
+
+        // Update keyboard colors
+        guessArr.forEach((letter, i) => {
+          const keyBtn = document.querySelector(`[data-key="${letter}"]`) as HTMLElement;
+          if (keyBtn) {
+            if (result[i] === 'correct') {
+              keyBtn.className = keyBtn.className.replace(/bg-matte-\d+|bg-green-\d+|bg-yellow-\d+/g, '');
+              keyBtn.classList.add('bg-green-500', 'text-white');
+            } else if (result[i] === 'present' && !keyBtn.classList.contains('bg-green-500')) {
+              keyBtn.className = keyBtn.className.replace(/bg-matte-\d+|bg-yellow-\d+/g, '');
+              keyBtn.classList.add('bg-yellow-500', 'text-white');
+            } else if (result[i] === 'absent' && !keyBtn.classList.contains('bg-green-500') && !keyBtn.classList.contains('bg-yellow-500')) {
+              keyBtn.className = keyBtn.className.replace(/bg-matte-\d+/g, '');
+              keyBtn.classList.add('bg-matte-500', 'text-white');
+            }
+          }
+        });
+
+        return result.every(r => r === 'correct');
+      }
+
+      function handleKeyPress(key: string) {
+        if (gameOver) return;
+
+        if (key === 'ENTER') {
+          if (currentCol < 5) {
+            toast('Masukkan 5 huruf!', 'error');
+            return;
+          }
+
+          const guess = currentGuess;
+          const won = revealRow(currentRow, guess);
+
+          if (won) {
+            gameOver = true;
+            document.getElementById('status-text')!.textContent = '🎉 Benar! Kamu menang!';
+            document.getElementById('status-text')!.className = 'text-lg font-bold mb-4 text-green-600 dark:text-green-400';
+            document.getElementById('game-status')?.classList.remove('hidden');
+            toast('Selamat! Kamu benar!', 'success');
+          } else if (currentRow >= 5) {
+            gameOver = true;
+            document.getElementById('status-text')!.textContent = `💀 Game over! Jawaban: ${targetWord}`;
+            document.getElementById('status-text')!.className = 'text-lg font-bold mb-4 text-red-600 dark:text-red-400';
+            document.getElementById('game-status')?.classList.remove('hidden');
+          }
+
+          currentRow++;
+          currentCol = 0;
+          currentGuess = '';
+        } else if (key === 'BACKSPACE') {
+          if (currentCol > 0) {
+            currentCol--;
+            currentGuess = currentGuess.slice(0, -1);
+            updateCell(currentRow, currentCol, '');
+          }
+        } else if (/^[A-Z]$/.test(key) && currentCol < 5) {
+          updateCell(currentRow, currentCol, key);
+          currentGuess += key;
+          currentCol++;
+        }
+      }
+
+      // Keyboard buttons
+      document.querySelectorAll('.key, .key-enter, .key-backspace').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = (btn as HTMLElement).dataset.key!;
+          handleKeyPress(key);
+        });
+      });
+
+      // Physical keyboard
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          handleKeyPress('ENTER');
+        } else if (e.key === 'Backspace') {
+          handleKeyPress('BACKSPACE');
+        } else if (/^[a-zA-Z]$/.test(e.key)) {
+          handleKeyPress(e.key.toUpperCase());
+        }
+      });
+
+      // New game button
+      document.getElementById('new-game-btn')?.addEventListener('click', () => {
+        startNewGame();
+      });
+
+      function startNewGame() {
+        targetWord = getRandomWord();
+        currentRow = 0;
+        currentCol = 0;
+        gameOver = false;
+        currentGuess = '';
+        
+        initBoard();
+        
+        // Reset keyboard
+        document.querySelectorAll('.key, .key-enter, .key-backspace').forEach(btn => {
+          btn.className = btn.className.replace(/bg-green-\d+|bg-yellow-\d+|bg-matte-500/g, '');
+          if (btn.classList.contains('key-enter')) {
+            btn.classList.add('bg-green-500');
+          } else if (btn.classList.contains('key-backspace')) {
+            btn.classList.add('bg-matte-200', 'dark:bg-surface-elevated');
+          } else {
+            btn.classList.add('bg-matte-200', 'dark:bg-surface-elevated');
+          }
+        });
+        
+        document.getElementById('game-status')?.classList.add('hidden');
+      }
+
+      // Start game
+      startNewGame();
+    });
+  </script>
+</BaseLayout>
