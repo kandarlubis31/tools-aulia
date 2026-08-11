@@ -22,6 +22,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <button data-duration="60" class="mode-btn px-5 py-2 rounded-lg text-sm font-medium text-matte-500 dark:text-matte-400 hover:text-matte-700 dark:hover:text-matte-200 transition-all">60s</button>
       </div>
       <button id="lang-toggle" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">🇮🇩 ID</button>
+      <button id="sound-toggle" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" title="Suara klik mekanikal">🔇 Suara</button>
       <button id="restart-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/60 transition-all">🔄 Ulang</button>
     </div>
 
@@ -86,6 +87,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const restartBtn = document.getElementById('restart-btn')!;
     const tryAgain = document.getElementById('try-again')!;
     const langToggle = document.getElementById('lang-toggle')!;
+    const soundToggle = document.getElementById('sound-toggle')!;
     const modeBtns = document.querySelectorAll('.mode-btn');
 
     const ID_TEXTS = [
@@ -128,6 +130,62 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     let totalKeystrokes = 0;
     let correctKeystrokes = 0;
     let finished = false;
+
+    // ---- SOUND ENGINE (Web Audio API) ----
+    let audioCtx: AudioContext | null = null;
+    let soundOn: boolean;
+    try { soundOn = localStorage.getItem('tt-sound') === 'on'; } catch { soundOn = false; }
+
+    function getAudioCtx(): AudioContext {
+      if (!audioCtx) audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playKeySound(correct: boolean) {
+      if (!soundOn) return;
+      try {
+        const ctx = getAudioCtx();
+        const now = ctx.currentTime;
+        const vol = ctx.createGain();
+        vol.connect(ctx.destination);
+        vol.gain.setValueAtTime(0.08, now);
+        vol.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+        if (correct) {
+          // Bright click: high freq snap
+          const osc = ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(1800, now);
+          osc.frequency.exponentialRampToValueAtTime(600, now + 0.03);
+          osc.connect(vol);
+          osc.start(now);
+          osc.stop(now + 0.03);
+        } else {
+          // Dull thud: low freq bump
+          const osc = ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(120, now);
+          osc.frequency.exponentialRampToValueAtTime(60, now + 0.05);
+          osc.connect(vol);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        }
+      } catch { /* Audio not available */ }
+    }
+
+    function updateSoundButton() {
+      const btn = document.getElementById('sound-toggle')!;
+      btn.innerHTML = soundOn ? '🔊 Suara' : '🔇 Suara';
+      btn.classList.toggle('bg-sky-100', soundOn);
+      btn.classList.toggle('dark:bg-sky-900/40', soundOn);
+      btn.classList.toggle('text-sky-600', soundOn);
+      btn.classList.toggle('dark:text-sky-400', soundOn);
+      btn.classList.toggle('bg-matte-100', !soundOn);
+      btn.classList.toggle('dark:bg-surface-elevated', !soundOn);
+      btn.classList.toggle('text-matte-500', !soundOn);
+      btn.classList.toggle('dark:text-matte-300', !soundOn);
+    }
 
     const PB_KEY = (d: number) => `tt-pb-${d}`;
     function getPB(d: number): number {
@@ -307,6 +365,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       }
 
       cursorIdx++;
+      // Play sound BEFORE updating colors (for correct/incorrect feedback)
+      playKeySound(key === text[cursorIdx - 1]);
       updateCharColors();
       positionCursor();
       updateLiveStats();
@@ -370,6 +430,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       langToggle.textContent = lang === 'id' ? '🇮🇩 ID' : '🇬🇧 EN';
       reset();
     });
+
+    soundToggle.addEventListener('click', () => {
+      soundOn = !soundOn;
+      try { localStorage.setItem('tt-sound', soundOn ? 'on' : 'off'); } catch {}
+      updateSoundButton();
+      // Warm up AudioContext on first enable
+      if (soundOn) { try { getAudioCtx(); } catch {} }
+      textDisplay.focus();
+    });
+    updateSoundButton();
 
     reset();
   });
