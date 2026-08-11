@@ -1,6 +1,6 @@
 # Project Context — ToolsAulia
 
-> **Last updated:** August 11, 2026
+> **Last updated:** August 11, 2026 (final session)
 > **Stack:** Astro 5 · Tailwind CSS · TypeScript · 100% client-side (zero server processing)
 > **PWA:** Service Worker + Workbox precache · offline-first
 > **i18n:** Indonesian-first + English toggle (localStorage)
@@ -33,6 +33,7 @@
 - `src/layouts/BaseLayout.astro` — Global layout + nav + footer + i18n toggle
 - `src/styles/global.css` — Tailwind + custom CSS
 - `vercel.json` — CSP headers + Permissions-Policy
+- `src/data/new-tools.ts` — New tools list (59 entries, homepage shows 8 newest)
 - `scripts/check-client-side.mjs` — Guardrail: ensures no server-side processing
 
 ### Composables (17)
@@ -116,5 +117,6 @@ node scripts/check-client-side.mjs
 # 2. Add i18n keys to src/i18n/translations.ts
 # 3. Create page in src/pages/<category>/<slug>.astro
 # 4. Import BaseLayout + ToolPageHeader
-# 5. Add <script> with astro:page-load event listener
+# 5. Add href to TOP of src/data/new-tools.ts
+# 6. Add <script> with astro:page-load event listener
 ```
