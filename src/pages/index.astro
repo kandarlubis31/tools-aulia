@@ -12,33 +12,39 @@ newTools.sort((a, b) => newToolHrefs.indexOf(a.href) - newToolHrefs.indexOf(b.hr
 const featuredHrefs = tools.filter(t => t.popular).slice(0, 6).map(t => t.href);
 
 // --- Icon tile duotone per kategori (Warm Premium) ---
+// Matte palette — 3 warna inti per kategori, muted & profesional
 const colorTile: Record<string, string> = {
-  rose: 'from-rose-100 to-rose-50 text-rose-600 dark:from-rose-500/20 dark:to-rose-500/5 dark:text-rose-300',
-  orange: 'from-orange-100 to-orange-50 text-orange-600 dark:from-orange-500/20 dark:to-orange-500/5 dark:text-orange-300',
-  amber: 'from-amber-100 to-amber-50 text-amber-600 dark:from-amber-500/20 dark:to-amber-500/5 dark:text-amber-300',
-  yellow: 'from-yellow-100 to-yellow-50 text-yellow-600 dark:from-yellow-500/20 dark:to-yellow-500/5 dark:text-yellow-300',
-  lime: 'from-lime-100 to-lime-50 text-lime-600 dark:from-lime-500/20 dark:to-lime-500/5 dark:text-lime-300',
-  green: 'from-green-100 to-green-50 text-green-600 dark:from-green-500/20 dark:to-green-500/5 dark:text-green-300',
-  emerald: 'from-emerald-100 to-emerald-50 text-emerald-600 dark:from-emerald-500/20 dark:to-emerald-500/5 dark:text-emerald-300',
-  teal: 'from-teal-100 to-teal-50 text-teal-600 dark:from-teal-500/20 dark:to-teal-500/5 dark:text-teal-300',
-  cyan: 'from-cyan-100 to-cyan-50 text-cyan-600 dark:from-cyan-500/20 dark:to-cyan-500/5 dark:text-cyan-300',
-  sky: 'from-sky-100 to-sky-50 text-sky-600 dark:from-sky-500/20 dark:to-sky-500/5 dark:text-sky-300',
-  blue: 'from-blue-100 to-blue-50 text-blue-600 dark:from-blue-500/20 dark:to-blue-500/5 dark:text-blue-300',
-  indigo: 'from-indigo-100 to-indigo-50 text-indigo-600 dark:from-indigo-500/20 dark:to-indigo-500/5 dark:text-indigo-300',
-  violet: 'from-violet-100 to-violet-50 text-violet-600 dark:from-violet-500/20 dark:to-violet-500/5 dark:text-violet-300',
-  purple: 'from-purple-100 to-purple-50 text-purple-600 dark:from-purple-500/20 dark:to-purple-500/5 dark:text-purple-300',
-  pink: 'from-pink-100 to-pink-50 text-pink-600 dark:from-pink-500/20 dark:to-pink-500/5 dark:text-pink-300',
-  slate: 'from-slate-200 to-slate-100 text-slate-600 dark:from-slate-500/20 dark:to-slate-500/5 dark:text-slate-300',
+  // Blue family → PDF, Dev, Network
+  rose: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
+  orange: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
+  blue: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
+  indigo: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
+  sky: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
+  cyan: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
+  // Emerald family → Calc, Image, Media
+  emerald: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
+  teal: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
+  green: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
+  lime: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
+  // Slate family → Security, Utils, Text, Data, File
+  amber: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
+  yellow: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
+  violet: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
+  purple: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
+  pink: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
+  slate: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
+  gray: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
 };
 
 // --- Bento highlight kategori (Phase 2) ---
+// Bento categories — unified matte gradients
 const bentoCats = [
-  { id: 'pdf', name: 'PDF', icon: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', tile: 'from-rose-500 to-orange-500', count: tools.filter(t => t.cat === 'pdf').length },
-  { id: 'image', name: 'Image', icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>', tile: 'from-pink-500 to-violet-500', count: tools.filter(t => t.cat === 'image').length },
-  { id: 'dev', name: 'Dev', icon: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>', tile: 'from-sky-500 to-indigo-500', count: tools.filter(t => t.cat === 'dev').length },
-  { id: 'calc', name: 'Calc', icon: '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="12" y2="18"/>', tile: 'from-emerald-500 to-teal-500', count: tools.filter(t => t.cat === 'calc').length },
-  { id: 'security', name: 'Security', icon: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', tile: 'from-amber-500 to-orange-600', count: tools.filter(t => t.cat === 'security').length },
-  { id: 'utils', name: 'Utils', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>', tile: 'from-violet-500 to-purple-600', count: tools.filter(t => t.cat === 'utils').length },
+  { id: 'pdf', name: 'PDF', icon: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', tile: 'from-blue-600/80 to-blue-700/80', count: tools.filter(t => t.cat === 'pdf').length },
+  { id: 'image', name: 'Image', icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>', tile: 'from-emerald-600/80 to-emerald-700/80', count: tools.filter(t => t.cat === 'image').length },
+  { id: 'dev', name: 'Dev', icon: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>', tile: 'from-slate-600/80 to-slate-700/80', count: tools.filter(t => t.cat === 'dev').length },
+  { id: 'calc', name: 'Calc', icon: '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="12" y2="18"/>', tile: 'from-teal-600/80 to-teal-700/80', count: tools.filter(t => t.cat === 'calc').length },
+  { id: 'security', name: 'Security', icon: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', tile: 'from-slate-600/80 to-slate-700/80', count: tools.filter(t => t.cat === 'security').length },
+  { id: 'utils', name: 'Utils', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>', tile: 'from-blue-600/80 to-blue-700/80', count: tools.filter(t => t.cat === 'utils').length },
 ];
 
 // --- DATA KATEGORI ---
