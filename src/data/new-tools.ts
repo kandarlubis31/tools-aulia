@@ -2,7 +2,7 @@
  * New Tools — Daftar tools yang baru ditambahkan ke ToolsAulia.
  * 
  * Cara pakai: tinggal tambah href tool baru di URUTAN PALING ATAS.
- * Index page otomatis nampilin 5 tools terbaru.
+ * Index page otomatis nampilin 8 tools terbaru.
  * 
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
