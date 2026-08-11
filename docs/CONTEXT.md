@@ -1,6 +1,6 @@
 # Project Context — ToolsAulia
 
-> **Last updated:** August 11, 2026 (final session)
+> **Last updated:** August 11, 2026 (UI/UX optimization session)
 > **Stack:** Astro 5 · Tailwind CSS · TypeScript · 100% client-side (zero server processing)
 > **PWA:** Service Worker + Workbox precache · offline-first
 > **i18n:** Indonesian-first + English toggle (localStorage)
@@ -31,9 +31,9 @@
 - `src/data/tools.ts` — Tool registry (140 entries: 139 tools + PDF hub)
 - `src/i18n/translations.ts` — All i18n keys (tool, header, UI)
 - `src/layouts/BaseLayout.astro` — Global layout + nav + footer + i18n toggle
-- `src/styles/global.css` — Tailwind + custom CSS
+- `src/styles/global.css` — Tailwind + custom CSS (card-grid, hover-lift, content-visibility)
 - `vercel.json` — CSP headers + Permissions-Policy
-- `src/data/new-tools.ts` — New tools list (59 entries, homepage shows 8 newest)
+- `src/data/new-tools.ts` — New tools list (59 entries, homepage shows 6 newest)
 - `scripts/check-client-side.mjs` — Guardrail: ensures no server-side processing
 
 ### Composables (17)
@@ -50,20 +50,51 @@
 - `useAudioWav.ts` — Audio decode/encode WAV
 
 ### Components (4)
-- `BaseLayout.astro` — Global layout with nav, footer, i18n
-- `ToolPageHeader.astro` — Standardized tool page header
-- `DropZone.astro` — Reusable file drop zone
-- `ToolCard.astro` — Tool card for index page
+- `BaseLayout.astro` — Global layout with nav, footer, i18n, offline badge
+- `ToolPageHeader.astro` — Standardized tool page header with gradient, icon, breadcrumb
+- `DropZone.astro` — Reusable file drop zone (used across PDF + image tools)
+- `ToolCard.astro` — Compact tool card (p-3, icon 28px, line-clamp-1 desc, hover lift)
+
+---
+
+## Homepage Architecture
+
+### Layout Flow
+```
+Hero (compact: 8px padding, inline stats, no buttons)
+  → Bento Category Grid (6 tiles, 2→6 cols responsive)
+  → New Tools Chips (6 newest, compact inline)
+  → Sticky Filter Bar (categories + search + sort)
+  → Card Grid (2→6 cols, content-visibility: auto lazy render)
+  → Empty State (shown when filter/search has 0 results)
+```
+
+### Performance Optimizations (Aug 2026)
+- **No 3D tilt JS** — Removed `mousemove` + `requestAnimationFrame` on 139 cards
+- **CSS hover lift** — Simple `translateY(-2px)` + shadow transition (GPU-friendly)
+- **No animated blobs** — Static grid background only (zero GPU cost)
+- **content-visibility: auto** — Below-fold cards skip paint until scrolled into view
+- **Compact cards** — `p-3`, icon `w-7 h-7`, description `line-clamp-1`
+- **Dense grid** — 6 columns at 1440px, 5 at 1024px, 4 at 768px (gap 8px)
+- **Popular badge** — Emoji `🔥` + "Populer" text with i18n support
+
+### Color System (Matte Palette)
+- **Icon tiles** — 3 families: Blue (PDF/Dev), Emerald (Calc/Image), Slate (Security/Utils/Text)
+- **Light mode** — All icons matte gray, unified look
+- **Dark mode** — Accent-colored icons per family
 
 ---
 
 ## Design System
 
-- **Primary:** `#0284c7` (blue-600) + `#38bdf8` (sky-400) with RGB triplet for CSS variables
+- **Primary:** `#0284c7` (sky-600) + `#38bdf8` (sky-400) with RGB triplet for CSS variables
 - **Dark mode:** `dark:` prefix, surface colors via Tailwind config
-- **Typography:** System font stack, monospace for code
-- **Touch targets:** Minimum 44px for mobile accessibility
+- **Typography:** Plus Jakarta Sans (headings) + Inter (body) + JetBrains Mono (code)
+- **Touch targets:** Minimum 44px for mobile accessibility (`@media (pointer: coarse)`)
 - **Accent colors:** Dual CSS variables (`--accent-blue` + `--accent-blue-rgb`)
+- **Card grid:** Responsive `2 → 3 → 4 → 5 → 6` columns, `gap: 0.5rem`
+- **Card hover:** `translateY(-2px)` + shadow lift (no 3D perspective)
+- **WCAG contrast:** Dark mode text-matte overrides for AA compliance
 
 ---
 
@@ -77,6 +108,7 @@
 6. **i18n pattern** — `data-i18n` attributes + `_tToast()` wrapper for JS strings
 7. **Minimal ZIP builder** — Inline ZIP for PDF-to-Word (no JSZip dependency)
 8. **Permissions-Policy** — Microphone access granted for audio tools
+9. **Performance-first homepage** — No JS-driven animations on card grid, CSS-only hover effects
 
 ---
 
@@ -84,7 +116,7 @@
 
 - **Unit tests:** 43 tests (6 files) — vitest
 - **Guardrail:** `scripts/check-client-side.mjs` — verifies client-side processing
-- **Build:** `pnpm astro build` → Vercel adapter
+- **Build:** `pnpm astro build` → Vercel adapter (~50s, 233 precache entries, ~22.5MB)
 - **CI:** Vercel auto-deploy on push to main
 
 ---
@@ -94,6 +126,7 @@
 - **Plan 100 Tools:** `docs/plan-new-tools.md`
 - **B1-B8:** ✅ SELESAI (81 tools added: 58 → 139)
 - **Sisa:** 19 tools untuk mencapai target 158
+- **UI/UX Optimization:** ✅ SELESAI (Aug 2026) — compact hero, dense grid, hover lift, no tilt JS
 
 ---
 
