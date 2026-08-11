@@ -157,6 +157,19 @@ const categories = [
     </div>
   </section>
 
+  <!-- Favorites Section -->
+  <section id="favorites-section" class="max-w-7xl mx-auto px-4 mb-6 hidden">
+    <div class="card-base p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="section-title flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          ⭐ Favorit
+        </h2>
+      </div>
+      <div id="favorite-tools" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2"></div>
+    </div>
+  </section>
+
   <!-- Recently Used -->
   <section id="recent-section" class="max-w-7xl mx-auto px-4 mb-6 hidden">
     <div class="card-base p-4">
@@ -309,6 +322,8 @@ const categories = [
       const prevBtn = document.getElementById('prev-page');
       const nextBtn = document.getElementById('next-page');
       const pageNumbers = document.getElementById('page-numbers');
+      const favSection = document.getElementById('favorites-section');
+      const favContainer = document.getElementById('favorite-tools');
 
       const urlParams = new URLSearchParams(window.location.search);
       let currentFilter = urlParams.get('cat') || 'all'; 
@@ -316,6 +331,53 @@ const categories = [
       let currentSort = 'name';
       let currentPage = 1;
       const PER_PAGE = 36;
+
+      // --- A1: Favorites ---
+      function getFavorites() { try { return JSON.parse(localStorage.getItem('favTools') || '[]'); } catch { return []; } }
+      function toggleFav(href) {
+        let favs = getFavorites();
+        if (favs.includes(href)) favs = favs.filter(h => h !== href);
+        else favs.unshift(href);
+        localStorage.setItem('favTools', JSON.stringify(favs.slice(0, 20)));
+        updateFavDisplay();
+      }
+
+      function updateFavDisplay() {
+        const favs = getFavorites();
+        if (!favSection || !favContainer) return;
+        if (!favs.length) { favSection.classList.add('hidden'); return; }
+        favSection.classList.remove('hidden');
+
+        favContainer.innerHTML = favs.map(href => {
+          const t = Array.from(tools).find(el => {
+            const a = el.querySelector('a');
+            return a && (a.getAttribute('href') || '').split('?')[0] === href;
+          });
+          if (!t) return '';
+          const color = t.getAttribute('data-color') || 'indigo';
+          const icon = t.getAttribute('data-icon') || '';
+          const title = t.getAttribute('data-name') || '';
+          const cat = t.getAttribute('data-cat') || '';
+          return `<a href="${href}?from_cat=${cat}" class="group flex flex-col items-center justify-center p-2.5 rounded-lg bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 hover:border-amber-400 transition-all duration-150">
+            <div class="icon-mono w-6 h-6 mb-1.5 text-amber-500"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></div>
+            <span class="text-2xs font-medium text-matte-600 dark:text-matte-300 text-center leading-tight line-clamp-2">${title}</span></a>`;
+        }).join('');
+
+        // Also update star buttons
+        document.querySelectorAll('.fav-star').forEach(btn => {
+          const href = btn.getAttribute('data-fav');
+          if (favs.includes(href)) btn.classList.add('text-amber-400');
+          else btn.classList.remove('text-amber-400');
+        });
+      }
+
+      // --- A3: Usage Counter ---
+      function getUsageCounts() { try { return JSON.parse(localStorage.getItem('toolUsage') || '{}'); } catch { return {}; } }
+      function incrementUsage(href) {
+        const counts = getUsageCounts();
+        counts[href] = (counts[href] || 0) + 1;
+        localStorage.setItem('toolUsage', JSON.stringify(counts));
+      }
 
       function getRecentTools() {
         try {
@@ -374,10 +436,21 @@ const categories = [
                 const title = tool.getAttribute('data-name');
                 const color = tool.getAttribute('data-color');
                 const icon = tool.getAttribute('data-icon');
-                if(href && title) saveToRecent(href, title, color, icon);
+                if(href) { saveToRecent(href, title, color, icon); incrementUsage(href); }
+            });
+         }
+         // A1: Star button handler
+         const starBtn = tool.querySelector('.fav-star');
+         if (starBtn) {
+            starBtn.addEventListener('click', (e) => {
+               e.preventDefault(); e.stopPropagation();
+               const href = starBtn.getAttribute('data-fav');
+               if (href) toggleFav(href);
             });
          }
       });
+
+      updateFavDisplay();
 
       clearRecentBtn?.addEventListener('click', () => {
          localStorage.removeItem('recentTools');
@@ -457,7 +530,8 @@ const categories = [
             pagination?.classList.remove('hidden');
         }
 
-        // Render page numbers
+        // Update star states + render page numbers
+        updateFavDisplay();
         renderPagination(totalPages);
       }
 

@@ -15,10 +15,18 @@ const { title, desc, href, icon, isSoon = false, titleKey, descKey, tileClass = 
 
 <a href={isSoon ? "#" : href}
    class={`card-base group relative flex flex-col p-4 rounded-xl overflow-hidden
-           ${isSoon ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150'}`}>
+           ${isSoon ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150'}`}
+   data-tool-href={href}>
   
   {isSoon && (
     <span class="absolute top-2 right-2 badge-muted text-2xs px-1.5 py-0.5">Soon</span>
+  )}
+
+  {!isSoon && (
+    <button class="fav-star absolute top-2 right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-white/80 dark:bg-matte-800/80 backdrop-blur-sm text-matte-300 hover:text-amber-400 hover:scale-110 transition-all duration-150 opacity-0 group-hover:opacity-100"
+      data-fav={href} title="Add to favorites" aria-label="Add to favorites" type="button">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </button>
   )}
 
   <!-- Icon tile -->
