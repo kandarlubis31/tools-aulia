@@ -1,39 +1,40 @@
 # Project Context — ToolsAulia
 
-> **Last updated:** August 11, 2026 (UI/UX optimization session)
+> **Last updated:** August 12, 2026 (Batch 9-10: +20 tools, 100-plan complete)
 > **Stack:** Astro 5 · Tailwind CSS · TypeScript · 100% client-side (zero server processing)
 > **PWA:** Service Worker + Workbox precache · offline-first
 > **i18n:** Indonesian-first + English toggle (localStorage)
 
 ---
 
-## Tool Categories (139 tools + PDF hub)
+## Tool Categories (158 tools + PDF hub, 12 kategori)
 
 | Category | Tools | Key tools |
 |----------|-------|-----------|
 | **PDF** | 25+hub | compress, merge, split, sign, watermark, to-word, form-filler, redact, thumbnails, compare, booklet |
 | **Dev** | 24 | base64, json, markdown, diff, timestamp, url, proxy, my-ip, cron, css-shadow, regex, json-yaml, sql, subnet, gradient, html-minifier, chmod, jwt, json-to-ts, color-harmony, contrast, grid, json-schema |
 | **Calc** | 18 | age, bmi, currency, number, percentage, unit, case, emi, compound-interest, timezone, scientific, date-diff, fraction, number-words, matrix, work-hours, bmr, random |
-| **Image** | 14 | color, compressor, converter, editor, html-to-img, remove-bg, watermark, cropper, batch-resizer, exif, ascii, meme, palette, collage |
+| **Image** | 16 | color, compressor, converter, editor, html-to-img, remove-bg, watermark, cropper, batch-resizer, exif, ascii, meme, palette, collage, gif-maker, favicon |
 | **Security** | 12 | password, hash, uuid, bcrypt, file-encrypt, cipher, totp, steganography, luhn, password-strength, hmac, token |
 | **Utils** | 19 | wa-builder, qr, jokes, brainstorm, pomodoro, todo, word-counter, prabowo-countdown, paste-to-md, stopwatch, lorem, motivation, sinonim, notes-md, decision-wheel, expense-tracker, wordle-id, habit-tracker, qr-scanner |
-| **Text** | 11 | typing-test, text-to-speech, summarizer, readability, fancy, emoji, speech-to-text, lang-detect, anagram, morse, rot13 |
+| **Text** | 12 | typing-test, text-to-speech, summarizer, readability, fancy, emoji, speech-to-text, lang-detect, anagram, morse, rot13, random-text |
 | **Data** | 8 | csv-editor, xlsx-viewer, yaml-json, ical, fake-data, xml-formatter, vcard, barcode |
-| **Media** | 3 | audio-recorder, waveform, audio-trimmer |
-| **Network** | 3 | http-builder, rest-client, dns-lookup |
+| **Media** | 8 | audio-recorder, waveform, audio-trimmer, metronome, tone-generator, white-noise, screen-recorder, scale-ref |
+| **Network** | 11 | http-builder, rest-client, dns-lookup, speed-test, latency, websocket, http-headers, ua-parser, port-ref, whois, ssl |
 | **File** | 2 | csv-json, pdf-to-md |
+| **Life** | 4 | mood-tracker, certificate, snake, magic-8ball |
 
 ---
 
 ## Architecture
 
 ### Key Files
-- `src/data/tools.ts` — Tool registry (140 entries: 139 tools + PDF hub)
-- `src/i18n/translations.ts` — All i18n keys (tool, header, UI)
+- `src/data/tools.ts` — Tool registry (160 entries: 158 tools + PDF hub + 1 index)
+- `src/i18n/translations.ts` — All i18n keys (tool, header, UI) — ~2300+ lines
 - `src/layouts/BaseLayout.astro` — Global layout + nav + footer + i18n toggle
 - `src/styles/global.css` — Tailwind + custom CSS (card-grid, hover-lift, content-visibility)
 - `vercel.json` — CSP headers + Permissions-Policy
-- `src/data/new-tools.ts` — New tools list (59 entries, homepage shows 6 newest)
+- `src/data/new-tools.ts` — New tools list (100 entries, homepage shows 6 newest)
 - `scripts/check-client-side.mjs` — Guardrail: ensures no server-side processing
 
 ### Composables (17)
@@ -116,7 +117,7 @@ Hero (compact: 8px padding, inline stats, no buttons)
 
 - **Unit tests:** 43 tests (6 files) — vitest
 - **Guardrail:** `scripts/check-client-side.mjs` — verifies client-side processing
-- **Build:** `pnpm astro build` → Vercel adapter (~50s, 233 precache entries, ~22.5MB)
+- **Build:** `pnpm astro build` → Vercel adapter (~46s, 254 precache entries, ~24.8MB)
 - **CI:** Vercel auto-deploy on push to main
 
 ---
@@ -124,8 +125,8 @@ Hero (compact: 8px padding, inline stats, no buttons)
 ## Plan Status
 
 - **Plan 100 Tools:** `docs/plan-new-tools.md`
-- **B1-B8:** ✅ SELESAI (81 tools added: 58 → 139)
-- **Sisa:** 19 tools untuk mencapai target 158
+- **B1-B10:** ✅ SELESAI (100 tools added: 58 → 158)
+- **🎉 Target 158 TERCAPAI!** — 12 kategori, 158 tools + PDF hub
 - **UI/UX Optimization:** ✅ SELESAI (Aug 2026) — compact hero, dense grid, hover lift, no tilt JS
 
 ---
