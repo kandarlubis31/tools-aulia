@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Audio Equalizer — 10-Band EQ Graphic | ToolsAulia" description="10-band graphic equalizer untuk file audio. 100% client-side WebAudio." category="Media" toolHref="/media/audio-eq">
+  <ToolPageHeader title="Audio Equalizer" description="10-band graphic EQ — atur & dengarkan suara" icon='<path d="M4 14l6 6 6-6"/><path d="M12 20v-9"/><path d="M20 10c0-4.418-3.582-8-8-8s-8 3.582-8 8"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <input type="file" id="file-input" accept="audio/*" class="input-field text-sm w-full">
+    <div class="flex gap-2"><button id="play-btn" class="btn-primary text-sm" disabled>▶ Play</button><select id="preset" class="input-field text-sm w-32"><option value="">Flat</option><option value="pop">Pop</option><option value="rock">Rock</option><option value="vocal">Vocal Boost</option><option value="bass">Bass Boost</option></select></div>
+
+    <div class="grid grid-cols-10 gap-1" id="bands">
+      {['32','64','125','250','500','1K','2K','4K','8K','16K'].map((hz,i) => `
+        <div class="text-center">
+          <input type="range" min="-12" max="12" value="0" class="eq-slider w-8 h-32 [writing-mode:vertical-lr] [direction:rtl] mx-auto" data-idx="${i}">
+          <span class="text-xs text-matte-400">${hz}</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+  let audioCtx, source, filters = [];
+
+  document.getElementById('file-input').addEventListener('change', async function() {
+    const f = this.files[0]; if (!f) return;
+    audioCtx = new AudioContext();
+    filters = [];
+    const bands = [32,64,125,250,500,1000,2000,4000,8000,16000];
+    bands.forEach(() => filters.push(audioCtx.createBiquadFilter()));
+
+    const buf = await audioCtx.decodeAudioData(await f.arrayBuffer());
+    source = audioCtx.createBufferSource(); source.buffer = buf;
+
+    filters.forEach((f,i) => { f.type = 'peaking'; f.frequency.value = bands[i]; f.Q.value = 1; f.gain.value = 0; });
+    let prev = source;
+    filters.forEach(f => { prev.connect(f); prev = f; });
+    prev.connect(audioCtx.destination);
+    document.getElementById('play-btn').disabled = false;
+  });
+
+  document.getElementById('play-btn').addEventListener('click', () => {
+    if (!source) return; source.start(); this.disabled = true;
+  });
+
+  document.querySelectorAll('.eq-slider').forEach(slider => {
+    slider.addEventListener('input', function() {
+      const idx = parseInt(this.dataset.idx);
+      if (filters[idx]) filters[idx].gain.value = parseInt(this.value);
+    });
+  });
+
+  document.getElementById('preset').addEventListener('change', function() {
+    const presets = {
+      pop: [2,1,0,-1,0,1,2,3,3,2],
+      rock: [4,3,0,-2,0,2,4,3,2,0],
+      vocal: [-1,-1,0,2,4,3,2,0,-1,-2],
+      bass: [6,5,3,1,0,0,0,0,0,0]
+    };
+    const vals = presets[this.value];
+    if (vals) {
+      document.querySelectorAll('.eq-slider').forEach((s,i) => {
+        s.value = vals[i] || 0;
+        if (filters[i]) filters[i].gain.value = vals[i];
+      });
+    }
+  });
+</script>

@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Subnet Visualizer — Visual Map Network Tree | ToolsAulia" description="Visualisasi subnet network tree. 100% client-side canvas." category="Network" toolHref="/network/subnet-viz">
+  <ToolPageHeader title="Subnet Visualizer" description="Visual tree network subnet — lihat struktur IP" icon='<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="flex flex-wrap gap-3">
+      <div><label class="text-xs text-matte-500 mb-1 block">IP Network</label><input id="ip" type="text" class="input-field w-40 text-sm font-mono" value="192.168.1.0"></div>
+      <div><label class="text-xs text-matte-500 mb-1 block">CIDR</label><input id="cidr" type="number" min="8" max="30" value="24" class="input-field w-20 text-sm"></div>
+      <div class="self-end"><button id="viz-btn" class="btn-primary text-sm">Visualisasikan</button></div>
+    </div>
+
+    <div class="bg-matte-50 dark:bg-matte-800 rounded-lg p-3 overflow-auto">
+      <canvas id="viz-canvas" width="900" height="400" class="mx-auto"></canvas>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm" id="info-cards"></div>
+  </div>
+</BaseLayout>
+
+<script>
+  const canvas = document.getElementById('viz-canvas'), ctx = canvas.getContext('2d');
+
+  document.getElementById('viz-btn').addEventListener('click', draw);
+  draw();
+
+  function draw() {
+    const ip = document.getElementById('ip').value || '192.168.1.0';
+    const cidr = parseInt(document.getElementById('cidr').value) || 24;
+    const total = Math.pow(2, 32-cidr);
+    const usable = Math.max(0, total - 2);
+    const parts = ip.split('.').map(Number);
+    const net = (parts[0]<<24|parts[1]<<16|parts[2]<<8|parts[3])>>>0;
+    const mask = (~0 << (32-cidr))>>>0;
+    const broadcast = net | ~mask>>>0;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#1e293b'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(`/${cidr} — ${total} alamat (${usable} usable)`, canvas.width/2, 28);
+
+    // Draw subnet bar
+    const barX = 80, barW = canvas.width-160, barY = 60, barH = 40;
+    const grad = ctx.createLinearGradient(barX, 0, barX+barW, 0);
+    grad.addColorStop(0, '#2563eb'); grad.addColorStop(0.6, '#16a34a'); grad.addColorStop(1, '#dc2626');
+    ctx.fillStyle = grad; ctx.fillRect(barX, barY, barW, barH);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(barX, barY, barW, barH);
+
+    // Labels
+    ctx.fillStyle = '#94a3b8'; ctx.font = '11px monospace';
+    ctx.fillText(`Network`, barX+30, barY+55);
+    ctx.fillText(`Broadcast`, barX+barW-40, barY+55);
+
+    // Tree nodes
+    if (cidr <= 26) {
+      const subnets = cidr < 24 ? Math.pow(2,24-cidr) : 1;
+      const nodeW = Math.min(barW/subnets-20, 120);
+      const startY = 140;
+      for (let i=0; i<Math.min(subnets, 8); i++) {
+        const x = barX + i*(barW/subnets) + barW/subnets/2;
+        const sub = (net + i*(total/subnets))>>>0;
+        const sParts = [(sub>>>24)&0xFF,(sub>>>16)&0xFF,(sub>>>8)&0xFF,sub&0xFF].join('.');
+        ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.roundRect(x-nodeW/2, startY, nodeW, 35, 6); ctx.fill();
+        ctx.fillStyle = '#e2e8f0'; ctx.font = '11px monospace'; ctx.textAlign='center';
+        ctx.fillText(sParts, x, startY+22);
+        // line
+        ctx.strokeStyle = '#475569'; ctx.beginPath(); ctx.moveTo(x, barY+barH); ctx.lineTo(x, startY); ctx.stroke();
+      }
+    }
+
+    document.getElementById('info-cards').innerHTML =
+      `<div class="card-base p-2 text-center"><span class="text-xs text-matte-400">Network</span><p class="font-mono text-sm">${ip}/${cidr}</p></div>`+
+      `<div class="card-base p-2 text-center"><span class="text-xs text-matte-400">Netmask</span><p class="font-mono text-sm">${[(mask>>>24)&255,(mask>>>16)&255,(mask>>>8)&255,mask&255].join('.')}</p></div>`+
+      `<div class="card-base p-2 text-center"><span class="text-xs text-matte-400">Host Range</span><p class="font-mono text-xs">${[(net+1>>>24)&255,(net+1>>>16)&255,(net+1>>>8)&255,(net+1)&255].join('.')} – ${[(broadcast-1>>>24)&255,(broadcast-1>>>16)&255,(broadcast-1>>>8)&255,(broadcast-1)&255].join('.')}</p></div>`+
+      `<div class="card-base p-2 text-center"><span class="text-xs text-matte-400">Broadcast</span><p class="font-mono text-sm">${[(broadcast>>>24)&255,(broadcast>>>16)&255,(broadcast>>>8)&255,broadcast&255].join('.')}</p></div>`;
+  }
+</script>

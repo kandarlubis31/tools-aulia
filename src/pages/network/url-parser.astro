@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="URL Parser — Parse URL Components | ToolsAulia" description="Parse URL ke components: protocol, host, path, params. 100% client-side." category="Network" toolHref="/network/url-parser">
+  <ToolPageHeader title="URL Parser" description="Parse URL ke protocol, host, port, params — instan" icon='<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <input id="url-input" type="text" class="input-field w-full font-mono text-sm" value="https://user:pass@tools.paklubis.my.id:8080/img/editor?from=home&hl=id#features" placeholder="https://example.com/path?query=value#hash">
+    <button id="parse-btn" class="btn-primary">Parse URL</button>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm" id="parsed"></div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.getElementById('parse-btn').addEventListener('click', parse);
+  parse();
+
+  function parse() {
+    const raw = document.getElementById('url-input').value.trim();
+    let u; try { u = new URL(raw); } catch { document.getElementById('parsed').innerHTML = '<p class="text-red-500 col-span-full">URL tidak valid!</p>'; return; }
+
+    const fields = [
+      ['Protocol', u.protocol], ['Host', u.hostname], ['Port', u.port || '(default)'], ['Path', u.pathname],
+      ['Search', u.search], ['Hash', u.hash], ['Origin', u.origin], ['Username', u.username || '-'], ['Password', u.password ? '***' : '-'],
+    ];
+    const params = Array.from(u.searchParams.entries());
+    if (params.length) params.forEach(([k,v]) => fields.push(['Query: '+k, v]));
+
+    document.getElementById('parsed').innerHTML = fields.map(([k,v]) =>
+      '<div class="card-base p-2"><span class="text-xs text-matte-400">'+esc(k)+'</span><p class="font-mono text-sm break-all">'+esc(v)+'</p></div>'
+    ).join('');
+  }
+
+  function esc(s) { return String(s||'').replace(/</g,'&lt;'); }
+</script>

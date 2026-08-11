@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Sleep Calculator — Waktu Tidur Ideal | ToolsAulia" description="Hitung waktu tidur ideal berdasarkan sleep cycle 90 menit. 100% client-side." category="Life" toolHref="/life/sleep">
+  <ToolPageHeader title="Sleep Calculator" description="Waktu tidur ideal — bangun seger tiap pagi" icon='<path d="M18 20v-4"/><path d="M12 20V4"/><path d="M6 20v-4"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="flex gap-4">
+      <button id="mode-wake" class="btn-primary flex-1 text-sm">Saya mau bangun jam...</button>
+      <button id="mode-sleep" class="btn-secondary flex-1 text-sm">Saya mau tidur jam...</button>
+    </div>
+
+    <div class="flex gap-2 items-center justify-center">
+      <input id="hour" type="number" min="0" max="23" value="7" class="input-field w-16 text-center text-sm">
+      <span class="text-matte-500">:</span>
+      <input id="min" type="number" min="0" max="59" value="0" class="input-field w-16 text-center text-sm">
+      <span id="ampm" class="text-matte-500 text-sm">AM</span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" id="results"></div>
+    <p class="text-xs text-matte-400 text-center">Sleep cycle rata-rata 90 menit. Tidur 5-6 cycle (7.5-9 jam) ideal.</p>
+  </div>
+</BaseLayout>
+
+<script>
+  let mode = 'wake';
+  document.getElementById('mode-wake').addEventListener('click', function() { mode='wake'; this.className='btn-primary flex-1 text-sm'; document.getElementById('mode-sleep').className='btn-secondary flex-1 text-sm'; calc(); });
+  document.getElementById('mode-sleep').addEventListener('click', function() { mode='sleep'; this.className='btn-primary flex-1 text-sm'; document.getElementById('mode-wake').className='btn-secondary flex-1 text-sm'; calc(); });
+  ['hour','min'].forEach(id => document.getElementById(id).addEventListener('input', calc));
+
+  function calc() {
+    let h = parseInt(document.getElementById('hour').value) || 7;
+    let m = parseInt(document.getElementById('min').value) || 0;
+    if (h < 0) h = 0; if (h > 23) h = 23;
+    const totalMin = h*60 + m;
+    const cycle = 90;
+    const results = [];
+
+    if (mode === 'wake') {
+      for (let c=6; c>=3; c--) {
+        let t = totalMin - c*cycle;
+        if (t < 0) t += 1440;
+        const hh = Math.floor(t/60)%24, mm = t%60;
+        results.push({ label: (c===6?'Ideal (9 jam)':c+' cycle ('+(c*1.5)+'j)'), time: pad(hh)+':'+pad(mm), count: c });
+      }
+    } else {
+      for (let c=3; c<=6; c++) {
+        let t = (totalMin + 15 + c*cycle) % 1440;
+        const hh = Math.floor(t/60), mm = t%60;
+        results.push({ label: (c===5||c===6?'⭐ '+c+' cycle ('+(c*1.5)+'j)':c+' cycle ('+(c*1.5)+'j)'), time: pad(hh)+':'+pad(mm), count: c });
+      }
+    }
+
+    document.getElementById('results').innerHTML = results.map(r =>
+      '<div class="card-base p-3 text-center '+(r.count>=5?'border-2 border-accent-green/30 bg-accent-green/5':'')+'">'+
+      '<p class="text-xs text-matte-400">'+r.label+'</p><p class="text-2xl font-bold font-mono text-accent-blue">'+r.time+'</p></div>'
+    ).join('');
+  }
+
+  function pad(n) { return String(n).padStart(2,'0'); }
+  calc();
+</script>

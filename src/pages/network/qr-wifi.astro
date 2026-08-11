@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="QR WiFi Generator — Konek WiFi Pakai QR | ToolsAulia" description="Generate QR code untuk konek WiFi otomatis. 100% client-side." category="Network" toolHref="/network/qr-wifi">
+  <ToolPageHeader title="QR WiFi Generator" description="Generate QR untuk konek WiFi otomatis — scan & connect" icon='<path d="M1 4.5C1 2.6 2.6 1 4.5 1H8M16 1h3.5A3.5 3.5 0 0 1 23 4.5V8M23 16v3.5a3.5 3.5 0 0 1-3.5 3.5H16M8 23H4.5A3.5 3.5 0 0 1 1 19.5V16"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div><label class="text-xs text-matte-500 mb-1 block">SSID (Nama WiFi)</label><input id="ssid" type="text" class="input-field w-full text-sm" placeholder="MyWifi"></div>
+      <div><label class="text-xs text-matte-500 mb-1 block">Password</label><input id="pass" type="text" class="input-field w-full text-sm" placeholder="password123"></div>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <div><label class="text-xs text-matte-500 mb-1 block">Enkripsi</label><select id="enc" class="input-field text-sm"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">Open (tanpa password)</option></select></div>
+      <div><label class="text-xs text-matte-500 mb-1 block">Ukuran QR</label><input id="size" type="number" class="input-field w-20 text-sm" value="256" min="128" max="512"></div>
+      <div class="self-end"><button id="gen-btn" class="btn-primary text-sm">Generate QR WiFi</button></div>
+    </div>
+
+    <div class="flex justify-center"><canvas id="qr-canvas" width="256" height="256" class="rounded shadow"></canvas></div>
+    <div class="flex gap-2"><button id="download-btn" class="btn-primary flex-1">Download QR PNG</button><button id="copy-cfg" class="btn-secondary text-sm">Copy Config</button></div>
+    <p class="text-xs text-matte-400 text-center">Scan QR ini dari HP untuk langsung konek WiFi tanpa ketik password!</p>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+  const canvas = document.getElementById('qr-canvas');
+
+  document.getElementById('gen-btn').addEventListener('click', generate);
+  generate();
+
+  function generate() {
+    const ssid = document.getElementById('ssid').value.trim() || 'MyWifi';
+    const pass = document.getElementById('pass').value.trim() || 'password';
+    const enc = document.getElementById('enc').value;
+    const size = parseInt(document.getElementById('size').value) || 256;
+    canvas.width = canvas.height = size;
+
+    const cfg = `WIFI:T:${enc};S:${ssid};P:${pass};;`;
+    const QRCode = (window as any).QRCode;
+    try {
+      new QRCode(canvas, { text: cfg, width: size, height: size, correctLevel: 1 });
+    } catch {
+      // fallback: use text display
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0,0,size,size);
+      ctx.fillStyle = '#000'; ctx.font = '12px monospace'; ctx.fillText('QR lib loading...', 10, size/2);
+    }
+  }
+
+  document.getElementById('download-btn').addEventListener('click', () => {
+    canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'qr-wifi.png'; a.click(); }, 'image/png');
+  });
+  document.getElementById('copy-cfg').addEventListener('click', () => {
+    const ssid = document.getElementById('ssid').value.trim() || 'MyWifi';
+    const pass = document.getElementById('pass').value.trim();
+    const enc = document.getElementById('enc').value;
+    navigator.clipboard.writeText(`WIFI:T:${enc};S:${ssid};P:${pass};;`).then(() => showToast?.(_tToast?.('Config WiFi disalin!','WiFi config copied!'),'success'));
+  });
+</script>

@@ -1,0 +1,98 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Audio Visualizer — Frequency Bars Live | ToolsAulia" description="Real-time frequency bars dari mic atau file audio. 100% client-side WebAudio." category="Media" toolHref="/media/audio-viz">
+  <ToolPageHeader title="Audio Visualizer" description="Live frequency bars — mic atau file audio" icon='<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="flex flex-wrap gap-2">
+      <button id="mic-btn" class="btn-primary text-sm">🎤 Start Mic</button>
+      <input type="file" id="file-input" accept="audio/*" class="input-field text-sm">
+      <select id="style" class="input-field text-sm w-32">
+        <option value="bars">Bars</option>
+        <option value="wave">Waveform</option>
+        <option value="circle">Circle</option>
+      </select>
+      <button id="stop-btn" class="btn-secondary text-sm">Stop</button>
+    </div>
+
+    <canvas id="viz" width="800" height="250" class="w-full rounded-lg shadow bg-matte-900"></canvas>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+  const canvas = document.getElementById('viz'), ctx = canvas.getContext('2d');
+  let audioCtx, analyser, animationId, source;
+
+  document.getElementById('mic-btn').addEventListener('click', async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioCtx = new AudioContext();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+      animate();
+    } catch { showToast?.(_tToast?.('Mic tidak tersedia','Mic not available'),'error'); }
+  });
+
+  document.getElementById('file-input').addEventListener('change', function() {
+    const f = this.files[0]; if (!f) return;
+    audioCtx = new AudioContext();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    const reader = new FileReader();
+    reader.onload = () => audioCtx.decodeAudioData(reader.result, buf => {
+      source = audioCtx.createBufferSource();
+      source.buffer = buf; source.connect(analyser); analyser.connect(audioCtx.destination);
+      source.start(); animate();
+    });
+    reader.readAsArrayBuffer(f);
+  });
+
+  document.getElementById('stop-btn').addEventListener('click', () => {
+    cancelAnimationFrame(animationId);
+    if (source) source.disconnect();
+    if (audioCtx) audioCtx.close();
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  });
+
+  function animate() {
+    animationId = requestAnimationFrame(animate);
+    const bufLen = analyser.frequencyBinCount;
+    const data = new Uint8Array(bufLen);
+    analyser.getByteFrequencyData(data);
+    const style = document.getElementById('style').value;
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    if (style === 'bars') {
+      const barW = canvas.width / bufLen;
+      for (let i=0; i<bufLen; i++) {
+        const h = data[i]/255 * canvas.height;
+        const hue = i*2;
+        ctx.fillStyle = 'hsl('+hue+',80%,60%)';
+        ctx.fillRect(i*barW, canvas.height-h, barW-1, h);
+      }
+    } else if (style === 'wave') {
+      ctx.beginPath(); ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 2;
+      for (let i=0; i<bufLen; i++) {
+        const x = i/bufLen * canvas.width;
+        const y = canvas.height/2 + (data[i]-128)/128 * canvas.height/2;
+        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    } else {
+      const cx = canvas.width/2, cy = canvas.height/2, r = Math.min(cx,cy)-10;
+      ctx.beginPath(); ctx.strokeStyle = '#8b5cf6'; ctx.lineWidth = 2;
+      for (let i=0; i<bufLen; i++) {
+        const angle = (i/bufLen)*Math.PI*2;
+        const amp = r + data[i]/255 * 40;
+        const x = cx + Math.cos(angle)*amp, y = cy + Math.sin(angle)*amp;
+        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      }
+      ctx.closePath(); ctx.stroke();
+    }
+  }
+</script>

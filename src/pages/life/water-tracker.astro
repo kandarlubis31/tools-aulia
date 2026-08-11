@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Water Tracker — Catat Minum Air Harian | ToolsAulia" description="Catat konsumsi air harian + target. 100% client-side localStorage." category="Life" toolHref="/life/water-tracker">
+  <ToolPageHeader title="Water Tracker" description="Catat minum air — capai target harian!" icon='<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><path d="M7 14a5 5 0 0 0 10 0"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="flex gap-2 justify-center">
+      <button id="add-200" class="btn-secondary text-sm px-4">+200ml</button>
+      <button id="add-300" class="btn-secondary text-sm px-4">+300ml</button>
+      <button id="add-500" class="btn-primary text-sm px-4">+500ml</button>
+      <button id="add-custom-btn" class="btn-secondary text-sm px-3">+Custom</button>
+      <input id="custom-amt" type="number" min="50" step="50" value="350" class="input-field w-16 text-sm hidden">
+      <button id="undo-btn" class="btn-secondary text-sm">↩</button>
+    </div>
+
+    <div class="text-center">
+      <p class="text-sm text-matte-400">Hari ini</p>
+      <p class="text-5xl font-bold text-accent-blue font-mono"><span id="total">0</span><span class="text-2xl text-matte-400">ml</span></p>
+      <div class="h-4 bg-matte-200 dark:bg-matte-700 rounded-full mt-2 overflow-hidden">
+        <div id="progress" class="h-full bg-gradient-to-r from-accent-blue to-accent-cyan rounded-full transition-all" style="width:0%"></div>
+      </div>
+      <p class="text-xs text-matte-400 mt-1" id="goal-text">Target: 2000ml</p>
+    </div>
+
+    <div class="text-xs text-matte-400 text-center space-x-2" id="log"></div>
+
+    <div>
+      <label class="text-xs text-matte-500 mb-1 block">Target Harian (ml)</label>
+      <input id="goal" type="number" min="500" step="100" value="2000" class="input-field w-24 text-sm">
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const KEY = 'water_tracker';
+  const today = new Date().toISOString().slice(0,10);
+  let data = JSON.parse(localStorage.getItem(KEY) || '{}');
+  if (!data[today]) data[today] = [];
+
+  function save() { localStorage.setItem(KEY, JSON.stringify(data)); update(); }
+  function update() {
+    const total = (data[today]||[]).reduce((s,v) => s+v, 0);
+    const goal = parseInt(document.getElementById('goal').value) || 2000;
+    document.getElementById('total').textContent = total.toLocaleString();
+    document.getElementById('progress').style.width = Math.min(total/goal*100, 100)+'%';
+    document.getElementById('goal-text').textContent = 'Target: '+goal+'ml — '+(total>=goal?'✅ Tercapai!':'Kurang '+(goal-total)+'ml');
+    document.getElementById('log').textContent = (data[today]||[]).map(v => '+'+v+'ml').join(' · ') || 'Belum minum hari ini';
+  }
+
+  document.getElementById('add-custom-btn').addEventListener('click', function() {
+    document.getElementById('custom-amt').classList.toggle('hidden');
+  });
+  document.getElementById('custom-amt').addEventListener('keydown', function(e) {
+    if (e.key==='Enter') { data[today].push(parseInt(this.value)||350); this.value='350'; save(); }
+  });
+
+  ['add-200','add-300','add-500'].forEach(id => {
+    document.getElementById(id).addEventListener('click', () => {
+      data[today].push(parseInt(id.replace('add-','')));
+      save();
+    });
+  });
+  document.getElementById('undo-btn').addEventListener('click', () => {
+    data[today].pop(); save();
+  });
+  document.getElementById('goal').addEventListener('input', update);
+  update();
+</script>
