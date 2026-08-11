@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="HTML Minifier — Format & Minify HTML">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="HTML Minifier"
+      titleKey="header.html_minifier"
+      desc="Format dan minify HTML: beautify, minify, copy."
+      descKey="header.html_minifier_desc"
+      icon='<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'
+      gradient="from-blue-500 to-indigo-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <label class="section-title mb-2 block" for="html-input">HTML Input</label>
+      <textarea id="html-input" rows="10" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-blue-500 transition-colors text-sm font-mono resize-y" placeholder="Tempel HTML di sini..." data-i18n-attr="placeholder"></textarea>
+
+      <div class="flex gap-2 mt-4">
+        <button id="format-btn" class="flex-1 gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="html.format">Format</button>
+        <button id="minify-btn" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="html.minify">Minify</button>
+      </div>
+
+      <label class="section-title mb-2 mt-4 block" for="html-output">Output</label>
+      <div class="relative">
+        <textarea id="html-output" rows="10" class="w-full p-4 bg-matte-50 dark:bg-matte-900 border border-matte-200 dark:border-surface-border rounded-xl text-sm font-mono resize-y" readonly></textarea>
+        <button id="copy-output" class="absolute top-2 right-2 text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="html.copy">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      function formatHTML(html: string): string {
+        let formatted = '';
+        let indent = 0;
+        const tab = '  ';
+
+        // Simple HTML formatter
+        const lines = html.replace(/>\s*</g, '>\n<').split('\n');
+        
+        lines.forEach(line => {
+          line = line.trim();
+          if (!line) return;
+
+          // Check if closing tag
+          if (line.match(/^<\//)) indent--;
+          
+          formatted += tab.repeat(Math.max(0, indent)) + line + '\n';
+          
+          // Check if opening tag (not self-closing)
+          if (line.match(/^<[^\/][^>]*[^\/]>$/) && !line.match(/^(br|hr|img|input|meta|link)/i)) {
+            indent++;
+          }
+        });
+
+        return formatted.trim();
+      }
+
+      function minifyHTML(html: string): string {
+        return html
+          .replace(/\s+/g, ' ')
+          .replace(/>\s+</g, '><')
+          .replace(/<!--[\s\S]*?-->/g, '')
+          .trim();
+      }
+
+      // Format button
+      document.getElementById('format-btn')?.addEventListener('click', () => {
+        const input = (document.getElementById('html-input') as HTMLTextAreaElement)?.value;
+        if (!input) { toast('Masukkan HTML!', 'error'); return; }
+
+        const output = formatHTML(input);
+        (document.getElementById('html-output') as HTMLTextAreaElement).value = output;
+        toast('HTML diformat!', 'success');
+      });
+
+      // Minify button
+      document.getElementById('minify-btn')?.addEventListener('click', () => {
+        const input = (document.getElementById('html-input') as HTMLTextAreaElement)?.value;
+        if (!input) { toast('Masukkan HTML!', 'error'); return; }
+
+        const output = minifyHTML(input);
+        (document.getElementById('html-output') as HTMLTextAreaElement).value = output;
+        toast('HTML di-minify!', 'success');
+      });
+
+      // Copy output
+      document.getElementById('copy-output')?.addEventListener('click', () => {
+        const output = (document.getElementById('html-output') as HTMLTextAreaElement)?.value;
+        if (output) {
+          navigator.clipboard.writeText(output);
+          toast('Disalin!', 'success');
+        }
+      });
+    });
+  </script>
+</BaseLayout>

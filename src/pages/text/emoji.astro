@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Emoji Translator — Kata ke Emoji">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Emoji Translator"
+      titleKey="header.emoji_translator"
+      desc="Translate kata ke emoji dan sebaliknya."
+      descKey="header.emoji_translator_desc"
+      icon='<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>'
+      gradient="from-yellow-500 to-amber-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <label class="section-title mb-2 block" for="text-input" data-i18n="emoji.input">Teks</label>
+      <textarea id="text-input" rows="4" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-yellow-500 transition-colors text-sm resize-y" placeholder="Ketik teks di sini..." data-i18n-attr="placeholder"></textarea>
+
+      <button id="translate-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="emoji.translate">Translate</button>
+
+      <label class="section-title mb-2 mt-4 block" data-i18n="emoji.output">Emoji</label>
+      <div class="relative">
+        <textarea id="emoji-output" rows="4" class="w-full p-4 bg-matte-50 dark:bg-matte-900 border border-matte-200 dark:border-surface-border rounded-xl text-sm resize-y" readonly></textarea>
+        <button id="copy-output" class="absolute top-2 right-2 text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      const emojiMap: Record<string, string> = {
+        'happy': '😊', 'sad': '😢', 'love': '❤️', 'heart': '❤️', 'star': '⭐', 'fire': '🔥', 'cool': '😎', 'angry': '😠', 'laugh': '😂', 'cry': '😭',
+        'sun': '☀️', 'moon': '🌙', 'rain': '🌧️', 'snow': '❄️', 'cloud': '☁️', 'wind': '💨', 'thunder': '⛈️',
+        'food': '🍔', 'pizza': '🍕', 'coffee': '☕', 'beer': '🍺', 'wine': '🍷', 'cake': '🎂', 'apple': '🍎', 'banana': '🍌',
+        'cat': '🐱', 'dog': '🐶', 'bird': '🐦', 'fish': '🐟', 'horse': '🐴', 'lion': '🦁', 'tiger': '🐯', 'bear': '🐻',
+        'car': '🚗', 'bus': '🚌', 'train': '🚂', 'plane': '✈️', 'bike': '🚲', 'ship': '🚢',
+        'house': '🏠', 'tree': '🌳', 'flower': '🌸', 'mountain': '🏔️', 'beach': '🏖️', 'island': '🏝️',
+        'book': '📚', 'music': '🎵', 'movie': '🎬', 'game': '🎮', 'phone': '📱', 'computer': '💻', 'email': '📧',
+        'money': '💰', 'dollar': '💵', 'euro': '💶', 'yuan': '💴', 'pound': '💷',
+        'thumbs up': '👍', 'thumbs down': '👎', 'clap': '👏', 'wave': '👋', 'peace': '✌️', 'rock': '🤘', 'pray': '🙏',
+        'smile': '😊', 'wink': '😉', 'tongue': '😛', 'kiss': '💋', 'hug': '🤗', 'surprise': '😲', 'sleep': '😴',
+        'yes': '✅', 'no': '❌', 'ok': '👌', 'good': '👍', 'bad': '👎', 'new': '🆕', 'hot': '🔥', 'top': '🔝',
+        '1': '1️⃣', '2': '2️⃣', '3': '3️⃣', '4': '4️⃣', '5': '5️⃣', '6': '6️⃣', '7': '7️⃣', '8': '8️⃣', '9': '9️⃣', '0': '0️⃣',
+        'indonesia': '🇮🇩', 'japan': '🇯🇵', 'usa': '🇺🇸', 'china': '🇨🇳', 'korea': '🇰🇷',
+        'work': '💼', 'home': '🏠', 'school': '🏫', 'hospital': '🏥', 'bank': '🏦', 'shop': '🛒',
+        'write': '✍️', 'read': '📖', 'code': '💻', 'debug': '🐛', 'deploy': '🚀', 'bug': '🐛', 'feature': '✨',
+        'todo': '📝', 'done': '✅', 'progress': '🔄', 'wait': '⏳', 'loading': '⏳', 'error': '❌', 'success': '✅'
+      };
+
+      function translateToEmoji(text: string): string {
+        let result = text.toLowerCase();
+        Object.entries(emojiMap).forEach(([word, emoji]) => {
+          const regex = new RegExp(`\\b${word}\\b`, 'gi');
+          result = result.replace(regex, emoji);
+        });
+        return result;
+      }
+
+      document.getElementById('translate-btn')?.addEventListener('click', () => {
+        const text = (document.getElementById('text-input') as HTMLTextAreaElement)?.value;
+        if (!text) {
+          toast('Masukkan teks!', 'error');
+          return;
+        }
+        const emoji = translateToEmoji(text);
+        (document.getElementById('emoji-output') as HTMLTextAreaElement).value = emoji;
+        toast('Ditranslate!', 'success');
+      });
+
+      document.getElementById('copy-output')?.addEventListener('click', () => {
+        const output = (document.getElementById('emoji-output') as HTMLTextAreaElement)?.value;
+        if (output) {
+          navigator.clipboard.writeText(output);
+          toast('Disalin!', 'success');
+        }
+      });
+    });
+  </script>
+</BaseLayout>

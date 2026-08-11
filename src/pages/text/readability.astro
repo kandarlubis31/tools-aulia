@@ -1,0 +1,121 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Readability Score — Skor Keterbacaan">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Readability Score"
+      titleKey="header.readability"
+      desc="Hitung skor keterbacaan teks: Flesch Reading Ease, FKGL."
+      descKey="header.readability_desc"
+      icon='<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'
+      gradient="from-teal-500 to-cyan-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <label class="section-title mb-2 block" for="text-input">Masukkan Teks</label>
+      <textarea id="text-input" rows="8" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-teal-500 transition-colors text-sm resize-y" placeholder="Tempel atau ketik teks di sini..." data-i18n-attr="placeholder"></textarea>
+
+      <button id="analyze-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm">Analisis Keterbacaan</button>
+
+      <div id="result" class="hidden mt-6">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+            <p class="text-2xs text-matte-400" data-i18n="read.ease">Flesch Reading Ease</p>
+            <p id="flesch-ease" class="text-3xl font-bold text-teal-600 dark:text-teal-400">0</p>
+            <p id="flesch-ease-label" class="text-sm text-matte-500"></p>
+          </div>
+          <div class="p-4 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+            <p class="text-2xs text-matte-400" data-i18n="read.fkgl">Flesch-Kincaid Grade</p>
+            <p id="fkgl" class="text-3xl font-bold text-teal-600 dark:text-teal-400">0</p>
+            <p id="fkgl-label" class="text-sm text-matte-500"></p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mt-4">
+          <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+            <p class="text-2xs text-matte-400">Kata</p>
+            <p id="word-count" class="text-lg font-bold text-teal-600 dark:text-teal-400">0</p>
+          </div>
+          <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+            <p class="text-2xs text-matte-400">Kalimat</p>
+            <p id="sentence-count" class="text-lg font-bold text-teal-600 dark:text-teal-400">0</p>
+          </div>
+          <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+            <p class="text-2xs text-matte-400">Suku Kata</p>
+            <p id="syllable-count" class="text-lg font-bold text-teal-600 dark:text-teal-400">0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      function countSyllables(word: string): number {
+        word = word.toLowerCase().replace(/[^a-z]/g, '');
+        if (word.length <= 3) return 1;
+        
+        word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+        word = word.replace(/^y/, '');
+        
+        const matches = word.match(/[aeiouy]{1,2}/g);
+        return matches ? matches.length : 1;
+      }
+
+      function analyzeText(text: string) {
+        const words = text.split(/\s+/).filter(w => w.length > 0);
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        
+        let totalSyllables = 0;
+        words.forEach(word => {
+          totalSyllables += countSyllables(word);
+        });
+
+        const wordCount = words.length;
+        const sentenceCount = sentences.length || 1;
+        const syllableCount = totalSyllables;
+
+        // Flesch Reading Ease
+        const fleschEase = 206.835 - 1.015 * (wordCount / sentenceCount) - 84.6 * (syllableCount / wordCount);
+        
+        // Flesch-Kincaid Grade
+        const fkgl = 0.39 * (wordCount / sentenceCount) + 11.8 * (syllableCount / wordCount) - 15.59;
+
+        // Labels
+        let easeLabel: string;
+        if (fleschEase >= 90) easeLabel = 'Sangat mudah';
+        else if (fleschEase >= 80) easeLabel = 'Mudah';
+        else if (fleschEase >= 70) easeLabel = 'Cukup mudah';
+        else if (fleschEase >= 60) easeLabel = 'Standar';
+        else if (fleschEase >= 50) easeLabel = 'Cukup sulit';
+        else if (fleschEase >= 30) easeLabel = 'Sulit';
+        else easeLabel = 'Sangat sulit';
+
+        document.getElementById('flesch-ease')!.textContent = Math.round(fleschEase).toString();
+        document.getElementById('flesch-ease-label')!.textContent = easeLabel;
+        document.getElementById('fkgl')!.textContent = Math.round(fkgl * 10) / 10 + ' kelas';
+        document.getElementById('fkgl-label')!.textContent = `Setara kelas ${Math.round(fkgl)}`;
+        document.getElementById('word-count')!.textContent = wordCount.toString();
+        document.getElementById('sentence-count')!.textContent = sentenceCount.toString();
+        document.getElementById('syllable-count')!.textContent = syllableCount.toString();
+
+        document.getElementById('result')?.classList.remove('hidden');
+      }
+
+      document.getElementById('analyze-btn')?.addEventListener('click', () => {
+        const text = (document.getElementById('text-input') as HTMLTextAreaElement)?.value;
+        if (!text || text.trim().length < 10) {
+          toast('Masukkan minimal 10 karakter!', 'error');
+          return;
+        }
+        analyzeText(text);
+        toast('Analisis selesai!', 'success');
+      });
+    });
+  </script>
+</BaseLayout>

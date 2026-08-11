@@ -1,0 +1,149 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Chmod Calculator — Hitung Permissions">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Chmod Calculator"
+      titleKey="header.chmod_calc"
+      desc="Konversi rwx ke angka chmod dan sebaliknya."
+      descKey="header.chmod_calc_desc"
+      icon='<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'
+      gradient="from-green-500 to-emerald-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Permission toggles -->
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="text-center">
+          <p class="section-title mb-3" data-i18n="chmod.owner">Owner</p>
+          <div class="space-y-2">
+            <label class="flex items-center justify-center gap-2 cursor-pointer">
+              <input type="checkbox" id="owner-r" class="w-5 h-5 accent-green-500" checked />
+              <span class="text-sm">r (4)</span>
+            </label>
+            <label class="flex items-center justify-center gap-2 cursor-pointer">
+              <input type="checkbox" id="owner-w" class="w-5 h-5 accent-green-500" checked />
+              <span class="text-sm">w (2)</span>
+            </label>
+            <label class="flex items-center justify-center gap-2 cursor-pointer">
+              <input type="checkbox" id="owner-x" class="w-5 h-5 accent-green-500" checked />
+              <span class="text-sm">x (1)</span>
+            </label>
+          </div>
+        </div>
+        <div class="text-center">
+          <p class="section-title mb-3" data-i18n="chmod.group">Group</p>
+          <div class="space-y-2">
+            <label class="flex items-center justify-center gap-2 cursor-pointer">
+              <input type="checkbox" id="group-r" class="w-5 h-5 accent-green-500" checked />
+              <span class="text-sm">r (4)</span>
+            </label>
+            <label class="flex items-center justify-center gap-2 cursor-pointer">
+              <input type="checkbox" id="group-w" class="w-5 h-5 accent-green-500" />
+              <span class="text-sm">w (2)</span>
+            </label>
+            <label class="flex items-center justify-center gap-2 cursor-pointer">
+              <input type="checkbox" id="group-x" class="w-5 h-5 accent-green-500" checked />
+              <span class="text-sm">x (1)</span>
+            </label>
+          </div>
+        </div>
+        <div class="text-center">
+          <p class="section-title mb-3" data-i18n="chmod.other">Other</p>
+          <div class="space-y-2">
+            <label class="flex items-center justify-center gap-2 cursor-pointer">
+              <input type="checkbox" id="other-r" class="w-5 h-5 accent-green-500" checked />
+              <span class="text-sm">r (4)</span>
+            </label>
+            <label class="flex items-center justify-center gap-2 cursor-pointer">
+              <input type="checkbox" id="other-w" class="w-5 h-5 accent-green-500" />
+              <span class="text-sm">w (2)</span>
+            </label>
+            <label class="flex items-center justify-center gap-2 cursor-pointer">
+              <input type="checkbox" id="other-x" class="w-5 h-5 accent-green-500" checked />
+              <span class="text-sm">x (1)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="text-center p-6 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border">
+        <p class="text-2xs text-matte-400 mb-2" data-i18n="chmod.result">chmod</p>
+        <p id="chmod-number" class="text-5xl font-mono font-bold text-green-600 dark:text-green-400">755</p>
+        <p id="chmod-string" class="text-lg font-mono text-matte-500 mt-2">rwxr-xr-x</p>
+        <p id="chmod-command" class="text-sm font-mono text-matte-400 mt-2">chmod 755 file</p>
+      </div>
+
+      <!-- Presets -->
+      <div class="mt-6">
+        <p class="section-title mb-3">Preset Umum</p>
+        <div class="grid grid-cols-2 gap-2">
+          <button class="preset-btn px-4 py-2 rounded-xl text-sm font-medium bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-perms="755">755 — rwxr-xr-x</button>
+          <button class="preset-btn px-4 py-2 rounded-xl text-sm font-medium bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-perms="777">777 — rwxrwxrwx</button>
+          <button class="preset-btn px-4 py-2 rounded-xl text-sm font-medium bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-perms="644">644 — rw-r--r--</button>
+          <button class="preset-btn px-4 py-2 rounded-xl text-sm font-medium bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-perms="600">600 — rw-------</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      function calculateChmod() {
+        const ownerR = (document.getElementById('owner-r') as HTMLInputElement).checked ? 4 : 0;
+        const ownerW = (document.getElementById('owner-w') as HTMLInputElement).checked ? 2 : 0;
+        const ownerX = (document.getElementById('owner-x') as HTMLInputElement).checked ? 1 : 0;
+        const groupR = (document.getElementById('group-r') as HTMLInputElement).checked ? 4 : 0;
+        const groupW = (document.getElementById('group-w') as HTMLInputElement).checked ? 2 : 0;
+        const groupX = (document.getElementById('group-x') as HTMLInputElement).checked ? 1 : 0;
+        const otherR = (document.getElementById('other-r') as HTMLInputElement).checked ? 4 : 0;
+        const otherW = (document.getElementById('other-w') as HTMLInputElement).checked ? 2 : 0;
+        const otherX = (document.getElementById('other-x') as HTMLInputElement).checked ? 1 : 0;
+
+        const owner = ownerR + ownerW + ownerX;
+        const group = groupR + groupW + groupX;
+        const other = otherR + otherW + otherX;
+
+        const number = `${owner}${group}${other}`;
+        const string = `${ownerR ? 'r' : '-'}${ownerW ? 'w' : '-'}${ownerX ? 'x' : '-'}${groupR ? 'r' : '-'}${groupW ? 'w' : '-'}${groupX ? 'x' : '-'}${otherR ? 'r' : '-'}${otherW ? 'w' : '-'}${otherX ? 'x' : '-'}`;
+
+        document.getElementById('chmod-number')!.textContent = number;
+        document.getElementById('chmod-string')!.textContent = string;
+        document.getElementById('chmod-command')!.textContent = `chmod ${number} file`;
+      }
+
+      // Add event listeners to all checkboxes
+      document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', calculateChmod);
+      });
+
+      // Preset buttons
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const perms = (btn as HTMLElement).dataset.perms!;
+          const owner = parseInt(perms[0]);
+          const group = parseInt(perms[1]);
+          const other = parseInt(perms[2]);
+
+          (document.getElementById('owner-r') as HTMLInputElement).checked = !!(owner & 4);
+          (document.getElementById('owner-w') as HTMLInputElement).checked = !!(owner & 2);
+          (document.getElementById('owner-x') as HTMLInputElement).checked = !!(owner & 1);
+          (document.getElementById('group-r') as HTMLInputElement).checked = !!(group & 4);
+          (document.getElementById('group-w') as HTMLInputElement).checked = !!(group & 2);
+          (document.getElementById('group-x') as HTMLInputElement).checked = !!(group & 1);
+          (document.getElementById('other-r') as HTMLInputElement).checked = !!(other & 4);
+          (document.getElementById('other-w') as HTMLInputElement).checked = !!(other & 2);
+          (document.getElementById('other-x') as HTMLInputElement).checked = !!(other & 1);
+
+          calculateChmod();
+        });
+      });
+
+      calculateChmod();
+    });
+  </script>
+</BaseLayout>

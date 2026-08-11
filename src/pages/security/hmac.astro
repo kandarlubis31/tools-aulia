@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="HMAC Generator — HMAC-SHA256/512">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="HMAC Generator"
+      titleKey="header.hmac_generator"
+      desc="Generate HMAC-SHA256/512 dengan secret key."
+      descKey="header.hmac_generator_desc"
+      icon='<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <label class="section-title mb-2 block" for="message" data-i18n="hmac.message">Message</label>
+      <textarea id="message" rows="3" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono resize-y" placeholder="Masukkan message..." data-i18n-attr="placeholder"></textarea>
+
+      <label class="section-title mb-2 mt-4 block" for="secret" data-i18n="hmac.secret">Secret Key</label>
+      <input id="secret" type="text" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono" placeholder="Masukkan secret key..." autocomplete="off" />
+
+      <label class="section-title mb-2 mt-4 block" data-i18n="hmac.algorithm">Algoritma</label>
+      <div class="flex gap-2">
+        <button id="alg-sha256" class="px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all">SHA-256</button>
+        <button id="alg-sha512" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all">SHA-512</button>
+      </div>
+
+      <button id="generate-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="hmac.generate">Generate</button>
+
+      <div id="result" class="hidden mt-6">
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title" data-i18n="hmac.result">HMAC</span>
+          <button id="copy-hmac" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="hmac.copy">Copy</button>
+        </div>
+        <code id="hmac-output" class="block w-full p-4 bg-matte-50 dark:bg-matte-900 rounded-xl text-xs font-mono text-emerald-600 dark:text-emerald-400 break-all border border-matte-200 dark:border-surface-border"></code>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      let algorithm = 'SHA-256';
+
+      // Algorithm buttons
+      document.getElementById('alg-sha256')?.addEventListener('click', () => {
+        algorithm = 'SHA-256';
+        document.getElementById('alg-sha256')!.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all';
+        document.getElementById('alg-sha512')!.className = 'px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
+      });
+
+      document.getElementById('alg-sha512')?.addEventListener('click', () => {
+        algorithm = 'SHA-512';
+        document.getElementById('alg-sha512')!.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all';
+        document.getElementById('alg-sha256')!.className = 'px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
+      });
+
+      // Generate HMAC
+      document.getElementById('generate-btn')?.addEventListener('click', async () => {
+        const message = (document.getElementById('message') as HTMLTextAreaElement)?.value;
+        const secret = (document.getElementById('secret') as HTMLInputElement)?.value;
+
+        if (!message || !secret) {
+          toast('Masukkan message dan secret key!', 'error');
+          return;
+        }
+
+        try {
+          const enc = new TextEncoder();
+          const key = await crypto.subtle.importKey(
+            'raw', enc.encode(secret),
+            { name: 'HMAC', hash: algorithm },
+            false, ['sign']
+          );
+
+          const signature = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+          const hashArray = Array.from(new Uint8Array(signature));
+          const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+          document.getElementById('hmac-output')!.textContent = hashHex;
+          document.getElementById('result')?.classList.remove('hidden');
+          toast('HMAC digenerate!', 'success');
+        } catch (e: any) {
+          toast('Error: ' + e.message, 'error');
+        }
+      });
+
+      // Copy HMAC
+      document.getElementById('copy-hmac')?.addEventListener('click', () => {
+        const hmac = document.getElementById('hmac-output')?.textContent;
+        if (hmac) {
+          navigator.clipboard.writeText(hmac);
+          toast('HMAC disalin!', 'success');
+        }
+      });
+    });
+  </script>
+</BaseLayout>

@@ -1,0 +1,106 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Token Generator — Random Token">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Token Generator"
+      titleKey="header.token_gen"
+      desc="Generate random token hex/base64 berbagai panjang."
+      descKey="header.token_gen_desc"
+      icon='<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'
+      gradient="from-violet-500 to-purple-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="section-title mb-2 block" data-i18n="token.length">Panjang</label>
+          <input id="token-length" type="number" min="8" max="128" value="32" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" />
+        </div>
+        <div>
+          <label class="section-title mb-2 block" data-i18n="token.format">Format</label>
+          <select id="token-format" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm">
+            <option value="hex">Hex</option>
+            <option value="base64">Base64</option>
+            <option value="alphanumeric">Alphanumeric</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="section-title mb-2 block">Jumlah Token</label>
+      <input id="token-count" type="number" min="1" max="20" value="5" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" />
+
+      <button id="generate-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="token.generate">Generate</button>
+
+      <div id="result" class="hidden mt-6">
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title" data-i18n="token.result">Token</span>
+          <button id="copy-all" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="token.copy_all">Copy All</button>
+        </div>
+        <div id="tokens-list" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      function generateToken(length: number, format: string): string {
+        const array = new Uint8Array(length);
+        crypto.getRandomValues(array);
+
+        switch (format) {
+          case 'hex':
+            return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
+          case 'base64':
+            return btoa(String.fromCharCode(...array)).replace(/\+/g, '-').replace(/\//g, '_').substring(0, length);
+          case 'alphanumeric':
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            return Array.from(array).map(b => chars[b % chars.length]).join('');
+          default:
+            return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+      }
+
+      document.getElementById('generate-btn')?.addEventListener('click', () => {
+        const length = parseInt((document.getElementById('token-length') as HTMLInputElement).value) || 32;
+        const format = (document.getElementById('token-format') as HTMLSelectElement).value;
+        const count = parseInt((document.getElementById('token-count') as HTMLInputElement).value) || 5;
+
+        const tokens: string[] = [];
+        for (let i = 0; i < count; i++) {
+          tokens.push(generateToken(length, format));
+        }
+
+        const listEl = document.getElementById('tokens-list');
+        listEl!.innerHTML = tokens.map((token, i) => `
+          <div class="flex items-center gap-2 p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border">
+            <span class="text-xs text-matte-400 w-6">${i + 1}.</span>
+            <code class="flex-1 text-xs font-mono text-violet-600 dark:text-violet-400 break-all">${token}</code>
+            <button class="copy-token text-xs font-bold px-2 py-1 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-token="${token}">Copy</button>
+          </div>
+        `).join('');
+
+        listEl!.querySelectorAll('.copy-token').forEach(btn => {
+          btn.addEventListener('click', () => {
+            navigator.clipboard.writeText((btn as HTMLElement).dataset.token!);
+            toast('Token disalin!', 'success');
+          });
+        });
+
+        document.getElementById('result')?.classList.remove('hidden');
+        toast(`${count} token digenerate!`, 'success');
+      });
+
+      document.getElementById('copy-all')?.addEventListener('click', () => {
+        const tokens = Array.from(document.querySelectorAll('.copy-token')).map(btn => (btn as HTMLElement).dataset.token!);
+        navigator.clipboard.writeText(tokens.join('\n'));
+        toast('Semua token disalin!', 'success');
+      });
+    });
+  </script>
+</BaseLayout>
