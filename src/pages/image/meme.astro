@@ -1,0 +1,177 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Meme Generator — Buat Meme Gratis">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Meme Generator"
+      titleKey="header.meme_generator"
+      desc="Buat meme dengan teks top/bottom: upload gambar, tambah teks."
+      descKey="header.meme_generator_desc"
+      icon='<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>'
+      gradient="from-pink-500 to-rose-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Drop zone -->
+      <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-surface-border rounded-xl p-8 text-center hover:border-pink-400 dark:hover:border-pink-500 transition-all cursor-pointer mb-4">
+        <input id="file-input" type="file" accept="image/*" class="hidden" />
+        <p class="text-sm text-matte-500 dark:text-matte-400">Drop gambar di sini atau klik untuk upload</p>
+      </div>
+
+      <!-- Text inputs -->
+      <label class="section-title mb-2 block" data-i18n="meme.top_text">Teks atas</label>
+      <input id="top-text" type="text" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-pink-500 transition-colors text-sm" placeholder="TEKS ATAS" autocomplete="off" />
+
+      <label class="section-title mb-2 mt-3 block" data-i18n="meme.bottom_text">Teks bawah</label>
+      <input id="bottom-text" type="text" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-pink-500 transition-colors text-sm" placeholder="TEKS BAWAH" autocomplete="off" />
+
+      <!-- Settings -->
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div>
+          <label class="section-title mb-1 block" data-i18n="meme.font_size">Ukuran font</label>
+          <input id="font-size" type="range" min="20" max="80" value="40" class="w-full accent-pink-500" />
+        </div>
+        <div>
+          <label class="section-title mb-1 block">Warna teks</label>
+          <input id="text-color" type="color" value="#ffffff" class="w-full h-10 rounded-lg cursor-pointer" />
+        </div>
+      </div>
+
+      <button id="generate-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm">Generate Meme</button>
+
+      <!-- Preview -->
+      <div id="preview-container" class="hidden mt-4 text-center">
+        <canvas id="meme-canvas" class="max-w-full rounded-xl border border-matte-200 dark:border-surface-border"></canvas>
+        <button id="download-btn" class="mt-4 px-6 py-3 bg-pink-500 text-white rounded-xl font-bold text-sm hover:bg-pink-600 transition-all" data-i18n="meme.download">Download meme</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      let img: HTMLImageElement | null = null;
+
+      // Drop zone
+      const dropZone = document.getElementById('drop-zone');
+      const fileInput = document.getElementById('file-input') as HTMLInputElement;
+
+      dropZone?.addEventListener('click', () => fileInput?.click());
+      dropZone?.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-pink-500'); });
+      dropZone?.addEventListener('dragleave', () => dropZone.classList.remove('border-pink-500'));
+      dropZone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-pink-500');
+        const file = e.dataTransfer?.files[0];
+        if (file) handleFile(file);
+      });
+
+      fileInput?.addEventListener('change', (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) handleFile(file);
+      });
+
+      function handleFile(file: File) {
+        if (!file.type.startsWith('image/')) {
+          toast('File harus gambar!', 'error');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          img = new Image();
+          img.onload = () => generateMeme();
+          img.src = e.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+        const words = text.split(' ');
+        const lines: string[] = [];
+        let currentLine = '';
+
+        words.forEach(word => {
+          const testLine = currentLine ? currentLine + ' ' + word : word;
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && currentLine) {
+            lines.push(currentLine);
+            currentLine = word;
+          } else {
+            currentLine = testLine;
+          }
+        });
+        if (currentLine) lines.push(currentLine);
+        return lines;
+      }
+
+      function generateMeme() {
+        if (!img) return;
+
+        const canvas = document.getElementById('meme-canvas') as HTMLCanvasElement;
+        const ctx = canvas.getContext('2d')!;
+        
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        ctx.drawImage(img, 0, 0);
+
+        const topText = (document.getElementById('top-text') as HTMLInputElement).value;
+        const bottomText = (document.getElementById('bottom-text') as HTMLInputElement).value;
+        const fontSize = parseInt((document.getElementById('font-size') as HTMLInputElement).value);
+        const textColor = (document.getElementById('text-color') as HTMLInputElement).value;
+
+        ctx.font = `bold ${fontSize}px Impact, sans-serif`;
+        ctx.fillStyle = textColor;
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = fontSize / 10;
+        ctx.textAlign = 'center';
+
+        // Top text
+        if (topText) {
+          const lines = wrapText(ctx, topText, canvas.width - 40);
+          lines.forEach((line, i) => {
+            const y = 40 + i * (fontSize + 5);
+            ctx.strokeText(line, canvas.width / 2, y);
+            ctx.fillText(line, canvas.width / 2, y);
+          });
+        }
+
+        // Bottom text
+        if (bottomText) {
+          const lines = wrapText(ctx, bottomText, canvas.width - 40);
+          lines.reverse().forEach((line, i) => {
+            const y = canvas.height - 20 - i * (fontSize + 5);
+            ctx.strokeText(line, canvas.width / 2, y);
+            ctx.fillText(line, canvas.width / 2, y);
+          });
+        }
+
+        document.getElementById('preview-container')?.classList.remove('hidden');
+      }
+
+      // Generate button
+      document.getElementById('generate-btn')?.addEventListener('click', generateMeme);
+
+      // Live preview on input
+      ['top-text', 'bottom-text', 'font-size', 'text-color'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', generateMeme);
+      });
+
+      // Download
+      document.getElementById('download-btn')?.addEventListener('click', () => {
+        const canvas = document.getElementById('meme-canvas') as HTMLCanvasElement;
+        if (canvas) {
+          const link = document.createElement('a');
+          link.download = 'meme.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          toast('Meme didownload!', 'success');
+        }
+      });
+    });
+  </script>
+</BaseLayout>

@@ -1,0 +1,200 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Image to ASCII — Ubah Foto ke ASCII Art">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Image to ASCII"
+      titleKey="header.image_ascii"
+      desc="Ubah foto menjadi seni ASCII: pilih resolusi, charset, warna."
+      descKey="header.image_ascii_desc"
+      icon='<path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/>'
+      gradient="from-slate-500 to-gray-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Drop zone -->
+      <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-surface-border rounded-xl p-8 text-center hover:border-slate-400 dark:hover:border-slate-500 transition-all cursor-pointer mb-4">
+        <input id="file-input" type="file" accept="image/*" class="hidden" />
+        <p class="text-sm text-matte-500 dark:text-matte-400" data-i18n="upload.drop_image">Drop gambar di sini atau klik untuk upload</p>
+        <p id="filename" class="text-xs text-slate-600 dark:text-slate-400 mt-2 font-medium hidden"></p>
+      </div>
+
+      <!-- Settings -->
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div>
+          <label class="section-title mb-1 block" data-i18n="ascii.resolution">Resolusi</label>
+          <select id="resolution" class="w-full px-3 py-2 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl text-sm">
+            <option value="80">80 col</option>
+            <option value="100" selected>100 col</option>
+            <option value="120">120 col</option>
+            <option value="150">150 col</option>
+          </select>
+        </div>
+        <div>
+          <label class="section-title mb-1 block" data-i18n="ascii.charset">Charset</label>
+          <select id="charset" class="w-full px-3 py-2 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl text-sm">
+            <option value="standard">Standard</option>
+            <option value="blocks">Blocks</option>
+            <option value="simple">Simple</option>
+          </select>
+        </div>
+        <div>
+          <label class="section-title mb-1 block" data-i18n="ascii.color">Warna</label>
+          <input id="color-mode" type="checkbox" class="w-4 h-4 accent-slate-500 mt-2" />
+          <span class="text-sm text-matte-500 ml-1">Color</span>
+        </div>
+      </div>
+
+      <button id="convert-btn" class="w-full gradient-brand py-3 rounded-xl font-bold text-sm">Convert to ASCII</button>
+
+      <!-- Preview -->
+      <div id="preview-container" class="hidden mt-4">
+        <img id="preview" class="max-h-32 mx-auto rounded-xl border border-matte-200 dark:border-surface-border" alt="Preview" />
+      </div>
+
+      <!-- ASCII Output -->
+      <div id="ascii-container" class="hidden mt-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title">ASCII Art</span>
+          <button id="copy-ascii" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="ascii.copy">Copy ASCII</button>
+        </div>
+        <pre id="ascii-output" class="w-full p-4 bg-matte-50 dark:bg-matte-900 rounded-xl text-xs font-mono text-matte-700 dark:text-matte-300 border border-matte-200 dark:border-surface-border overflow-x-auto whitespace-pre leading-none"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      const charsets: Record<string, string> = {
+        standard: ' .:-=+*#%@',
+        blocks: ' ░▒▓█',
+        simple: ' .oO0'
+      };
+
+      let imageData: ImageData | null = null;
+
+      // Drop zone
+      const dropZone = document.getElementById('drop-zone');
+      const fileInput = document.getElementById('file-input') as HTMLInputElement;
+      const preview = document.getElementById('preview') as HTMLImageElement;
+
+      dropZone?.addEventListener('click', () => fileInput?.click());
+      dropZone?.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-slate-500'); });
+      dropZone?.addEventListener('dragleave', () => dropZone.classList.remove('border-slate-500'));
+      dropZone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-slate-500');
+        const file = e.dataTransfer?.files[0];
+        if (file) handleFile(file);
+      });
+
+      fileInput?.addEventListener('change', (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) handleFile(file);
+      });
+
+      function handleFile(file: File) {
+        if (!file.type.startsWith('image/')) {
+          toast('File harus gambar!', 'error');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d')!;
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            imageData = ctx.getImageData(0, 0, img.width, img.height);
+            
+            preview.src = e.target?.result as string;
+            document.getElementById('preview-container')?.classList.remove('hidden');
+            document.getElementById('filename')!.textContent = file.name;
+            document.getElementById('filename')!.classList.remove('hidden');
+          };
+          img.src = e.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // Convert button
+      document.getElementById('convert-btn')?.addEventListener('click', () => {
+        if (!imageData) {
+          toast('Upload gambar terlebih dahulu!', 'error');
+          return;
+        }
+
+        const cols = parseInt((document.getElementById('resolution') as HTMLSelectElement).value);
+        const charsetKey = (document.getElementById('charset') as HTMLSelectElement).value;
+        const colorMode = (document.getElementById('color-mode') as HTMLInputElement).checked;
+        const charset = charsets[charsetKey];
+
+        // Calculate dimensions
+        const aspectRatio = imageData.height / imageData.width;
+        const rows = Math.floor(cols * aspectRatio * 0.5); // 0.5 for character aspect ratio
+
+        // Resize image data
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d')!;
+        tempCanvas.width = cols;
+        tempCanvas.height = rows;
+        
+        const tempImg = document.createElement('canvas');
+        const tempImgCtx = tempImg.getContext('2d')!;
+        tempImg.width = imageData.width;
+        tempImg.height = imageData.height;
+        tempImgCtx.putImageData(imageData, 0, 0);
+        
+        tempCtx.drawImage(tempImg, 0, 0, cols, rows);
+        const resizedData = tempCtx.getImageData(0, 0, cols, rows);
+
+        let ascii = '';
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            const idx = (y * cols + x) * 4;
+            const r = resizedData.data[idx];
+            const g = resizedData.data[idx + 1];
+            const b = resizedData.data[idx + 2];
+            const brightness = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
+            const charIndex = Math.floor(brightness * (charset.length - 1));
+            
+            if (colorMode) {
+              ascii += `<span style="color:rgb(${r},${g},${b})">${charset[charIndex]}</span>`;
+            } else {
+              ascii += charset[charIndex];
+            }
+          }
+          ascii += '\n';
+        }
+
+        const output = document.getElementById('ascii-output');
+        if (output) {
+          if (colorMode) {
+            output.innerHTML = ascii;
+          } else {
+            output.textContent = ascii;
+          }
+        }
+        document.getElementById('ascii-container')?.classList.remove('hidden');
+        toast('ASCII art dibuat!', 'success');
+      });
+
+      // Copy ASCII
+      document.getElementById('copy-ascii')?.addEventListener('click', () => {
+        const output = document.getElementById('ascii-output');
+        if (output) {
+          navigator.clipboard.writeText(output.textContent || '');
+          toast('ASCII disalin!', 'success');
+        }
+      });
+    });
+  </script>
+</BaseLayout>

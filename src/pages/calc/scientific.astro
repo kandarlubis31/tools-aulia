@@ -1,0 +1,194 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Scientific Calculator — Kalkulator Ilmiah">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Scientific Calculator"
+      titleKey="header.sci_calc"
+      desc="Kalkulator ilmiah: sin, cos, tan, log, ln, akar, pangkat. Riwayat perhitungan."
+      descKey="header.sci_calc_desc"
+      icon='<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/>'
+      gradient="from-blue-500 to-indigo-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in max-w-sm mx-auto">
+      <!-- Display -->
+      <div class="bg-matte-50 dark:bg-matte-900 rounded-xl p-4 mb-4 border border-matte-200 dark:border-surface-border">
+        <p id="expression" class="text-xs text-matte-400 text-right h-5"></p>
+        <p id="display" class="text-3xl font-mono text-right text-matte-700 dark:text-matte-300">0</p>
+      </div>
+
+      <!-- Scientific functions -->
+      <div class="grid grid-cols-5 gap-1 mb-2">
+        <button class="sci-btn py-2 rounded-lg text-xs font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-fn="sin">sin</button>
+        <button class="sci-btn py-2 rounded-lg text-xs font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-fn="cos">cos</button>
+        <button class="sci-btn py-2 rounded-lg text-xs font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-fn="tan">tan</button>
+        <button class="sci-btn py-2 rounded-lg text-xs font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-fn="log">log</button>
+        <button class="sci-btn py-2 rounded-lg text-xs font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-fn="ln">ln</button>
+      </div>
+      <div class="grid grid-cols-5 gap-1 mb-2">
+        <button class="sci-btn py-2 rounded-lg text-xs font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-fn="sqrt">√</button>
+        <button class="sci-btn py-2 rounded-lg text-xs font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-fn="pow">x²</button>
+        <button class="sci-btn py-2 rounded-lg text-xs font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-fn="pi">π</button>
+        <button class="sci-btn py-2 rounded-lg text-xs font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-fn="e">e</button>
+        <button class="sci-btn py-2 rounded-lg text-xs font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-fn="fact">n!</button>
+      </div>
+
+      <!-- Number pad -->
+      <div class="grid grid-cols-4 gap-1">
+        <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num="7">7</button>
+        <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num="8">8</button>
+        <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num="9">9</button>
+        <button class="op-btn py-3 rounded-lg text-sm font-bold bg-blue-500 text-white hover:bg-blue-600 transition-all" data-op="÷">÷</button>
+
+        <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num="4">4</button>
+        <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num="5">5</button>
+        <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num="6">6</button>
+        <button class="op-btn py-3 rounded-lg text-sm font-bold bg-blue-500 text-white hover:bg-blue-600 transition-all" data-op="×">×</button>
+
+        <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num="1">1</button>
+        <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num="2">2</button>
+        <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num="3">3</button>
+        <button class="op-btn py-3 rounded-lg text-sm font-bold bg-blue-500 text-white hover:bg-blue-600 transition-all" data-op="-">−</button>
+
+        <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num="0">0</button>
+        <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num=".">.</button>
+        <button class="py-3 rounded-lg text-sm font-bold bg-red-500 text-white hover:bg-red-600 transition-all" id="clear-btn">C</button>
+        <button class="op-btn py-3 rounded-lg text-sm font-bold bg-blue-500 text-white hover:bg-blue-600 transition-all" data-op="+">+</button>
+      </div>
+
+      <!-- Bottom row -->
+      <div class="grid grid-cols-2 gap-1 mt-2">
+        <button class="py-3 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" id="backspace-btn">⌫</button>
+        <button class="py-3 rounded-lg text-sm font-bold bg-green-500 text-white hover:bg-green-600 transition-all" id="equals-btn">=</button>
+      </div>
+
+      <!-- History -->
+      <div id="history-container" class="hidden mt-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title" data-i18n="sci.history">Riwayat</span>
+          <button id="clear-history" class="text-xs text-matte-400 hover:text-matte-600" data-i18n="sci.clear_history">Hapus</button>
+        </div>
+        <div id="history" class="space-y-1 max-h-32 overflow-y-auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      let current = '0';
+      let expression = '';
+      let history: string[] = [];
+
+      function updateDisplay() {
+        document.getElementById('display')!.textContent = current;
+        document.getElementById('expression')!.textContent = expression;
+      }
+
+      function factorial(n: number): number {
+        if (n < 0) return NaN;
+        if (n === 0 || n === 1) return 1;
+        return n * factorial(n - 1);
+      }
+
+      // Number buttons
+      document.querySelectorAll('.num-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const num = (btn as HTMLElement).dataset.num!;
+          if (current === '0' && num !== '.') current = num;
+          else current += num;
+          updateDisplay();
+        });
+      });
+
+      // Operator buttons
+      document.querySelectorAll('.op-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const op = (btn as HTMLElement).dataset.op!;
+          expression += current + ' ' + op + ' ';
+          current = '0';
+          updateDisplay();
+        });
+      });
+
+      // Scientific functions
+      document.querySelectorAll('.sci-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const fn = (btn as HTMLElement).dataset.fn!;
+          const num = parseFloat(current);
+          let result: number;
+
+          switch (fn) {
+            case 'sin': result = Math.sin(num * Math.PI / 180); break;
+            case 'cos': result = Math.cos(num * Math.PI / 180); break;
+            case 'tan': result = Math.tan(num * Math.PI / 180); break;
+            case 'log': result = Math.log10(num); break;
+            case 'ln': result = Math.log(num); break;
+            case 'sqrt': result = Math.sqrt(num); break;
+            case 'pow': result = num * num; break;
+            case 'pi': result = Math.PI; break;
+            case 'e': result = Math.E; break;
+            case 'fact': result = factorial(num); break;
+            default: return;
+          }
+
+          expression += fn + '(' + current + ') = ';
+          current = result.toString();
+          updateDisplay();
+        });
+      });
+
+      // Equals
+      document.getElementById('equals-btn')?.addEventListener('click', () => {
+        try {
+          const fullExpr = expression + current;
+          // Simple eval for basic operations
+          const result = Function('"use strict"; return (' + fullExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-') + ')')();
+          history.unshift(fullExpr + ' = ' + result);
+          if (history.length > 10) history.pop();
+          
+          expression = '';
+          current = result.toString();
+          updateDisplay();
+          
+          // Update history display
+          const historyEl = document.getElementById('history');
+          if (historyEl) {
+            historyEl.innerHTML = history.map(h => `<div class="text-xs text-matte-500 p-1 bg-matte-50 dark:bg-matte-900 rounded">${h}</div>`).join('');
+          }
+          document.getElementById('history-container')?.classList.remove('hidden');
+        } catch {
+          current = 'Error';
+          updateDisplay();
+        }
+      });
+
+      // Clear
+      document.getElementById('clear-btn')?.addEventListener('click', () => {
+        current = '0';
+        expression = '';
+        updateDisplay();
+      });
+
+      // Backspace
+      document.getElementById('backspace-btn')?.addEventListener('click', () => {
+        current = current.length > 1 ? current.slice(0, -1) : '0';
+        updateDisplay();
+      });
+
+      // Clear history
+      document.getElementById('clear-history')?.addEventListener('click', () => {
+        history = [];
+        document.getElementById('history')!.innerHTML = '';
+        document.getElementById('history-container')?.classList.add('hidden');
+      });
+
+      updateDisplay();
+    });
+  </script>
+</BaseLayout>

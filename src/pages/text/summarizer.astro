@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Text Summarizer — Ringkas Teks Panjang">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Text Summarizer"
+      titleKey="header.text_summarizer"
+      desc="Ringkas teks panjang menjadi singkat: extractive summarization."
+      descKey="header.text_summarizer_desc"
+      icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'
+      gradient="from-violet-500 to-purple-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <label class="section-title mb-2 block" for="text-input" data-i18n="sum.input">Teks input</label>
+      <textarea id="text-input" rows="8" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm resize-y" placeholder="Tempel teks panjang di sini..." data-i18n-attr="placeholder"></textarea>
+
+      <div class="flex items-center gap-4 mt-4">
+        <label class="section-title" for="sentence-count" data-i18n="sum.sentences">Jumlah kalimat</label>
+        <input id="sentence-count" type="number" min="1" max="20" value="3" class="w-20 px-3 py-2 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm text-center" />
+      </div>
+
+      <button id="summarize-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="sum.summarize">Ringkas</button>
+
+      <div id="result" class="hidden mt-6">
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title" data-i18n="sum.output">Ringkasan</span>
+          <button id="copy-result" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="btn.copy">Copy</button>
+        </div>
+        <div id="summary-output" class="w-full p-4 bg-matte-50 dark:bg-matte-900 rounded-xl text-sm text-matte-700 dark:text-matte-300 border border-matte-200 dark:border-surface-border whitespace-pre-wrap"></div>
+        
+        <div class="grid grid-cols-3 gap-3 mt-4">
+          <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+            <p class="text-2xs text-matte-400">Asli</p>
+            <p id="original-count" class="text-lg font-bold text-violet-600 dark:text-violet-400">0</p>
+          </div>
+          <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+            <p class="text-2xs text-matte-400">Ringkasan</p>
+            <p id="summary-count" class="text-lg font-bold text-violet-600 dark:text-violet-400">0</p>
+          </div>
+          <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
+            <p class="text-2xs text-matte-400">Reduksi</p>
+            <p id="reduction" class="text-lg font-bold text-violet-600 dark:text-violet-400">0%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      function splitSentences(text: string): string[] {
+        return text.split(/[.!?]+/).filter(s => s.trim().length > 0).map(s => s.trim());
+      }
+
+      function getWordFrequency(text: string): Map<string, number> {
+        const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+        const freq = new Map<string, number>();
+        const stopWords = new Set(['yang', 'dan', 'di', 'ke', 'dari', 'ini', 'itu', 'untuk', 'dengan', 'pada', 'adalah', 'itu', 'juga', 'akan', 'tidak', 'ada', 'sudah', 'lebih', 'baik', 'atau', 'oleh', 'karena', 'seperti', 'hanya', 'bisa', 'saya', 'kami', 'mereka', 'kita', 'anda', 'ia', 'dia', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'shall', 'can', 'it', 'its', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'we', 'they', 'what', 'which', 'who', 'whom', 'where', 'when', 'why', 'how', 'all', 'each', 'every', 'both', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'about']);
+        
+        words.forEach(word => {
+          if (!stopWords.has(word) && word.length > 2) {
+            freq.set(word, (freq.get(word) || 0) + 1);
+          }
+        });
+        return freq;
+      }
+
+      function scoreSentence(sentence: string, freq: Map<string, number>): number {
+        const words = sentence.toLowerCase().match(/\b\w+\b/g) || [];
+        if (words.length === 0) return 0;
+        
+        let score = 0;
+        words.forEach(word => {
+          score += freq.get(word) || 0;
+        });
+        return score / words.length;
+      }
+
+      function summarize(text: string, numSentences: number): string {
+        const sentences = splitSentences(text);
+        if (sentences.length <= numSentences) return text;
+
+        const freq = getWordFrequency(text);
+        const scored = sentences.map((s, i) => ({ sentence: s, score: scoreSentence(s, freq), index: i }));
+        
+        // Get top sentences by score, but maintain original order
+        const topSentences = scored
+          .sort((a, b) => b.score - a.score)
+          .slice(0, numSentences)
+          .sort((a, b) => a.index - b.index)
+          .map(s => s.sentence);
+
+        return topSentences.join('. ') + '.';
+      }
+
+      document.getElementById('summarize-btn')?.addEventListener('click', () => {
+        const text = (document.getElementById('text-input') as HTMLTextAreaElement)?.value;
+        const numSentences = parseInt((document.getElementById('sentence-count') as HTMLInputElement)?.value) || 3;
+
+        if (!text || text.trim().length < 50) {
+          toast('Masukkan teks minimal 50 karakter!', 'error');
+          return;
+        }
+
+        const summary = summarize(text, numSentences);
+        
+        document.getElementById('summary-output')!.textContent = summary;
+        document.getElementById('original-count')!.textContent = text.length.toString();
+        document.getElementById('summary-count')!.textContent = summary.length.toString();
+        document.getElementById('reduction')!.textContent = `${Math.round((1 - summary.length / text.length) * 100)}%`;
+        document.getElementById('result')?.classList.remove('hidden');
+        
+        toast('Teks diringkas!', 'success');
+      });
+
+      document.getElementById('copy-result')?.addEventListener('click', () => {
+        const summary = document.getElementById('summary-output')?.textContent;
+        if (summary) {
+          navigator.clipboard.writeText(summary);
+          toast('Ringkasan disalin!', 'success');
+        }
+      });
+    });
+  </script>
+</BaseLayout>

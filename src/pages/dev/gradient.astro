@@ -1,0 +1,168 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Gradient Generator — CSS Gradient Builder">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Gradient Generator"
+      titleKey="header.gradient_gen"
+      desc="Buat CSS gradient dengan live preview: linear, radial, conic."
+      descKey="header.gradient_gen_desc"
+      icon='<circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/>'
+      gradient="from-rose-500 to-pink-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Preview -->
+      <div id="gradient-preview" class="w-full h-48 rounded-xl border border-matte-200 dark:border-surface-border mb-6"></div>
+
+      <!-- Type selector -->
+      <label class="section-title mb-2 block" data-i18n="gradient.type">Tipe gradient</label>
+      <div class="flex gap-2 mb-4">
+        <button id="type-linear" class="px-4 py-2 rounded-xl text-sm font-bold bg-rose-500 text-white shadow-md transition-all" data-type="linear">Linear</button>
+        <button id="type-radial" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-type="radial">Radial</button>
+        <button id="type-conic" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-type="conic">Conic</button>
+      </div>
+
+      <!-- Colors -->
+      <label class="section-title mb-2 block" data-i18n="gradient.colors">Warna</label>
+      <div id="color-stops" class="space-y-2 mb-4">
+        <div class="flex gap-2 items-center">
+          <input type="color" value="#f43f5e" class="w-10 h-10 rounded-lg cursor-pointer" data-color="0" />
+          <input type="range" min="0" max="100" value="0" class="flex-1 accent-rose-500" data-pos="0" />
+          <span class="text-sm text-matte-500 w-10">0%</span>
+        </div>
+        <div class="flex gap-2 items-center">
+          <input type="color" value="#8b5cf6" class="w-10 h-10 rounded-lg cursor-pointer" data-color="1" />
+          <input type="range" min="0" max="100" value="100" class="flex-1 accent-rose-500" data-pos="1" />
+          <span class="text-sm text-matte-500 w-10">100%</span>
+        </div>
+      </div>
+      <button id="add-color" class="text-sm text-rose-500 hover:text-rose-600 font-medium mb-4">+ Tambah warna</button>
+
+      <!-- Angle (for linear) -->
+      <div id="angle-container">
+        <label class="section-title mb-2 block" data-i18n="gradient.angle">Sudut: <span id="angle-val">90</span>°</label>
+        <input id="angle" type="range" min="0" max="360" value="90" class="w-full accent-rose-500" />
+      </div>
+
+      <!-- CSS output -->
+      <label class="section-title mb-2 mt-4 block">CSS Code</label>
+      <div class="flex gap-2">
+        <code id="css-output" class="flex-1 p-4 bg-matte-50 dark:bg-matte-900 rounded-xl text-xs font-mono text-rose-600 dark:text-rose-400 break-all border border-matte-200 dark:border-surface-border"></code>
+        <button id="copy-css" class="px-4 py-2 rounded-xl font-bold text-sm bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="gradient.copy_css">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      let gradientType = 'linear';
+      let colorStops = [
+        { color: '#f43f5e', pos: 0 },
+        { color: '#8b5cf6', pos: 100 }
+      ];
+
+      function updateGradient() {
+        const stops = colorStops.map(s => `${s.color} ${s.pos}%`).join(', ');
+        let css: string;
+        
+        if (gradientType === 'linear') {
+          const angle = (document.getElementById('angle') as HTMLInputElement)?.value || '90';
+          css = `linear-gradient(${angle}deg, ${stops})`;
+        } else if (gradientType === 'radial') {
+          css = `radial-gradient(circle, ${stops})`;
+        } else {
+          css = `conic-gradient(${stops})`;
+        }
+
+        const preview = document.getElementById('gradient-preview');
+        const output = document.getElementById('css-output');
+        if (preview) preview.style.background = css;
+        if (output) output.textContent = `background: ${css};`;
+      }
+
+      // Type buttons
+      document.querySelectorAll('[data-type]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-type]').forEach(b => {
+            b.className = 'px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
+          });
+          btn.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-rose-500 text-white shadow-md transition-all';
+          gradientType = (btn as HTMLElement).dataset.type!;
+          document.getElementById('angle-container')!.style.display = gradientType === 'linear' ? 'block' : 'none';
+          updateGradient();
+        });
+      });
+
+      // Color inputs
+      document.getElementById('color-stops')?.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        if (target.dataset.color !== undefined) {
+          const idx = parseInt(target.dataset.color);
+          colorStops[idx].color = target.value;
+        } else if (target.dataset.pos !== undefined) {
+          const idx = parseInt(target.dataset.pos);
+          colorStops[idx].pos = parseInt(target.value);
+          const label = target.nextElementSibling;
+          if (label) label.textContent = `${target.value}%`;
+        }
+        updateGradient();
+      });
+
+      // Add color
+      document.getElementById('add-color')?.addEventListener('click', () => {
+        if (colorStops.length >= 5) {
+          toast('Maksimal 5 warna!', 'error');
+          return;
+        }
+        const container = document.getElementById('color-stops');
+        const idx = colorStops.length;
+        colorStops.push({ color: '#10b981', pos: 50 });
+        
+        const div = document.createElement('div');
+        div.className = 'flex gap-2 items-center';
+        div.innerHTML = `
+          <input type="color" value="#10b981" class="w-10 h-10 rounded-lg cursor-pointer" data-color="${idx}" />
+          <input type="range" min="0" max="100" value="50" class="flex-1 accent-rose-500" data-pos="${idx}" />
+          <span class="text-sm text-matte-500 w-10">50%</span>
+          <button class="remove-color text-red-400 hover:text-red-600" data-idx="${idx}">×</button>
+        `;
+        container!.appendChild(div);
+        updateGradient();
+      });
+
+      // Remove color
+      document.getElementById('color-stops')?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (target.classList.contains('remove-color')) {
+          const idx = parseInt(target.dataset.idx!);
+          colorStops.splice(idx, 1);
+          target.parentElement?.remove();
+          updateGradient();
+        }
+      });
+
+      // Angle slider
+      document.getElementById('angle')?.addEventListener('input', (e) => {
+        document.getElementById('angle-val')!.textContent = (e.target as HTMLInputElement).value;
+        updateGradient();
+      });
+
+      // Copy CSS
+      document.getElementById('copy-css')?.addEventListener('click', () => {
+        const css = document.getElementById('css-output')?.textContent;
+        if (css) {
+          navigator.clipboard.writeText(css);
+          toast('CSS disalin!', 'success');
+        }
+      });
+
+      updateGradient();
+    });
+  </script>
+</BaseLayout>

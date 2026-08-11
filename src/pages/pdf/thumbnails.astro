@@ -1,0 +1,139 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="PDF Thumbnails — Grid Thumbnail Halaman">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="PDF Thumbnails"
+      titleKey="header.pdf_thumbnails"
+      desc="Generate grid thumbnail untuk semua halaman PDF."
+      descKey="header.pdf_thumbnails_desc"
+      icon='<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>'
+      gradient="from-orange-500 to-amber-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Drop zone -->
+      <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-surface-border rounded-xl p-8 text-center hover:border-orange-400 dark:hover:border-orange-500 transition-all cursor-pointer mb-4">
+        <input id="file-input" type="file" accept=".pdf" class="hidden" />
+        <p class="text-sm text-matte-500 dark:text-matte-400">Drop PDF di sini atau klik untuk upload</p>
+        <p id="filename" class="text-xs text-orange-600 dark:text-orange-400 mt-2 font-medium hidden"></p>
+      </div>
+
+      <!-- Settings -->
+      <div class="flex items-center gap-4 mb-4">
+        <label class="section-title" for="thumb-size" data-i18n="thumbs.size">Ukuran</label>
+        <select id="thumb-size" class="px-3 py-2 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl text-sm">
+          <option value="100">100px</option>
+          <option value="150" selected>150px</option>
+          <option value="200">200px</option>
+          <option value="250">250px</option>
+        </select>
+        <button id="generate-btn" class="px-4 py-2 gradient-brand rounded-xl font-bold text-sm" data-i18n="thumbs.grid">Generate</button>
+      </div>
+
+      <!-- Thumbnails grid -->
+      <div id="thumbnails-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3"></div>
+
+      <!-- Loading -->
+      <div id="loading" class="hidden text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-r-transparent"></div>
+        <p class="text-sm text-matte-500 mt-2">Menggenerate thumbnail...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      let pdfDoc: any = null;
+
+      // Drop zone
+      const dropZone = document.getElementById('drop-zone');
+      const fileInput = document.getElementById('file-input') as HTMLInputElement;
+
+      dropZone?.addEventListener('click', () => fileInput?.click());
+      dropZone?.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-orange-500'); });
+      dropZone?.addEventListener('dragleave', () => dropZone.classList.remove('border-orange-500'));
+      dropZone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-orange-500');
+        const file = e.dataTransfer?.files[0];
+        if (file) loadPDF(file);
+      });
+
+      fileInput?.addEventListener('change', (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) loadPDF(file);
+      });
+
+      async function loadPDF(file: File) {
+        const pdfjsLib = await (window as any).waitForCdnLib?.('pdfjs', { maxRetries: 40 });
+        if (!pdfjsLib) { toast('Gagal load PDF library', 'error'); return; }
+
+        const arrayBuffer = await file.arrayBuffer();
+        pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+        document.getElementById('filename')!.textContent = file.name;
+        document.getElementById('filename')!.classList.remove('hidden');
+        toast('PDF dimuat! Klik Generate untuk membuat thumbnail.', 'success');
+      }
+
+      // Generate thumbnails
+      document.getElementById('generate-btn')?.addEventListener('click', async () => {
+        if (!pdfDoc) {
+          toast('Upload PDF terlebih dahulu!', 'error');
+          return;
+        }
+
+        const gridSize = parseInt((document.getElementById('thumb-size') as HTMLSelectElement).value);
+        const grid = document.getElementById('thumbnails-grid');
+        const loading = document.getElementById('loading');
+
+        grid!.innerHTML = '';
+        loading?.classList.remove('hidden');
+
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+          const page = await pdfDoc.getPage(i);
+          const scale = gridSize / page.getViewport({ scale: 1 }).width;
+          const viewport = page.getViewport({ scale });
+
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.className = 'rounded-lg border border-matte-200 dark:border-surface-border cursor-pointer hover:shadow-lg transition-shadow';
+          canvas.title = `Halaman ${i}`;
+
+          const ctx = canvas.getContext('2d')!;
+          await page.render({ canvasContext: ctx, viewport }).promise;
+
+          const container = document.createElement('div');
+          container.className = 'text-center';
+          container.appendChild(canvas);
+          
+          const label = document.createElement('p');
+          label.className = 'text-2xs text-matte-400 mt-1';
+          label.textContent = `${i}`;
+          container.appendChild(label);
+
+          // Click to download single page
+          canvas.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `page-${i}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            toast(`Halaman ${i} didownload!`, 'success');
+          });
+
+          grid!.appendChild(container);
+        }
+
+        loading?.classList.add('hidden');
+        toast(`${pdfDoc.numPages} thumbnail digenerate!`, 'success');
+      });
+    });
+  </script>
+</BaseLayout>

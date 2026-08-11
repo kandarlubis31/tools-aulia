@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="XML Formatter — Rapikan XML">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="XML Formatter"
+      titleKey="header.xml_formatter"
+      desc="Rapikan dan validasi XML: format, minify, expand, copy."
+      descKey="header.xml_formatter_desc"
+      icon='<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'
+      gradient="from-amber-500 to-orange-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <label class="section-title mb-2 block" for="xml-input">XML Input</label>
+      <textarea id="xml-input" rows="10" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-amber-500 transition-colors text-sm font-mono resize-y" placeholder="Tempel XML di sini..." data-i18n-attr="placeholder"></textarea>
+
+      <div class="flex gap-2 mt-4">
+        <button id="format-btn" class="flex-1 gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="xml.format">Format</button>
+        <button id="minify-btn" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="xml.minify">Minify</button>
+        <button id="expand-btn" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="xml.expand">Expand</button>
+      </div>
+
+      <!-- Validation status -->
+      <div id="validation-status" class="hidden mt-4 p-3 rounded-xl text-sm font-medium"></div>
+
+      <label class="section-title mb-2 mt-4 block" for="xml-output">Output</label>
+      <div class="relative">
+        <textarea id="xml-output" rows="10" class="w-full p-4 bg-matte-50 dark:bg-matte-900 border border-matte-200 dark:border-surface-border rounded-xl text-sm font-mono resize-y" readonly></textarea>
+        <button id="copy-output" class="absolute top-2 right-2 text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="xml.copy">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
+
+      function validateXML(xml: string): { valid: boolean; error?: string } {
+        try {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(xml, 'text/xml');
+          const parseError = doc.querySelector('parsererror');
+          if (parseError) {
+            return { valid: false, error: parseError.textContent?.split('\n')[0] || 'Parse error' };
+          }
+          return { valid: true };
+        } catch (e: any) {
+          return { valid: false, error: e.message };
+        }
+      }
+
+      function formatXML(xml: string, indent: number = 2): string {
+        let formatted = '';
+        let indentLevel = 0;
+        const lines = xml.replace(/(>)(<)(\/*)/g, '$1\n$2$3').split('\n');
+
+        lines.forEach(line => {
+          line = line.trim();
+          if (!line) return;
+
+          if (line.match(/^<\/\w/)) indentLevel--;
+          
+          formatted += ' '.repeat(indentLevel * indent) + line + '\n';
+          
+          if (line.match(/^<\w[^>]*[^\/]>.*$/)) indentLevel++;
+        });
+
+        return formatted.trim();
+      }
+
+      function minifyXML(xml: string): string {
+        return xml.replace(/>\s+</g, '><').trim();
+      }
+
+      function showValidation(valid: boolean, error?: string) {
+        const el = document.getElementById('validation-status');
+        if (!el) return;
+        el.classList.remove('hidden');
+        if (valid) {
+          el.className = 'mt-4 p-3 rounded-xl text-sm font-medium bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800';
+          el.textContent = '✅ XML valid';
+        } else {
+          el.className = 'mt-4 p-3 rounded-xl text-sm font-medium bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800';
+          el.textContent = `❌ ${error || 'XML tidak valid'}`;
+        }
+      }
+
+      // Format button
+      document.getElementById('format-btn')?.addEventListener('click', () => {
+        const input = (document.getElementById('xml-input') as HTMLTextAreaElement)?.value;
+        if (!input) { toast('Masukkan XML!', 'error'); return; }
+
+        const { valid, error } = validateXML(input);
+        showValidation(valid, error);
+
+        if (valid) {
+          const output = formatXML(input);
+          (document.getElementById('xml-output') as HTMLTextAreaElement).value = output;
+          toast('XML diformat!', 'success');
+        }
+      });
+
+      // Minify button
+      document.getElementById('minify-btn')?.addEventListener('click', () => {
+        const input = (document.getElementById('xml-input') as HTMLTextAreaElement)?.value;
+        if (!input) { toast('Masukkan XML!', 'error'); return; }
+
+        const { valid, error } = validateXML(input);
+        showValidation(valid, error);
+
+        if (valid) {
+          const output = minifyXML(input);
+          (document.getElementById('xml-output') as HTMLTextAreaElement).value = output;
+          toast('XML di-minify!', 'success');
+        }
+      });
+
+      // Expand button
+      document.getElementById('expand-btn')?.addEventListener('click', () => {
+        const input = (document.getElementById('xml-input') as HTMLTextAreaElement)?.value;
+        if (!input) { toast('Masukkan XML!', 'error'); return; }
+
+        const { valid, error } = validateXML(input);
+        showValidation(valid, error);
+
+        if (valid) {
+          const output = formatXML(input, 4);
+          (document.getElementById('xml-output') as HTMLTextAreaElement).value = output;
+          toast('XML di-expand!', 'success');
+        }
+      });
+
+      // Copy output
+      document.getElementById('copy-output')?.addEventListener('click', () => {
+        const output = (document.getElementById('xml-output') as HTMLTextAreaElement)?.value;
+        if (output) {
+          navigator.clipboard.writeText(output);
+          toast('Disalin!', 'success');
+        }
+      });
+    });
+  </script>
+</BaseLayout>
