@@ -127,7 +127,8 @@ Hero (compact: 8px padding, inline stats, no buttons)
 - **Plan 100 Tools:** `docs/plan-new-tools.md` — ✅ COMPLETE (110 tools, 58 → 168)
 - **Plan 100 Tools:** `docs/plan-new-tools.md` — ✅ COMPLETE (110 tools, 58 → 168)
 - **Plan 59 Tools:** `docs/plan-59-tools.md` — 🎉 COMPLETE (59/59, 168 → 227)
-- **Plan Improve:** `docs/plan-improve.md` — 📋 2 batch (Batch A: UX quick wins, Batch B: Quality + SEO)
+- **Plan Improve:** `docs/plan-improve.md` — ✅ COMPLETE (Batch A: UX, Batch B: Quality)
+- **Plan v2 Polish:** `docs/plan-v2-polish.md` — 📋 3 batch (Batch C: Quick Wins, Batch D: Architecture, Batch E: Growth)
 - **B12-B17:** ✅ SELESAI (59 tools added)
 - **227 tools** — 12 kategori, 328 precache entries
 - **Pagination:** 36 tools per page — smooth UX untuk 227 tools
