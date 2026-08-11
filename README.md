@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**78+ Tools Developer & Produktivitas · 100% Client-Side · Gratis Selamanya**
+**88+ Tools Developer & Produktivitas · 100% Client-Side · Gratis Selamanya**
 
 [🇮🇩 Indonesia](#indonesia) · [🇬🇧 English](#english)
 
@@ -22,7 +22,7 @@
 
 ### Tentang
 
-**ToolsAulia** adalah koleksi 78+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
+**ToolsAulia** adalah koleksi 88+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
 
 ### ✨ Kenapa ToolsAulia?
 
@@ -76,11 +76,11 @@ pnpm build      # Production build
 ```
 tools-aulia/
 ├── src/
-│   ├── pages/          # 78+ tool pages (Astro)
+│   ├── pages/          # 88+ tool pages (Astro)
 │   ├── components/     # Shared UI components
 │   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading
 │   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
-│   ├── data/           # tools.ts (78 tools metadata)
+│   ├── data/           # tools.ts (88 tools metadata)
 │   ├── i18n/           # translations.ts
 │   └── styles/         # global.css
 ├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json
@@ -109,7 +109,7 @@ tools-aulia/
 
 ### About
 
-**ToolsAulia** is a collection of 78+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
+**ToolsAulia** is a collection of 88+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
 
 ### ✨ Why ToolsAulia?
 
@@ -163,11 +163,11 @@ pnpm build      # Production build
 ```
 tools-aulia/
 ├── src/
-│   ├── pages/          # 78+ tool pages (Astro)
+│   ├── pages/          # 88+ tool pages (Astro)
 │   ├── components/     # Shared UI components
 │   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading
 │   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
-│   ├── data/           # tools.ts (78 tools metadata)
+│   ├── data/           # tools.ts (88 tools metadata)
 │   ├── i18n/           # translations.ts
 │   └── styles/         # global.css
 ├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json

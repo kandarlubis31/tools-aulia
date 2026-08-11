@@ -1,0 +1,263 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="SQL Formatter — Rapikan Query SQL Online">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="SQL Formatter"
+      titleKey="header.sql_formatter"
+      desc="Rapikan query SQL dengan indentasi klausa dan keyword highlight."
+      descKey="header.sql_formatter_desc"
+      icon='<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>'
+      gradient="from-sky-500 to-blue-600"
+    />
+
+    <div class="card-base p-4 mb-4 animate-fade-in">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <label class="flex items-center gap-2 text-xs text-matte-500 dark:text-matte-300">
+          <input id="uppercase-toggle" type="checkbox" checked class="accent-sky-500" />
+          <span data-i18n="sql.uppercase">Uppercase keyword</span>
+        </label>
+        <div class="flex items-center gap-2">
+          <button id="sample-btn" class="px-3 py-2 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">✨ <span data-i18n="sql.sample">Contoh query</span></button>
+          <button id="format-btn" class="gradient-brand px-6 py-2 rounded-lg text-xs font-bold">🧹 <span data-i18n="sql.format">Format</span></button>
+          <button id="copy-btn" class="px-3 py-2 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="sql.copy">Salin</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-4 animate-fade-in">
+      <div class="card-base p-4">
+        <h2 class="text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="sql.input">SQL Input</h2>
+        <textarea id="input-area" rows="20" placeholder="SELECT * FROM users WHERE id=1; -- komentar" class="w-full px-3 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono leading-relaxed focus:ring-2 focus:ring-sky-500/40 outline-none resize-y"></textarea>
+      </div>
+      <div class="card-base p-4">
+        <h2 class="text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="sql.output">Hasil Format</h2>
+        <pre id="output-area" class="w-full min-h-[20rem] max-h-[26rem] overflow-auto px-3 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated text-sm font-mono leading-relaxed whitespace-pre-wrap break-words"><span class="text-matte-400" data-i18n="sql.result">Hasil format muncul di sini…</span></pre>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .sql-kw { color: #0284c7; font-weight: 700; }
+  .sql-str { color: #16a34a; }
+  .sql-num { color: #f59e0b; }
+  .sql-cmt { color: #8b949e; font-style: italic; }
+</style>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const inputArea = document.getElementById('input-area') as HTMLTextAreaElement;
+    const outputArea = document.getElementById('output-area');
+    const formatBtn = document.getElementById('format-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const sampleBtn = document.getElementById('sample-btn');
+    const upperToggle = document.getElementById('uppercase-toggle') as HTMLInputElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    const KEYWORDS = new Set([
+      'SELECT', 'FROM', 'WHERE', 'GROUP', 'BY', 'ORDER', 'HAVING', 'LIMIT', 'OFFSET',
+      'JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'OUTER', 'CROSS', 'ON', 'AS', 'AND', 'OR', 'NOT', 'IN', 'EXISTS',
+      'INSERT', 'INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE', 'WITH', 'UNION', 'ALL', 'DISTINCT', 'CASE',
+      'WHEN', 'THEN', 'ELSE', 'END', 'IS', 'NULL', 'BETWEEN', 'LIKE', 'ILIKE', 'ASC', 'DESC', 'PRIMARY', 'KEY',
+      'FOREIGN', 'REFERENCES', 'CREATE', 'TABLE', 'INDEX', 'VIEW', 'ALTER', 'ADD', 'DROP', 'COLUMN', 'CONSTRAINT',
+      'UNIQUE', 'CHECK', 'DEFAULT', 'TRUNCATE', 'EXPLAIN', 'ANALYZE', 'RETURNING', 'OVER', 'PARTITION', 'FILTER',
+    ]);
+
+    // Tokenisasi: jaga string '...' / "..." / komentar -- dan /* */
+    function tokenize(sql: string): { type: string; value: string }[] {
+      const tokens: { type: string; value: string }[] = [];
+      let i = 0;
+      const n = sql.length;
+      while (i < n) {
+        const ch = sql[i];
+        if (ch === "'" || ch === '"' || ch === '`') {
+          const quote = ch;
+          let j = i + 1;
+          while (j < n && sql[j] !== quote) {
+            if (sql[j] === '\\') j++;
+            j++;
+          }
+          if (j < n) j++;
+          tokens.push({ type: 'string', value: sql.slice(i, j) });
+          i = j;
+        } else if (ch === '-' && sql[i + 1] === '-') {
+          let j = i + 2;
+          while (j < n && sql[j] !== '\n') j++;
+          tokens.push({ type: 'comment', value: sql.slice(i, j) });
+          i = j;
+        } else if (ch === '/' && sql[i + 1] === '*') {
+          let j = i + 2;
+          while (j < n && !(sql[j] === '*' && sql[j + 1] === '/')) j++;
+          j = Math.min(n, j + 2);
+          tokens.push({ type: 'comment', value: sql.slice(i, j) });
+          i = j;
+        } else if (/[0-9]/.test(ch)) {
+          let j = i;
+          while (j < n && /[0-9.]/.test(sql[j])) j++;
+          tokens.push({ type: 'number', value: sql.slice(i, j) });
+          i = j;
+        } else if (/[a-zA-Z_]/.test(ch)) {
+          let j = i;
+          while (j < n && /[a-zA-Z0-9_$]/.test(sql[j])) j++;
+          tokens.push({ type: 'word', value: sql.slice(i, j) });
+          i = j;
+        } else if (/\s/.test(ch)) {
+          let j = i;
+          while (j < n && /\s/.test(sql[j])) j++;
+          tokens.push({ type: 'ws', value: sql.slice(i, j) });
+          i = j;
+        } else {
+          tokens.push({ type: 'punct', value: ch });
+          i++;
+        }
+      }
+      return tokens;
+    }
+
+    // Klausa yang memulai baris baru di indent 0
+    const TOP_CLAUSES = ['SELECT', 'FROM', 'WHERE', 'GROUP', 'ORDER', 'HAVING', 'LIMIT', 'INSERT', 'UPDATE', 'DELETE', 'WITH', 'UNION', 'VALUES', 'RETURNING', 'CREATE', 'ALTER', 'DROP', 'TRUNCATE', 'SET', 'EXPLAIN'];
+
+    function format(sql: string, upper: boolean): { text: string; html: string } {
+      const tokens = tokenize(sql);
+      const lines: string[] = [];
+      const htmlLines: string[] = [];
+      let indent = 0;
+      let line = '';
+      let htmlLine = '';
+      let atLineStart = true;
+
+      const push = (txt: string, html: string) => {
+        if (atLineStart) {
+          line = ' '.repeat(indent * 2) + txt;
+          htmlLine = ' '.repeat(indent * 2) + html;
+          atLineStart = false;
+        } else {
+          line += txt;
+          htmlLine += html;
+        }
+      };
+
+      const newline = () => {
+        lines.push(line.replace(/\s+$/, ''));
+        htmlLines.push(htmlLine.replace(/\s+$/, ''));
+        line = '';
+        htmlLine = '';
+        atLineStart = true;
+      };
+
+      for (let i = 0; i < tokens.length; i++) {
+        const t = tokens[i];
+
+        if (t.type === 'comment') {
+          if (!atLineStart) newline();
+          push(t.value, `<span class="sql-cmt">${esc(t.value)}</span>`);
+          newline();
+          continue;
+        }
+
+        if (t.type === 'punct') {
+          if (t.value === '(') {
+            push(t.value, t.value);
+            indent++;
+          } else if (t.value === ')') {
+            indent = Math.max(0, indent - 1);
+            if (!atLineStart && line.trim()) {
+              // jika sudah ada konten di baris, tetap sambung
+            }
+            push(t.value, t.value);
+          } else if (t.value === ';') {
+            push(';', ';');
+            newline();
+          } else if (t.value === ',') {
+            push(',', ',');
+            if (tokens[i + 1] && tokens[i + 1].type === 'ws') i++;
+            newline();
+          } else if (t.value === '=' || t.value === '>' || t.value === '<' || t.value === '!') {
+            push(` ${t.value}`, ` ${t.value}`);
+          } else {
+            push(t.value, t.value);
+          }
+          continue;
+        }
+
+        if (t.type === 'string') {
+          push(` ${t.value}`, ` <span class="sql-str">${esc(t.value)}</span>`);
+          continue;
+        }
+        if (t.type === 'number') {
+          push(` ${t.value}`, ` <span class="sql-num">${t.value}</span>`);
+          continue;
+        }
+        if (t.type === 'ws') continue;
+
+        // word
+        const upperWord = t.value.toUpperCase();
+        const isKeyword = KEYWORDS.has(upperWord);
+        const disp = upper ? upperWord : t.value;
+
+        if (TOP_CLAUSES.includes(upperWord)) {
+          if (!atLineStart) newline();
+          indent = 0;
+          // GROUP BY / ORDER BY adalah pasangan — treat 'BY' sama
+          push(disp, `<span class="sql-kw">${disp}</span>`);
+        } else if (upperWord === 'BY') {
+          if (atLineStart) indent = 0;
+          push(` ${disp}`, ` <span class="sql-kw">${disp}</span>`);
+        } else if (upperWord === 'ON' || upperWord === 'AND' || upperWord === 'OR' || upperWord === 'WHEN' || upperWord === 'ELSE' || upperWord === 'THEN') {
+          if (upperWord !== 'THEN' && !atLineStart) newline();
+          indent = 1;
+          push(disp, `<span class="sql-kw">${disp}</span>`);
+        } else if (upperWord === 'JOIN' || upperWord === 'INNER' || upperWord === 'LEFT' || upperWord === 'RIGHT' || upperWord === 'FULL' || upperWord === 'CROSS') {
+          if (!atLineStart) newline();
+          indent = 0;
+          push(disp, `<span class="sql-kw">${disp}</span>`);
+        } else {
+          push(` ${disp}`, ` ${isKeyword ? `<span class="sql-kw">${disp}</span>` : esc(disp)}`);
+        }
+      }
+      if (line.trim()) { lines.push(line.replace(/\s+$/, '')); htmlLines.push(htmlLine.replace(/\s+$/, '')); }
+
+      return { text: lines.join('\n'), html: htmlLines.join('\n') };
+    }
+
+    function esc(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function run() {
+      const sql = inputArea.value;
+      if (!sql.trim()) return;
+      const { html } = format(sql, upperToggle.checked);
+      outputArea!.innerHTML = html;
+    }
+
+    formatBtn?.addEventListener('click', run);
+    upperToggle?.addEventListener('change', run);
+    inputArea?.addEventListener('input', () => {
+      window.clearTimeout((formatBtn as any)._t);
+      (formatBtn as any)._t = window.setTimeout(run, 500);
+    });
+
+    copyBtn?.addEventListener('click', async () => {
+      if (!outputArea!.textContent) return;
+      try {
+        await navigator.clipboard.writeText(outputArea!.textContent);
+        toast('Query tersalin!');
+      } catch {
+        toast('Gagal menyalin', 'error');
+      }
+    });
+
+    sampleBtn?.addEventListener('click', () => {
+      inputArea.value = `select u.id,u.name,count(o.id) as total_orders from users u left join orders o on o.user_id=u.id and o.status='paid' where u.created_at>='2025-01-01' and u.city in ('Jakarta','Bandung') group by u.id,u.name having count(o.id)>=3 order by total_orders desc limit 10;`;
+      run();
+      toast('Contoh dimuat!');
+    });
+  });
+</script>

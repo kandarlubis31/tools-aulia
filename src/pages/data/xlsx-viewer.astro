@@ -1,0 +1,146 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="XLSX Viewer — Buka File Excel di Browser">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="XLSX Viewer"
+      titleKey="header.xlsx_viewer"
+      desc="Buka dan lihat file Excel langsung di browser tanpa Office. Export ke CSV."
+      descKey="header.xlsx_viewer_desc"
+      icon='<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>'
+      gradient="from-green-500 to-emerald-600"
+    />
+
+    <div class="animate-fade-in">
+      <DropZone
+        id="drop-zone"
+        inputId="file-input"
+        accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+        labelKey="upload.drop_xlsx"
+        subLabelKey="upload.or_click"
+        label="Drag & drop file Excel di sini"
+        gradient="from-green-500 to-emerald-600"
+        hoverClass="hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-950/20"
+        className="max-w-xl mx-auto"
+      />
+    </div>
+
+    <div id="viewer" class="hidden mt-6 animate-fade-in">
+      <div class="card-base p-4 mb-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <p id="file-name" class="text-sm font-bold text-matte-700 dark:text-matte-200 truncate mr-2"></p>
+          <div id="sheet-tabs" class="flex items-center gap-1.5 flex-wrap"></div>
+          <div class="flex items-center gap-2 ml-auto">
+            <button id="export-csv-btn" class="gradient-brand px-5 py-2 rounded-lg text-xs font-bold">💾 <span data-i18n="xlsx.export">Export CSV</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-base p-0 overflow-hidden">
+        <div class="overflow-auto max-h-[65vh]">
+          <table class="w-full text-xs border-collapse min-w-max">
+            <tbody id="sheet-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const viewer = document.getElementById('viewer');
+    const fileName = document.getElementById('file-name');
+    const sheetTabs = document.getElementById('sheet-tabs');
+    const sheetBody = document.getElementById('sheet-body');
+    const exportCsvBtn = document.getElementById('export-csv-btn');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let wb: any = null;
+    let currentSheet = '';
+    let currentRows: any[][] = [];
+
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    ['dragenter', 'dragover'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-950/20'); }));
+    ['dragleave', 'drop'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('border-green-500', 'bg-green-50', 'dark:bg-green-950/20'); }));
+    dropZone?.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt?.files.length) fileInput!.files = dt.files;
+      fileInput?.dispatchEvent(new Event('change'));
+    });
+
+    fileInput?.addEventListener('change', async () => {
+      const f = fileInput.files?.[0];
+      if (!f) return;
+      if (f.size > 20 * 1024 * 1024) { toast('File maksimal 20 MB', 'error'); return; }
+      try {
+        const buf = await f.arrayBuffer();
+        wb = (window as any).XLSX.read(buf, { type: 'array' });
+        if (!wb.SheetNames.length) { toast('Tidak ada sheet', 'error'); return; }
+        fileName!.textContent = f.name;
+        renderTabs();
+        selectSheet(wb.SheetNames[0]);
+        viewer?.classList.remove('hidden');
+        viewer?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch {
+        toast('File Excel tidak bisa dibaca', 'error');
+      }
+    });
+
+    function renderTabs() {
+      sheetTabs!.innerHTML = wb.SheetNames.map((name: string) => `
+        <button data-sheet="${esc(name)}" class="sheet-tab px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">${esc(name)}</button>`).join('');
+      sheetTabs!.querySelectorAll('.sheet-tab').forEach((btn) => {
+        btn.addEventListener('click', () => selectSheet((btn as HTMLElement).dataset.sheet!));
+      });
+    }
+
+    function selectSheet(name: string) {
+      currentSheet = name;
+      sheetTabs!.querySelectorAll('.sheet-tab').forEach((btn) => {
+        const active = (btn as HTMLElement).dataset.sheet === name;
+        btn.className = active
+          ? 'sheet-tab px-3 py-1.5 rounded-lg text-2xs font-bold bg-green-500 text-white shadow-md transition-all'
+          : 'sheet-tab px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all';
+      });
+
+      const ws = wb.Sheets[name];
+      currentRows = (window as any).XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+      renderSheet();
+    }
+
+    function renderSheet() {
+      const maxCols = Math.max(1, ...currentRows.map((r) => r.length));
+      const html = currentRows.slice(0, 500).map((row, ri) => `
+        <tr class="${ri === 0 ? 'bg-matte-100 dark:bg-matte-800 font-bold' : 'border-b border-matte-100 dark:border-matte-800 hover:bg-matte-50 dark:hover:bg-surface-elevated/50'}">
+          ${Array.from({ length: maxCols }, (_, ci) => `<td class="px-2.5 py-1.5 border-r border-matte-100 dark:border-matte-800 whitespace-nowrap max-w-[320px] truncate">${esc(row[ci])}</td>`).join('')}
+        </tr>`).join('');
+      sheetBody!.innerHTML = html + (currentRows.length > 500 ? `<tr><td colspan="${maxCols}" class="px-3 py-3 text-center text-matte-400 text-2xs">… hanya menampilkan 500 baris pertama (total ${currentRows.length})</td></tr>` : '');
+    }
+
+    function esc(s: any): string {
+      return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    exportCsvBtn?.addEventListener('click', () => {
+      if (!wb) return;
+      const ws = wb.Sheets[currentSheet];
+      const csv = (window as any).XLSX.utils.sheet_to_csv(ws);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      a.download = currentSheet.replace(/[^\w\-]+/g, '_') + '.csv';
+      a.click();
+      toast('CSV berhasil di-export!');
+    });
+  });
+</script>

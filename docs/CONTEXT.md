@@ -17,7 +17,7 @@
 
 ## Project Overview
 
-ToolsAulia adalah koleksi **78+ tools** developer & produktivitas yang berjalan 100% di browser (Client-Side). Dibangun dengan Astro 5 + Tailwind CSS + TypeScript. PWA-enabled untuk offline use. Aman, cepat, dan tanpa upload data ke server.
+ToolsAulia adalah koleksi **88+ tools** developer & produktivitas yang berjalan 100% di browser (Client-Side). Dibangun dengan Astro 5 + Tailwind CSS + TypeScript. PWA-enabled untuk offline use. Aman, cepat, dan tanpa upload data ke server.
 
 - **Website**: [paklubis.my.id](https://paklubis.my.id)
 - **GitHub**: [kandarlubis31/tools-aulia](https://github.com/kandarlubis31/tools-aulia)
@@ -63,23 +63,24 @@ src/
 
 ## Tool Categories & Count
 
-Total **79 entries** di `tools.ts` = **78 tools + 1 hub** (`/pdf`).
+Total **89 entries** di `tools.ts` = **88 tools + 1 hub** (`/pdf`).
 
 | Category | Count | Route Prefix | Example Tools |
 |----------|-------|-------------|---------------|
 | **PDF** | 20 (+hub) | `/pdf/` | Merge, Split, Compress, Sign, Watermark, Password, to-Word, Form Filler |
 | **Image** | 10 | `/image/` | Studio Editor, Compressor, Cropper, Batch Resizer, EXIF, Watermark, Remove BG |
-| **Developer** | 12 | `/dev/` | JSON, Base64, JWT Decoder, JSON↔TS, Cron, URL, Markdown, Diff, Timestamp, My IP |
+| **Developer** | 16 | `/dev/` | JSON, Base64, JWT Decoder, JSON↔TS, Regex Tester, JSON⇄YAML, SQL Formatter, Subnet, Cron, My IP |
 | **Calculator** | 9 | `/calc/` | Age, BMI, Currency, Unit, Percentage, Number Base, Case, EMI, Compound Interest |
 | **Utility** | 14 | `/utils/` | QR, WA Builder, Pomodoro, Todo, Word Counter, Sinonim, Notes MD, Lorem, Jokes |
 | **Security** | 5 | `/security/` | Password, Hash, UUID, Bcrypt, File Encrypt |
 | **File** | 2 | `/file/` | CSV-to-JSON, PDF-to-Markdown |
 | **Media** | 3 | `/media/` | Audio Recorder, Waveform, Audio Trimmer |
 | **Text** | 2 | `/text/` | Typing Test, Text to Speech |
-| **Data** | 1 | `/data/` | Fake Data Generator |
-| **Total** | **78 tools** | — | — |
+| **Data** | 5 | `/data/` | Fake Data, CSV Editor, XLSX Viewer, YAML⇄JSON, iCal Generator |
+| **Network** | 2 | `/network/` | HTTP Request Builder, REST Client |
+| **Total** | **88 tools** | — | — |
 
-> Kategori `text`, `data`, `media` ditambahkan bersama Batch 1 & 2 `plan-new-tools.md` (20 tool baru). Semua ter-registrasi penuh: tools.ts, nav dropdown, mobile menu, footer, index pills, breadcrumb, search & i18n.
+> Kategori `text`, `data`, `media`, `network` ditambahkan bersama Batch 1-3 `plan-new-tools.md` (30 tool baru). Semua ter-registrasi penuh: tools.ts, nav dropdown, mobile menu, footer, breadcrumb, search & i18n.
 
 ## Notable Tools
 
@@ -99,6 +100,12 @@ Total **79 entries** di `tools.ts` = **78 tools + 1 hub** (`/pdf`).
 - **Waveform Visualizer** (`/media/waveform`) — Decode WebAudio, waveform 240 bar, seek klik, speed & volume.
 - **Fake Data Generator** (`/data/fake-data`) — Dataset Indonesia built-in (tanpa CDN), 10 field, export JSON/CSV.
 - **Typing Test** (`/text/typing-test`) — Timer 15/30/60s, WPM/CPM/akurasi live, teks ID/EN, rating.
+- **Regex Tester** (`/dev/regex-tester`) — Live match highlight, flags g/i/m/s/u, capture groups, waktu uji.
+- **SQL Formatter** (`/dev/sql-formatter`) — Custom tokenizer inline (tanpa dep), uppercase keyword, syntax highlight, komentar & string literal dijaga.
+- **Subnet Calculator** (`/dev/subnet`) — Netmask/network/broadcast/host range + representasi biner + kelas IP.
+- **CSV Editor** (`/data/csv-editor`) — Spreadsheet-like editor: edit sel, tambah baris/kolom, search, export (RFC 4180).
+- **XLSX Viewer** (`/data/xlsx-viewer`) — SheetJS CDN, sheet tabs, preview 500 baris, export CSV per sheet.
+- **HTTP Request Builder / REST Client** (`/network/*`) — fetch langsung (CORS-limited), timeout 30s, REST Client + saved requests localStorage + env vars `{{name}}`.
 - **Notes (Markdown)** (`/utils/notes-md`) — marked + DOMPurify preview, autosave + history localStorage, export .md.
 - **My IP & Network** (`/dev/my-ip`) — Public IP, speed test, network info, IP history.
 - **Persamaan Kata** (`/utils/sinonim`) — Synonym finder using Wiktionary API + KBBI offline fallback (195k+ Indonesian words).
@@ -234,8 +241,11 @@ Mayoritas 16 PDF tools sudah dimigrasi ke 3 composable (hemat ~2-3× baris dupli
 11. **`global.d.ts`** — window type declarations (`showToast`, `_tToast`, `showButtonSpinner`, `pdfjsLib`, `waitForCdnLib`, dll).
 12. **Minimal ZIP builder** — `pdf/to-word.astro` punya store-only ZIP writer inline (CRC32 table + local file header + central directory + EOCD) tanpa dependency baru — pattern reusable untuk export DOCX/ZIP.
 13. **`useAudioWav.ts`** — composable media: `decodeAudioFile` (Web Audio), `encodeWav` (PCM 16-bit), `computePeaks` (downsample), `drawWaveform` (bar + progress highlight). Dipakai audio-recorder, waveform, audio-trimmer.
-14. **Permissions-Policy** — `vercel.json` mengizinkan mikrofon (`microphone=*`) untuk media tools; `connect-src` https-only (fix mixed-content ip-api).
+14. **Permissions-Policy** — `vercel.json` mengizinkan mikrofon (`microphone=*`) untuk media tools.
 15. **Offline UX** — BaseLayout punya cache-aware toast + offline-ready badge; PWA precache 145+ entries.
+16. **CSP connect-src** — `connect-src 'self' https: http://localhost:* ws://localhost:* wss:` — dibuka ke semua https untuk mendukung HTTP Builder / REST Client (tool network). Trade-off disengaja: allowlist 6 domain lama diganti https: (guardrail G1 tetap aman — fetch dari browser tetap client-side).
+17. **js-yaml & SheetJS via CDN** — js-yaml 4.1.0 (global `jsyaml`) dipakai json-to-yaml + yaml-json; SheetJS 0.18.5 (`window.XLSX`) dipakai xlsx-viewer. Keduanya dari cdnjs (whitelist CSP).
+18. **Aturan i18n** — value key di `translations.ts` **tidak boleh berisi HTML** (handler pakai `textContent`); elemen `data-i18n` tidak boleh punya child element (akan dihapus saat translate).
 
 ## Client-Side Guarantee (Enforced)
 

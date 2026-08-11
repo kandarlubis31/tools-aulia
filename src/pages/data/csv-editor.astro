@@ -1,0 +1,245 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="CSV Editor — Edit Tabel CSV Online">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="CSV Editor"
+      titleKey="header.csv_editor"
+      desc="Edit file CSV seperti spreadsheet — import, edit sel, tambah baris, export."
+      descKey="header.csv_editor_desc"
+      icon='<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/>'
+      gradient="from-emerald-500 to-green-600"
+    />
+
+    <div id="drop-section" class="animate-fade-in">
+      <DropZone
+        id="drop-zone"
+        inputId="file-input"
+        accept=".csv,.tsv,text/csv,text/tab-separated-values"
+        labelKey="upload.drop_csv"
+        subLabelKey="upload.or_click"
+        label="Drag & drop file CSV di sini"
+        gradient="from-emerald-500 to-green-600"
+        hoverClass="hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+        className="max-w-xl mx-auto"
+      />
+      <div class="text-center mt-3">
+        <button id="paste-btn" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-medium" data-i18n="csv.paste">atau tempel CSV dari clipboard</button>
+      </div>
+    </div>
+
+    <div id="editor" class="hidden mt-6 animate-fade-in">
+      <div class="card-base p-4 mb-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="add-row-btn" class="px-3 py-2 rounded-lg text-xs font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-all">➕ <span data-i18n="csv.add_row">Baris</span></button>
+          <button id="add-col-btn" class="px-3 py-2 rounded-lg text-xs font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-all">➕ <span data-i18n="csv.add_col">Kolom</span></button>
+          <button id="del-row-btn" class="px-3 py-2 rounded-lg text-xs font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/60 transition-all" disabled>🗑️ <span data-i18n="csv.del_row">Hapus baris</span></button>
+          <div class="w-px h-6 bg-matte-200 dark:bg-matte-700 mx-1"></div>
+          <input id="search-input" type="text" placeholder="🔍 Cari…" class="flex-1 min-w-[140px] px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs focus:ring-2 focus:ring-emerald-500/40 outline-none" />
+          <div class="flex items-center gap-2 ml-auto">
+            <span id="dim-label" class="text-2xs text-matte-400 font-mono"></span>
+            <button id="export-btn" class="gradient-brand px-5 py-2 rounded-lg text-xs font-bold">💾 <span data-i18n="csv.export">Export CSV</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-base p-0 overflow-hidden">
+        <div class="overflow-auto max-h-[60vh]">
+          <table class="w-full text-xs border-collapse min-w-max">
+            <thead id="csv-head" class="sticky top-0 z-10"></thead>
+            <tbody id="csv-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const pasteBtn = document.getElementById('paste-btn');
+    const editor = document.getElementById('editor');
+    const csvHead = document.getElementById('csv-head');
+    const csvBody = document.getElementById('csv-body');
+    const addRowBtn = document.getElementById('add-row-btn');
+    const addColBtn = document.getElementById('add-col-btn');
+    const delRowBtn = document.getElementById('del-row-btn') as HTMLButtonElement;
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const exportBtn = document.getElementById('export-btn');
+    const dimLabel = document.getElementById('dim-label');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let data: string[][] = [];
+    let selectedRow = -1;
+
+    // ---- CSV parse/stringify (RFC 4180) ----
+    function parseCsv(text: string, delim = ','): string[][] {
+      const rows: string[][] = [];
+      let row: string[] = [];
+      let field = '';
+      let inQuotes = false;
+      const t = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      for (let i = 0; i < t.length; i++) {
+        const ch = t[i];
+        if (inQuotes) {
+          if (ch === '"') {
+            if (t[i + 1] === '"') { field += '"'; i++; }
+            else inQuotes = false;
+          } else field += ch;
+        } else {
+          if (ch === '"') inQuotes = true;
+          else if (ch === delim) { row.push(field); field = ''; }
+          else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+          else field += ch;
+        }
+      }
+      if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+      return rows.filter((r) => r.some((c) => c.trim() !== ''));
+    }
+
+    function toCsv(rows: string[][], delim = ','): string {
+      return rows.map((r) => r.map((c) => {
+        const s = String(c ?? '');
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(delim)).join('\n');
+    }
+
+    // ---- Render ----
+    function render() {
+      const cols = Math.max(1, ...data.map((r) => r.length));
+      // normalize
+      data = data.map((r) => { const nr = [...r]; while (nr.length < cols) nr.push(''); return nr; });
+
+      const headHtml = `<tr>
+        <th class="w-8 bg-matte-100 dark:bg-matte-800"></th>
+        ${Array.from({ length: cols }, (_, c) => `
+          <th class="bg-matte-100 dark:bg-matte-800 border-b border-matte-200 dark:border-matte-700">
+            <input data-col="${c}" class="col-input w-full min-w-[100px] px-2 py-2 bg-transparent text-xs font-bold text-matte-600 dark:text-matte-300 outline-none focus:text-emerald-600 dark:focus:text-emerald-400" value="${esc(data[0]?.[c] ?? `Kolom ${c + 1}`)}" />
+          </th>`).join('')}
+      </tr>`;
+      csvHead!.innerHTML = headHtml;
+
+      const query = searchInput.value.trim().toLowerCase();
+      const rows = data.slice(1).map((r, ri) => {
+        const visible = !query || r.some((c) => String(c).toLowerCase().includes(query));
+        if (!visible) return '';
+        const absRow = ri + 1;
+        return `<tr data-row="${absRow}" class="row-tr ${absRow === selectedRow ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'hover:bg-matte-50 dark:hover:bg-surface-elevated/50'} border-b border-matte-100 dark:border-matte-800">
+          <td class="row-sel px-2 py-1.5 text-center cursor-pointer text-matte-400 hover:text-emerald-600 select-none">${absRow}</td>
+          ${r.map((c, ci) => `<td class="px-1.5 py-1"><input data-row="${absRow}" data-col="${ci}" class="cell-input w-full min-w-[100px] px-2 py-1.5 rounded-md bg-transparent text-xs outline-none focus:bg-matte-50 dark:focus:bg-surface-elevated focus:ring-1 focus:ring-emerald-500/50" value="${esc(c)}" /></td>`).join('')}
+        </tr>`;
+      }).join('');
+      csvBody!.innerHTML = rows;
+
+      dimLabel!.textContent = `${data.length - 1} baris × ${cols} kolom`;
+      delRowBtn!.disabled = selectedRow < 0;
+      bindCells(cols);
+    }
+
+    function bindCells(cols: number) {
+      csvHead!.querySelectorAll('.col-input').forEach((el) => {
+        el.addEventListener('input', () => {
+          const c = parseInt((el as HTMLInputElement).dataset.col!);
+          data[0][c] = (el as HTMLInputElement).value;
+        });
+      });
+      csvBody!.querySelectorAll('.cell-input').forEach((el) => {
+        el.addEventListener('input', () => {
+          const r = parseInt((el as HTMLInputElement).dataset.row!);
+          const c = parseInt((el as HTMLInputElement).dataset.col!);
+          data[r][c] = (el as HTMLInputElement).value;
+        });
+      });
+      csvBody!.querySelectorAll('.row-sel').forEach((el) => {
+        el.addEventListener('click', () => {
+          selectedRow = parseInt(((el as HTMLElement).closest('tr') as HTMLElement).dataset.row ?? '0');
+          csvBody!.querySelectorAll('.row-tr').forEach((tr) => {
+            const trEl = tr as HTMLElement;
+            trEl.classList.toggle('bg-emerald-50', parseInt(trEl.dataset.row!) === selectedRow);
+            trEl.classList.toggle('dark:bg-emerald-950/30', parseInt(trEl.dataset.row!) === selectedRow);
+          });
+          delRowBtn!.disabled = false;
+        });
+      });
+    }
+
+    function esc(s: any): string {
+      return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function loadRows(rows: string[][]) {
+      if (!rows.length) { toast('CSV kosong', 'error'); return; }
+      data = rows;
+      selectedRow = -1;
+      render();
+      editor?.classList.remove('hidden');
+      editor?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    ['dragenter', 'dragover'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-950/20'); }));
+    ['dragleave', 'drop'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-950/20'); }));
+    dropZone?.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt?.files.length) fileInput!.files = dt.files;
+      fileInput?.dispatchEvent(new Event('change'));
+    });
+
+    fileInput?.addEventListener('change', async () => {
+      const f = fileInput.files?.[0];
+      if (!f) return;
+      if (f.size > 10 * 1024 * 1024) { toast('File maksimal 10 MB', 'error'); return; }
+      const text = await f.text();
+      const delim = f.name.endsWith('.tsv') ? '\t' : ',';
+      loadRows(parseCsv(text, delim));
+      toast('CSV dimuat!');
+    });
+
+    pasteBtn?.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text.trim()) { loadRows(parseCsv(text)); toast('CSV dari clipboard dimuat!'); }
+      } catch {
+        toast('Tidak bisa akses clipboard', 'error');
+      }
+    });
+
+    addRowBtn?.addEventListener('click', () => {
+      const cols = data[0]?.length || 1;
+      data.push(Array(cols).fill(''));
+      render();
+    });
+
+    addColBtn?.addEventListener('click', () => {
+      data.forEach((r) => r.push(''));
+      render();
+    });
+
+    delRowBtn?.addEventListener('click', () => {
+      if (selectedRow < 0) return;
+      data.splice(selectedRow, 1);
+      selectedRow = -1;
+      render();
+      toast('Baris dihapus');
+    });
+
+    searchInput?.addEventListener('input', render);
+
+    exportBtn?.addEventListener('click', () => {
+      const csv = toCsv(data);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      a.download = 'hasil.csv';
+      a.click();
+      toast('CSV berhasil di-export!');
+    });
+  });
+</script>

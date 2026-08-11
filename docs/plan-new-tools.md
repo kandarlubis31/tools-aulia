@@ -2,7 +2,7 @@
 
 > Created: August 11, 2026
 > Target: **58 tools existing (saat plan dibuat) → 158 total** (10 kategori × 10 tools baru). Status: 58 → **78 tools** (Batch 1-2 selesai, lihat Execution Log di bawah).
-> Status: ✅ **B1 + B2 (20 tools) SELESAI — 58 → 78 tools** · Sisa: B3-B5 (80 tools)
+> Status: ✅ **B1 + B2 + B3 (30 tools) SELESAI — 58 → 88 tools** · Sisa: B4-B5 (70 tools)
 
 ## ✅ Batch 1 Execution Log (Aug 11, 2026)
 
@@ -236,6 +236,27 @@
 | Fake Data Gen | `/data/fake-data` | dataset Indonesia built-in, export JSON/CSV |
 
 Infra: kategori baru `text` & `data` (tools.ts, pills, dropdown, mobile, footer, breadcrumb, search, i18n) · 84 key i18n · copy "58+" basi → dinamis `{tools.length}+`.
+
+### Batch 3 — Dev & Data & Network (SELESAI · 10 tools · 79 → 89 entries)
+
+**Build ✅ 39.9s · tests ✅ 43/43 · guardrail client-side ✅ · sitemap + precache auto-update**
+
+| Tool | Halaman | Highlight |
+|------|---------|-----------|
+| Regex Tester | `/dev/regex-tester` | live match highlight, flags g/i/m/s/u, capture groups, waktu uji |
+| JSON ⇄ YAML | `/dev/json-to-yaml` | js-yaml CDN, auto-detect arah, upload file |
+| SQL Formatter | `/dev/sql-formatter` | custom tokenizer inline (tanpa dep), uppercase + highlight |
+| Subnet Calculator | `/dev/subnet` | netmask/network/broadcast/host range + biner + kelas IP |
+| CSV Editor | `/data/csv-editor` | spreadsheet-like: edit sel, baris/kolom, search, export RFC 4180 |
+| XLSX Viewer | `/data/xlsx-viewer` | SheetJS CDN, sheet tabs, preview + export CSV |
+| YAML ⇄ JSON | `/data/yaml-json` | file upload, multi-doc (loadAll), download |
+| iCal Generator | `/data/ical` | .ics + reminder, all-day (DTEND exclusive), UTC |
+| HTTP Builder | `/network/http-builder` | GET/POST/PUT/PATCH/DELETE, headers/body, response viewer |
+| REST Client | `/network/rest-client` | saved requests localStorage + env vars `{{name}}` |
+
+Infra: kategori baru `network` (nav/footer/i18n/breadcrumb) · vercel.json connect-src dibuka ke `https:` (trade-off untuk HTTP tools, dicatat di CONTEXT) · 75+ key i18n baru.
+
+Review fixes: **build crash** `{{nama}}` di template Astro (harus `{'{{nama}}'}`) · csv-editor row-select salah elemen (closest('tr'), sebelumnya delete selalu hapus header) · i18n value tidak boleh HTML (textContent) · rest-client `new URL` unguarded · fetch timeout 30s · ical DTEND all-day exclusive · sql-formatter dead code. Copy "78+" → "88+".
 
 ### Batch 2 — Image & Media (SELESAI · 10 tools · 69 → 79 tools)
 

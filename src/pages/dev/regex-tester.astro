@@ -1,0 +1,191 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Regex Tester — Uji Pola RegEx Online">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Regex Tester"
+      titleKey="header.regex_tester"
+      desc="Uji pola regex dengan live match highlight, flags, dan capture groups."
+      descKey="header.regex_tester_desc"
+      icon='<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>'
+      gradient="from-purple-500 to-fuchsia-600"
+    />
+
+    <div class="card-base p-5 animate-fade-in">
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <div class="relative flex-1 min-w-[220px]">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-matte-400 font-mono text-sm">/</span>
+          <input id="pattern-input" type="text" placeholder="[a-z]+@[a-z]+\.[a-z]+" class="w-full pl-8 pr-3 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-purple-500/40 outline-none" />
+        </div>
+        <div class="flex items-center gap-1.5 flex-wrap">
+          {['g', 'i', 'm', 's', 'u'].map(flag => (
+            <label class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-xs font-bold font-mono text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover cursor-pointer transition-colors">
+              <input type="checkbox" value={flag} class="flag-btn accent-purple-500" />
+              {flag}
+            </label>
+          ))}
+        </div>
+        <div id="error-box" class="hidden w-full text-xs text-red-500 dark:text-red-400 font-mono bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2"></div>
+      </div>
+
+      <div class="mb-4">
+        <label for="test-input" class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5">🧪 Test String</label>
+        <textarea id="test-input" rows="7" placeholder="Tempel teks yang mau diuji di sini…" class="w-full px-3 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono leading-relaxed focus:ring-2 focus:ring-purple-500/40 outline-none resize-y"></textarea>
+      </div>
+
+      <div class="grid sm:grid-cols-3 gap-3 mb-4">
+        <div class="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/30 text-center">
+          <p id="stat-matches" class="text-xl font-bold text-purple-600 dark:text-purple-400 tabular-nums">0</p>
+          <p class="text-2xs text-matte-400" data-i18n="regex.matches">Match</p>
+        </div>
+        <div class="p-3 rounded-xl bg-matte-50 dark:bg-surface-elevated text-center">
+          <p id="stat-time" class="text-xl font-bold text-matte-700 dark:text-matte-200 tabular-nums">0 ms</p>
+          <p class="text-2xs text-matte-400" data-i18n="regex.time">Waktu uji</p>
+        </div>
+        <div class="p-3 rounded-xl bg-matte-50 dark:bg-surface-elevated text-center">
+          <p id="stat-groups" class="text-xl font-bold text-matte-700 dark:text-matte-200 tabular-nums">0</p>
+          <p class="text-2xs text-matte-400" data-i18n="regex.groups">Capture groups</p>
+        </div>
+      </div>
+
+      <div id="preview-box" class="hidden mb-4">
+        <p class="text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5" data-i18n="regex.preview">Preview Highlight</p>
+        <pre id="preview" class="whitespace-pre-wrap break-words text-sm leading-relaxed bg-matte-50 dark:bg-surface-elevated rounded-xl p-4 max-h-48 overflow-y-auto font-mono"></pre>
+      </div>
+
+      <div id="matches-box" class="hidden">
+        <p class="text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5" data-i18n="regex.details">Detail Match</p>
+        <div id="matches-list" class="space-y-1.5 max-h-52 overflow-y-auto pr-1"></div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between mt-5">
+        <p class="text-2xs text-matte-400"><span data-i18n="regex.sample">Contoh: pola email</span> <code class="font-mono bg-matte-100 dark:bg-surface-elevated px-1 py-0.5 rounded">[\\w.+-]+@[\\w-]+\\.[\\w.]+</code></p>
+        <button id="sample-btn" class="px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-colors">✨ Isi contoh</button>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  mark { background: rgba(168, 85, 247, 0.35); border-radius: 2px; padding: 0 1px; }
+</style>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const patternInput = document.getElementById('pattern-input') as HTMLInputElement;
+    const testInput = document.getElementById('test-input') as HTMLTextAreaElement;
+    const errorBox = document.getElementById('error-box');
+    const previewBox = document.getElementById('preview-box');
+    const preview = document.getElementById('preview');
+    const matchesBox = document.getElementById('matches-box');
+    const matchesList = document.getElementById('matches-list');
+    const statMatches = document.getElementById('stat-matches');
+    const statTime = document.getElementById('stat-time');
+    const statGroups = document.getElementById('stat-groups');
+    const sampleBtn = document.getElementById('sample-btn');
+    const flagBtns = document.querySelectorAll('.flag-btn');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    function esc(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function run() {
+      const pattern = patternInput.value;
+      const text = testInput.value;
+
+      if (!pattern || !text.trim()) {
+        errorBox!.classList.add('hidden');
+        previewBox!.classList.add('hidden');
+        matchesBox!.classList.add('hidden');
+        statMatches!.textContent = '0';
+        statTime!.textContent = '0 ms';
+        statGroups!.textContent = '0';
+        return;
+      }
+
+      const flags = Array.from(flagBtns).filter((b) => (b as HTMLInputElement).checked).map((b) => (b as HTMLInputElement).value).join('');
+
+      let re: RegExp;
+      try {
+        re = new RegExp(pattern, flags);
+        errorBox!.classList.add('hidden');
+      } catch (e: any) {
+        errorBox!.textContent = `⚠ ${e.message}`;
+        errorBox!.classList.remove('hidden');
+        previewBox!.classList.add('hidden');
+        matchesBox!.classList.add('hidden');
+        statMatches!.textContent = '0';
+        return;
+      }
+
+      const t0 = performance.now();
+      const matches: RegExpExecArray[] = [];
+      const global = flags.includes('g');
+      if (global) {
+        let m: RegExpExecArray | null;
+        while ((m = re.exec(text)) !== null) {
+          matches.push(m);
+          if (m.index === re.lastIndex) re.lastIndex++;
+        }
+      } else {
+        const m = re.exec(text);
+        if (m) matches.push(m);
+      }
+      const elapsed = Math.round((performance.now() - t0) * 10) / 10;
+
+      statMatches!.textContent = String(matches.length);
+      statTime!.textContent = `${elapsed} ms`;
+      statGroups!.textContent = String(matches[0] ? matches[0].length - 1 : 0);
+
+      // Highlight preview (escaped + wrap matched ranges)
+      if (matches.length) {
+        let html = '';
+        let cursor = 0;
+        for (const m of matches) {
+          const start = m.index;
+          const end = m.index + m[0].length;
+          html += esc(text.slice(cursor, start));
+          html += `<mark>${esc(text.slice(start, end))}</mark>`;
+          cursor = end;
+        }
+        html += esc(text.slice(cursor));
+        preview.innerHTML = html;
+        previewBox?.classList.remove('hidden');
+
+        matchesList!.innerHTML = matches.map((m, i) => `
+          <div class="p-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated text-xs font-mono">
+            <div class="flex justify-between gap-2 text-matte-400 mb-1">
+              <span>#${i + 1} · pos ${m.index}</span>
+              <span>${m[0].length} char</span>
+            </div>
+            <div class="text-purple-600 dark:text-purple-400 break-all">${esc(m[0])}</div>
+            ${Array.from({ length: Math.max(0, m.length - 1) }, (_, g) => `
+              <div class="mt-1 pl-3 border-l-2 border-matte-200 dark:border-matte-700 text-matte-500 dark:text-matte-300">
+                <span class="text-matte-400">group ${g + 1}:</span> ${m[g + 1] === undefined ? '<i class="text-matte-400">undefined</i>' : esc(m[g + 1])}
+              </div>`).join('')}
+          </div>`).join('');
+        matchesBox?.classList.remove('hidden');
+      } else {
+        previewBox!.classList.add('hidden');
+        matchesBox!.classList.add('hidden');
+      }
+    }
+
+    patternInput?.addEventListener('input', run);
+    testInput?.addEventListener('input', run);
+    flagBtns.forEach((b) => b.addEventListener('change', run));
+
+    sampleBtn?.addEventListener('click', () => {
+      patternInput.value = '[\\w.+-]+@[\\w-]+\\.[\\w.]+';
+      testInput.value = 'Hubungi kami di support@toolsaulia.com atau admin@paklubis.my.id — balasan dalam 1x24 jam.\nEmail lain: halo@example.co.id, test@mail.org';
+      run();
+      toast('Contoh terisi!');
+    });
+  });
+</script>

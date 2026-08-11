@@ -61,6 +61,7 @@ const catMeta: Record<string, { label: string; key?: string }> = {
   text: { label: 'Text', key: 'nav.category_text' },
   data: { label: 'Data', key: 'nav.category_data' },
   media: { label: 'Media', key: 'nav.category_media' },
+  network: { label: 'Network', key: 'nav.category_network' },
 };
 
 let crumbMiddle: { href: string; label: string; key?: string } | null = null;
@@ -310,6 +311,10 @@ if (isPdfRoot) {
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
               <span data-i18n="nav.category_media">Media</span>
             </a>
+            <a href="/?cat=network" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium text-matte-700 dark:text-white hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg>
+              <span data-i18n="nav.category_network">Network</span>
+            </a>
           </div>
         </div>
         
@@ -370,6 +375,7 @@ if (isPdfRoot) {
           <a href="/?cat=text" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link">📝 <span data-i18n="nav.category_text">Text</span></a>
           <a href="/?cat=data" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link">🗄️ <span data-i18n="nav.category_data">Data</span></a>
           <a href="/?cat=media" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link">🎵 <span data-i18n="nav.category_media">Media</span></a>
+          <a href="/?cat=network" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link">🌐 <span data-i18n="nav.category_network">Network</span></a>
         </div>
       </div>
       
@@ -488,6 +494,7 @@ if (isPdfRoot) {
             <li><a href="/?cat=text" class="footer-link" data-i18n="footer.text_tools">Text Tools</a></li>
             <li><a href="/?cat=data" class="footer-link" data-i18n="footer.data_tools">Data Tools</a></li>
             <li><a href="/?cat=media" class="footer-link" data-i18n="footer.media_tools">Media Tools</a></li>
+            <li><a href="/?cat=network" class="footer-link" data-i18n="footer.network_tools">Network Tools</a></li>
           </ul>
         </div>
 

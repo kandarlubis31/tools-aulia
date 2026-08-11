@@ -1,0 +1,190 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="HTTP Request Builder — Kirim Request API Online">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="HTTP Request Builder"
+      titleKey="header.http_builder"
+      desc="Buat dan kirim HTTP request dengan headers & body, lihat response + status."
+      descKey="header.http_builder_desc"
+      icon='<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>'
+      gradient="from-blue-500 to-indigo-600"
+    />
+
+    <div class="card-base p-5 animate-fade-in">
+      <div class="flex flex-wrap gap-2 mb-4">
+        <select id="method-select" class="px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold focus:ring-2 focus:ring-blue-500/40 outline-none">
+          {['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'].map(m => <option>{m}</option>)}
+        </select>
+        <input id="url-input" type="text" value="https://jsonplaceholder.typicode.com/posts/1" placeholder="https://api.example.com/endpoint" class="flex-1 min-w-[220px] px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-blue-500/40 outline-none" />
+        <button id="send-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">🚀 <span data-i18n="http.send">Send</span></button>
+      </div>
+
+      <!-- Headers -->
+      <details class="mb-4 group" open>
+        <summary class="cursor-pointer text-xs font-bold text-matte-500 dark:text-matte-300 hover:text-matte-700 dark:hover:text-white transition-colors select-none" data-i18n="http.headers">Headers</summary>
+        <div id="headers-list" class="mt-2 space-y-2"></div>
+        <button id="add-header-btn" class="mt-2 text-2xs font-bold text-blue-600 dark:text-blue-400 hover:underline">+ <span data-i18n="http.add_header">Tambah header</span></button>
+      </details>
+
+      <!-- Body -->
+      <div class="mb-4">
+        <label for="body-area" class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5" data-i18n="http.body">Body <span class="font-normal text-matte-400">(JSON)</span></label>
+        <textarea id="body-area" rows="6" placeholder='{ "title": "Contoh", "body": "…" }' class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-blue-500/40 outline-none resize-y"></textarea>
+      </div>
+    </div>
+
+    <div id="response-box" class="hidden mt-6 animate-fade-in">
+      <div class="card-base p-4 mb-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <span id="resp-status" class="px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300">—</span>
+          <span id="resp-time" class="text-2xs text-matte-400 font-mono">—</span>
+          <span id="resp-size" class="text-2xs text-matte-400 font-mono">—</span>
+          <div class="ml-auto flex items-center gap-2">
+            <button id="copy-resp-btn" class="px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="http.copy">Salin response</button>
+            <button id="pretty-btn" class="px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="http.pretty">Pretty JSON</button>
+          </div>
+        </div>
+      </div>
+      <div class="card-base p-0 overflow-hidden">
+        <pre id="response-body" class="w-full max-h-[50vh] overflow-auto px-4 py-3 text-sm font-mono leading-relaxed whitespace-pre-wrap break-words bg-matte-50 dark:bg-surface-elevated"></pre>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6" data-i18n="http.cors_note">
+      ⚠️ Browser membatasi request ke domain lain (CORS). API tanpa header CORS akan gagal dari browser — itu normal, bukan bug tool ini.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const methodSelect = document.getElementById('method-select') as HTMLSelectElement;
+    const urlInput = document.getElementById('url-input') as HTMLInputElement;
+    const sendBtn = document.getElementById('send-btn');
+    const headersList = document.getElementById('headers-list');
+    const addHeaderBtn = document.getElementById('add-header-btn');
+    const bodyArea = document.getElementById('body-area') as HTMLTextAreaElement;
+    const responseBox = document.getElementById('response-box');
+    const respStatus = document.getElementById('resp-status');
+    const respTime = document.getElementById('resp-time');
+    const respSize = document.getElementById('resp-size');
+    const responseBody = document.getElementById('response-body');
+    const copyRespBtn = document.getElementById('copy-resp-btn');
+    const prettyBtn = document.getElementById('pretty-btn');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let rawResponse = '';
+
+    function addHeaderRow(key = '', value = '') {
+      const row = document.createElement('div');
+      row.className = 'flex gap-2';
+      row.innerHTML = `
+        <input type="text" placeholder="Content-Type" value="${escAttr(key)}" class="header-key flex-1 min-w-[140px] px-2.5 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono focus:ring-2 focus:ring-blue-500/40 outline-none" />
+        <input type="text" placeholder="application/json" value="${escAttr(value)}" class="header-val flex-1 min-w-[140px] px-2.5 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono focus:ring-2 focus:ring-blue-500/40 outline-none" />
+        <button class="del-header-btn w-9 rounded-lg text-xs bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors">✕</button>`;
+      row.querySelector('.del-header-btn')!.addEventListener('click', () => row.remove());
+      headersList!.appendChild(row);
+    }
+
+    function escAttr(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+
+    addHeaderBtn?.addEventListener('click', () => addHeaderRow());
+
+    // default Content-Type row
+    addHeaderRow('Content-Type', 'application/json');
+
+    sendBtn?.addEventListener('click', async () => {
+      const url = urlInput.value.trim();
+      if (!url) { toast('URL wajib diisi', 'error'); return; }
+      let parsed: URL;
+      try { parsed = new URL(url); } catch { toast('URL tidak valid', 'error'); return; }
+      if (!/^https?:$/.test(parsed.protocol)) { toast('Hanya http/https', 'error'); return; }
+
+      const method = methodSelect.value;
+      const headers: Record<string, string> = {};
+      headersList!.querySelectorAll('div').forEach((row) => {
+        const k = (row.querySelector('.header-key') as HTMLInputElement).value.trim();
+        const v = (row.querySelector('.header-val') as HTMLInputElement).value.trim();
+        if (k) headers[k] = v;
+      });
+
+      const bodyText = bodyArea.value.trim();
+      const hasBody = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && bodyText;
+
+      sendBtn!.disabled = true;
+      sendBtn!.innerHTML = '⏳ <span data-i18n="http.sending">Mengirim…</span>';
+      respStatus!.textContent = '…';
+      respStatus!.className = 'px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300';
+
+      const t0 = performance.now();
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 30000);
+      try {
+        const res = await fetch(url, {
+          method,
+          headers,
+          body: hasBody ? bodyText : undefined,
+          signal: controller.signal,
+        });
+        const elapsed = Math.round(performance.now() - t0);
+        const text = await res.text();
+        rawResponse = text;
+        responseBody!.textContent = tryPretty(text);
+        respTime!.textContent = `${elapsed} ms`;
+        respSize!.textContent = `${(new Blob([text]).size / 1024).toFixed(1)} KB`;
+        respStatus!.textContent = `${res.status} ${res.statusText || ''}`.trim();
+        respStatus!.className = `px-3 py-1.5 rounded-lg text-2xs font-bold ${
+          res.status < 300 ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300' :
+          res.status < 500 ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' :
+          'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400'
+        }`;
+        responseBox?.classList.remove('hidden');
+        responseBox?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (e: any) {
+        const elapsed = Math.round(performance.now() - t0);
+        respTime!.textContent = `${elapsed} ms`;
+        respStatus!.textContent = 'ERROR';
+        respStatus!.className = 'px-3 py-1.5 rounded-lg text-2xs font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400';
+        rawResponse = '';
+        responseBody!.textContent = `❌ Gagal mengirim request.\n\nKemungkinan penyebab:\n1. CORS — server menolak request dari browser (umum untuk API tanpa CORS header)\n2. Domain tidak ada / SSL error\n3. Jaringan offline\n4. Timeout 30 detik\n\nDetail: ${e.message}`;
+        responseBox?.classList.remove('hidden');
+      } finally {
+        window.clearTimeout(timeoutId);
+        sendBtn!.disabled = false;
+        sendBtn!.innerHTML = '🚀 <span data-i18n="http.send">Send</span>';
+        (window as any).processI18n?.();
+      }
+    });
+
+    function tryPretty(text: string): string {
+      try {
+        return JSON.stringify(JSON.parse(text), null, 2);
+      } catch {
+        return text;
+      }
+    }
+
+    copyRespBtn?.addEventListener('click', async () => {
+      if (!rawResponse) return;
+      try {
+        await navigator.clipboard.writeText(rawResponse);
+        toast('Response tersalin!');
+      } catch {
+        toast('Gagal menyalin', 'error');
+      }
+    });
+
+    prettyBtn?.addEventListener('click', () => {
+      if (!rawResponse) return;
+      responseBody!.textContent = tryPretty(rawResponse);
+    });
+  });
+</script>

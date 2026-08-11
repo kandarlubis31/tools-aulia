@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="YAML ⇄ JSON Converter — File Converter Online">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="YAML ⇄ JSON Converter"
+      titleKey="header.yaml_json"
+      desc="Konversi file YAML ke JSON dan JSON ke YAML — upload, preview, download."
+      descKey="header.yaml_json_desc"
+      icon='<path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/>'
+      gradient="from-amber-500 to-orange-600"
+    />
+
+    <div class="animate-fade-in">
+      <DropZone
+        id="drop-zone"
+        inputId="file-input"
+        accept=".yaml,.yml,.json,text/yaml,application/json"
+        labelKey="upload.drop_yaml"
+        subLabelKey="upload.or_click"
+        label="Drag & drop file YAML / JSON di sini"
+        gradient="from-amber-500 to-orange-600"
+        hoverClass="hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+        className="max-w-xl mx-auto"
+      />
+    </div>
+
+    <div id="converter" class="hidden mt-6 animate-fade-in">
+      <div class="card-base p-4 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span id="mode-badge" class="px-3 py-1.5 rounded-lg text-2xs font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">YAML → JSON</span>
+            <p id="file-name" class="text-xs text-matte-500 dark:text-matte-300 truncate"></p>
+          </div>
+          <button id="download-btn" class="gradient-brand px-6 py-2 rounded-lg text-xs font-bold">💾 <span data-i18n="yamljson.download">Download Hasil</span></button>
+        </div>
+      </div>
+
+      <div class="card-base p-4">
+        <h2 class="text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="yamljson.result">Hasil Konversi</h2>
+        <pre id="output-area" class="w-full min-h-[40vh] overflow-auto px-3 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated text-sm font-mono leading-relaxed whitespace-pre-wrap break-words"><span class="text-matte-400" data-i18n="yamljson.loading">Memproses…</span></pre>
+      </div>
+    </div>
+
+    <p id="error-box" class="hidden mt-4 text-xs text-red-500 dark:text-red-400 font-mono bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2"></p>
+  </div>
+</BaseLayout>
+
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const converter = document.getElementById('converter');
+    const modeBadge = document.getElementById('mode-badge');
+    const fileName = document.getElementById('file-name');
+    const outputArea = document.getElementById('output-area');
+    const errorBox = document.getElementById('error-box');
+    const downloadBtn = document.getElementById('download-btn');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let resultText = '';
+    let resultExt = 'json';
+    let resultName = 'hasil';
+
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    ['dragenter', 'dragover'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('border-amber-500', 'bg-amber-50', 'dark:bg-amber-950/20'); }));
+    ['dragleave', 'drop'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('border-amber-500', 'bg-amber-50', 'dark:bg-amber-950/20'); }));
+    dropZone?.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt?.files.length) fileInput!.files = dt.files;
+      fileInput?.dispatchEvent(new Event('change'));
+    });
+
+    fileInput?.addEventListener('change', async () => {
+      const f = fileInput.files?.[0];
+      if (!f) return;
+      if (f.size > 5 * 1024 * 1024) { toast('File maksimal 5 MB', 'error'); return; }
+      const text = await f.text();
+      const ext = f.name.split('.').pop()?.toLowerCase() || '';
+
+      const ready = await window.waitForCdnLib?.('jsyaml', { maxRetries: 40 });
+      if (!ready) { toast('Library YAML gagal dimuat, cek koneksi', 'error'); return; }
+
+      try {
+        let result: string;
+        let mode: string;
+        if (ext === 'json' || text.trimStart().startsWith('{') || text.trimStart().startsWith('[')) {
+          // JSON → YAML
+          const obj = JSON.parse(text);
+          result = (window as any).jsyaml.dump(obj, { indent: 2, lineWidth: -1 });
+          mode = 'JSON → YAML';
+          resultExt = 'yaml';
+        } else {
+          // YAML → JSON (support multi-doc)
+          const docs = (window as any).jsyaml.loadAll(text);
+          result = JSON.stringify(docs.length === 1 ? docs[0] : docs, null, 2);
+          mode = 'YAML → JSON';
+          resultExt = 'json';
+        }
+        resultName = f.name.replace(/\.[^.]+$/, '');
+        resultText = result;
+        outputArea!.textContent = result;
+        modeBadge!.textContent = mode;
+        fileName!.textContent = f.name;
+        converter?.classList.remove('hidden');
+        converter?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        errorBox!.classList.add('hidden');
+        toast('Konversi berhasil!');
+      } catch (e: any) {
+        errorBox!.textContent = `⚠ ${e.message}`;
+        errorBox!.classList.remove('hidden');
+      }
+    });
+
+    downloadBtn?.addEventListener('click', () => {
+      if (!resultText) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([resultText], { type: 'text/plain' }));
+      a.download = `${resultName}.${resultExt}`;
+      a.click();
+    });
+  });
+</script>

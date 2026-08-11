@@ -1,0 +1,312 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="REST Client — Kirim & Simpan Request API">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="REST Client"
+      titleKey="header.rest_client"
+      desc="Koleksi request API tersimpan di browser + environment variables."
+      descKey="header.rest_client_desc"
+      icon='<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>'
+      gradient="from-cyan-500 to-teal-600"
+    />
+
+    <div class="grid lg:grid-cols-[260px_1fr] gap-4 animate-fade-in">
+      <!-- Saved requests sidebar -->
+      <div class="card-base p-4 lg:sticky lg:top-24 h-fit">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-2xs font-bold text-matte-400 uppercase tracking-wider" data-i18n="rest.saved">Saved Requests</h2>
+          <span id="saved-count" class="text-2xs text-matte-400 font-mono"></span>
+        </div>
+        <div id="saved-list" class="space-y-1.5 max-h-[50vh] overflow-y-auto pr-1"></div>
+        <button id="save-btn" class="mt-3 w-full px-3 py-2 rounded-lg text-xs font-bold bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-200 dark:hover:bg-cyan-900/60 transition-all">💾 <span data-i18n="rest.save">Simpan request ini</span></button>
+        <details class="mt-3">
+          <summary class="cursor-pointer text-2xs font-bold text-matte-500 dark:text-matte-300 hover:text-matte-700 dark:hover:text-white transition-colors select-none" data-i18n="rest.env">Environment Variables</summary>
+          <div id="env-list" class="mt-2 space-y-1.5"></div>
+          <button id="add-env-btn" class="mt-2 text-2xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline">+ <span data-i18n="rest.add_env">Tambah var</span></button>
+          <p class="text-2xs text-matte-400 mt-2" data-i18n="rest.env_hint">Pakai {'{{nama}}'} di URL/headers/body.</p>
+        </details>
+      </div>
+
+      <!-- Request editor -->
+      <div>
+        <div class="card-base p-5 mb-4">
+          <div class="flex flex-wrap gap-2 mb-3">
+            <select id="method-select" class="px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold focus:ring-2 focus:ring-cyan-500/40 outline-none">
+              {['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map(m => <option>{m}</option>)}
+            </select>
+            <input id="url-input" type="text" value="https://jsonplaceholder.typicode.com/posts" placeholder="https://api.example.com" class="flex-1 min-w-[200px] px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-cyan-500/40 outline-none" />
+            <button id="send-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">🚀 <span data-i18n="http.send">Send</span></button>
+          </div>
+          <details class="mb-3" open>
+            <summary class="cursor-pointer text-xs font-bold text-matte-500 dark:text-matte-300 select-none" data-i18n="http.headers">Headers</summary>
+            <div id="headers-list" class="mt-2 space-y-2"></div>
+            <button id="add-header-btn" class="mt-2 text-2xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline">+ <span data-i18n="http.add_header">Tambah header</span></button>
+          </details>
+          <div>
+            <label for="body-area" class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5" data-i18n="http.body">Body <span class="font-normal text-matte-400">(JSON)</span></label>
+            <textarea id="body-area" rows="6" placeholder='{ "title": "Contoh" }' class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-cyan-500/40 outline-none resize-y"></textarea>
+          </div>
+        </div>
+
+        <div id="response-box" class="hidden card-base p-0 overflow-hidden">
+          <div class="p-4 border-b border-matte-100 dark:border-matte-800 flex flex-wrap items-center gap-3">
+            <span id="resp-status" class="px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300">—</span>
+            <span id="resp-time" class="text-2xs text-matte-400 font-mono">—</span>
+            <button id="copy-resp-btn" class="ml-auto px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="http.copy">Salin response</button>
+          </div>
+          <pre id="response-body" class="max-h-[50vh] overflow-auto px-4 py-3 text-sm font-mono leading-relaxed whitespace-pre-wrap break-words bg-matte-50 dark:bg-surface-elevated"></pre>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6" data-i18n="http.cors_note">
+      ⚠️ Browser membatasi request ke domain lain (CORS). API tanpa header CORS akan gagal dari browser — itu normal, bukan bug tool ini.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const SAVED_KEY = 'ta-rest-client-saved';
+    const ENV_KEY = 'ta-rest-client-env';
+
+    const methodSelect = document.getElementById('method-select') as HTMLSelectElement;
+    const urlInput = document.getElementById('url-input') as HTMLInputElement;
+    const sendBtn = document.getElementById('send-btn');
+    const headersList = document.getElementById('headers-list');
+    const addHeaderBtn = document.getElementById('add-header-btn');
+    const bodyArea = document.getElementById('body-area') as HTMLTextAreaElement;
+    const savedList = document.getElementById('saved-list');
+    const savedCount = document.getElementById('saved-count');
+    const saveBtn = document.getElementById('save-btn');
+    const envList = document.getElementById('env-list');
+    const addEnvBtn = document.getElementById('add-env-btn');
+    const responseBox = document.getElementById('response-box');
+    const respStatus = document.getElementById('resp-status');
+    const respTime = document.getElementById('resp-time');
+    const responseBody = document.getElementById('response-body');
+    const copyRespBtn = document.getElementById('copy-resp-btn');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let rawResponse = '';
+
+    // ---- helpers ----
+    const readSaved = (): any[] => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); } catch { return []; } };
+    const readEnv = (): Record<string, string> => { try { return JSON.parse(localStorage.getItem(ENV_KEY) || '{}'); } catch { return {}; } };
+
+    function escAttr(s: string): string { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+    function escHtml(s: string): string { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    function getHeaders(): Record<string, string> {
+      const h: Record<string, string> = {};
+      headersList!.querySelectorAll('div').forEach((row) => {
+        const k = (row.querySelector('.header-key') as HTMLInputElement)?.value.trim();
+        const v = (row.querySelector('.header-val') as HTMLInputElement)?.value.trim();
+        if (k) h[k] = v;
+      });
+      return h;
+    }
+
+    function setHeaders(headers: Record<string, string>) {
+      headersList!.innerHTML = '';
+      Object.entries(headers).forEach(([k, v]) => addHeaderRow(k, v));
+      if (!Object.keys(headers).length) addHeaderRow();
+    }
+
+    function addHeaderRow(key = '', value = '') {
+      const row = document.createElement('div');
+      row.className = 'flex gap-2';
+      row.innerHTML = `
+        <input type="text" placeholder="Content-Type" value="${escAttr(key)}" class="header-key flex-1 min-w-[120px] px-2.5 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono focus:ring-2 focus:ring-cyan-500/40 outline-none" />
+        <input type="text" placeholder="application/json" value="${escAttr(value)}" class="header-val flex-1 min-w-[120px] px-2.5 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono focus:ring-2 focus:ring-cyan-500/40 outline-none" />
+        <button class="del-header-btn w-9 rounded-lg text-xs bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors">✕</button>`;
+      row.querySelector('.del-header-btn')!.addEventListener('click', () => row.remove());
+      headersList!.appendChild(row);
+    }
+
+    function substitute(text: string): string {
+      const env = readEnv();
+      return text.replace(/\{\{(\w+)\}\}/g, (m, name) => (env[name] !== undefined ? env[name] : m));
+    }
+
+    // ---- Env UI ----
+    function renderEnv() {
+      const env = readEnv();
+      envList!.innerHTML = Object.entries(env).map(([k, v]) => `
+        <div class="flex gap-1.5">
+          <input value="${escAttr(k)}" placeholder="nama" class="env-key flex-1 min-w-0 px-2 py-1.5 rounded-md bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-1 focus:ring-cyan-500/50" />
+          <input value="${escAttr(v)}" placeholder="nilai" class="env-val flex-1 min-w-0 px-2 py-1.5 rounded-md bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-1 focus:ring-cyan-500/50" />
+          <button class="del-env-btn w-8 rounded-md text-xs bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors">✕</button>
+        </div>`).join('');
+      envList!.querySelectorAll('.del-env-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const row = (btn as HTMLElement).parentElement!;
+          row.remove();
+          persistEnv();
+        });
+      });
+      envList!.querySelectorAll('input').forEach((input) => {
+        input.addEventListener('input', persistEnv);
+      });
+    }
+
+    function persistEnv() {
+      const env: Record<string, string> = {};
+      envList!.querySelectorAll('div').forEach((row) => {
+        const k = (row.querySelector('.env-key') as HTMLInputElement)?.value.trim();
+        const v = (row.querySelector('.env-val') as HTMLInputElement)?.value;
+        if (k) env[k] = v;
+      });
+      localStorage.setItem(ENV_KEY, JSON.stringify(env));
+    }
+
+    addEnvBtn?.addEventListener('click', () => {
+      const row = document.createElement('div');
+      row.className = 'flex gap-1.5';
+      row.innerHTML = `
+        <input placeholder="nama" class="env-key flex-1 min-w-0 px-2 py-1.5 rounded-md bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-1 focus:ring-cyan-500/50" />
+        <input placeholder="nilai" class="env-val flex-1 min-w-0 px-2 py-1.5 rounded-md bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-1 focus:ring-cyan-500/50" />
+        <button class="del-env-btn w-8 rounded-md text-xs bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors">✕</button>`;
+      row.querySelector('.del-env-btn')!.addEventListener('click', () => { row.remove(); persistEnv(); });
+      row.querySelectorAll('input').forEach((input) => input.addEventListener('input', persistEnv));
+      envList!.appendChild(row);
+      persistEnv();
+    });
+
+    // ---- Saved requests ----
+    function renderSaved() {
+      const saved = readSaved();
+      savedCount!.textContent = String(saved.length);
+      savedList!.innerHTML = saved.length ? saved.map((r, i) => `
+        <button data-idx="${i}" class="saved-item w-full text-left px-2.5 py-2 rounded-lg hover:bg-matte-50 dark:hover:bg-surface-elevated transition-colors">
+          <div class="flex items-center gap-2">
+            <span class="text-2xs font-bold ${methodColor(r.method)}">${r.method}</span>
+            <span class="text-xs text-matte-600 dark:text-matte-300 truncate">${escHtml(r.name || 'Tanpa nama')}</span>
+          </div>
+          <div class="text-2xs text-matte-400 font-mono truncate mt-0.5">${escHtml(r.url)}</div>
+        </button>`).join('')
+        : '<p class="text-2xs text-matte-400 text-center py-3" data-i18n="rest.empty">Belum ada request tersimpan</p>';
+      (window as any).processI18n?.();
+
+      savedList!.querySelectorAll('.saved-item').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const r = readSaved()[parseInt((btn as HTMLElement).dataset.idx!)];
+          if (!r) return;
+          methodSelect.value = r.method;
+          urlInput.value = r.url;
+          bodyArea.value = r.body || '';
+          setHeaders(r.headers || {});
+        });
+      });
+      // delete button? long-press/context — pakai tombol kecil di hover via double click
+      savedList!.querySelectorAll('.saved-item').forEach((btn) => {
+        btn.addEventListener('dblclick', () => {
+          const idx = parseInt((btn as HTMLElement).dataset.idx!);
+          const saved = readSaved();
+          saved.splice(idx, 1);
+          localStorage.setItem(SAVED_KEY, JSON.stringify(saved));
+          renderSaved();
+          toast('Request dihapus');
+        });
+      });
+    }
+
+    function methodColor(m: string): string {
+      const map: Record<string, string> = {
+        GET: 'text-emerald-500', POST: 'text-blue-500', PUT: 'text-amber-500',
+        PATCH: 'text-violet-500', DELETE: 'text-red-500',
+      };
+      return map[m] || 'text-matte-400';
+    }
+
+    saveBtn?.addEventListener('click', () => {
+      const url = urlInput.value.trim();
+      if (!url) { toast('URL wajib diisi', 'error'); return; }
+      const saved = readSaved();
+      let name: string;
+      try { name = new URL(url).hostname || url; } catch { name = url.split('/')[2] || url; }
+      saved.unshift({ name, method: methodSelect.value, url, headers: getHeaders(), body: bodyArea.value, savedAt: Date.now() });
+      localStorage.setItem(SAVED_KEY, JSON.stringify(saved.slice(0, 30)));
+      renderSaved();
+      toast('Request tersimpan!');
+    });
+
+    // ---- Send ----
+    addHeaderBtn?.addEventListener('click', () => addHeaderRow());
+    addHeaderRow('Content-Type', 'application/json');
+
+    sendBtn?.addEventListener('click', async () => {
+      const rawUrl = urlInput.value.trim();
+      if (!rawUrl) { toast('URL wajib diisi', 'error'); return; }
+      const url = substitute(rawUrl);
+      let parsed: URL;
+      try { parsed = new URL(url); } catch { toast('URL tidak valid (cek env var)', 'error'); return; }
+      if (!/^https?:$/.test(parsed.protocol)) { toast('Hanya http/https', 'error'); return; }
+
+      const method = methodSelect.value;
+      const headers: Record<string, string> = {};
+      Object.entries(getHeaders()).forEach(([k, v]) => { headers[k] = substitute(v); });
+      const bodyText = bodyArea.value.trim() ? substitute(bodyArea.value) : '';
+      const hasBody = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && bodyText;
+
+      sendBtn!.disabled = true;
+      sendBtn!.innerHTML = '⏳ …';
+      respStatus!.textContent = '…';
+      respStatus!.className = 'px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300';
+
+      const t0 = performance.now();
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 30000);
+      try {
+        const res = await fetch(url, { method, headers, body: hasBody ? bodyText : undefined, signal: controller.signal });
+        const elapsed = Math.round(performance.now() - t0);
+        const text = await res.text();
+        rawResponse = text;
+        responseBody!.textContent = tryPretty(text);
+        respTime!.textContent = `${elapsed} ms`;
+        respStatus!.textContent = `${res.status} ${res.statusText || ''}`.trim();
+        respStatus!.className = `px-3 py-1.5 rounded-lg text-2xs font-bold ${
+          res.status < 300 ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300' :
+          res.status < 500 ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' :
+          'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400'}`;
+        responseBox?.classList.remove('hidden');
+      } catch (e: any) {
+        respTime!.textContent = `${Math.round(performance.now() - t0)} ms`;
+        respStatus!.textContent = 'ERROR';
+        respStatus!.className = 'px-3 py-1.5 rounded-lg text-2xs font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400';
+        rawResponse = '';
+        responseBody!.textContent = `❌ Gagal mengirim request.\n\nKemungkinan penyebab:\n1. CORS — server menolak request dari browser\n2. Domain tidak ada / SSL error\n3. Jaringan offline\n4. Timeout 30 detik\n\nDetail: ${e.message}`;
+        responseBox?.classList.remove('hidden');
+      } finally {
+        window.clearTimeout(timeoutId);
+        sendBtn!.disabled = false;
+        sendBtn!.innerHTML = '🚀 <span data-i18n="http.send">Send</span>';
+        (window as any).processI18n?.();
+      }
+    });
+
+    function tryPretty(text: string): string {
+      try { return JSON.stringify(JSON.parse(text), null, 2); } catch { return text; }
+    }
+
+    copyRespBtn?.addEventListener('click', async () => {
+      if (!rawResponse) return;
+      try {
+        await navigator.clipboard.writeText(rawResponse);
+        toast('Response tersalin!');
+      } catch {
+        toast('Gagal menyalin', 'error');
+      }
+    });
+
+    // init
+    renderEnv();
+    renderSaved();
+  });
+</script>

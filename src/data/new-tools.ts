@@ -7,6 +7,16 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  '/network/rest-client',
+  '/network/http-builder',
+  '/data/ical',
+  '/data/yaml-json',
+  '/data/xlsx-viewer',
+  '/data/csv-editor',
+  '/dev/subnet',
+  '/dev/sql-formatter',
+  '/dev/json-to-yaml',
+  '/dev/regex-tester',
   '/utils/notes-md',
   '/calc/compound-interest',
   '/pdf/form-filler',

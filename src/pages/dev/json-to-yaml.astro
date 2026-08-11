@@ -1,0 +1,163 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="JSON ⇄ YAML Converter Online">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="JSON ⇄ YAML Converter"
+      titleKey="header.json_to_yaml"
+      desc="Konversi JSON ke YAML dan sebaliknya — paste teks atau upload file."
+      descKey="header.json_to_yaml_desc"
+      icon='<path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/><path d="M12 3v18"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <div class="card-base p-4 mb-4 animate-fade-in">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <button id="to-yaml-btn" class="px-4 py-2 rounded-lg text-xs font-bold bg-emerald-500 text-white shadow-md transition-all">JSON → YAML</button>
+          <button id="to-json-btn" class="px-4 py-2 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">YAML → JSON</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="px-3 py-2 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover cursor-pointer transition-all">
+            📂 <span data-i18n="jsonyaml.upload">Upload file</span>
+            <input id="file-input" type="file" accept=".json,.yaml,.yml,application/json,text/yaml" class="hidden" />
+          </label>
+          <button id="convert-btn" class="gradient-brand px-6 py-2 rounded-lg text-xs font-bold">⚡ <span data-i18n="jsonyaml.convert">Konversi</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-4 animate-fade-in">
+      <div class="card-base p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-2xs font-bold text-matte-400 uppercase tracking-wider"><span id="input-label">JSON</span></h2>
+          <button id="clear-input-btn" class="text-2xs text-matte-400 hover:text-red-500 transition-colors" data-i18n="jsonyaml.clear">Bersihkan</button>
+        </div>
+        <textarea id="input-area" rows="18" placeholder='{ "nama": "Aulia", "tools": ["JSON", "YAML"] }' class="w-full px-3 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono leading-relaxed focus:ring-2 focus:ring-emerald-500/40 outline-none resize-y"></textarea>
+      </div>
+
+      <div class="card-base p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-2xs font-bold text-matte-400 uppercase tracking-wider"><span id="output-label">YAML</span></h2>
+          <div class="flex items-center gap-2">
+            <button id="copy-btn" class="text-2xs text-matte-400 hover:text-emerald-500 transition-colors" data-i18n="jsonyaml.copy">Salin</button>
+            <button id="download-btn" class="text-2xs text-matte-400 hover:text-emerald-500 transition-colors" data-i18n="jsonyaml.download">Download</button>
+          </div>
+        </div>
+        <pre id="output-area" class="w-full min-h-[18rem] max-h-[28rem] overflow-auto px-3 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated text-sm font-mono leading-relaxed whitespace-pre-wrap break-words"><span class="text-matte-400" data-i18n="jsonyaml.result">Hasil konversi muncul di sini…</span></pre>
+      </div>
+    </div>
+
+    <p id="error-box" class="hidden mt-4 text-xs text-red-500 dark:text-red-400 font-mono bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2"></p>
+  </div>
+</BaseLayout>
+
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const toYamlBtn = document.getElementById('to-yaml-btn');
+    const toJsonBtn = document.getElementById('to-json-btn');
+    const convertBtn = document.getElementById('convert-btn');
+    const inputArea = document.getElementById('input-area') as HTMLTextAreaElement;
+    const outputArea = document.getElementById('output-area');
+    const inputLabel = document.getElementById('input-label');
+    const outputLabel = document.getElementById('output-label');
+    const errorBox = document.getElementById('error-box');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const clearInputBtn = document.getElementById('clear-input-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const downloadBtn = document.getElementById('download-btn');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let mode: 'toYaml' | 'toJson' = 'toYaml';
+
+    function setMode(m: 'toYaml' | 'toJson') {
+      mode = m;
+      inputLabel!.textContent = m === 'toYaml' ? 'JSON' : 'YAML';
+      outputLabel!.textContent = m === 'toYaml' ? 'YAML' : 'JSON';
+      toYamlBtn!.className = m === 'toYaml'
+        ? 'px-4 py-2 rounded-lg text-xs font-bold bg-emerald-500 text-white shadow-md transition-all'
+        : 'px-4 py-2 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all';
+      toJsonBtn!.className = m === 'toJson'
+        ? 'px-4 py-2 rounded-lg text-xs font-bold bg-emerald-500 text-white shadow-md transition-all'
+        : 'px-4 py-2 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all';
+      errorBox!.classList.add('hidden');
+    }
+
+    toYamlBtn?.addEventListener('click', () => { setMode('toYaml'); convert(); });
+    toJsonBtn?.addEventListener('click', () => { setMode('toJson'); convert(); });
+
+    fileInput?.addEventListener('change', async () => {
+      const f = fileInput.files?.[0];
+      if (!f) return;
+      if (f.size > 2 * 1024 * 1024) { toast('File maksimal 2 MB', 'error'); return; }
+      const text = await f.text();
+      // deteksi arah dari ekstensi/isi
+      const trimmed = text.trimStart();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) setMode('toYaml');
+      else setMode('toJson');
+      inputArea.value = text;
+      convert();
+      toast('File dimuat!');
+    });
+
+    clearInputBtn?.addEventListener('click', () => { inputArea.value = ''; outputArea!.innerHTML = ''; errorBox!.classList.add('hidden'); });
+
+    convertBtn?.addEventListener('click', convert);
+    inputArea?.addEventListener('input', () => {
+      // auto-convert debounced
+      window.clearTimeout((convertBtn as any)._t);
+      (convertBtn as any)._t = window.setTimeout(convert, 400);
+    });
+
+    async function convert() {
+      const text = inputArea.value.trim();
+      if (!text) { outputArea!.innerHTML = ''; return; }
+      const ready = await window.waitForCdnLib?.('jsyaml', { maxRetries: 40 });
+      if (!ready) { toast('Library YAML gagal dimuat, cek koneksi', 'error'); return; }
+
+      try {
+        let result: string;
+        if (mode === 'toYaml') {
+          const obj = JSON.parse(text);
+          result = (window as any).jsyaml.dump(obj, { indent: 2, lineWidth: -1 });
+        } else {
+          const obj = (window as any).jsyaml.load(text);
+          result = JSON.stringify(obj, null, 2);
+        }
+        outputArea!.textContent = result;
+        errorBox!.classList.add('hidden');
+      } catch (e: any) {
+        errorBox!.textContent = `⚠ ${e.message}`;
+        errorBox!.classList.remove('hidden');
+      }
+    }
+
+    copyBtn?.addEventListener('click', async () => {
+      const text = outputArea!.textContent || '';
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        toast('Tersalin!');
+      } catch {
+        toast('Gagal menyalin', 'error');
+      }
+    });
+
+    downloadBtn?.addEventListener('click', () => {
+      const text = outputArea!.textContent || '';
+      if (!text) return;
+      const ext = mode === 'toYaml' ? 'yaml' : 'json';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+      a.download = `hasil.${ext}`;
+      a.click();
+    });
+  });
+</script>
