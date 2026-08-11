@@ -7,18 +7,18 @@
 
 ---
 
-## Tool Categories (118 tools + PDF hub)
+## Tool Categories (139 tools + PDF hub)
 
 | Category | Tools | Key tools |
 |----------|-------|-----------|
-| **PDF** | 22+hub | compress, merge, split, sign, watermark, to-word, form-filler, redact, thumbnails |
-| **Dev** | 19 | base64, json, markdown, diff, timestamp, url, proxy, my-ip, cron, css-shadow, regex, json-yaml, sql, subnet, gradient, html-minifier, chmod |
-| **Calc** | 14 | age, bmi, currency, number, percentage, unit, case, emi, compound-interest, timezone, scientific, date-diff, fraction, number-words |
-| **Image** | 12 | color, compressor, converter, editor, html-to-img, remove-bg, watermark, cropper, batch-resizer, exif, ascii, meme |
-| **Security** | 13 | password, hash, uuid, bcrypt, file-encrypt, cipher, totp, steganography, luhn, habit-tracker, password-strength, hmac, token |
-| **Utils** | 17 | wa-builder, qr, jokes, brainstorm, pomodoro, todo, word-counter, prabowo-countdown, paste-to-md, stopwatch, lorem, motivation, sinonim, notes-md, decision-wheel, expense-tracker, wordle-id |
-| **Text** | 6 | typing-test, text-to-speech, summarizer, readability, fancy, emoji |
-| **Data** | 7 | csv-editor, xlsx-viewer, yaml-json, ical, fake-data, xml-formatter, vcard |
+| **PDF** | 25+hub | compress, merge, split, sign, watermark, to-word, form-filler, redact, thumbnails, compare, booklet |
+| **Dev** | 24 | base64, json, markdown, diff, timestamp, url, proxy, my-ip, cron, css-shadow, regex, json-yaml, sql, subnet, gradient, html-minifier, chmod, jwt, json-to-ts, color-harmony, contrast, grid, json-schema |
+| **Calc** | 18 | age, bmi, currency, number, percentage, unit, case, emi, compound-interest, timezone, scientific, date-diff, fraction, number-words, matrix, work-hours, bmr, random |
+| **Image** | 14 | color, compressor, converter, editor, html-to-img, remove-bg, watermark, cropper, batch-resizer, exif, ascii, meme, palette, collage |
+| **Security** | 12 | password, hash, uuid, bcrypt, file-encrypt, cipher, totp, steganography, luhn, password-strength, hmac, token |
+| **Utils** | 19 | wa-builder, qr, jokes, brainstorm, pomodoro, todo, word-counter, prabowo-countdown, paste-to-md, stopwatch, lorem, motivation, sinonim, notes-md, decision-wheel, expense-tracker, wordle-id, habit-tracker, qr-scanner |
+| **Text** | 11 | typing-test, text-to-speech, summarizer, readability, fancy, emoji, speech-to-text, lang-detect, anagram, morse, rot13 |
+| **Data** | 8 | csv-editor, xlsx-viewer, yaml-json, ical, fake-data, xml-formatter, vcard, barcode |
 | **Media** | 3 | audio-recorder, waveform, audio-trimmer |
 | **Network** | 3 | http-builder, rest-client, dns-lookup |
 | **File** | 2 | csv-json, pdf-to-md |
@@ -28,14 +28,14 @@
 ## Architecture
 
 ### Key Files
-- `src/data/tools.ts` — Tool registry (119 entries: 118 tools + PDF hub)
+- `src/data/tools.ts` — Tool registry (140 entries: 139 tools + PDF hub)
 - `src/i18n/translations.ts` — All i18n keys (tool, header, UI)
 - `src/layouts/BaseLayout.astro` — Global layout + nav + footer + i18n toggle
 - `src/styles/global.css` — Tailwind + custom CSS
 - `vercel.json` — CSP headers + Permissions-Policy
 - `scripts/check-client-side.mjs` — Guardrail: ensures no server-side processing
 
-### Composables (11)
+### Composables (17)
 - `useClipboard.ts` — Copy to clipboard
 - `useDebounce.ts` — Input debouncing
 - `useLoading.ts` — Loading state management
@@ -79,15 +79,6 @@
 
 ---
 
-## Known Bugs / Open Items
-
-1. ~~Error boundary~~ — JS errors can cause SPA blank page (P2)
-2. ~~html-to-pdf migration~~ — Not yet migrated to composables (P3)
-3. ~~Batch download~~ — PDF to Image batch download not implemented (P2)
-4. ~~Quality slider~~ — PDF to Image resolution slider not implemented (P2)
-
----
-
 ## Testing
 
 - **Unit tests:** 43 tests (6 files) — vitest
@@ -100,8 +91,8 @@
 ## Plan Status
 
 - **Plan 100 Tools:** `docs/plan-new-tools.md`
-- **B1-B6:** ✅ SELESAI (60 tools added: 58 → 118)
-- **Sisa:** 40 tools untuk mencapai target 158
+- **B1-B8:** ✅ SELESAI (81 tools added: 58 → 139)
+- **Sisa:** 19 tools untuk mencapai target 158
 
 ---
 

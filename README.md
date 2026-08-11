@@ -22,7 +22,7 @@
 
 ### Tentang
 
-**ToolsAulia** adalah koleksi 129+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
+**ToolsAulia** adalah koleksi 139+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
 
 ### ✨ Kenapa ToolsAulia?
 
@@ -80,7 +80,7 @@ tools-aulia/
 │   ├── components/     # Shared UI components
 │   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading
 │   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
-│   ├── data/           # tools.ts (88 tools metadata)
+│   ├── data/           # tools.ts (139 tools metadata)
 │   ├── i18n/           # translations.ts
 │   └── styles/         # global.css
 ├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json
@@ -167,7 +167,7 @@ tools-aulia/
 │   ├── components/     # Shared UI components
 │   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading
 │   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
-│   ├── data/           # tools.ts (88 tools metadata)
+│   ├── data/           # tools.ts (139 tools metadata)
 │   ├── i18n/           # translations.ts
 │   └── styles/         # global.css
 ├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json
