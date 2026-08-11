@@ -1,0 +1,213 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Snake Game — Game Snake Klasik | ToolsAulia">
+  <div class="max-w-lg mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Snake Game"
+      titleKey="header.snake"
+      desc="Game snake klasik di browser. Mainkan & kalahkan high score!"
+      descKey="header.snake_desc"
+      icon='<path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M15.5 8.5v.01"/><path d="M9 14a6 6 0 0 0 6 0"/>'
+      gradient="from-green-500 to-emerald-600"
+    />
+
+    <div class="animate-fade-in space-y-4">
+      <div class="card-base p-4 text-center">
+        <div class="flex items-center justify-center gap-6 mb-3">
+          <div>
+            <span class="text-2xs text-matte-400 block font-bold uppercase" data-i18n="snake.score">Score</span>
+            <span id="score-display" class="text-3xl font-extrabold tabular-nums text-matte-800 dark:text-white">0</span>
+          </div>
+          <div>
+            <span class="text-2xs text-matte-400 block font-bold uppercase">🏆 High</span>
+            <span id="high-display" class="text-3xl font-extrabold tabular-nums text-amber-500">0</span>
+          </div>
+        </div>
+        <canvas id="game-canvas" width="300" height="300" class="mx-auto rounded-lg bg-matte-900"></canvas>
+        <div class="mt-3 flex gap-2 justify-center">
+          <button id="start-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">▶️ <span data-i18n="snake.start">Mulai</span></button>
+        </div>
+        <p class="text-2xs text-matte-400 mt-2">Gunakan <kbd class="px-1.5 py-0.5 rounded bg-matte-100 dark:bg-surface-elevated text-xs">↑↓←→</kbd> atau <kbd class="px-1.5 py-0.5 rounded bg-matte-100 dark:bg-surface-elevated text-xs">WASD</kbd></p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const scoreDisplay = document.getElementById('score-display')!;
+    const highDisplay = document.getElementById('high-display')!;
+    const startBtn = document.getElementById('start-btn') as HTMLButtonElement;
+
+    const STORAGE_KEY = 'ta-snake-highscore';
+    const GRID = 15;
+    const COLS = canvas.width / GRID;
+    const ROWS = canvas.height / GRID;
+
+    let snake: [number, number][] = [];
+    let food: [number, number] = [0, 0];
+    let dir: [number, number] = [1, 0];
+    let nextDir: [number, number] = [1, 0];
+    let score = 0;
+    let highScore = 0;
+    let running = false;
+    let interval: number | null = null;
+    let speed = 120;
+
+    function loadHigh() {
+      try { highScore = parseInt(localStorage.getItem(STORAGE_KEY) || '0'); } catch { highScore = 0; }
+      highDisplay.textContent = String(highScore);
+    }
+
+    function saveHigh() {
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem(STORAGE_KEY, String(highScore));
+        highDisplay.textContent = String(highScore);
+      }
+    }
+
+    function randomFood(): [number, number] {
+      let pos: [number, number];
+      do {
+        pos = [Math.floor(Math.random() * COLS), Math.floor(Math.random() * ROWS)];
+      } while (snake.some(s => s[0] === pos[0] && s[1] === pos[1]));
+      return pos;
+    }
+
+    function init() {
+      snake = [[5, 5], [4, 5], [3, 5]];
+      dir = [1, 0];
+      nextDir = [1, 0];
+      score = 0;
+      speed = 120;
+      scoreDisplay.textContent = '0';
+      food = randomFood();
+    }
+
+    function draw() {
+      // Background
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Grid lines
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 0.5;
+      for (let x = 0; x < COLS; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * GRID, 0);
+        ctx.lineTo(x * GRID, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < ROWS; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, y * GRID);
+        ctx.lineTo(canvas.width, y * GRID);
+        ctx.stroke();
+      }
+
+      // Snake
+      snake.forEach((s, i) => {
+        ctx.fillStyle = i === 0 ? '#4ade80' : '#22c55e';
+        ctx.fillRect(s[0] * GRID + 1, s[1] * GRID + 1, GRID - 2, GRID - 2);
+      });
+
+      // Food
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath();
+      ctx.arc(food[0] * GRID + GRID / 2, food[1] * GRID + GRID / 2, GRID / 2 - 1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function tick() {
+      dir = [nextDir[0], nextDir[1]];
+      const head = snake[0];
+      const newHead: [number, number] = [head[0] + dir[0], head[1] + dir[1]];
+
+      // Wall collision = game over
+      if (newHead[0] < 0 || newHead[0] >= COLS || newHead[1] < 0 || newHead[1] >= ROWS) {
+        gameOver();
+        return;
+      }
+
+      // Self collision
+      if (snake.some(s => s[0] === newHead[0] && s[1] === newHead[1])) {
+        gameOver();
+        return;
+      }
+
+      snake.unshift(newHead);
+
+      // Eat food?
+      if (newHead[0] === food[0] && newHead[1] === food[1]) {
+        score += 10;
+        scoreDisplay.textContent = String(score);
+        food = randomFood();
+        if (speed > 50) speed -= 2;
+        if (interval) {
+          clearInterval(interval);
+          interval = window.setInterval(tick, speed);
+        }
+      } else {
+        snake.pop();
+      }
+
+      draw();
+    }
+
+    function gameOver() {
+      running = false;
+      if (interval) { clearInterval(interval); interval = null; }
+      saveHigh();
+
+      // Overlay
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 10);
+      ctx.font = '14px monospace';
+      ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 25);
+
+      startBtn.innerHTML = '🔄 <span data-i18n="snake.restart">Ulangi</span>';
+      (window as any).processI18n?.();
+    }
+
+    function start() {
+      init();
+      draw();
+      running = true;
+      if (interval) clearInterval(interval);
+      interval = window.setInterval(tick, speed);
+      startBtn.innerHTML = '⏸️ …';
+    }
+
+    startBtn.addEventListener('click', () => {
+      if (running) return;
+      start();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!running) { if (e.key === 'Enter' || e.key === ' ') start(); return; }
+      switch (e.key) {
+        case 'ArrowUp': case 'w': case 'W':
+          if (dir[1] === 0) nextDir = [0, -1]; break;
+        case 'ArrowDown': case 's': case 'S':
+          if (dir[1] === 0) nextDir = [0, 1]; break;
+        case 'ArrowLeft': case 'a': case 'A':
+          if (dir[0] === 0) nextDir = [-1, 0]; break;
+        case 'ArrowRight': case 'd': case 'D':
+          if (dir[0] === 0) nextDir = [1, 0]; break;
+      }
+    });
+
+    loadHigh();
+    draw();
+  });
+</script>

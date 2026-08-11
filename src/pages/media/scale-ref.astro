@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Music Scale Reference — Tangga Nada & Frekuensi Online">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Music Scale Reference"
+      titleKey="header.scale_ref"
+      desc="Referensi tangga nada: frekuensi tiap not dari C0 hingga B8. Klik untuk dengar."
+      descKey="header.scale_ref_desc"
+      icon='<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'
+      gradient="from-amber-500 to-orange-600"
+    />
+
+    <div class="animate-fade-in space-y-4">
+      <!-- Octave selector -->
+      <div class="card-base p-4">
+        <div class="flex flex-wrap gap-1.5 justify-center">
+          {[0,1,2,3,4,5,6,7,8].map(oct => (
+            <button class="oct-btn px-3 py-1.5 rounded-lg text-2xs font-bold font-mono bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 hover:text-amber-600 transition-all" data-oct={String(oct)}>C{oct}—B{oct}</button>
+          ))}
+        </div>
+      </div>
+
+      <!-- Notes table -->
+      <div class="card-base p-0 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-matte-50 dark:bg-surface-elevated">
+                <th class="px-4 py-2 text-2xs font-bold text-matte-400 uppercase tracking-wider w-16">Not</th>
+                <th class="px-4 py-2 text-2xs font-bold text-matte-400 uppercase tracking-wider w-24">Frekuensi (Hz)</th>
+                <th class="px-4 py-2 text-2xs font-bold text-matte-400 uppercase tracking-wider hidden sm:table-cell">MIDI</th>
+                <th class="px-4 py-2 text-2xs font-bold text-matte-400 uppercase tracking-wider w-16 text-center">Dengar</th>
+              </tr>
+            </thead>
+            <tbody id="notes-tbody" class="divide-y divide-matte-100 dark:divide-matte-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const tbody = document.getElementById('notes-tbody')!;
+    const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    let currentOctave = 4;
+    let audioCtx: AudioContext | null = null;
+    let activeOsc: OscillatorNode | null = null;
+
+    function freq(midi: number): number {
+      return 440 * Math.pow(2, (midi - 69) / 12);
+    }
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      return audioCtx;
+    }
+
+    function playNote(midi: number) {
+      if (activeOsc) { activeOsc.stop(); activeOsc = null; }
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq(midi), ctx.currentTime);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 1.6);
+      activeOsc = osc;
+    }
+
+    function renderOctave(oct: number) {
+      currentOctave = oct;
+      let html = '';
+      for (let i = 0; i < 12; i++) {
+        const name = NOTE_NAMES[i];
+        const midi = (oct + 1) * 12 + i;
+        const f = freq(midi);
+        if (oct < 2 || oct > 6) continue; // skip extreme octaves for display
+        html += `<tr class="hover:bg-matte-50 dark:hover:bg-surface-elevated transition-colors">
+          <td class="px-4 py-2.5 font-bold text-amber-600 dark:text-amber-400">${name}${oct}</td>
+          <td class="px-4 py-2.5 font-mono tabular-nums text-matte-700 dark:text-matte-200">${f < 10 ? f.toFixed(2) : f < 100 ? f.toFixed(1) : Math.round(f)} Hz</td>
+          <td class="px-4 py-2.5 font-mono text-xs text-matte-400 hidden sm:table-cell">${midi}</td>
+          <td class="px-4 py-2.5 text-center"><button class="play-note-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-all" data-midi="${midi}">▶️</button></td>
+        </tr>`;
+      }
+      tbody.innerHTML = html;
+
+      tbody.querySelectorAll('.play-note-btn').forEach(btn => {
+        btn.addEventListener('click', () => playNote(parseInt((btn as HTMLElement).dataset.midi!)));
+      });
+    }
+
+    // Octave buttons
+    document.querySelectorAll('.oct-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.oct-btn').forEach(b => {
+          b.className = 'oct-btn px-3 py-1.5 rounded-lg text-2xs font-bold font-mono bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 hover:text-amber-600 transition-all';
+        });
+        const el = btn as HTMLElement;
+        el.className = 'oct-btn px-3 py-1.5 rounded-lg text-2xs font-bold font-mono bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300';
+        renderOctave(parseInt(el.dataset.oct!));
+      });
+    });
+
+    // Default C4-B4 active
+    (document.querySelector('.oct-btn[data-oct="4"]') as HTMLElement)
+      ?.classList.add('bg-amber-100','dark:bg-amber-900/40','text-amber-700','dark:text-amber-300');
+    renderOctave(4);
+  });
+</script>

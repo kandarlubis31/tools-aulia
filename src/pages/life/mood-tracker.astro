@@ -1,0 +1,138 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Mood Tracker — Catat Mood Harian Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Mood Tracker"
+      titleKey="header.mood_tracker"
+      desc="Catat & pantau mood harianmu. Semua tersimpan lokal di browser."
+      descKey="header.mood_tracker_desc"
+      icon='<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M8 11h.01"/><path d="M16 11h.01"/><path d="M9 16c1.5 1.5 4.5 1.5 6 0"/>'
+      gradient="from-yellow-500 to-amber-600"
+    />
+
+    <div class="animate-fade-in space-y-4">
+      <!-- Today's mood -->
+      <div class="card-base p-6 text-center">
+        <h3 class="text-xs font-bold text-matte-400 uppercase tracking-wider mb-4" data-i18n="mood.today">Mood Hari Ini</h3>
+        <p class="text-sm text-matte-500 dark:text-matte-300 mb-4" id="today-date"></p>
+        <div class="flex flex-wrap gap-3 justify-center mb-4" id="mood-buttons"></div>
+        <textarea id="mood-note" rows="2" placeholder="Catatan (opsional)…"
+          class="w-full max-w-sm mx-auto px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm outline-none focus:ring-2 focus:ring-amber-500/40 resize-none"
+          data-i18n-attrs="placeholder|mood.note_placeholder"></textarea>
+      </div>
+
+      <!-- History -->
+      <div class="card-base p-5">
+        <h3 class="text-xs font-bold text-matte-400 uppercase tracking-wider mb-3" data-i18n="mood.history">Riwayat Mood</h3>
+        <div id="mood-history" class="space-y-2 max-h-64 overflow-y-auto"></div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const todayDate = document.getElementById('today-date')!;
+    const moodButtons = document.getElementById('mood-buttons')!;
+    const moodNote = document.getElementById('mood-note') as HTMLTextAreaElement;
+    const moodHistory = document.getElementById('mood-history')!;
+
+    const STORAGE_KEY = 'ta-mood-tracker';
+    const MOODS = [
+      { emoji: '😄', label: 'Senang', value: 5, color: 'bg-yellow-400' },
+      { emoji: '🙂', label: 'Baik', value: 4, color: 'bg-green-400' },
+      { emoji: '😐', label: 'Biasa', value: 3, color: 'bg-blue-400' },
+      { emoji: '😕', label: 'Kurang', value: 2, color: 'bg-orange-400' },
+      { emoji: '😢', label: 'Sedih', value: 1, color: 'bg-red-400' },
+    ];
+
+    function getToday() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    function getHistory(): Record<string, { value: number; note: string }> {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+    }
+
+    function formatDate(key: string): string {
+      const d = new Date(key);
+      return d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    const today = getToday();
+    todayDate.textContent = formatDate(today);
+
+    // Render mood buttons
+    const history = getHistory();
+    const todayEntry = history[today];
+
+    MOODS.forEach(mood => {
+      const btn = document.createElement('button');
+      btn.className = `mood-btn flex flex-col items-center gap-1 p-3 rounded-xl text-center transition-all active:scale-95 ${
+        todayEntry?.value === mood.value
+          ? 'ring-2 ring-amber-500 scale-110 bg-matte-100 dark:bg-surface-elevated'
+          : 'bg-matte-50 dark:bg-surface-elevated hover:bg-matte-100 dark:hover:bg-surface-hover'
+      }`;
+      btn.innerHTML = `<span class="text-3xl">${mood.emoji}</span><span class="text-2xs font-bold text-matte-500 dark:text-matte-300">${mood.label}</span>`;
+      btn.addEventListener('click', () => {
+        const h = getHistory();
+        h[today] = { value: mood.value, note: moodNote.value.trim() };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(h));
+        // Highlight selected
+        document.querySelectorAll('.mood-btn').forEach(b => {
+          b.className = 'mood-btn flex flex-col items-center gap-1 p-3 rounded-xl text-center transition-all active:scale-95 bg-matte-50 dark:bg-surface-elevated hover:bg-matte-100 dark:hover:bg-surface-hover';
+        });
+        btn.className = 'mood-btn flex flex-col items-center gap-1 p-3 rounded-xl text-center transition-all active:scale-95 ring-2 ring-amber-500 scale-110 bg-matte-100 dark:bg-surface-elevated';
+        renderHistory();
+      });
+      moodButtons.appendChild(btn);
+    });
+
+    if (todayEntry?.note) moodNote.value = todayEntry.note;
+    moodNote.addEventListener('input', () => {
+      const h = getHistory();
+      if (h[today]) { h[today].note = moodNote.value.trim(); localStorage.setItem(STORAGE_KEY, JSON.stringify(h)); }
+    });
+
+    function renderHistory() {
+      const h = getHistory();
+      const entries = Object.entries(h).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 30);
+
+      if (!entries.length) {
+        moodHistory.innerHTML = '<p class="text-xs text-matte-400 text-center py-4">Belum ada catatan mood.</p>';
+        return;
+      }
+
+      const maxVal = 5;
+      moodHistory.innerHTML = entries.map(([date, entry]) => {
+        const mood = MOODS.find(m => m.value === entry.value) || MOODS[2];
+        const pct = (entry.value / maxVal) * 100;
+        const isToday = date === today;
+        return `<div class="flex items-center gap-3 p-2 rounded-lg ${isToday ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-matte-50 dark:bg-surface-elevated'}">
+          <span class="text-xl">${mood.emoji}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-matte-700 dark:text-matte-200">${formatDate(date)}</span>
+              ${isToday ? '<span class="text-2xs text-amber-500 font-bold">Hari ini</span>' : ''}
+            </div>
+            <div class="h-1.5 rounded-full bg-matte-200 dark:bg-matte-700 mt-1">
+              <div class="h-full rounded-full ${mood.color}" style="width:${pct}%"></div>
+            </div>
+            ${entry.note ? `<p class="text-2xs text-matte-400 mt-1">"${escHtml(entry.note)}"</p>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function escHtml(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    renderHistory();
+  });
+</script>

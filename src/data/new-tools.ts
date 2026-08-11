@@ -7,6 +7,17 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  // ---- Batch 10 (10 tools: Media + Life + Text) ----
+  '/media/metronome',
+  '/media/tone-generator',
+  '/media/white-noise',
+  '/media/screen-recorder',
+  '/media/scale-ref',
+  '/life/mood-tracker',
+  '/life/certificate',
+  '/life/snake',
+  '/life/magic-8ball',
+  '/text/random-text',
   // ---- Batch 9 (10 tools: Network + Image) ----
   '/network/speed-test',
   '/network/latency',

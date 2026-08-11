@@ -1,0 +1,170 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Screen Recorder — Rekam Layar Online Gratis">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Screen Recorder"
+      titleKey="header.screen_recorder"
+      desc="Rekam layar + audio (opsional) → download WebM. 100% client-side."
+      descKey="header.screen_recorder_desc"
+      icon='<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><circle cx="12" cy="13" r="3"/>'
+      gradient="from-red-500 to-rose-600"
+    />
+
+    <div class="card-base p-6 text-center animate-fade-in">
+      <!-- Recording indicator -->
+      <div class="mb-5">
+        <div id="rec-dot" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-matte-100 dark:bg-surface-elevated">
+          <span class="w-3 h-3 rounded-full bg-matte-400"></span>
+          <span class="text-sm font-bold text-matte-500 dark:text-matte-300" id="rec-status" data-i18n="screen.ready">Siap</span>
+        </div>
+        <div id="rec-time" class="text-3xl font-extrabold font-mono tabular-nums mt-3 text-matte-800 dark:text-white">00:00</div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex gap-3 justify-center flex-wrap mb-5">
+        <button id="start-btn" class="gradient-brand px-8 py-3.5 rounded-full text-base font-bold shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all active:scale-95">
+          🎥 <span data-i18n="screen.start">Mulai Rekam</span>
+        </button>
+        <button id="stop-btn" class="px-8 py-3.5 rounded-full text-base font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 transition-all active:scale-95 disabled:opacity-50" disabled>
+          ⏹️ <span data-i18n="screen.stop">Stop</span>
+        </button>
+      </div>
+
+      <!-- Audio toggle -->
+      <label class="inline-flex items-center gap-2 cursor-pointer mb-5">
+        <input id="audio-check" type="checkbox" class="w-4 h-4 rounded accent-red-500" />
+        <span class="text-sm text-matte-500 dark:text-matte-300"><span data-i18n="screen.audio">Rekam audio juga</span> 🎙️</span>
+      </label>
+
+      <!-- Preview -->
+      <div id="preview-area" class="hidden mt-4">
+        <video id="preview-video" controls class="w-full max-h-[400px] rounded-lg bg-black"></video>
+        <button id="download-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold mt-3">
+          💾 <span data-i18n="screen.download">Download .webm</span>
+        </button>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6">
+      ⚠️ Rekaman diproses 100% di browser. Tidak ada video yang diupload. Format: WebM.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const startBtn = document.getElementById('start-btn') as HTMLButtonElement;
+    const stopBtn = document.getElementById('stop-btn') as HTMLButtonElement;
+    const recStatus = document.getElementById('rec-status')!;
+    const recTime = document.getElementById('rec-time')!;
+    const recDot = document.getElementById('rec-dot')!;
+    const audioCheck = document.getElementById('audio-check') as HTMLInputElement;
+    const previewArea = document.getElementById('preview-area')!;
+    const previewVideo = document.getElementById('preview-video') as HTMLVideoElement;
+    const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let mediaRecorder: MediaRecorder | null = null;
+    let stream: MediaStream | null = null;
+    let chunks: Blob[] = [];
+    let timeInterval: number | null = null;
+    let seconds = 0;
+
+    function formatTime(sec: number): string {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    async function start() {
+      try {
+        const displayStream = await navigator.mediaDevices.getDisplayMedia({
+          video: { frameRate: { ideal: 30 } },
+          audio: audioCheck.checked,
+        });
+
+        let tracks = displayStream.getTracks();
+
+        // Add mic audio if checked but screen audio not available
+        if (audioCheck.checked) {
+          try {
+            const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            tracks = tracks.concat(micStream.getAudioTracks());
+          } catch { /* mic denied, just use screen audio */ }
+        }
+
+        stream = new MediaStream(tracks);
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(chunks, { type: 'video/webm' });
+          previewVideo.src = URL.createObjectURL(blob);
+          previewArea.classList.remove('hidden');
+          stopTimer();
+          recDot.innerHTML = '<span class="w-3 h-3 rounded-full bg-matte-400"></span>';
+          recStatus.textContent = 'Selesai';
+          startBtn.innerHTML = '🔄 <span data-i18n="screen.rerecord">Rekam Ulang</span>';
+          (startBtn.querySelector('[data-i18n]') || startBtn).textContent = 'Rekam Ulang';
+          stopBtn.disabled = true;
+          (window as any).processI18n?.();
+        };
+
+        mediaRecorder.start();
+        chunks = [];
+        seconds = 0;
+        recTime.textContent = '00:00';
+        startTimer();
+        recDot.innerHTML = '<span class="animate-pulse w-3 h-3 rounded-full bg-red-500"></span>';
+        recStatus.textContent = 'Recording…';
+        startBtn.innerHTML = '⏳ …';
+        stopBtn.disabled = false;
+        previewArea.classList.add('hidden');
+
+        // Auto-stop on display stream end (user clicked "Stop sharing")
+        displayStream.getVideoTracks()[0].onended = () => {
+          if (mediaRecorder?.state === 'recording') stop();
+        };
+      } catch (e: any) {
+        if (e.name === 'AbortError') return;
+        toast('Gagal mulai rekam: ' + e.message, 'error');
+      }
+    }
+
+    function stop() {
+      mediaRecorder?.stop();
+      stream?.getTracks().forEach(t => t.stop());
+      stream = null;
+      mediaRecorder = null;
+    }
+
+    function startTimer() {
+      timeInterval = window.setInterval(() => {
+        seconds++;
+        recTime.textContent = formatTime(seconds);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timeInterval) { clearInterval(timeInterval); timeInterval = null; }
+    }
+
+    startBtn.addEventListener('click', start);
+    stopBtn.addEventListener('click', stop);
+
+    downloadBtn.addEventListener('click', () => {
+      if (!previewVideo.src) return;
+      const a = document.createElement('a');
+      a.href = previewVideo.src;
+      a.download = `screen-record-${Date.now()}.webm`;
+      a.click();
+      toast('Video didownload!');
+    });
+  });
+</script>

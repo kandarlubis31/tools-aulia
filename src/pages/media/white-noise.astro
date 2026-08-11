@@ -1,0 +1,194 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="White Noise Generator — Suara Relaksasi & Fokus Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="White Noise"
+      titleKey="header.white_noise"
+      desc="Generator suara ambient: white, pink, brown noise untuk fokus & tidur."
+      descKey="header.white_noise_desc"
+      icon='<path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548 5.478A1 1 0 0 1 14.458 22H9.542a1 1 0 0 1-.995-.91l-.548-5.478z"/>'
+      gradient="from-slate-500 to-gray-600"
+    />
+
+    <div class="card-base p-6 text-center animate-fade-in">
+      <!-- Noise type -->
+      <div class="flex flex-wrap gap-2 justify-center mb-6">
+        {['White Noise','Pink Noise','Brown Noise'].map(type => (
+          <button class="noise-btn px-5 py-2.5 rounded-lg text-sm font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all" data-type={type.toLowerCase().replace(' ','-')}>{type}</button>
+        ))}
+      </div>
+
+      <!-- Play/Stop -->
+      <button id="play-btn" class="gradient-brand px-16 py-5 rounded-full text-xl font-bold shadow-lg shadow-slate-500/20 hover:shadow-slate-500/30 transition-all active:scale-95 mb-6">
+        ▶️ <span data-i18n="noise.play">Mainkan</span>
+      </button>
+
+      <!-- Volume -->
+      <div class="flex items-center gap-3 max-w-xs mx-auto mb-5">
+        <span class="text-xs text-matte-400">🔈</span>
+        <input id="volume-slider" type="range" min="1" max="100" value="30" step="1"
+          class="flex-1 h-1.5 rounded-full appearance-none bg-matte-200 dark:bg-matte-700 accent-slate-500 cursor-pointer" />
+        <span class="text-xs text-matte-400">🔊</span>
+      </div>
+
+      <!-- Timer -->
+      <div class="inline-flex items-center gap-2 text-xs text-matte-400">
+        <span data-i18n="noise.timer">Timer</span>:
+        <select id="timer-select" class="px-2 py-1 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none focus:ring-2 focus:ring-slate-500/40">
+          <option value="0">∞</option>
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+          <option value="60">60 min</option>
+          <option value="120">2 jam</option>
+        </select>
+        <span id="timer-display" class="font-mono font-bold ml-2"></span>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6">
+      ℹ️ White noise membantu fokus belajar/koding. Pink noise cocok untuk tidur. Semua diproses lokal via Web Audio API.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
+    const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
+    const timerSelect = document.getElementById('timer-select') as HTMLSelectElement;
+    const timerDisplay = document.getElementById('timer-display')!;
+
+    let audioCtx: AudioContext | null = null;
+    let noiseNode: AudioBufferSourceNode | null = null;
+    let gainNode: GainNode | null = null;
+    let playing = false;
+    let noiseType = 'white-noise';
+    let timerInterval: number | null = null;
+    let timeLeft = 0;
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      return audioCtx;
+    }
+
+    function createNoiseBuffer(type: string): AudioBuffer {
+      const ctx = getAudioCtx();
+      const len = ctx.sampleRate * 3; // 3 sec loop
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+
+      // Generate noise
+      for (let i = 0; i < len; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+
+      if (type === 'pink-noise') {
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < len; i++) {
+          const white = data[i];
+          b0 = 0.99886 * b0 + white * 0.0555179;
+          b1 = 0.99332 * b1 + white * 0.0750759;
+          b2 = 0.96900 * b2 + white * 0.1538520;
+          b3 = 0.86650 * b3 + white * 0.3104856;
+          b4 = 0.55000 * b4 + white * 0.5329522;
+          b5 = -0.7616 * b5 - white * 0.0168980;
+          data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+          b6 = white * 0.115926;
+        }
+      } else if (type === 'brown-noise') {
+        let lastOut = 0;
+        for (let i = 0; i < len; i++) {
+          lastOut = (lastOut + 0.02 * data[i]) / 1.02;
+          data[i] = lastOut * 3.5;
+        }
+      }
+
+      return buf;
+    }
+
+    function play() {
+      stop();
+      const ctx = getAudioCtx();
+      ctx.resume();
+
+      const buf = createNoiseBuffer(noiseType);
+      noiseNode = ctx.createBufferSource();
+      noiseNode.buffer = buf;
+      noiseNode.loop = true;
+
+      gainNode = ctx.createGain();
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(parseInt(volumeSlider.value) / 100 * 0.3, ctx.currentTime + 1);
+
+      noiseNode.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      noiseNode.start();
+
+      playing = true;
+      playBtn.innerHTML = '⏹️ <span data-i18n="noise.stop">Stop</span>';
+      (window as any).processI18n?.();
+
+      // Timer
+      const mins = parseInt(timerSelect.value);
+      if (mins > 0) {
+        timeLeft = mins * 60;
+        updateTimer();
+        timerInterval = window.setInterval(() => {
+          timeLeft--;
+          if (timeLeft <= 0) { stop(); return; }
+          updateTimer();
+        }, 1000);
+      }
+    }
+
+    function stop() {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      timeLeft = 0;
+      timerDisplay.textContent = '';
+      if (noiseNode) {
+        gainNode?.gain.linearRampToValueAtTime(0, (audioCtx?.currentTime || 0) + 0.1);
+        noiseNode.stop((audioCtx?.currentTime || 0) + 0.15);
+      }
+      noiseNode = null;
+      gainNode = null;
+      playing = false;
+      playBtn.innerHTML = '▶️ <span data-i18n="noise.play">Mainkan</span>';
+      (window as any).processI18n?.();
+    }
+
+    function updateTimer() {
+      const m = Math.floor(timeLeft / 60);
+      const s = timeLeft % 60;
+      timerDisplay.textContent = `${m}:${String(s).padStart(2,'0')}`;
+    }
+
+    function setVolume() {
+      if (gainNode && audioCtx) {
+        gainNode.gain.setValueAtTime(parseInt(volumeSlider.value) / 100 * 0.3, audioCtx.currentTime);
+      }
+    }
+
+    playBtn.addEventListener('click', () => playing ? stop() : play());
+    volumeSlider.addEventListener('input', setVolume);
+
+    document.querySelectorAll('.noise-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.noise-btn').forEach(b => {
+          b.className = 'noise-btn px-5 py-2.5 rounded-lg text-sm font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all';
+        });
+        const el = btn as HTMLElement;
+        el.className = 'noise-btn px-5 py-2.5 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200';
+        noiseType = el.dataset.type!;
+        if (playing) play();
+      });
+    });
+
+    // Default White active
+    (document.querySelector('.noise-btn[data-type="white-noise"]') as HTMLElement)
+      ?.classList.add('bg-slate-200','dark:bg-slate-700','text-slate-700','dark:text-slate-200');
+  });
+</script>

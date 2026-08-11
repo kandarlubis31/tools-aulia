@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Magic 8-Ball — Bola Ajaib Prediksi | ToolsAulia">
+  <div class="max-w-lg mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Magic 8-Ball"
+      titleKey="header.magic_8ball"
+      desc="Tanya bola ajaib & dapatkan jawaban misterius. Fun tool 100% random."
+      descKey="header.magic_8ball_desc"
+      icon='<circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2a10 10 0 0 0 0 20"/><path d="M12 9v3"/><circle cx="12" cy="8" r="0.5"/>'
+      gradient="from-purple-500 to-violet-600"
+    />
+
+    <div class="card-base p-8 text-center animate-fade-in">
+      <!-- Ball -->
+      <div class="relative mx-auto w-56 h-56 mb-6">
+        <div id="ball" class="w-full h-full rounded-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-2xl flex items-center justify-center transition-transform duration-500 cursor-pointer active:scale-95">
+          <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-800 to-indigo-900 flex items-center justify-center shadow-inner">
+            <div id="ball-text" class="text-white text-center px-4">
+              <p class="text-2xs font-bold uppercase tracking-wider opacity-60" data-i18n="magic.ask">Klik untuk bertanya</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-sm text-matte-500 dark:text-matte-300 mb-4 italic" data-i18n="magic.think">Pikirkan pertanyaanmu, lalu klik bola ajaib…</p>
+
+      <input id="question-input" type="text" placeholder="Aku akan sukses di 2026?"
+        class="w-full max-w-xs px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm text-center outline-none focus:ring-2 focus:ring-purple-500/40"
+        data-i18n-attrs="placeholder|magic.placeholder" />
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const ball = document.getElementById('ball')!;
+    const ballText = document.getElementById('ball-text')!;
+    const questionInput = document.getElementById('question-input') as HTMLInputElement;
+
+    const ANSWERS = [
+      'Iya pasti! ✨',
+      'Tidak diragukan.',
+      '100% yakin.',
+      'Kayaknya iya deh.',
+      'Tanda-tanda baik.',
+      'Bisa jadi.',
+      'Masih abu-abu.',
+      'Tanya lagi nanti.',
+      'Lebih baik tidak tahu.',
+      'Jangan harap deh.',
+      'Nope.',
+      'Mimpi aja!',
+      'Hmm… ragu.',
+      'Absolutely yes!',
+      'Better not say.',
+      'Signs point to yes.',
+      'Very doubtful.',
+      'Mungkin…',
+      'Coba lagi bos.',
+      'Ya Allah, jauhkan! 🙏',
+    ];
+
+    ball.addEventListener('click', () => {
+      // Shake animation
+      ball.style.transform = 'translateX(0px)';
+      const shakes = 8;
+      let i = 0;
+      const shakeInt = setInterval(() => {
+        i++;
+        const x = (i % 2 === 0 ? 10 : -10) * (1 - i / shakes);
+        ball.style.transform = `rotate(${x}deg)`;
+        if (i >= shakes) {
+          clearInterval(shakeInt);
+          ball.style.transform = 'rotate(0deg)';
+          showAnswer();
+        }
+      }, 60);
+
+      ballText.innerHTML = '<p class="text-lg font-bold animate-pulse">…</p>';
+    });
+
+    questionInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') ball.click();
+    });
+
+    function showAnswer() {
+      const idx = Math.floor(Math.random() * ANSWERS.length);
+      setTimeout(() => {
+        ballText.innerHTML = `<p class="text-sm font-bold leading-tight">${ANSWERS[idx]}</p>`;
+      }, Math.random() * 600 + 300);
+    }
+  });
+</script>

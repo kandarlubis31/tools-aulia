@@ -1,0 +1,137 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Metronome — Ketukan Tempo Online Gratis">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Metronome"
+      titleKey="header.metronome"
+      desc="Ketukan tempo digital untuk latihan musik. Atur BPM, time signature, dan volume."
+      descKey="header.metronome_desc"
+      icon='<path d="M12 2a10 10 0 1 0 10 10h-10V2z"/>'
+      gradient="from-rose-500 to-pink-600"
+    />
+
+    <div class="card-base p-6 text-center animate-fade-in">
+      <!-- Tempo display -->
+      <div class="flex flex-col items-center mb-6">
+        <span class="text-6xl font-extrabold tabular-nums text-matte-800 dark:text-white" id="bpm-display">120</span>
+        <span class="text-sm font-bold text-matte-400 uppercase tracking-widest mt-1" data-i18n="metro.bpm">BPM</span>
+      </div>
+
+      <!-- BPM slider -->
+      <div class="flex items-center gap-3 mb-4">
+        <button id="bpm-dec" class="w-10 h-10 rounded-full bg-matte-100 dark:bg-surface-elevated text-xl font-bold text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all active:scale-90">−</button>
+        <input id="bpm-slider" type="range" min="20" max="240" value="120" step="1"
+          class="flex-1 h-2 rounded-full appearance-none bg-matte-200 dark:bg-matte-700 accent-rose-500 cursor-pointer" />
+        <button id="bpm-inc" class="w-10 h-10 rounded-full bg-matte-100 dark:bg-surface-elevated text-xl font-bold text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all active:scale-90">+</button>
+      </div>
+
+      <!-- Quick BPM -->
+      <div class="flex flex-wrap gap-1.5 justify-center mb-5">
+        {[40,60,80,100,120,140,160,180,200].map(bpm => (
+          <button class="quick-bpm px-3 py-1 rounded-lg text-xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-rose-100 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 transition-all" data-bpm={String(bpm)}>{bpm}</button>
+        ))}
+      </div>
+
+      <!-- Time signature -->
+      <div class="flex items-center justify-center gap-1.5 mb-5">
+        <span class="text-2xs text-matte-400 font-bold"><span data-i18n="metro.beats">Beats</span>:</span>
+        <select id="beats-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold outline-none focus:ring-2 focus:ring-rose-500/40">
+          {[1,2,3,4,5,6,7,8].map(n => <option value={n} selected={n === 4}>{n}/4</option>)}
+        </select>
+      </div>
+
+      <!-- Play/Stop -->
+      <button id="play-btn" class="gradient-brand px-12 py-4 rounded-full text-lg font-bold shadow-lg shadow-rose-500/20 hover:shadow-rose-500/30 transition-all active:scale-95">
+        ▶️ <span data-i18n="metro.start">Mulai</span>
+      </button>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const bpmDisplay = document.getElementById('bpm-display')!;
+    const bpmSlider = document.getElementById('bpm-slider') as HTMLInputElement;
+    const bpmDec = document.getElementById('bpm-dec')!;
+    const bpmInc = document.getElementById('bpm-inc')!;
+    const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
+    const beatsSelect = document.getElementById('beats-select') as HTMLSelectElement;
+
+    let bpm = 120;
+    let playing = false;
+    let timer: number | null = null;
+    let audioCtx: AudioContext | null = null;
+    let beatCount = 0;
+    let beatsPerMeasure = 4;
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      return audioCtx;
+    }
+
+    function click(accent: boolean) {
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      const freq = accent ? 1200 : 800;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05);
+      gain.gain.setValueAtTime(accent ? 0.25 : 0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.08);
+    }
+
+    function tick() {
+      const isAccent = beatCount % beatsPerMeasure === 0;
+      click(isAccent);
+      beatCount++;
+      if (!timer) return;
+      timer = window.setTimeout(tick, (60 / bpm) * 1000);
+    }
+
+    function start() {
+      if (playing) return;
+      getAudioCtx().resume();
+      playing = true;
+      beatCount = 0;
+      click(true);
+      beatCount = 1;
+      timer = window.setTimeout(tick, (60 / bpm) * 1000);
+      playBtn.innerHTML = '⏸️ <span data-i18n="metro.stop">Berhenti</span>';
+      (window as any).processI18n?.();
+    }
+
+    function stop() {
+      playing = false;
+      if (timer) { clearTimeout(timer); timer = null; }
+      playBtn.innerHTML = '▶️ <span data-i18n="metro.start">Mulai</span>';
+      (window as any).processI18n?.();
+    }
+
+    function updateBpm(val: number) {
+      bpm = val;
+      bpmDisplay.textContent = String(bpm);
+      bpmSlider.value = String(bpm);
+    }
+
+    bpmSlider.addEventListener('input', () => updateBpm(parseInt(bpmSlider.value)));
+    bpmDec.addEventListener('click', () => { if (bpm > 20) updateBpm(bpm - 1); });
+    bpmInc.addEventListener('click', () => { if (bpm < 240) updateBpm(bpm + 1); });
+
+    document.querySelectorAll('.quick-bpm').forEach(btn => {
+      btn.addEventListener('click', () => updateBpm(parseInt((btn as HTMLElement).dataset.bpm!)));
+    });
+
+    playBtn.addEventListener('click', () => playing ? stop() : start());
+    beatsSelect.addEventListener('change', () => { beatsPerMeasure = parseInt(beatsSelect.value); });
+  });
+</script>

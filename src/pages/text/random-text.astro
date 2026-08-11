@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Random Text Generator — Generator Teks Acak Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Random Text Generator"
+      titleKey="header.random_text"
+      desc="Generator teks, kalimat, paragraf acak. Cocok untuk dummy content & testing."
+      descKey="header.random_text_desc"
+      icon='<path d="M21 12a9 9 0 1 1-6.219-8.56"/><path d="M21 3v5h-5"/><path d="M8 12h8"/><path d="M12 8v8"/>'
+      gradient="from-teal-500 to-cyan-600"
+    />
+
+    <div class="animate-fade-in space-y-4">
+      <div class="card-base p-5">
+        <div class="grid sm:grid-cols-3 gap-3 mb-4">
+          <div>
+            <label class="block text-2xs font-bold text-matte-400 uppercase mb-1"><span data-i18n="rtext.type">Tipe</span></label>
+            <select id="type-select" class="w-full px-2.5 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold outline-none focus:ring-2 focus:ring-teal-500/40">
+              <option value="sentence">Kalimat</option>
+              <option value="paragraph">Paragraf</option>
+              <option value="words">Kata Acak</option>
+              <option value="lorem">Lorem Ipsum</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-2xs font-bold text-matte-400 uppercase mb-1"><span data-i18n="rtext.count">Jumlah</span></label>
+            <input id="count-input" type="number" value="5" min="1" max="50" class="w-full px-2.5 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-teal-500/40" />
+          </div>
+          <div class="flex items-end">
+            <button id="generate-btn" class="w-full gradient-brand px-4 py-2 rounded-lg text-sm font-bold">🎲 <span data-i18n="rtext.generate">Generate</span></button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 mb-3">
+          <label class="text-2xs text-matte-400 font-bold">Format:</label>
+          <select id="format-select" class="px-2 py-1 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none focus:ring-2 focus:ring-teal-500/40">
+            <option value="plain">Plain</option>
+            <option value="json">JSON</option>
+            <option value="md">Markdown (numbered)</option>
+          </select>
+        </div>
+
+        <div id="output-area" class="relative">
+          <textarea id="output-text" rows="10" readonly
+            class="w-full px-4 py-3 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none resize-y"
+            data-i18n-attrs="placeholder|rtext.placeholder"></textarea>
+          <button id="copy-btn" class="absolute top-2 right-2 px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">
+            📋 <span data-i18n="rtext.copy">Copy</span>
+          </button>
+        </div>
+        <p id="stats-text" class="text-2xs text-matte-400 mt-2 font-mono"></p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const typeSelect = document.getElementById('type-select') as HTMLSelectElement;
+    const countInput = document.getElementById('count-input') as HTMLInputElement;
+    const generateBtn = document.getElementById('generate-btn') as HTMLButtonElement;
+    const formatSelect = document.getElementById('format-select') as HTMLSelectElement;
+    const outputText = document.getElementById('output-text') as HTMLTextAreaElement;
+    const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
+    const statsText = document.getElementById('stats-text')!;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    const WORDS = ['langit','biru','awan','putih','angin','sepoi','daun','hijau','bunga','mekar','air','jernih','batu','gunung','tinggi','rumah','kayu','jalan','lurus','pohon','rindang','sungai','deras','pantai','indah','senja','merah','bulan','purnama','bintang','gemerlap','malam','tenang','pagi','cerah','hujan','rintik','tanah','basah','kopi','hangat','buku','cerita','kucing','lucu','musik','indah','lukisan','cantik','robot','cepat','teknologi','modern','digital','kreatif','inovasi','ide','brilian','masa','depan','waktu','singkat','teman','setia','cinta','abadi','harapan','baru','mimpi','indah','karya','seni','data','akurat','kode','bersih','server','responsif'];
+
+    function randWord(): string {
+      return WORDS[Math.floor(Math.random() * WORDS.length)];
+    }
+
+    function randSentence(minWords = 6, maxWords = 18): string {
+      const len = minWords + Math.floor(Math.random() * (maxWords - minWords));
+      const words: string[] = [];
+      for (let i = 0; i < len; i++) words.push(randWord());
+      words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+      return words.join(' ') + '.';
+    }
+
+    function randParagraph(sentences = 4): string {
+      const sents: string[] = [];
+      for (let i = 0; i < sentences; i++) sents.push(randSentence(8, 20));
+      return sents.join(' ');
+    }
+
+    const LOREM = 'Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum'.split(' ');
+
+    function randLorem(words = 50): string {
+      const res: string[] = [];
+      for (let i = 0; i < words; i++) res.push(LOREM[Math.floor(Math.random() * LOREM.length)]);
+      res[0] = 'Lorem';
+      return res.join(' ') + '.';
+    }
+
+    function generate() {
+      const type = typeSelect.value;
+      const count = Math.min(parseInt(countInput.value) || 5, 50);
+      const format = formatSelect.value;
+
+      let items: string[] = [];
+      switch (type) {
+        case 'sentence':
+          for (let i = 0; i < count; i++) items.push(randSentence());
+          break;
+        case 'paragraph':
+          for (let i = 0; i < count; i++) items.push(randParagraph());
+          break;
+        case 'words': {
+          const n = Math.max(count * 5, 10);
+          const w: string[] = [];
+          for (let i = 0; i < n; i++) w.push(randWord());
+          items.push(w.join(' '));
+          break;
+        }
+        case 'lorem':
+          for (let i = 0; i < count; i++) items.push(randLorem());
+          break;
+      }
+
+      let output = '';
+      if (format === 'json') {
+        output = JSON.stringify({ type, count, items }, null, 2);
+      } else if (format === 'md') {
+        output = items.map((s, i) => `${i + 1}. ${s}`).join('\n\n');
+      } else {
+        output = items.join('\n\n');
+      }
+
+      outputText.value = output;
+      const chars = output.length;
+      const words = output.split(/\s+/).filter(Boolean).length;
+      const lines = output.split('\n').length;
+      statsText.textContent = `${words} kata · ${chars} karakter · ${lines} baris`;
+    }
+
+    generateBtn.addEventListener('click', generate);
+    generate();
+  });
+</script>

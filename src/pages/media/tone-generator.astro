@@ -1,0 +1,162 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Tone Generator — Generator Nada & Frekuensi Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Tone Generator"
+      titleKey="header.tone_gen"
+      desc="Bangkitkan nada murni untuk tuning, tes pendengaran, atau eksperimen suara."
+      descKey="header.tone_gen_desc"
+      icon='<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>'
+      gradient="from-violet-500 to-purple-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <!-- Frequency -->
+      <div class="text-center mb-5">
+        <span class="text-5xl font-extrabold tabular-nums text-matte-800 dark:text-white" id="freq-display">440</span>
+        <span class="text-sm font-bold text-matte-400 ml-1">Hz</span>
+        <div id="note-label" class="text-sm text-violet-500 dark:text-violet-400 font-bold mt-1">A4</div>
+      </div>
+
+      <!-- Freq slider -->
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-2xs text-matte-400 font-mono">20</span>
+        <input id="freq-slider" type="range" min="20" max="8000" value="440" step="1"
+          class="flex-1 h-2 rounded-full appearance-none bg-matte-200 dark:bg-matte-700 accent-violet-500 cursor-pointer" />
+        <span class="text-2xs text-matte-400 font-mono">8000</span>
+      </div>
+
+      <!-- Wave type -->
+      <div class="flex flex-wrap gap-2 justify-center mb-5">
+        {['Sine','Square','Triangle','Sawtooth'].map(type => (
+          <button class="wave-btn px-4 py-2 rounded-lg text-xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400 transition-all" data-type={type.toLowerCase()}>{type}</button>
+        ))}
+      </div>
+
+      <!-- Play/Stop -->
+      <div class="flex gap-3 justify-center mb-5">
+        <button id="play-btn" class="gradient-brand px-10 py-3.5 rounded-full text-base font-bold shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-all active:scale-95">
+          ▶️ <span data-i18n="tone.play">Mainkan</span>
+        </button>
+        <button id="stop-btn" class="px-10 py-3.5 rounded-full text-base font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 transition-all active:scale-95">
+          ⏹️ <span data-i18n="tone.stop">Stop</span>
+        </button>
+      </div>
+
+      <!-- Volume -->
+      <div class="flex items-center gap-3 max-w-xs mx-auto">
+        <span class="text-2xs text-matte-400">🔈</span>
+        <input id="volume-slider" type="range" min="1" max="100" value="30" step="1"
+          class="flex-1 h-1.5 rounded-full appearance-none bg-matte-200 dark:bg-matte-700 accent-violet-500 cursor-pointer" />
+        <span class="text-2xs text-matte-400">🔊</span>
+      </div>
+    </div>
+
+    <!-- Note reference -->
+    <div class="card-base p-4 mt-4 animate-fade-in">
+      <h3 class="text-xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="tone.quick_notes">Quick Notes</h3>
+      <div class="flex flex-wrap gap-1.5">
+        {[
+          ['C4',262],['C#4',277],['D4',294],['D#4',311],['E4',330],
+          ['F4',349],['F#4',370],['G4',392],['G#4',415],['A4',440],
+          ['A#4',466],['B4',494],['C5',523],['D5',587],['E5',659],
+        ].map(([note, freq]) => (
+          <button class="note-btn px-2.5 py-1.5 rounded-lg text-2xs font-bold font-mono bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 transition-all" data-freq={String(freq)}>{note}</button>
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const freqDisplay = document.getElementById('freq-display')!;
+    const noteLabel = document.getElementById('note-label')!;
+    const freqSlider = document.getElementById('freq-slider') as HTMLInputElement;
+    const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
+    const stopBtn = document.getElementById('stop-btn') as HTMLButtonElement;
+    const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
+
+    let audioCtx: AudioContext | null = null;
+    let osc: OscillatorNode | null = null;
+    let gainNode: GainNode | null = null;
+    let waveType: OscillatorType = 'sine';
+
+    const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+    function freqToNote(freq: number): string {
+      if (freq < 20) return '—';
+      const midi = Math.round(69 + 12 * Math.log2(freq / 440));
+      const oct = Math.floor(midi / 12) - 1;
+      const note = NOTE_NAMES[((midi % 12) + 12) % 12];
+      return `${note}${oct}`;
+    }
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      return audioCtx;
+    }
+
+    function play(freq: number) {
+      stop();
+      const ctx = getAudioCtx();
+      const vol = parseInt(volumeSlider.value) / 100 * 0.3;
+      osc = ctx.createOscillator();
+      gainNode = ctx.createGain();
+      osc.type = waveType;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.02);
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start();
+    }
+
+    function stop() {
+      if (osc) {
+        gainNode?.gain.setValueAtTime(0, (audioCtx?.currentTime || 0));
+        osc.stop((audioCtx?.currentTime || 0) + 0.05);
+      }
+      osc = null;
+      gainNode = null;
+    }
+
+    function updateFreq(val: number) {
+      freqDisplay.textContent = String(val);
+      freqSlider.value = String(val);
+      noteLabel.textContent = freqToNote(val);
+      if (osc) play(val);
+    }
+
+    freqSlider.addEventListener('input', () => updateFreq(parseInt(freqSlider.value)));
+    playBtn.addEventListener('click', () => {
+      getAudioCtx().resume();
+      play(parseInt(freqSlider.value));
+    });
+    stopBtn.addEventListener('click', stop);
+
+    document.querySelectorAll('.wave-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.wave-btn').forEach(b => {
+          b.className = 'wave-btn px-4 py-2 rounded-lg text-xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 transition-all';
+        });
+        const el = btn as HTMLElement;
+        el.className = 'wave-btn px-4 py-2 rounded-lg text-xs font-bold bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300';
+        waveType = el.dataset.type as OscillatorType;
+        if (osc) play(parseInt(freqSlider.value));
+      });
+    });
+    // Default Sine active
+    (document.querySelector('.wave-btn[data-type="sine"]') as HTMLElement)?.classList.add('bg-violet-100','dark:bg-violet-900/40','text-violet-700','dark:text-violet-300');
+
+    document.querySelectorAll('.note-btn').forEach(btn => {
+      btn.addEventListener('click', () => updateFreq(parseInt((btn as HTMLElement).dataset.freq!)));
+    });
+
+    updateFreq(440);
+  });
+</script>

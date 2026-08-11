@@ -1,0 +1,181 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Certificate Generator — Buat Sertifikat Online Gratis">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Certificate Generator"
+      titleKey="header.certificate"
+      desc="Buat sertifikat kustom dengan nama, acara, tanggal. Download PNG."
+      descKey="header.certificate_desc"
+      icon='<path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>'
+      gradient="from-blue-500 to-indigo-600"
+    />
+
+    <div class="card-base p-5 animate-fade-in">
+      <div class="grid md:grid-cols-2 gap-5">
+        <!-- Form -->
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1" data-i18n="cert.name">Nama Penerima</label>
+            <input id="name-input" type="text" placeholder="John Doe"
+              class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-blue-500/40 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1" data-i18n="cert.event">Nama Acara / Penghargaan</label>
+            <input id="event-input" type="text" placeholder="Best Developer Award 2026"
+              class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-blue-500/40 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1" data-i18n="cert.date">Tanggal</label>
+            <input id="date-input" type="date" class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-blue-500/40 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1" data-i18n="cert.org">Organisasi</label>
+            <input id="org-input" type="text" placeholder="PT Teknologi Nusantara"
+              class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-blue-500/40 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1" data-i18n="cert.color">Warna Border</label>
+            <div class="flex flex-wrap gap-1.5">
+              {['#1e40af','#b91c1c','#047857','#7c3aed','#b45309'].map(c => (
+                <button class="border-color-btn w-8 h-8 rounded-full border-2 border-matte-200 dark:border-matte-600 hover:scale-110 transition-transform" style={`background:${c}`} data-color={c}></button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="flex flex-col items-center">
+          <span class="text-2xs text-matte-400 font-bold uppercase tracking-wider mb-2" data-i18n="cert.preview">Preview</span>
+          <canvas id="cert-canvas" width="600" height="424" class="w-full max-w-[300px] rounded-lg shadow-lg"></canvas>
+          <button id="download-btn" class="gradient-brand px-5 py-2.5 rounded-lg text-sm font-bold mt-3">
+            💾 <span data-i18n="cert.download">Download PNG</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  document.addEventListener('astro:page-load', () => {
+    const nameInput = document.getElementById('name-input') as HTMLInputElement;
+    const eventInput = document.getElementById('event-input') as HTMLInputElement;
+    const dateInput = document.getElementById('date-input') as HTMLInputElement;
+    const orgInput = document.getElementById('org-input') as HTMLInputElement;
+    const canvas = document.getElementById('cert-canvas') as HTMLCanvasElement;
+    const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+
+    let borderColor = '#1e40af';
+
+    // Set today
+    dateInput.value = new Date().toISOString().split('T')[0];
+
+    function draw() {
+      const ctx = canvas.getContext('2d')!;
+      const W = canvas.width;
+      const H = canvas.height;
+
+      // Background
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, W, H);
+
+      // Outer border
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 8;
+      ctx.strokeRect(20, 20, W - 40, H - 40);
+
+      // Inner border
+      ctx.lineWidth = 2;
+      ctx.strokeRect(35, 35, W - 70, H - 70);
+
+      // Decorative lines
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 8]);
+      ctx.strokeRect(45, 45, W - 90, H - 90);
+      ctx.setLineDash([]);
+
+      // Title
+      ctx.fillStyle = borderColor;
+      ctx.font = 'bold 28px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('SERTIFIKAT', W / 2, 110);
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'italic 16px serif';
+      ctx.fillText('PENGHARGAAN', W / 2, 140);
+
+      // Event
+      ctx.fillStyle = '#334155';
+      ctx.font = 'bold 18px serif';
+      const event = eventInput.value || '[Nama Acara]';
+      ctx.fillText(event, W / 2, 185);
+
+      // Name
+      ctx.fillStyle = borderColor;
+      ctx.font = 'bold 32px serif';
+      const name = nameInput.value || '[Nama Penerima]';
+      ctx.fillText(name, W / 2, 250);
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const nameW = ctx.measureText(name).width;
+      ctx.moveTo(W / 2 - nameW / 2 - 20, 270);
+      ctx.lineTo(W / 2 + nameW / 2 + 20, 270);
+      ctx.stroke();
+
+      // Description
+      ctx.fillStyle = '#64748b';
+      ctx.font = '14px serif';
+      ctx.fillText('Atas dedikasi dan prestasi luar biasa dalam:', W / 2, 305);
+      ctx.fillText(event, W / 2, 325);
+
+      // Date
+      const date = dateInput.value ? new Date(dateInput.value).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '[Tanggal]';
+      ctx.font = '14px serif';
+      ctx.fillText(date, W / 2, 365);
+
+      // Organization
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 16px serif';
+      const org = orgInput.value || '[Organisasi]';
+      ctx.fillText(org, W / 2, 395);
+    }
+
+    function update() {
+      draw();
+    }
+
+    nameInput.addEventListener('input', update);
+    eventInput.addEventListener('input', update);
+    dateInput.addEventListener('input', update);
+    orgInput.addEventListener('input', update);
+
+    document.querySelectorAll('.border-color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        borderColor = (btn as HTMLElement).dataset.color!;
+        document.querySelectorAll('.border-color-btn').forEach(b => {
+          (b as HTMLElement).style.outline = 'none';
+        });
+        (btn as HTMLElement).style.outline = '3px solid ' + borderColor;
+        update();
+      });
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `sertifikat-${Date.now()}.png`;
+      a.click();
+    });
+
+    // Default active
+    (document.querySelector('.border-color-btn[data-color="#1e40af"]') as HTMLElement)
+      ?.style.outline = '3px solid #1e40af';
+    update();
+  });
+</script>
