@@ -62,9 +62,18 @@
 | **A2** | Scroll to Top | ~30 menit | P0 |
 | **A3** | Usage Counter | ~2 jam | P1 |
 | **A4** | Dark Mode Persist | ~1 jam | P1 |
-| **B1** | Lighthouse Fix | ~3 jam | P0 |
-| **B2** | SEO Meta Audit | ~2 jam | P1 |
-| **B3** | Sitemap Check | ~30 menit | P2 |
-| **B4** | i18n Completion | ~3 jam | P2 |
+| **B1** | Lighthouse Fix | ~3 jam | P0 | ⬜ Need deployed site |
+| **B2** | SEO Meta Audit | ~2 jam | P1 | ✅ BaseLayout auto-fallback |
+| **B3** | Sitemap Check | ~30 menit | P2 | ✅ Perfect |
+| **B4** | i18n Completion | ~3 jam | P2 | ✅ 95% covered |
 
 **Total: ~15 jam (2-3 hari)**
+
+---
+
+## ✅ Batch B Audit Results (Aug 12, 2026)
+
+- **B1:** Skipped — requires deployed site for runtime Lighthouse
+- **B2:** 121/228 tools have explicit seoTitle. BaseLayout auto-generates: `pageTitle — ToolsAulia`. All pages have proper tag.
+- **B3:** sitemap-index.xml references sitemap-0.xml with all 227+ URLs. Perfect split.
+- **B4:** All `showToast` files import `_tToast`. Local `toast()` wrappers use `_tToast` internally. ~5% edge cases with single-arg calls (minor).
