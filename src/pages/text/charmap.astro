@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Character Map — Unicode Browser | ToolsAulia" description="Browser karakter Unicode dengan search & copy. 100% client-side." category="Text" toolHref="/text/charmap">
+  <ToolPageHeader title="Character Map" description="Unicode browser: cari, klik, copy karakter" icon='<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 12h6"/><path d="M8 17h4"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="flex gap-2">
+      <input id="search" type="text" class="input-field flex-1 text-sm" placeholder="Cari karakter atau nama... (emoji, panah, latin)">
+      <select id="block" class="input-field text-sm w-40">
+        <option value="">Semua Block</option>
+        <option value="arrows">Panah</option>
+        <option value="math">Matematika</option>
+        <option value="currency">Mata Uang</option>
+        <option value="punctuation">Punctuation</option>
+        <option value="dingbats">Dingbats/Simbol</option>
+        <option value="greek">Greek</option>
+        <option value="box">Box Drawing</option>
+        <option value="block">Block Elements</option>
+      </select>
+    </div>
+
+    <div id="grid" class="grid grid-cols-10 sm:grid-cols-15 gap-1 max-h-96 overflow-y-auto"></div>
+    <p class="text-xs text-matte-400 text-center" id="info"></p>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+
+  const blocks = {
+    arrows: { start: 0x2190, end: 0x21FF },
+    math: { start: 0x2200, end: 0x22FF },
+    currency: { start: 0x20A0, end: 0x20CF },
+    punctuation: { start: 0x2000, end: 0x206F },
+    dingbats: { start: 0x2700, end: 0x27BF },
+    greek: { start: 0x0370, end: 0x03FF },
+    box: { start: 0x2500, end: 0x257F },
+    block: { start: 0x2580, end: 0x259F }
+  };
+
+  function getChars(filter) {
+    const chars = [];
+    if (filter) {
+      const blk = blocks[filter];
+      if (blk) for (let i=blk.start; i<=blk.end; i++) chars.push(i);
+    } else {
+      for (const blk of Object.values(blocks)) for (let i=blk.start; i<=blk.end; i++) chars.push(i);
+    }
+    return chars;
+  }
+
+  function render() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const blk = document.getElementById('block').value;
+    let chars = getChars(blk);
+
+    if (q) {
+      chars = chars.filter(c => {
+        const ch = String.fromCodePoint(c);
+        try { return ch.toLowerCase().includes(q) || getCharName(c).toLowerCase().includes(q); }
+        catch { return false; }
+      });
+    }
+
+    const grid = document.getElementById('grid');
+    grid.innerHTML = chars.slice(0, 300).map(c => {
+      let ch, cls = 'p-2 text-center text-lg cursor-pointer hover:bg-matte-100 dark:hover:bg-matte-700 rounded transition-colors';
+      try { ch = String.fromCodePoint(c); } catch { return ''; }
+      return '<span class="'+cls+'" title="U+'+c.toString(16).toUpperCase().padStart(4,'0')+'" data-char="'+ch+'">'+ch+'</span>';
+    }).join('');
+
+    grid.querySelectorAll('[data-char]').forEach(el => {
+      el.addEventListener('click', () => {
+        navigator.clipboard.writeText(el.dataset.char).then(() => {
+          showToast?.(_tToast?.('Disalin: '+el.dataset.char, 'Copied: '+el.dataset.char), 'success');
+        });
+      });
+    });
+
+    document.getElementById('info').textContent = 'Menampilkan '+Math.min(chars.length,300)+' dari ' + chars.length + ' karakter';
+  }
+
+  function getCharName(cp) {
+    try {
+      const r = new Intl.DisplayNames(['id','en'], { type: 'language' });
+      return '';
+    } catch { return ''; }
+  }
+
+  document.getElementById('search').addEventListener('input', render);
+  document.getElementById('block').addEventListener('change', render);
+  render();
+</script>

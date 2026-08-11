@@ -1,0 +1,61 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Find & Replace — Cari Ganti Teks Regex | ToolsAulia" description="Cari dan ganti teks dengan regex, case-sensitive, dan highlight. 100% client-side." category="Text" toolHref="/text/find-replace">
+  <ToolPageHeader title="Find & Replace" description="Cari & ganti teks: regex, highlight, batch" icon='<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="flex flex-wrap gap-2">
+      <input id="find" type="text" class="input-field flex-1 text-sm" placeholder="Cari...">
+      <input id="replace" type="text" class="input-field flex-1 text-sm" placeholder="Ganti dengan...">
+    </div>
+    <div class="flex flex-wrap gap-2 text-sm items-center">
+      <label class="flex items-center gap-1 text-matte-500"><input type="checkbox" id="regex" class="rounded"> Regex</label>
+      <label class="flex items-center gap-1 text-matte-500"><input type="checkbox" id="case-sensitive" class="rounded"> Case-sensitive</label>
+      <label class="flex items-center gap-1 text-matte-500"><input type="checkbox" id="global" class="rounded" checked> Global</label>
+      <span id="match-count" class="text-xs text-matte-400"></span>
+      <button id="do-replace" class="btn-primary text-sm ml-auto">Replace All</button>
+    </div>
+
+    <textarea id="input" class="input-field w-full h-32 font-mono text-sm" placeholder="Teks input di sini..."></textarea>
+    <textarea id="output" class="input-field w-full h-32 font-mono text-sm bg-matte-50 dark:bg-matte-800" readonly placeholder="Hasil replace..."></textarea>
+    <button id="copy-btn" class="btn-secondary text-sm">📋 Copy Hasil</button>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+  const input = document.getElementById('input');
+  const output = document.getElementById('output');
+
+  function run() {
+    const find = document.getElementById('find').value;
+    const rep = document.getElementById('replace').value;
+    const text = input.value;
+    if (!find) { output.value = text; document.getElementById('match-count').textContent = ''; return; }
+    let flags = '';
+    if (!document.getElementById('case-sensitive').checked) flags += 'i';
+    if (document.getElementById('global').checked) flags += 'g';
+    let pattern;
+    try {
+      pattern = document.getElementById('regex').checked ? new RegExp(find, flags) : new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), flags);
+    } catch (e) { document.getElementById('match-count').textContent = 'Regex invalid'; return; }
+    const matches = text.match(pattern);
+    document.getElementById('match-count').textContent = matches ? matches.length + ' match' + (matches.length>1?'es':'') : '0 match';
+    output.value = text.replace(pattern, rep);
+  }
+
+  ['find','replace','input'].forEach(id => document.getElementById(id).addEventListener('input', run));
+  ['regex','case-sensitive','global'].forEach(id => document.getElementById(id).addEventListener('change', run));
+
+  document.getElementById('do-replace').addEventListener('click', () => {
+    input.value = output.value;
+    run();
+    showToast?.(_tToast?.('Teks diganti!', 'Text replaced!'), 'success');
+  });
+
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(output.value).then(() => showToast?.(_tToast?.('Disalin!','Copied!'),'success'));
+  });
+</script>

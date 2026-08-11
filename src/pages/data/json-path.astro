@@ -1,0 +1,130 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="JSON Path Evaluator — Evaluasi JSONPath | ToolsAulia" description="Evaluasi JSONPath expression pada JSON data. 100% client-side." category="Data" toolHref="/data/json-path">
+  <ToolPageHeader title="JSON Path Eval" description="Evaluasi ekspresi JSONPath — live preview" icon='<path d="M21 12l-7-7v4C7 10 4 15 3 20c2.5-3.5 6-5.1 11-5.1V19l7-7z"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm text-matte-500 mb-1 font-medium">JSON Data</label>
+        <textarea id="json-input" class="input-field w-full h-48 font-mono text-sm" placeholder='{"store":{"books":[{"title":"Book A","price":10},{"title":"Book B","price":20}]}}'></textarea>
+      </div>
+      <div>
+        <label class="block text-sm text-matte-500 mb-1 font-medium">JSONPath Expression</label>
+        <input id="query" type="text" class="input-field w-full font-mono text-sm" placeholder="$.store.books[*].title" value="$.store.books[*].title">
+        <div class="flex gap-2 mt-2">
+          <button id="eval-btn" class="btn-primary text-sm">Evaluate</button>
+          <button id="clear-btn" class="btn-secondary text-sm">Clear</button>
+        </div>
+        <p class="text-xs text-matte-400 mt-2">Contoh: $.name, $..price, $.items[0], $.store.books[?(@.price>10)]</p>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center">
+      <label class="text-sm text-matte-500 font-medium">Hasil</label>
+      <button id="copy-btn" class="btn-secondary text-xs">📋 Copy</button>
+    </div>
+    <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-40 overflow-auto text-sm font-mono whitespace-pre-wrap"></pre>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+
+  // Simple JSONPath evaluator (subset)
+  function evalPath(obj, path) {
+    if (!path || path === '$') return obj;
+    path = path.replace(/^\$\.?/, '');
+    const toks = tokenize(path);
+    return walk(obj, toks);
+  }
+
+  function tokenize(p) {
+    const toks = [];
+    let i = 0;
+    while (i < p.length) {
+      if (p[i] === '.') { i++; continue; }
+      if (p[i] === '[') {
+        const end = p.indexOf(']', i);
+        if (end === -1) break;
+        toks.push({ type: 'bracket', val: p.substring(i+1, end) });
+        i = end + 1; continue;
+      }
+      if (p.startsWith('..', i)) { toks.push({ type: 'deep' }); i += 2; continue; }
+      // dot notation key
+      let j = i;
+      while (j < p.length && p[j] !== '.' && p[j] !== '[') j++;
+      toks.push({ type: 'key', val: p.substring(i, j) });
+      i = j;
+    }
+    return toks;
+  }
+
+  function walk(obj, toks) {
+    if (!toks.length) return obj;
+    const t = toks[0];
+    if (t.type === 'deep') {
+      let results = [];
+      recurse(obj, toks.slice(1), results);
+      return results;
+    }
+    if (t.type === 'bracket') {
+      const rest = toks.slice(1);
+      if (t.val === '*') {
+        if (Array.isArray(obj)) return obj.flatMap(v => walk(v, rest));
+        return Object.values(obj).flatMap(v => walk(v, rest));
+      }
+      if (t.val.startsWith('?')) {
+        // simple filter
+        const m = /\?\(@\.(\w+)\s*(>|<|==)\s*(\d+)\)/.exec(t.val);
+        if (m && Array.isArray(obj)) {
+          return obj.filter(item => {
+            if (m[2] === '>') return item[m[1]] > +m[3];
+            if (m[2] === '<') return item[m[1]] < +m[3];
+            return item[m[1]] == m[3];
+          }).flatMap(v => walk(v, rest));
+        }
+      }
+      const idx = parseInt(t.val);
+      if (!isNaN(idx) && Array.isArray(obj)) return walk(obj[idx], rest);
+      return walk(obj[t.val], rest);
+    }
+    if (t.type === 'key') {
+      if (t.val === '*') {
+        if (Array.isArray(obj)) return obj.flatMap(v => walk(v, toks.slice(1)));
+        return Object.values(obj).flatMap(v => walk(v, toks.slice(1)));
+      }
+      return walk(obj[t.val], toks.slice(1));
+    }
+  }
+
+  function recurse(obj, toks, results) {
+    if (!toks.length) { results.push(obj); return; }
+    if (Array.isArray(obj)) obj.forEach(v => recurse(v, toks, results));
+    else if (typeof obj === 'object' && obj) Object.values(obj).forEach(v => recurse(v, toks, results));
+  }
+
+  document.getElementById('eval-btn').addEventListener('click', () => {
+    try {
+      const obj = JSON.parse(document.getElementById('json-input').value);
+      const path = document.getElementById('query').value.trim();
+      const result = evalPath(obj, path);
+      document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+    } catch (e) {
+      document.getElementById('output').textContent = 'Error: ' + e.message;
+    }
+  });
+
+  document.getElementById('clear-btn').addEventListener('click', () => { document.getElementById('output').textContent = ''; });
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(document.getElementById('output').textContent).then(() => showToast?.(_tToast?.('Disalin!','Copied!'),'success'));
+  });
+
+  // load sample
+  document.getElementById('json-input').value = JSON.stringify({
+    store: { name: 'Toko Buku', books: [{ title: 'Book A', price: 10, author: 'X' }, { title: 'Book B', price: 20, author: 'Y' }, { title: 'Book C', price: 15, author: 'Z' }] },
+    meta: { total: 3, page: 1 }
+  }, null, 2);
+</script>

@@ -1,0 +1,89 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Name Picker — Spin Wheel Random | ToolsAulia" description="Pilih nama random dengan animasi roda putar. 100% client-side canvas." category="Utils" toolHref="/utils/name-picker">
+  <ToolPageHeader title="Name Picker" description="Roda putar random — pilih nama dengan animasi keren" icon='<circle cx="12" cy="12" r="10"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <textarea id="names" class="input-field w-full h-24 text-sm" placeholder="Nama — satu per baris">Alice
+Bob
+Citra
+Dodi
+Eva
+Fikri</textarea>
+
+    <div class="flex gap-2">
+      <button id="spin-btn" class="btn-primary flex-1 text-lg">🎡 PUTAR!</button>
+    </div>
+
+    <div class="flex justify-center">
+      <canvas id="wheel" width="400" height="400" class="rounded-full shadow-lg"></canvas>
+    </div>
+
+    <div id="result" class="text-center text-2xl font-bold text-accent-blue hidden"></div>
+  </div>
+</BaseLayout>
+
+<script>
+  const canvas = document.getElementById('wheel'), ctx = canvas.getContext('2d');
+  let angle = 0, spinning = false, target = 0;
+
+  function getNames() { return document.getElementById('names').value.split('\n').filter(n => n.trim()); }
+
+  document.getElementById('names').addEventListener('input', draw);
+
+  const colors = ['#2563eb','#dc2626','#16a34a','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#84cc16','#6366f1'];
+
+  function draw() {
+    const names = getNames();
+    const r = 190, cx = 200, cy = 200;
+    ctx.clearRect(0,0,400,400);
+    if (!names.length) { ctx.fillText('Masukkan nama dulu', 200, 200); return; }
+    const slice = (2 * Math.PI) / names.length;
+    names.forEach((n,i) => {
+      ctx.beginPath(); ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r, angle + i*slice, angle + (i+1)*slice);
+      ctx.closePath(); ctx.fillStyle = colors[i % colors.length]; ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(angle + i*slice + slice/2);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText(n.substring(0,15), r-15, 5);
+      ctx.restore();
+    });
+    // center circle
+    ctx.beginPath(); ctx.arc(cx,cy,25,0,2*Math.PI); ctx.fillStyle='#1e293b'; ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 10px sans-serif'; ctx.textAlign='center'; ctx.fillText('PUTAR',cx,cy+4);
+  }
+
+  document.getElementById('spin-btn').addEventListener('click', () => {
+    if (spinning) return;
+    const names = getNames();
+    if (!names.length) return;
+    spinning = true;
+    target = angle + Math.PI*8 + Math.random()*Math.PI*4;
+    document.getElementById('result').classList.add('hidden');
+    animate();
+  });
+
+  function animate() {
+    if (!spinning) return;
+    angle += 0.3;
+    draw();
+    if (angle < target) { requestAnimationFrame(animate); }
+    else {
+      angle = target;
+      spinning = false;
+      draw();
+      const names = getNames();
+      const slice = (2*Math.PI)/names.length;
+      const winner = names[Math.floor((((2*Math.PI - (target % (2*Math.PI))) % (2*Math.PI)) / slice)) % names.length];
+      const res = document.getElementById('result');
+      res.textContent = '🎉 ' + winner + ' 🎉';
+      res.classList.remove('hidden');
+    }
+  }
+
+  draw();
+</script>

@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Security Headers Generator — CSP, HSTS, CORS | ToolsAulia" description="Generate security headers: CSP, HSTS, X-Frame-Options, CORS. 100% client-side." category="Security" toolHref="/security/headers-gen">
+  <ToolPageHeader title="Security Headers Gen" description="Generate header keamanan: CSP, HSTS, CORS, X-Frame" icon='<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="space-y-3">
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="en-csp" checked> CSP (Content-Security-Policy)</label>
+        <div id="csp-opts" class="ml-6 space-y-1 text-xs">
+          <input id="csp-def" type="text" class="input-field text-sm w-full" value="default-src 'self'" placeholder="default-src 'self'">
+          <input id="csp-script" type="text" class="input-field text-sm w-full mt-1" value="script-src 'self' 'unsafe-inline'" placeholder="script-src">
+          <input id="csp-style" type="text" class="input-field text-sm w-full mt-1" value="style-src 'self' 'unsafe-inline'" placeholder="style-src">
+          <input id="csp-img" type="text" class="input-field text-sm w-full mt-1" value="img-src 'self' data: https:" placeholder="img-src">
+        </div>
+
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="en-hsts"> HSTS</label>
+        <div id="hsts-opts" class="ml-6 text-xs hidden">
+          <input id="hsts-max-age" type="number" class="input-field text-sm w-32" value="31536000" placeholder="max-age"> detik
+          <label class="flex items-center gap-1 mt-1"><input type="checkbox" id="hsts-sub"> includeSubDomains</label>
+          <label class="flex items-center gap-1"><input type="checkbox" id="hsts-preload"> preload</label>
+        </div>
+
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="en-xfo"> X-Frame-Options</label>
+        <div id="xfo-opts" class="ml-6 hidden"><select id="xfo-val" class="input-field text-sm w-48"><option value="DENY">DENY</option><option value="SAMEORIGIN" selected>SAMEORIGIN</option></select></div>
+
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="en-xcto"> X-Content-Type-Options</label>
+      </div>
+
+      <div>
+        <label class="text-sm text-matte-500 mb-1 font-medium">Output Headers (NGINX add_header)</label>
+        <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-72 overflow-auto text-xs font-mono whitespace-pre-wrap"></pre>
+        <button id="copy-btn" class="btn-secondary text-xs mt-2">📋 Copy</button>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+
+  function toggle(id, enId) {
+    document.getElementById(id).classList.toggle('hidden', !document.getElementById(enId).checked);
+    render();
+  }
+  ['en-csp','en-hsts','en-xfo'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => {
+      const g = id.replace('en-','');
+      toggle(g+'-opts', id);
+    });
+  });
+  document.getElementById('en-xcto').addEventListener('change', render);
+  ['csp-def','csp-script','csp-style','csp-img','hsts-max-age','hsts-sub','hsts-preload','xfo-val'].forEach(id => {
+    document.getElementById(id).addEventListener('input', render);
+  });
+
+  function render() {
+    const lines = [];
+    if (document.getElementById('en-csp').checked) {
+      const parts = [val('csp-def'), val('csp-script'), val('csp-style'), val('csp-img')].filter(Boolean);
+      lines.push('add_header Content-Security-Policy "' + parts.join('; ') + '";');
+    }
+    if (document.getElementById('en-hsts').checked) {
+      let h = 'max-age='+(parseInt(document.getElementById('hsts-max-age').value)||31536000);
+      if (document.getElementById('hsts-sub').checked) h += '; includeSubDomains';
+      if (document.getElementById('hsts-preload').checked) h += '; preload';
+      lines.push('add_header Strict-Transport-Security "' + h + '";');
+    }
+    if (document.getElementById('en-xfo').checked) {
+      lines.push('add_header X-Frame-Options "' + document.getElementById('xfo-val').value + '";');
+    }
+    if (document.getElementById('en-xcto').checked) {
+      lines.push('add_header X-Content-Type-Options "nosniff";');
+    }
+    document.getElementById('output').textContent = lines.join('\n') || '# Select options above';
+  }
+
+  function val(id) { return document.getElementById(id).value.trim(); }
+
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(document.getElementById('output').textContent).then(() => showToast?.(_tToast?.('Disalin!','Copied!'),'success'));
+  });
+
+  render();
+</script>

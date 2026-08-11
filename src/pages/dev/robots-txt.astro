@@ -1,0 +1,111 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="robots.txt Generator — Builder robots.txt | ToolsAulia" description="Generate robots.txt dengan visual builder. 100% client-side." category="Dev" toolHref="/dev/robots-txt">
+  <ToolPageHeader title="robots.txt Generator" description="Builder rules robots.txt — copy & deploy" icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-sm text-matte-500 mb-1 font-medium">User-agent</label>
+          <select id="user-agent" class="input-field text-sm w-full">
+            <option value="*">* (Semua bot)</option>
+            <option value="Googlebot">Googlebot</option>
+            <option value="Bingbot">Bingbot</option>
+            <option value="GPTBot">GPTBot (ChatGPT)</option>
+            <option value="CCBot">CCBot (Common Crawl)</option>
+          </select>
+        </div>
+
+        <div class="flex gap-2">
+          <input id="rule-path" type="text" class="input-field flex-1 text-sm" placeholder="/admin/ atau /private/">
+          <select id="rule-type" class="input-field text-sm w-20">
+            <option value="Disallow">Disallow</option>
+            <option value="Allow">Allow</option>
+          </select>
+          <button id="add-rule" class="btn-primary text-sm">+</button>
+        </div>
+
+        <div>
+          <label class="block text-xs text-matte-500 mb-1">Sitemap URL</label>
+          <input id="sitemap" type="text" class="input-field text-sm w-full" placeholder="https://tools.paklubis.my.id/sitemap-index.xml">
+        </div>
+
+        <div class="flex gap-2">
+          <button id="add-delay" class="btn-secondary text-sm">+ Crawl-delay</button>
+          <input id="delay-val" type="number" min="0" value="10" class="input-field w-16 text-sm hidden">
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label class="text-sm text-matte-500 font-medium">Output robots.txt</label>
+          <button id="copy-btn" class="text-xs text-accent-blue hover:underline">📋 Copy</button>
+        </div>
+        <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-48 overflow-auto text-sm font-mono whitespace-pre-wrap"></pre>
+        <button id="download-btn" class="btn-secondary text-sm w-full mt-2">Download robots.txt</button>
+      </div>
+    </div>
+
+    <div class="text-xs text-matte-400 space-y-1">
+      <span class="font-medium text-matte-500">Rules aktif:</span>
+      <div id="rules-list" class="space-y-1"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+  const rules = [];
+  let crawlDelay = null;
+  const output = document.getElementById('output');
+
+  function render() {
+    let txt = '';
+    const ua = document.getElementById('user-agent').value;
+    txt += 'User-agent: ' + ua + '\n';
+    if (crawlDelay !== null) txt += 'Crawl-delay: ' + crawlDelay + '\n';
+    rules.forEach(r => txt += r.type + ': ' + r.path + '\n');
+    const sitemap = document.getElementById('sitemap').value.trim();
+    if (sitemap) txt += '\nSitemap: ' + sitemap + '\n';
+    output.textContent = txt;
+    document.getElementById('rules-list').innerHTML = rules.map((r,i) =>
+      '<span class="inline-flex gap-1 items-center text-xs px-2 py-1 rounded bg-matte-100 dark:bg-matte-700">' +
+      r.type + ': ' + r.path + ' <button data-idx="'+i+'" class="text-red-400 hover:text-red-600 del-rule">x</button></span>'
+    ).join('');
+    document.querySelectorAll('.del-rule').forEach(b => b.addEventListener('click', function() {
+      rules.splice(parseInt(this.dataset.idx), 1); render();
+    }));
+  }
+
+  document.getElementById('user-agent').addEventListener('change', render);
+  document.getElementById('sitemap').addEventListener('input', render);
+  document.getElementById('add-rule').addEventListener('click', () => {
+    const path = document.getElementById('rule-path').value.trim();
+    if (!path) return;
+    rules.push({ type: document.getElementById('rule-type').value, path });
+    document.getElementById('rule-path').value = '';
+    render();
+  });
+
+  document.getElementById('add-delay').addEventListener('click', function() {
+    const dv = document.getElementById('delay-val');
+    if (dv.classList.contains('hidden')) { dv.classList.remove('hidden'); crawlDelay = 10; render(); }
+    else { dv.classList.add('hidden'); crawlDelay = null; render(); }
+  });
+  document.getElementById('delay-val').addEventListener('input', function() {
+    crawlDelay = parseInt(this.value) || null; render();
+  });
+
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(output.textContent).then(() => showToast?.(_tToast?.('Disalin!', 'Copied!'), 'success'));
+  });
+  document.getElementById('download-btn').addEventListener('click', () => {
+    const blob = new Blob([output.textContent], { type: 'text/plain' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'robots.txt'; a.click();
+  });
+
+  render();
+</script>

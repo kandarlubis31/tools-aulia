@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Image Splitter — Potong Gambar Grid | ToolsAulia" description="Potong gambar jadi grid 2x2, 3x3, atau custom. 100% client-side canvas." category="Image" toolHref="/image/splitter">
+  <ToolPageHeader title="Image Splitter" description="Potong gambar jadi grid, download per tile" icon='<path d="M3 3v18h18V3H3zM12 3v18M3 12h18"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 text-center cursor-pointer hover:border-accent-blue transition-colors">
+      <span>🖼️ Drop gambar di sini atau klik</span>
+      <input type="file" id="file-input" class="hidden" accept="image/*">
+    </div>
+
+    <div id="controls" class="hidden space-y-3">
+      <div class="flex flex-wrap gap-3 items-end">
+        <div>
+          <label class="block text-xs text-matte-500 mb-1">Grid</label>
+          <select id="grid" class="input-field text-sm">
+            <option value="2x2">2×2</option>
+            <option value="3x3" selected>3×3</option>
+            <option value="4x4">4×4</option>
+            <option value="2x3">2×3 (IG Grid)</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div id="custom-grid" class="hidden flex gap-2">
+          <input id="cols" type="number" min="1" max="10" value="3" class="input-field w-16 text-sm" placeholder="Kolom">
+          <span class="text-matte-400 self-center">×</span>
+          <input id="rows" type="number" min="1" max="10" value="2" class="input-field w-16 text-sm" placeholder="Baris">
+        </div>
+      </div>
+
+      <canvas id="preview" class="max-w-full rounded-lg shadow mx-auto" width="600" height="400"></canvas>
+      <span class="text-xs text-matte-400" id="tile-count"></span>
+
+      <button id="download-all" class="btn-primary w-full">Download Semua Tile (ZIP opsional)</button>
+      <div class="grid grid-cols-3 sm:grid-cols-4 gap-2" id="tile-grid"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+  const canvas = document.getElementById('preview');
+  const ctx = canvas.getContext('2d');
+  let img;
+
+  document.getElementById('file-input').addEventListener('change', function() {
+    const f = this.files[0]; if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => { img = new Image(); img.onload = show; img.src = reader.result; };
+    reader.readAsDataURL(f);
+  });
+
+  const dz = document.getElementById('drop-zone');
+  dz.addEventListener('click', () => document.getElementById('file-input').click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('border-accent-blue'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('border-accent-blue'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('border-accent-blue');
+    const f = e.dataTransfer.files[0]; if (!f) return;
+    const r = new FileReader(); r.onload = () => { img = new Image(); img.onload = show; img.src = r.result; };
+    r.readAsDataURL(f);
+  });
+
+  document.getElementById('grid').addEventListener('change', function() {
+    document.getElementById('custom-grid').classList.toggle('hidden', this.value !== 'custom');
+    show();
+  });
+  ['cols','rows'].forEach(id => document.getElementById(id).addEventListener('input', show));
+
+  function getGrid() {
+    const g = document.getElementById('grid').value;
+    if (g === 'custom') return [parseInt(document.getElementById('cols').value)||3, parseInt(document.getElementById('rows').value)||2];
+    const [c,r] = g.split('x').map(Number); return [c,r];
+  }
+
+  function show() {
+    if (!img) return;
+    document.getElementById('controls').classList.remove('hidden');
+    const [cols, rows] = getGrid();
+    const tw = img.naturalWidth / cols, th = img.naturalHeight / rows;
+    canvas.width = Math.min(img.naturalWidth, 600);
+    canvas.height = canvas.width * (img.naturalHeight / img.naturalWidth);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    // draw grid lines
+    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1;
+    for (let i=1; i<cols; i++) { ctx.beginPath(); ctx.moveTo(canvas.width*i/cols, 0); ctx.lineTo(canvas.width*i/cols, canvas.height); ctx.stroke(); }
+    for (let i=1; i<rows; i++) { ctx.beginPath(); ctx.moveTo(0, canvas.height*i/rows); ctx.lineTo(canvas.width, canvas.height*i/rows); ctx.stroke(); }
+    document.getElementById('tile-count').textContent = cols*rows + ' tile (' + Math.round(tw) + '×' + Math.round(th) + ' px)';
+
+    const tgrid = document.getElementById('tile-grid');
+    tgrid.innerHTML = '';
+    const offC = document.createElement('canvas'); offC.width = tw; offC.height = th; const offX = offC.getContext('2d');
+    for (let r=0; r<rows; r++) for (let c=0; c<cols; c++) {
+      offX.clearRect(0,0,tw,th); offX.drawImage(img, c*tw, r*th, tw, th, 0, 0, tw, th);
+      const tileC = document.createElement('canvas'); tileC.width = tw; tileC.height = th; tileC.getContext('2d').drawImage(offC,0,0);
+      tileC.className = 'w-full rounded border border-matte-200 dark:border-matte-600 cursor-pointer hover:ring-2 hover:ring-accent-blue';
+      tileC.title = 'Klik download tile ' + (r*cols+c+1);
+      tileC.addEventListener('click', () => {
+        tileC.toBlob(b => { const u = URL.createObjectURL(b); const a = document.createElement('a');
+          a.href = u; a.download = 'tile-'+(r*cols+c+1)+'.png'; a.click(); URL.revokeObjectURL(u); }, 'image/png');
+      });
+      tgrid.appendChild(tileC);
+    }
+  }
+
+  document.getElementById('download-all').addEventListener('click', () => {
+    const tiles = document.querySelectorAll('#tile-grid canvas');
+    tiles.forEach((tc,i) => setTimeout(() => { tc.toBlob(b => {
+      const u = URL.createObjectURL(b); const a = document.createElement('a');
+      a.href = u; a.download = 'tile-'+(i+1)+'.png'; a.click(); URL.revokeObjectURL(u);
+    }, 'image/png'); }, i*200));
+    showToast?.(_tToast?.('Download semua tile dimulai!', 'All tiles downloading!'), 'success');
+  });
+</script>

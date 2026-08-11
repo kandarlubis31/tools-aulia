@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="File Joiner — Gabung Chunks Jadi File | ToolsAulia" description="Gabung kembali file chunks jadi satu file utuh. 100% client-side." category="File" toolHref="/file/joiner">
+  <ToolPageHeader title="File Joiner" description="Gabung .part chunks jadi file utuh" icon='<path d="M12 5l7 7-7 7"/><path d="M5 12h14"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 text-center cursor-pointer hover:border-accent-blue transition-colors">
+      <span>📁 Drop file .part di sini (bisa multiple)</span>
+      <input type="file" id="file-input" class="hidden" multiple>
+    </div>
+
+    <div id="file-list" class="hidden space-y-2"></div>
+    <button id="join-btn" class="btn-primary w-full hidden">Gabung & Download File Utuh</button>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+  const parts = [];
+
+  document.getElementById('file-input').addEventListener('change', function() { handleFiles(Array.from(this.files)); });
+  const dz = document.getElementById('drop-zone');
+  dz.addEventListener('click', () => document.getElementById('file-input').click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('border-accent-blue'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('border-accent-blue'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('border-accent-blue'); handleFiles(Array.from(e.dataTransfer.files)); });
+
+  async function handleFiles(files) {
+    if (!files.length) return;
+    parts.length = 0;
+    for (const f of files) {
+      parts.push({ name: f.name, data: new Uint8Array(await f.arrayBuffer()), size: f.size, file: f });
+    }
+    parts.sort((a,b) => a.name.localeCompare(b.name));
+    document.getElementById('file-list').classList.remove('hidden');
+    document.getElementById('join-btn').classList.remove('hidden');
+    document.getElementById('file-list').innerHTML = parts.map(p =>
+      '<div class="flex justify-between text-sm p-2 rounded bg-matte-50 dark:bg-matte-800"><span>'+esc(p.name)+'</span><span class="text-matte-400">'+(p.size/1024).toFixed(1)+' KB</span></div>'
+    ).join('');
+  }
+
+  document.getElementById('join-btn').addEventListener('click', () => {
+    const totalLen = parts.reduce((s,p) => s + p.data.length, 0);
+    const merged = new Uint8Array(totalLen);
+    let offset = 0;
+    parts.forEach(p => { merged.set(p.data, offset); offset += p.data.length; });
+    const outName = parts[0].name.replace(/\.part\d+/, '').replace(/\.\d{3}$/, '') || 'joined-file';
+    const blob = new Blob([merged]);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = outName; a.click();
+    URL.revokeObjectURL(url);
+    showToast?.(_tToast?.('File berhasil digabung!', 'File joined successfully!'), 'success');
+  });
+
+  function esc(s) { return String(s).replace(/</g,'&lt;'); }
+</script>

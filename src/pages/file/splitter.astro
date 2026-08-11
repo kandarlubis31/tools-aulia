@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="File Splitter — Potong File Jadi Chunks | ToolsAulia" description="Potong file besar jadi bagian kecil (chunks). 100% client-side." category="File" toolHref="/file/splitter">
+  <ToolPageHeader title="File Splitter" description="Potong file jadi chunks dengan ukuran kustom" icon='<path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 text-center cursor-pointer hover:border-accent-blue transition-colors">
+      <span>📁 Drop file di sini atau klik</span>
+      <input type="file" id="file-input" class="hidden">
+    </div>
+
+    <div id="info" class="hidden space-y-3">
+      <span class="text-sm text-matte-500 font-medium" id="filename"></span>
+      <div class="flex flex-wrap gap-3 items-end">
+        <div>
+          <label class="block text-xs text-matte-500 mb-1">Ukuran per chunk</label>
+          <select id="chunk-size" class="input-field text-sm">
+            <option value="1048576">1 MB</option>
+            <option value="5242880" selected>5 MB</option>
+            <option value="10485760">10 MB</option>
+            <option value="52428800">50 MB</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <input id="custom-size" type="number" min="1024" value="1048576" class="input-field text-sm w-32 hidden" placeholder="Bytes">
+      </div>
+      <p class="text-sm text-matte-500" id="chunk-info"></p>
+      <button id="split-btn" class="btn-primary">Potong & Download Chunks</button>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+  let fileBytes, fileName;
+
+  document.getElementById('file-input').addEventListener('change', function() { handleFile(this.files[0]); });
+  const dz = document.getElementById('drop-zone');
+  dz.addEventListener('click', () => document.getElementById('file-input').click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('border-accent-blue'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('border-accent-blue'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('border-accent-blue'); handleFile(e.dataTransfer.files[0]); });
+
+  document.getElementById('chunk-size').addEventListener('change', function() {
+    document.getElementById('custom-size').classList.toggle('hidden', this.value !== 'custom');
+    updateInfo();
+  });
+  document.getElementById('custom-size').addEventListener('input', updateInfo);
+
+  async function handleFile(file) {
+    if (!file) return;
+    fileBytes = new Uint8Array(await file.arrayBuffer());
+    fileName = file.name;
+    document.getElementById('filename').textContent = fileName + ' (' + (file.size/1048576).toFixed(1) + ' MB)';
+    document.getElementById('info').classList.remove('hidden');
+    updateInfo();
+  }
+
+  function updateInfo() {
+    if (!fileBytes) return;
+    const sel = document.getElementById('chunk-size').value;
+    const size = sel === 'custom' ? parseInt(document.getElementById('custom-size').value) || 1048576 : parseInt(sel);
+    const chunks = Math.ceil(fileBytes.length / size);
+    document.getElementById('chunk-info').textContent = chunks + ' chunk' + (chunks>1?'s':'') + ' ±' + (size/1048576).toFixed(1) + ' MB';
+  }
+
+  document.getElementById('split-btn').addEventListener('click', () => {
+    if (!fileBytes) return;
+    const sel = document.getElementById('chunk-size').value;
+    const size = sel === 'custom' ? parseInt(document.getElementById('custom-size').value) || 1048576 : parseInt(sel);
+    for (let i = 0; i < fileBytes.length; i += size) {
+      const chunk = fileBytes.slice(i, Math.min(i + size, fileBytes.length));
+      const blob = new Blob([chunk]);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName + '.part' + String(Math.floor(i/size)+1).padStart(3,'0');
+      setTimeout(() => { a.click(); URL.revokeObjectURL(url); }, i/size * 200);
+    }
+    showToast?.(_tToast?.('Download chunks dimulai!', 'Chunk download started!'), 'success');
+  });
+</script>

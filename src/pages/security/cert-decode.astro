@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+<BaseLayout title="Certificate Decoder — Decode X.509 PEM | ToolsAulia" description="Decode sertifikat SSL X.509 PEM/DER. Lihat subject, issuer, validity. 100% client-side." category="Security" toolHref="/security/cert-decode">
+  <ToolPageHeader title="Cert Decoder" description="Parse sertifikat SSL: subject, issuer, masa berlaku" icon='<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>' />
+
+  <div class="card-base p-5 space-y-4">
+    <textarea id="cert-input" class="input-field w-full h-40 font-mono text-sm" placeholder="Paste sertifikat PEM di sini...&#10;-----BEGIN CERTIFICATE-----&#10;MIIDXTCCAkWgAwIBAgIJAKl...&#10;-----END CERTIFICATE-----"></textarea>
+
+    <button id="decode-btn" class="btn-primary">Decode Sertifikat</button>
+
+    <div id="result-area" class="hidden space-y-2">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="fields"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const { showToast, _tToast } = window as any;
+
+  document.getElementById('decode-btn').addEventListener('click', async () => {
+    const pem = document.getElementById('cert-input').value.trim();
+    if (!pem) { showToast?.(_tToast?.('Paste sertifikat dulu', 'Paste certificate first'), 'error'); return; }
+
+    try {
+      let derB64 = pem.replace(/-----BEGIN CERTIFICATE-----/, '').replace(/-----END CERTIFICATE-----/, '').replace(/\s/g, '');
+      const der = Uint8Array.from(atob(derB64), c => c.charCodeAt(0));
+
+      const { Subject, Issuer, NotBefore, NotAfter, SerialNumber } = parseX509Lite(der);
+      document.getElementById('result-area').classList.remove('hidden');
+      document.getElementById('fields').innerHTML =
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Subject CN:</span> <span class="font-mono">'+esc(Subject.CN||'-')+'</span></div>'+
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Subject Org:</span> <span class="font-mono">'+esc(Subject.O||'-')+'</span></div>'+
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Issuer CN:</span> <span class="font-mono">'+esc(Issuer.CN||'-')+'</span></div>'+
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Issuer Org:</span> <span class="font-mono">'+esc(Issuer.O||'-')+'</span></div>'+
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Valid From:</span> <span class="font-mono">'+esc(NotBefore||'-')+'</span></div>'+
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Valid Until:</span> <span class="font-mono '+((new Date(NotAfter) < new Date())?'text-red-500':'text-green-500')+'">'+esc(NotAfter||'-')+'</span></div>'+
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Serial:</span> <span class="font-mono text-xs">'+esc(SerialNumber||'-')+'</span></div>';
+    } catch (e) {
+      showToast?.(_tToast?.('Gagal decode: '+(e.message||'Invalid'), 'Decode failed'), 'error');
+    }
+  });
+
+  function esc(s) { return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function parseX509Lite(der) {
+    const result = { Subject:{}, Issuer:{}, NotBefore:'', NotAfter:'', SerialNumber:'' };
+    const view = new DataView(der.buffer, der.byteOffset, der.byteLength);
+    // ASN.1 DER lite parser — parse TBS certificate
+    let pos = 0;
+    function readLength() { let len = view.getUint8(pos++); if (len & 0x80) { const n = len&0x7f; len=0; for(let i=0;i<n;i++) len=(len<<8)|view.getUint8(pos++); } return len; }
+    function skipTag(tag) { pos++; readLength(); }
+    function readString() { const tag = view.getUint8(pos); pos++; const len = readLength(); const s = String.fromCharCode(...new Uint8Array(der.buffer, der.byteOffset+pos, len)); pos+=len; return s; }
+    function parseDN() { const o = {}; pos++; const outerLen = readLength(); const end = pos+outerLen; while(pos<end){ pos++; const len = readLength(); const oid = view.getUint8(pos+2); pos+=len; const val = readString();
+      if(oid===3)o.CN=val; else if(oid===6)o.C=val; else if(oid===7)o.L=val; else if(oid===9)o.O=val; } return o; }
+
+    skipTag(0x30); // SEQUENCE
+    skipTag(0x30); // TBSCertificate
+    if (view.getUint8(pos) === 0xA0) { pos++; readLength(); } // version
+    const serialTag = view.getUint8(pos); pos++;
+    const serialLen = readLength();
+    let serial='';
+    for(let i=0;i<serialLen;i++) serial += view.getUint8(pos+i).toString(16).padStart(2,'0');
+    result.SerialNumber = serial;
+    pos += serialLen;
+    skipTag(0x30); // signature algo
+    result.Issuer = parseDN();
+    skipTag(0x30); // validity
+    result.NotBefore = readString();
+    result.NotAfter = readString();
+    result.Subject = parseDN();
+    return result;
+  }
+</script>
