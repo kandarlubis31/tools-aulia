@@ -1,0 +1,224 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="Batch Image Resizer — Resize Banyak Foto">
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" async></script>
+
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Batch Image Resizer"
+      titleKey="header.batch_resizer"
+      desc="Resize banyak gambar sekaligus: atur lebar/tinggi/persen, format, dan kualitas — download sebagai ZIP."
+      descKey="header.batch_resizer_desc"
+      icon='<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <div class="animate-fade-in">
+      <DropZone
+        id="drop-zone"
+        inputId="file-input"
+        accept="image/*"
+        multiple
+        labelKey="resizer.drop"
+        subLabelKey="resizer.drop_hint"
+        label="Drag & drop banyak gambar di sini"
+        gradient="from-emerald-500 to-teal-600"
+        hoverClass="hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+        className="max-w-xl mx-auto"
+      />
+    </div>
+
+    <!-- Settings -->
+    <div id="settings-card" class="hidden card-base p-6 mt-8 animate-fade-in">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <label class="section-title mb-1.5 block" for="mode-select" data-i18n="resizer.mode">Mode</label>
+          <select id="mode-select" class="w-full px-3 py-2.5 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm">
+            <option value="percent" data-i18n="resizer.mode_percent">Persen (%)</option>
+            <option value="width" data-i18n="resizer.mode_width">Lebar tetap (px)</option>
+            <option value="height" data-i18n="resizer.mode_height">Tinggi tetap (px)</option>
+          </select>
+        </div>
+        <div>
+          <label class="section-title mb-1.5 block" for="size-value" data-i18n="resizer.size">Nilai</label>
+          <input id="size-value" type="number" min="1" value="50" class="w-full px-3 py-2.5 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono" />
+        </div>
+        <div>
+          <label class="section-title mb-1.5 block" for="format-select" data-i18n="common.format">Format</label>
+          <select id="format-select" class="w-full px-3 py-2.5 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm">
+            <option value="image/jpeg">JPG</option>
+            <option value="image/png">PNG</option>
+            <option value="image/webp">WEBP</option>
+            <option value="keep" data-i18n="resizer.keep">Pertahankan asli</option>
+          </select>
+        </div>
+        <div>
+          <label class="section-title mb-1.5 block" for="quality-range" data-i18n="common.quality">Kualitas</label>
+          <input id="quality-range" type="range" min="10" max="100" value="80" class="w-full accent-emerald-500 mt-2.5" />
+          <span id="quality-val" class="text-2xs text-matte-400">80%</span>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 mt-4">
+        <button id="process-btn" class="gradient-brand px-6 py-3 rounded-xl font-bold text-sm">⚡ <span data-i18n="resizer.process">Resize & ZIP</span></button>
+        <span id="file-count" class="text-2xs text-matte-400"></span>
+        <button id="clear-files" class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors" data-i18n="btn.clear_all">Hapus Semua</button>
+      </div>
+    </div>
+
+    <!-- Results grid -->
+    <div id="results-grid" class="hidden grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-8 animate-fade-in"></div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const settingsCard = document.getElementById('settings-card');
+    const resultsGrid = document.getElementById('results-grid');
+    const processBtn = document.getElementById('process-btn') as HTMLButtonElement;
+    const clearFiles = document.getElementById('clear-files');
+    const fileCount = document.getElementById('file-count');
+    const modeSelect = document.getElementById('mode-select') as HTMLSelectElement;
+    const sizeValue = document.getElementById('size-value') as HTMLInputElement;
+    const formatSelect = document.getElementById('format-select') as HTMLSelectElement;
+    const qualityRange = document.getElementById('quality-range') as HTMLInputElement;
+    const qualityVal = document.getElementById('quality-val');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let files: File[] = [];
+
+    qualityRange?.addEventListener('input', () => {
+      if (qualityVal) qualityVal.textContent = qualityRange.value + '%';
+    });
+
+    // DropZone wiring
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    ['dragenter', 'dragover'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-950/20'); }));
+    ['dragleave', 'drop'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-950/20'); }));
+    dropZone?.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const list = dt?.files;
+      if (list && list.length) {
+        fileInput!.files = list;
+        fileInput?.dispatchEvent(new Event('change'));
+      }
+    });
+
+    fileInput?.addEventListener('change', () => {
+      const list = Array.from(fileInput.files || []).filter(f => f.type.startsWith('image/'));
+      if (!list.length) { toast('Tidak ada file gambar valid', 'error'); return; }
+      files = [...files, ...list].slice(0, 50);
+      settingsCard?.classList.remove('hidden');
+      updateCount();
+      if (fileCount) fileCount.textContent = `${files.length} gambar siap diproses`;
+    });
+
+    clearFiles?.addEventListener('click', () => {
+      files = [];
+      fileInput.value = '';
+      resultsGrid?.classList.add('hidden');
+      settingsCard?.classList.add('hidden');
+      fileCount!.textContent = '';
+    });
+
+    function updateCount() {
+      if (fileCount && files.length) fileCount.textContent = `${files.length} gambar siap diproses`;
+    }
+
+    function resizeImage(file: File, targetW: number, targetH: number, mime: string, quality: number): Promise<Blob> {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = targetW;
+          canvas.height = targetH;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('canvas')); return; }
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, targetW, targetH);
+          const actualMime = mime === 'image/jpeg' ? 'image/jpeg' : mime;
+          canvas.toBlob((blob) => {
+            URL.revokeObjectURL(url);
+            if (blob) resolve(blob);
+            else reject(new Error('toBlob failed'));
+          }, actualMime, mime === 'image/png' ? undefined : quality / 100);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load failed')); };
+        img.src = url;
+      });
+    }
+
+    processBtn?.addEventListener('click', async () => {
+      if (!files.length) { toast('Pilih gambar dulu', 'error'); return; }
+      processBtn.disabled = true;
+      processBtn.textContent = '⏳ Memproses...';
+      resultsGrid?.classList.add('hidden');
+
+      try {
+        const mode = modeSelect.value;
+        const value = Math.max(1, parseInt(sizeValue.value) || 50);
+        const mime = formatSelect.value;
+        const quality = parseInt(qualityRange.value);
+        const zip = new JSZip();
+        let processed = 0;
+
+        const results: { name: string; w: number; h: number; size: number }[] = [];
+
+        for (const file of files) {
+          try {
+            const bmp = await createImageBitmap(file);
+            let tw = bmp.width, th = bmp.height;
+            if (mode === 'percent') { tw = Math.round(tw * value / 100); th = Math.round(th * value / 100); }
+            else if (mode === 'width') { th = Math.round(th * value / tw); tw = value; }
+            else { tw = Math.round(tw * value / th); th = value; }
+            tw = Math.max(1, tw); th = Math.max(1, th);
+
+            const targetMime = mime === 'keep' ? file.type || 'image/jpeg' : mime;
+            const blob = await resizeImage(file, tw, th, targetMime, quality);
+            const ext = (targetMime.split('/')[1] === 'jpeg' ? 'jpg' : targetMime.split('/')[1]) || 'jpg';
+            const name = file.name.replace(/\.[^.]+$/, '') + '-' + tw + 'x' + th + '.' + ext;
+            zip.file(name, blob);
+            results.push({ name, w: tw, h: th, size: blob.size });
+            processed++;
+            bmp.close();
+          } catch { continue; }
+        }
+
+        if (!processed) { toast('Semua file gagal diproses', 'error'); return; }
+
+        const content = await zip.generateAsync({ type: 'blob' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(content);
+        a.download = 'resized-' + processed + '-images.zip';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+
+        // Show result grid
+        resultsGrid!.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-8 animate-fade-in';
+        resultsGrid!.innerHTML = results.map(r =>
+          `<div class="card-base p-3 text-center">
+            <div class="text-2xl mb-1">🖼️</div>
+            <p class="text-xs font-bold text-matte-700 dark:text-matte-200 truncate" title="${r.name}">${r.name}</p>
+            <p class="text-2xs text-matte-400 font-mono mt-1">${r.w}×${r.h} · ${(r.size / 1024).toFixed(1)} KB</p>
+          </div>`
+        ).join('');
+
+        toast(`✅ ${processed} gambar berhasil di-resize & di-zip!`);
+      } catch {
+        toast('Gagal memproses — library ZIP tidak termuat?', 'error');
+      } finally {
+        processBtn.disabled = false;
+        processBtn.textContent = '⚡ Resize & ZIP';
+      }
+    });
+  });
+</script>

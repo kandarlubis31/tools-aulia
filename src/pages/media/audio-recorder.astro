@@ -1,0 +1,194 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Audio Recorder — Rekam Suara Online">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Audio Recorder"
+      titleKey="header.audio_recorder"
+      desc="Rekam suara langsung dari browser dan download sebagai WAV atau WebM. 100% lokal."
+      descKey="header.audio_recorder_desc"
+      icon='<circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6" rx="1"/>'
+      gradient="from-rose-500 to-pink-600"
+    />
+
+    <div class="card-base p-6 md:p-8 text-center animate-fade-in">
+      <!-- Visual -->
+      <div class="relative w-28 h-28 mx-auto mb-6">
+        <div id="pulse-ring" class="absolute inset-0 rounded-full bg-rose-500/20 opacity-0"></div>
+        <div class="absolute inset-0 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg shadow-rose-500/30">
+          <span id="rec-icon" class="w-10 h-10 rounded-full bg-white/90 transition-all duration-300"></span>
+        </div>
+      </div>
+
+      <div id="timer" class="font-mono text-4xl font-bold text-matte-800 dark:text-matte-100 tabular-nums mb-2">00:00</div>
+      <div class="text-xs text-matte-400 mb-6" id="status-text" data-i18n="rec.ready">Siap merekam — izinkan akses mikrofon saat diminta</div>
+
+      <!-- Level meter -->
+      <div class="max-w-sm mx-auto h-2 rounded-full bg-matte-100 dark:bg-matte-800 overflow-hidden mb-8">
+        <div id="level-bar" class="h-full w-0 rounded-full bg-gradient-to-r from-rose-400 to-pink-500 transition-[width] duration-75"></div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <button id="record-btn" class="gradient-brand px-10 py-4 rounded-2xl font-bold text-sm tracking-wide shadow-lg shadow-rose-500/20">🎙️ <span data-i18n="rec.start">Mulai Rekam</span></button>
+        <button id="stop-btn" class="hidden px-8 py-4 rounded-2xl font-bold text-sm bg-red-500 text-white hover:bg-red-600 transition-all shadow-lg shadow-red-500/20">⏹️ <span data-i18n="rec.stop">Stop</span></button>
+      </div>
+
+      <!-- Result -->
+      <div id="result" class="hidden mt-8 pt-6 border-t border-matte-100 dark:border-matte-800 animate-fade-in">
+        <audio id="preview-audio" controls class="w-full max-w-md mx-auto mb-4"></audio>
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <button id="download-wav-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-emerald-500 text-white hover:bg-emerald-600 transition-all">🎵 Download WAV</button>
+          <button id="download-webm-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">🎞️ Download WebM</button>
+          <button id="reset-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="btn.reset">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6 max-w-lg mx-auto">
+      🔒 Rekaman diproses dan disimpan 100% di perangkatmu — tidak pernah dikirim ke server mana pun.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const recordBtn = document.getElementById('record-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const timerEl = document.getElementById('timer');
+    const statusText = document.getElementById('status-text');
+    const levelBar = document.getElementById('level-bar');
+    const pulseRing = document.getElementById('pulse-ring');
+    const recIcon = document.getElementById('rec-icon');
+    const result = document.getElementById('result');
+    const previewAudio = document.getElementById('preview-audio') as HTMLAudioElement;
+    const downloadWavBtn = document.getElementById('download-wav-btn');
+    const downloadWebmBtn = document.getElementById('download-webm-btn');
+    const resetBtn = document.getElementById('reset-btn');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let mediaRecorder: MediaRecorder | null = null;
+    let chunks: Blob[] = [];
+    let stream: MediaStream | null = null;
+    let audioCtx: AudioContext | null = null;
+    let analyser: AnalyserNode | null = null;
+    let rafId = 0;
+    let startTime = 0;
+    let timerInterval = 0;
+    let finalBlob: Blob | null = null;
+
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const ss = String(elapsed % 60).padStart(2, '0');
+      timerEl!.textContent = `${mm}:${ss}`;
+    }
+
+    function meterLoop() {
+      if (!analyser) return;
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteTimeDomainData(data);
+      let max = 0;
+      for (let i = 0; i < data.length; i++) {
+        const v = Math.abs(data[i] - 128) / 128;
+        if (v > max) max = v;
+      }
+      levelBar!.style.width = `${Math.min(100, max * 140)}%`;
+      rafId = requestAnimationFrame(meterLoop);
+    }
+
+    recordBtn?.addEventListener('click', async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+      } catch {
+        statusText!.textContent = '❌ Akses mikrofon ditolak — periksa izin browser.';
+        statusText!.dataset.i18n = '';
+        toast('Mikrofon tidak diizinkan', 'error');
+        return;
+      }
+      chunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        finalBlob = new Blob(chunks, { type: mediaRecorder?.mimeType || 'audio/webm' });
+        previewAudio.src = URL.createObjectURL(finalBlob);
+        result?.classList.remove('hidden');
+        stream?.getTracks().forEach(t => t.stop());
+        cancelAnimationFrame(rafId);
+      };
+      mediaRecorder.start();
+
+      // Level meter
+      audioCtx = new AudioContext();
+      const source = audioCtx.createMediaStreamSource(stream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      source.connect(analyser);
+
+      startTime = Date.now();
+      timerInterval = window.setInterval(updateTimer, 500);
+      recordBtn!.classList.add('hidden');
+      stopBtn!.classList.remove('hidden');
+      result?.classList.add('hidden');
+      statusText!.textContent = '🔴 Merekam...';
+      statusText!.dataset.i18n = '';
+      pulseRing!.classList.remove('opacity-0');
+      recIcon!.classList.add('scale-50');
+      meterLoop();
+    });
+
+    stopBtn?.addEventListener('click', () => {
+      mediaRecorder?.stop();
+      window.clearInterval(timerInterval);
+      recordBtn!.classList.remove('hidden');
+      stopBtn!.classList.add('hidden');
+      pulseRing!.classList.add('opacity-0');
+      recIcon!.classList.remove('scale-50');
+      levelBar!.style.width = '0%';
+      statusText!.textContent = '✅ Rekaman siap — pilih format download.';
+      statusText!.dataset.i18n = '';
+    });
+
+    downloadWavBtn?.addEventListener('click', async () => {
+      if (!finalBlob) return;
+      try {
+        const ctx = new AudioContext();
+        const buf = await ctx.decodeAudioData(await finalBlob.arrayBuffer());
+        const { encodeWav } = await import('../../composables/useAudioWav');
+        const wav = encodeWav(buf);
+        downloadBlob(wav, 'rekaman.wav');
+        ctx.close();
+        toast('WAV berhasil di-download!');
+      } catch {
+        toast('Gagal konversi ke WAV — gunakan WebM', 'error');
+      }
+    });
+
+    downloadWebmBtn?.addEventListener('click', () => {
+      if (!finalBlob) return;
+      downloadBlob(finalBlob, 'rekaman.webm');
+      toast('WebM berhasil di-download!');
+    });
+
+    resetBtn?.addEventListener('click', () => {
+      result?.classList.add('hidden');
+      finalBlob = null;
+      timerEl!.textContent = '00:00';
+      statusText!.textContent = 'Siap merekam — izinkan akses mikrofon saat diminta';
+      statusText!.dataset.i18n = 'rec.ready';
+      (window as any).processI18n?.();
+    });
+
+    function downloadBlob(blob: Blob, name: string) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  });
+</script>

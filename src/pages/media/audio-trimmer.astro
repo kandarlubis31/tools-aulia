@@ -1,0 +1,220 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="Audio Trimmer — Potong Audio Online">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Audio Trimmer"
+      titleKey="header.audio_trimmer"
+      desc="Potong audio dengan drag marker di waveform, preview hasilnya, download sebagai WAV."
+      descKey="header.audio_trimmer_desc"
+      icon='<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="18" x2="21" y2="18"/>'
+      gradient="from-violet-500 to-purple-600"
+    />
+
+    <div class="animate-fade-in">
+      <DropZone
+        id="drop-zone"
+        inputId="file-input"
+        accept="audio/*"
+        labelKey="upload.drop_audio"
+        subLabelKey="upload.or_click"
+        label="Drag & drop file audio di sini"
+        gradient="from-violet-500 to-purple-600"
+        hoverClass="hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/20"
+        className="max-w-xl mx-auto"
+      />
+    </div>
+
+    <div id="trimmer" class="hidden mt-8 animate-fade-in card-base p-5">
+      <p id="file-name" class="text-sm font-bold text-matte-700 dark:text-matte-200 truncate mb-3"></p>
+
+      <!-- Waveform + markers -->
+      <div class="relative">
+        <canvas id="waveform" class="w-full h-32 rounded-lg bg-matte-50 dark:bg-surface-elevated/50 cursor-crosshair" height="128"></canvas>
+        <!-- selection overlay -->
+        <div id="selection" class="absolute inset-y-0 bg-violet-500/15 pointer-events-none hidden"></div>
+        <div id="marker-start" class="absolute top-0 bottom-0 w-0.5 bg-emerald-500 pointer-events-none hidden">
+          <div class="absolute -top-1 -left-3 text-base">🟢</div>
+        </div>
+        <div id="marker-end" class="absolute top-0 bottom-0 w-0.5 bg-rose-500 pointer-events-none hidden">
+          <div class="absolute -top-1 -left-3 text-base">🔴</div>
+        </div>
+      </div>
+
+      <div class="flex justify-between text-2xs text-matte-400 mt-1 font-mono tabular-nums">
+        <span><span data-i18n="trim.start">Mulai</span>: <b id="trim-start" class="text-emerald-500">00:00</b></span>
+        <span id="trim-length"></span>
+        <span><span data-i18n="trim.end">Akhir</span>: <b id="trim-end" class="text-rose-500">00:00</b></span>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-3 mt-5">
+        <button id="preview-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-all">▶️ <span data-i18n="trim.preview">Preview</span></button>
+        <button id="export-btn" class="gradient-brand px-8 py-2.5 rounded-xl text-sm font-bold">💾 <span data-i18n="trim.export">Download WAV</span></button>
+      </div>
+      <audio id="preview-audio" class="hidden w-full max-w-md mx-auto mt-4"></audio>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const trimmer = document.getElementById('trimmer');
+    const fileName = document.getElementById('file-name');
+    const canvas = document.getElementById('waveform') as HTMLCanvasElement;
+    const selection = document.getElementById('selection');
+    const markerStart = document.getElementById('marker-start');
+    const markerEnd = document.getElementById('marker-end');
+    const trimStart = document.getElementById('trim-start');
+    const trimEnd = document.getElementById('trim-end');
+    const trimLength = document.getElementById('trim-length');
+    const previewBtn = document.getElementById('preview-btn');
+    const exportBtn = document.getElementById('export-btn');
+    const previewAudio = document.getElementById('preview-audio') as HTMLAudioElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let buffer: AudioBuffer | null = null;
+    let peaks: number[] = [];
+    let duration = 0;
+    let start = 0;   // detik
+    let end = 0;     // detik
+    let dragging: 'start' | 'end' | null = null;
+    let audioCtx: AudioContext | null = null;
+
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    ['dragenter', 'dragover'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('border-violet-500', 'bg-violet-50', 'dark:bg-violet-950/20'); }));
+    ['dragleave', 'drop'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('border-violet-500', 'bg-violet-50', 'dark:bg-violet-950/20'); }));
+    dropZone?.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt?.files.length) fileInput!.files = dt.files;
+      fileInput?.dispatchEvent(new Event('change'));
+    });
+
+    fileInput?.addEventListener('change', async () => {
+      const f = fileInput.files?.[0];
+      if (!f) return;
+      if (!f.type.startsWith('audio/') && !/\.(mp3|wav|ogg|m4a|flac)$/i.test(f.name)) {
+        toast('File harus berupa audio', 'error');
+        return;
+      }
+      if (f.size > 60 * 1024 * 1024) { toast('Ukuran maksimal 60 MB', 'error'); return; }
+
+      try {
+        const { decodeAudioFile, computePeaks, drawWaveform } = await import('../../composables/useAudioWav');
+        const ctx = new AudioContext();
+        buffer = await decodeAudioFile(f, ctx);
+        ctx.close();
+
+        peaks = computePeaks(buffer, 240);
+        duration = buffer.duration;
+        start = 0;
+        end = duration;
+
+        fileName!.textContent = f.name;
+        trimmer?.classList.remove('hidden');
+        trimmer?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        drawWaveform(canvas, peaks, { color: '#c4b5fd', progressColor: '#8b5cf6' });
+        layout();
+      } catch {
+        toast('Format audio tidak didukung', 'error');
+      }
+    });
+
+    function layout() {
+      const rect = canvas.getBoundingClientRect();
+      const sx = (start / duration) * rect.width;
+      const ex = (end / duration) * rect.width;
+      selection!.style.left = `${sx}px`;
+      selection!.style.width = `${ex - sx}px`;
+      selection!.classList.remove('hidden');
+      markerStart!.style.left = `${sx}px`;
+      markerEnd!.style.left = `${ex}px`;
+      markerStart!.classList.remove('hidden');
+      markerEnd!.classList.remove('hidden');
+      trimStart!.textContent = fmt(start);
+      trimEnd!.textContent = fmt(end);
+      trimLength!.textContent = `✂️ ${fmt(end - start)}`;
+    }
+
+    function xToTime(clientX: number) {
+      const rect = canvas.getBoundingClientRect();
+      return Math.max(0, Math.min(duration, ((clientX - rect.left) / rect.width) * duration));
+    }
+
+    canvas?.addEventListener('pointerdown', (e) => {
+      if (!duration) return;
+      const t = xToTime(e.clientX);
+      const startPx = (start / duration) * canvas.getBoundingClientRect().width;
+      const endPx = (end / duration) * canvas.getBoundingClientRect().width;
+      const nearStart = Math.abs(e.clientX - (canvas.getBoundingClientRect().left + startPx)) < 12;
+      const nearEnd = Math.abs(e.clientX - (canvas.getBoundingClientRect().left + endPx)) < 12;
+      if (nearStart && Math.abs(t - start) <= Math.abs(t - end)) dragging = 'start';
+      else if (nearEnd) dragging = 'end';
+      else {
+        // klik kosong: set marker terdekat ke posisi klik
+        dragging = Math.abs(t - start) <= Math.abs(t - end) ? 'start' : 'end';
+      }
+      canvas.setPointerCapture(e.pointerId);
+      updateMarker(e);
+    });
+
+    canvas?.addEventListener('pointermove', (e) => { if (dragging) updateMarker(e); });
+    canvas?.addEventListener('pointerup', () => { dragging = null; });
+    canvas?.addEventListener('pointerleave', () => { dragging = null; });
+
+    function updateMarker(e: PointerEvent) {
+      if (!duration) return;
+      const t = xToTime(e.clientX);
+      if (dragging === 'start') start = Math.min(t, end - 0.5);
+      else if (dragging === 'end') end = Math.max(t, start + 0.5);
+      layout();
+    }
+
+    previewBtn?.addEventListener('click', () => {
+      if (!buffer) return;
+      previewAudio!.src = URL.createObjectURL(sliceBuffer(buffer, start, end));
+      previewAudio!.classList.remove('hidden');
+      previewAudio!.play();
+      toast('Memutar hasil potongan…');
+    });
+
+    exportBtn?.addEventListener('click', async () => {
+      if (!buffer) return;
+      const { encodeWav } = await import('../../composables/useAudioWav');
+      const sliced = sliceBuffer(buffer, start, end);
+      const wav = encodeWav(sliced);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(wav);
+      a.download = fileName!.textContent!.replace(/\.[^.]+$/, '') + '-trimmed.wav';
+      a.click();
+      toast('Audio berhasil dipotong!');
+    });
+
+    function sliceBuffer(buf: AudioBuffer, s: number, e: number): AudioBuffer {
+      if (!audioCtx) audioCtx = new AudioContext();
+      const sampleStart = Math.floor(s * buf.sampleRate);
+      const sampleEnd = Math.min(buf.length, Math.floor(e * buf.sampleRate));
+      const len = Math.max(1, sampleEnd - sampleStart);
+      const out = audioCtx.createBuffer(buf.numberOfChannels, len, buf.sampleRate);
+      for (let c = 0; c < buf.numberOfChannels; c++) {
+        const data = buf.getChannelData(c).subarray(sampleStart, sampleEnd);
+        out.copyToChannel(data, c);
+      }
+      return out;
+    }
+
+    function fmt(sec: number) {
+      if (!isFinite(sec)) return '00:00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+  });
+</script>

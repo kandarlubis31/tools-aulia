@@ -1,0 +1,386 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="Image Cropper — Crop Foto Presisi">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Image Cropper"
+      titleKey="header.image_cropper"
+      desc="Crop gambar dengan presisi: drag untuk posisi, 8 handle untuk ukuran, preset rasio populer."
+      descKey="header.image_cropper_desc"
+      icon='<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>'
+      gradient="from-pink-500 to-rose-600"
+    />
+
+    <div class="animate-fade-in">
+      <DropZone
+        id="drop-zone"
+        inputId="file-input"
+        accept="image/*"
+        labelKey="upload.drop_image"
+        subLabelKey="upload.or_click"
+        label="Drag & drop gambar di sini"
+        gradient="from-pink-500 to-rose-600"
+        hoverClass="hover:border-pink-400 hover:bg-pink-50 dark:hover:bg-pink-950/20"
+        className="max-w-xl mx-auto"
+      />
+    </div>
+
+    <div id="editor" class="hidden mt-8 animate-fade-in">
+      <!-- Toolbar -->
+      <div class="card-base p-4 mb-4 flex flex-wrap items-center justify-center gap-2">
+        {[
+          ['free', 'Bebas'], ['1:1', '1:1'], ['4:3', '4:3'], ['3:2', '3:2'],
+          ['16:9', '16:9'], ['9:16', '9:16'], ['4:5', '4:5 (IG)'],
+        ].map(([val, label]) => (
+          <button data-ratio={val} class="ratio-btn px-3.5 py-2 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">
+            {label}
+          </button>
+        ))}
+        <div class="w-px h-6 bg-matte-200 dark:bg-matte-700 mx-1"></div>
+        <button id="rotate-btn" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/60 transition-all">↻ Rotate 90°</button>
+        <button id="reset-crop-btn" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="btn.reset">Reset</button>
+      </div>
+
+      <!-- Canvas -->
+      <div class="card-base p-4 mb-4 flex justify-center">
+        <div class="relative inline-block max-w-full">
+          <canvas id="display-canvas" class="max-w-full rounded-xl bg-matte-100 dark:bg-matte-800 cursor-move" style="touch-action:none;"></canvas>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-3 mb-6">
+        <button id="apply-btn" class="gradient-brand px-8 py-3 rounded-xl font-bold text-sm">✂️ <span data-i18n="btn.crop">Potong & Download</span></button>
+        <span id="crop-info" class="text-2xs text-matte-400 font-mono"></span>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const editor = document.getElementById('editor');
+    const canvas = document.getElementById('display-canvas') as HTMLCanvasElement;
+    const applyBtn = document.getElementById('apply-btn');
+    const rotateBtn = document.getElementById('rotate-btn');
+    const resetCropBtn = document.getElementById('reset-crop-btn');
+    const cropInfo = document.getElementById('crop-info');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let img: HTMLImageElement | null = null;
+    let fileName = 'image.png';
+    let rotation = 0; // 0|90|180|270
+    let naturalW = 0, naturalH = 0;
+    let dispScale = 1;      // display px per natural px (pre-rotation)
+    let dispW = 0, dispH = 0;
+    let crop = { x: 0, y: 0, w: 0, h: 0 }; // display coords (rotated space)
+    let ratio: number | null = null;        // null = free
+    let activeHandle: string | null = null; // nw|n|ne|e|se|s|sw|w|move
+    const HANDLE = 12;
+
+    // DropZone wiring
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    ['dragenter', 'dragover'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('border-pink-500', 'bg-pink-50', 'dark:bg-pink-950/20'); }));
+    ['dragleave', 'drop'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('border-pink-500', 'bg-pink-50', 'dark:bg-pink-950/20'); }));
+    dropZone?.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt?.files.length) fileInput!.files = dt.files;
+      fileInput?.dispatchEvent(new Event('change'));
+    });
+
+    fileInput?.addEventListener('change', () => {
+      const f = fileInput.files?.[0];
+      if (!f) return;
+      if (!f.type.startsWith('image/')) { toast('File harus berupa gambar', 'error'); return; }
+      fileName = f.name;
+      const url = URL.createObjectURL(f);
+      const image = new Image();
+      image.onload = () => {
+        img = image;
+        naturalW = image.naturalWidth;
+        naturalH = image.naturalHeight;
+        rotation = 0;
+        initEditor();
+      };
+      image.src = url;
+    });
+
+    function initEditor() {
+      editor?.classList.remove('hidden');
+      // fit max 720px display
+      const maxDisp = 720;
+      dispScale = Math.min(1, maxDisp / Math.max(naturalW, naturalH));
+      dispW = naturalW * dispScale;
+      dispH = naturalH * dispScale;
+      // swap for 90/270 rotation handled in render via ctx.rotate; crop space = rotated
+      resetCrop();
+      requestAnimationFrame(render);
+    }
+
+    function resetCrop() {
+      const w = rotation % 180 === 0 ? dispW : dispH;
+      const h = rotation % 180 === 0 ? dispH : dispW;
+      crop = { x: 0, y: 0, w, h };
+    }
+
+    function applyRatio(r: number | null) {
+      ratio = r;
+      // fit crop ke rasio baru (jaga dalam bounds)
+      const cw = rotation % 180 === 0 ? dispW : dispH;
+      const ch = rotation % 180 === 0 ? dispH : dispW;
+      if (r) {
+        let w = crop.w, h = crop.h;
+        if (w / h > r) h = w / r; else w = h * r;
+        if (w > cw) { w = cw; h = w / r; }
+        if (h > ch) { h = ch; w = h * r; }
+        crop = { x: Math.min(crop.x, cw - w), y: Math.min(crop.y, ch - h), w, h };
+      }
+      render();
+    }
+
+    document.querySelectorAll('.ratio-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ratio-btn').forEach(b => {
+          b.className = 'ratio-btn px-3.5 py-2 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all';
+        });
+        btn.className = 'ratio-btn px-3.5 py-2 rounded-lg text-xs font-bold bg-pink-500 text-white shadow-md transition-all';
+        const v = (btn as HTMLElement).dataset.ratio;
+        applyRatio(v === 'free' ? null : parseFloat(v!));
+      });
+    });
+
+    rotateBtn?.addEventListener('click', () => {
+      rotation = (rotation + 90) % 360;
+      // simpan rasio crop relatif, lalu reset
+      applyRatio(ratio);
+      render();
+    });
+
+    resetCropBtn?.addEventListener('click', () => {
+      resetCrop();
+      render();
+    });
+
+    // ---- Pointer interaction ----
+    function canvasPos(e: PointerEvent): { x: number; y: number } {
+      const rect = canvas.getBoundingClientRect();
+      const scale = canvas.width / rect.width; // dpr
+      return { x: (e.clientX - rect.left) * scale, y: (e.clientY - rect.top) * scale };
+    }
+
+    function hitTest(p: { x: number; y: number }): string | null {
+      const { x, y, w, h } = crop;
+      const near = (a: number, b: number) => Math.abs(a - b) <= HANDLE;
+      if (near(p.x, x) && near(p.y, y)) return 'nw';
+      if (near(p.x, x + w) && near(p.y, y)) return 'ne';
+      if (near(p.x, x + w) && near(p.y, y + h)) return 'se';
+      if (near(p.x, x) && near(p.y, y + h)) return 'sw';
+      if (near(p.x, x) && p.y > y && p.y < y + h) return 'w';
+      if (near(p.x, x + w) && p.y > y && p.y < y + h) return 'e';
+      if (near(p.y, y) && p.x > x && p.x < x + w) return 'n';
+      if (near(p.y, y + h) && p.x > x && p.x < x + w) return 's';
+      if (p.x > x && p.x < x + w && p.y > y && p.y < y + h) return 'move';
+      return null;
+    }
+
+    const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+
+    function resizeCrop(handle: string, dx: number, dy: number) {
+      const cw = rotation % 180 === 0 ? dispW : dispH;
+      const ch = rotation % 180 === 0 ? dispH : dispW;
+      let { x, y, w, h } = crop;
+      const minSize = 24;
+      const moveEdgeX = handle.includes('w');
+      const moveEdgeY = handle.includes('n');
+      const moveX = handle === 'e' || handle === 'w' || handle === 'ne' || handle === 'nw' || handle === 'se' || handle === 'sw';
+      const moveY = handle === 'n' || handle === 's' || handle === 'ne' || handle === 'nw' || handle === 'se' || handle === 'sw';
+
+      if (ratio) {
+        // maintain aspect while resizing from a corner
+        if (handle === 'se' || handle === 'nw') {
+          const grow = Math.max((moveX ? (moveEdgeX ? -dx : dx) : 0) / ratio, moveEdgeY ? -dy : dy);
+          let dw = moveEdgeX ? -grow * ratio : grow * ratio;
+          let dh = moveEdgeY ? -grow : grow;
+          if (moveEdgeX) { if (w + dw < minSize) { dw = minSize - w; dh = dw / ratio; } x += -dw; y += -dh; }
+          else { if (w + dw < minSize) { dw = minSize - w; dh = dw / ratio; } }
+          if (x < 0) { dw += x; x = 0; dh = dw / ratio; }
+          if (y < 0) { dh += y; y = 0; dw = dh * ratio; }
+          w += dw; h += dh;
+        } else {
+          // edge handles with ratio: anchor opposite corner
+          const anchorX = handle.includes('w') ? x + w : x;
+          const anchorY = handle.includes('n') ? y + h : y;
+          if (handle.includes('w') || handle.includes('e')) {
+            const targetW = clamp(w + (handle.includes('w') ? -dx : dx), minSize, cw);
+            const targetH = targetW / ratio;
+            let nx = handle.includes('w') ? anchorX - targetW : anchorX;
+            let ny = anchorY - targetH;
+            if (nx < 0) { nx = 0; w = anchorX; h = w / ratio; y = anchorY - h; return; }
+            if (ny < 0) { ny = 0; h = anchorY; w = h * ratio; x = handle.includes('w') ? anchorX - w : anchorX; return; }
+            if (ny + targetH > ch) { h = ch - anchorY; w = h * ratio; x = handle.includes('w') ? anchorX - w : anchorX; return; }
+            w = targetW; h = targetH; x = nx; y = ny;
+          } else {
+            const targetH = clamp(h + (handle.includes('n') ? -dy : dy), minSize, ch);
+            const targetW = targetH * ratio;
+            let nx = anchorX - targetW;
+            let ny = handle.includes('n') ? anchorY - targetH : anchorY;
+            if (nx < 0) { nx = 0; w = anchorX; h = w / ratio; y = anchorY - h; return; }
+            if (nx + targetW > cw) { w = cw - anchorX; h = w / ratio; y = anchorY - h; return; }
+            w = targetW; h = targetH; x = nx; y = ny;
+          }
+        }
+      } else {
+        if (moveX) {
+          const nx = moveEdgeX ? x + dx : x;
+          const nw = moveEdgeX ? w - dx : w + dx;
+          if (nw >= minSize && nx >= 0 && nx + nw <= cw) { x = nx; w = nw; }
+        }
+        if (moveY) {
+          const ny = moveEdgeY ? y + dy : y;
+          const nh = moveEdgeY ? h - dy : h + dy;
+          if (nh >= minSize && ny >= 0 && ny + nh <= ch) { y = ny; h = nh; }
+        }
+      }
+      crop = { x, y, w, h };
+    }
+
+    let dragStart: { x: number; y: number; cropX: number; cropY: number } | null = null;
+
+    canvas.addEventListener('pointerdown', (e) => {
+      const p = canvasPos(e);
+      const hit = hitTest(p);
+      if (!hit) return;
+      e.preventDefault();
+      activeHandle = hit;
+      dragStart = { x: p.x, y: p.y, cropX: crop.x, cropY: crop.y };
+      canvas.setPointerCapture(e.pointerId);
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      if (!activeHandle || !dragStart) return;
+      const p = canvasPos(e);
+      const dx = p.x - dragStart.x;
+      const dy = p.y - dragStart.y;
+      if (activeHandle === 'move') {
+        const cw = rotation % 180 === 0 ? dispW : dispH;
+        const ch = rotation % 180 === 0 ? dispH : dispW;
+        crop.x = clamp(dragStart.cropX + dx, 0, cw - crop.w);
+        crop.y = clamp(dragStart.cropY + dy, 0, ch - crop.h);
+      } else {
+        resizeCrop(activeHandle, dx, dy);
+      }
+      render();
+    });
+
+    canvas.addEventListener('pointerup', () => {
+      activeHandle = null;
+      dragStart = null;
+    });
+
+    function render() {
+      if (!img) return;
+      const dpr = window.devicePixelRatio || 1;
+      const w = rotation % 180 === 0 ? dispW : dispH;
+      const h = rotation % 180 === 0 ? dispH : dispW;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+      ctx.save();
+      ctx.translate(w / 2, h / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.drawImage(img, -dispW / 2, -dispH / 2, dispW, dispH);
+      ctx.restore();
+
+      const { x, y, w: cw, h: ch } = crop;
+      // dim outside
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(0, 0, w, y);
+      ctx.fillRect(0, y + ch, w, h - y - ch);
+      ctx.fillRect(0, y, x, ch);
+      ctx.fillRect(x + cw, y, w - x - cw, ch);
+      // border
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x, y, cw, ch);
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+      ctx.strokeRect(x + 1.5, y + 1.5, cw - 3, ch - 3);
+      // rule of thirds
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.lineWidth = 0.75;
+      for (let i = 1; i < 3; i++) {
+        ctx.beginPath(); ctx.moveTo(x + (cw / 3) * i, y); ctx.lineTo(x + (cw / 3) * i, y + ch); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, y + (ch / 3) * i); ctx.lineTo(x + cw, y + (ch / 3) * i); ctx.stroke();
+      }
+      // handles
+      const hs = HANDLE / 2;
+      const pts: [number, number][] = [[x, y], [x + cw / 2, y], [x + cw, y], [x + cw, y + ch / 2], [x + cw, y + ch], [x + cw / 2, y + ch], [x, y + ch], [x, y + ch / 2]];
+      ctx.fillStyle = '#fff';
+      pts.forEach(([hx, hy]) => {
+        ctx.beginPath();
+        ctx.rect(hx - hs, hy - hs, HANDLE, HANDLE);
+        ctx.fill();
+        ctx.strokeStyle = '#f43f5e';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
+      if (cropInfo) {
+        const outW = Math.round(cw / dispScale);
+        const outH = Math.round(ch / dispScale);
+        cropInfo.textContent = `${outW} × ${outH} px`;
+      }
+    }
+
+    applyBtn?.addEventListener('click', () => {
+      if (!img) return;
+      const outW = Math.max(1, Math.round(crop.w / dispScale));
+      const outH = Math.max(1, Math.round(crop.h / dispScale));
+      const out = document.createElement('canvas');
+      out.width = outW;
+      out.height = outH;
+      const octx = out.getContext('2d');
+      if (!octx) return;
+
+      // crop rect in natural (pre-rotation) coords
+      const sx = crop.x / dispScale;
+      const sy = crop.y / dispScale;
+      const sw = crop.w / dispScale;
+      const sh = crop.h / dispScale;
+
+      if (rotation === 0) {
+        octx.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
+      } else {
+        // untuk rotasi, draw full image ke offscreen terrotasi lalu crop
+        const off = document.createElement('canvas');
+        if (rotation % 180 === 0) { off.width = naturalW; off.height = naturalH; }
+        else { off.width = naturalH; off.height = naturalW; }
+        const octx2 = off.getContext('2d');
+        if (!octx2) return;
+        octx2.save();
+        octx2.translate(off.width / 2, off.height / 2);
+        octx2.rotate((rotation * Math.PI) / 180);
+        octx2.drawImage(img, -naturalW / 2, -naturalH / 2, naturalW, naturalH);
+        octx2.restore();
+        octx.drawImage(off, sx, sy, sw, sh, 0, 0, outW, outH);
+      }
+
+      const a = document.createElement('a');
+      a.href = out.toDataURL('image/png');
+      a.download = fileName.replace(/\.[^.]+$/, '') + '-cropped.png';
+      a.click();
+      toast('Gambar berhasil di-crop!');
+    });
+  });
+</script>

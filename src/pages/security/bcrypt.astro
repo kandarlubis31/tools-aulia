@@ -1,0 +1,155 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Bcrypt Hash — Hash & Verifikasi Password">
+  <script is:inline src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js" async></script>
+
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Bcrypt Hash & Verify"
+      titleKey="header.bcrypt"
+      desc="Hash password dengan bcrypt dan verifikasi hash yang sudah ada. Proses lokal, tanpa server."
+      descKey="header.bcrypt_desc"
+      icon='<path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <!-- Tabs -->
+    <div class="flex justify-center gap-3 mb-8 animate-fade-in">
+      <button id="tab-hash" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all" data-i18n="bcrypt.hash_tab">🔒 Hash Password</button>
+      <button id="tab-verify" class="px-6 py-2.5 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-i18n="bcrypt.verify_tab">🔍 Verifikasi</button>
+    </div>
+
+    <!-- Hash mode -->
+    <div id="hash-panel" class="card-base p-6 animate-fade-in">
+      <label class="section-title mb-2 block" for="hash-password" data-i18n="bcrypt.password">Password</label>
+      <input id="hash-password" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm" placeholder="Masukkan password..." autocomplete="off" />
+
+      <label class="section-title mb-2 mt-5 block" for="cost-factor" data-i18n="bcrypt.cost">Cost Factor: <span id="cost-val" class="text-emerald-600 dark:text-emerald-400">10</span></label>
+      <input id="cost-factor" type="range" min="4" max="14" value="10" class="w-full accent-emerald-500" />
+      <p class="text-2xs text-matte-400 mt-1" data-i18n="bcrypt.cost_hint">Semakin tinggi cost, semakin lambat & aman. Rekomendasi: 10-12.</p>
+
+      <button id="hash-btn" class="mt-5 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="bcrypt.generate_hash">Generate Hash</button>
+
+      <div id="hash-result" class="hidden mt-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="section-title" data-i18n="bcrypt.hash_result">Hasil Hash</span>
+          <button id="copy-hash" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="btn.copy">Copy</button>
+        </div>
+        <code id="hash-output" class="block w-full p-4 bg-matte-50 dark:bg-matte-900 rounded-xl text-xs font-mono text-emerald-600 dark:text-emerald-400 break-all border border-matte-200 dark:border-surface-border">$2a$10$...</code>
+      </div>
+    </div>
+
+    <!-- Verify mode -->
+    <div id="verify-panel" class="hidden card-base p-6 animate-fade-in">
+      <label class="section-title mb-2 block" for="verify-password" data-i18n="bcrypt.password">Password</label>
+      <input id="verify-password" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm" placeholder="Masukkan password yang mau dicek..." autocomplete="off" />
+      <label class="section-title mb-2 mt-5 block" for="verify-hash" data-i18n="bcrypt.hash_input">Hash</label>
+      <textarea id="verify-hash" rows="3" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors font-mono text-xs resize-y" placeholder="$2a$10$..." data-i18n-attr="placeholder"></textarea>
+      <button id="verify-btn" class="mt-5 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="bcrypt.verify">Verifikasi</button>
+      <div id="verify-result" class="hidden mt-5 p-4 rounded-xl text-sm font-bold text-center"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const tabHash = document.getElementById('tab-hash');
+    const tabVerify = document.getElementById('tab-verify');
+    const hashPanel = document.getElementById('hash-panel');
+    const verifyPanel = document.getElementById('verify-panel');
+    const hashPassword = document.getElementById('hash-password') as HTMLInputElement;
+    const costFactor = document.getElementById('cost-factor') as HTMLInputElement;
+    const costVal = document.getElementById('cost-val');
+    const hashBtn = document.getElementById('hash-btn');
+    const hashOutput = document.getElementById('hash-output');
+    const hashResult = document.getElementById('hash-result');
+    const copyHash = document.getElementById('copy-hash');
+    const verifyPassword = document.getElementById('verify-password') as HTMLInputElement;
+    const verifyHash = document.getElementById('verify-hash') as HTMLTextAreaElement;
+    const verifyBtn = document.getElementById('verify-btn');
+    const verifyResult = document.getElementById('verify-result');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    // bcryptjs UMD exposes dcodeIO.bcrypt (atau window.bcrypt pada build tertentu)
+    function getBcrypt(): any {
+      return (window as any).dcodeIO?.bcrypt || (window as any).bcrypt;
+    }
+
+    function waitForBcrypt(retries = 40): Promise<any> {
+      return new Promise(resolve => {
+        const check = () => {
+          const bc = getBcrypt();
+          if (bc) return resolve(bc);
+          if (--retries <= 0) return resolve(null);
+          setTimeout(check, 100);
+        };
+        check();
+      });
+    }
+
+    function setTab(hash: boolean) {
+      hashPanel?.classList.toggle('hidden', !hash);
+      verifyPanel?.classList.toggle('hidden', hash);
+      const active = 'px-6 py-2.5 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all';
+      const idle = 'px-6 py-2.5 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
+      tabHash!.className = hash ? active : idle;
+      tabVerify!.className = hash ? idle : active;
+    }
+    tabHash?.addEventListener('click', () => setTab(true));
+    tabVerify?.addEventListener('click', () => setTab(false));
+
+    costFactor?.addEventListener('input', () => { if (costVal) costVal.textContent = costFactor.value; });
+
+    hashBtn?.addEventListener('click', async () => {
+      const pwd = hashPassword.value;
+      if (!pwd) { toast('Password kosong', 'error'); return; }
+      const bc = await waitForBcrypt();
+      if (!bc) { toast('Gagal memuat library bcrypt — cek koneksi', 'error'); return; }
+      (hashBtn as HTMLButtonElement).disabled = true;
+      hashBtn.textContent = '⏳ Memproses...';
+      setTimeout(() => {
+        try {
+          const salt = bc.genSaltSync(parseInt(costFactor.value));
+          const hashed = bc.hashSync(pwd, salt);
+          hashOutput!.textContent = hashed;
+          hashResult?.classList.remove('hidden');
+          toast('Hash berhasil dibuat!');
+        } catch (e) {
+          toast('Gagal membuat hash', 'error');
+        } finally {
+          (hashBtn as HTMLButtonElement).disabled = false;
+          hashBtn.textContent = t('bcrypt.generate_hash', 'Generate Hash');
+        }
+      }, 30); // biarkan UI update dulu — hashSync memblokir thread
+    });
+
+    copyHash?.addEventListener('click', async () => {
+      if (!hashOutput?.textContent) return;
+      await navigator.clipboard.writeText(hashOutput.textContent);
+      toast('Hash disalin!');
+    });
+
+    verifyBtn?.addEventListener('click', async () => {
+      const pwd = verifyPassword.value;
+      const hash = verifyHash.value.trim();
+      if (!pwd || !hash) { toast('Isi password dan hash', 'error'); return; }
+      const bc = await waitForBcrypt();
+      if (!bc) { toast('Gagal memuat library bcrypt — cek koneksi', 'error'); return; }
+      try {
+        const ok = bc.compareSync(pwd, hash);
+        verifyResult?.classList.remove('hidden');
+        verifyResult!.className = 'mt-5 p-4 rounded-xl text-sm font-bold text-center ' + (ok
+          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+          : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400');
+        verifyResult!.textContent = ok ? '✅ Cocok! Password valid untuk hash ini.' : '❌ Tidak cocok! Password salah.';
+      } catch {
+        toast('Hash tidak valid', 'error');
+      }
+    });
+  });
+</script>

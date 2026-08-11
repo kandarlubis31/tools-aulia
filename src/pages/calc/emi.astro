@@ -1,0 +1,155 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Loan / EMI Calculator — Kalkulator Angsuran">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Loan / EMI Calculator"
+      titleKey="header.emi_calculator"
+      desc="Hitung angsuran bulanan, total bunga, dan lihat tabel amortisasi lengkap pinjaman kamu."
+      descKey="header.emi_calculator_desc"
+      icon='<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="12" y2="18"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
+      <!-- Input -->
+      <div class="lg:col-span-2 card-base p-6 space-y-4 h-fit">
+        <div>
+          <label class="section-title mb-1.5 block" for="loan-amount" data-i18n="emi.amount">Jumlah Pinjaman (Rp)</label>
+          <input id="loan-amount" type="number" min="0" step="any" value="100000000" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono" />
+        </div>
+        <div>
+          <label class="section-title mb-1.5 block" for="interest-rate" data-i18n="emi.rate">Bunga Tahunan (%)</label>
+          <input id="interest-rate" type="number" min="0" step="0.01" value="10" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono" />
+        </div>
+        <div>
+          <label class="section-title mb-1.5 block" for="tenure-years" data-i18n="emi.tenure">Tenor</label>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <input id="tenure-years" type="number" min="0" max="50" value="5" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono" />
+              <p class="text-2xs text-matte-400 mt-1" data-i18n="emi.years">Tahun</p>
+            </div>
+            <div>
+              <input id="tenure-months" type="number" min="0" max="11" value="0" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono" />
+              <p class="text-2xs text-matte-400 mt-1" data-i18n="emi.months">Bulan</p>
+            </div>
+          </div>
+        </div>
+        <button id="calc-btn" class="w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="btn.calculate">Hitung</button>
+      </div>
+
+      <!-- Result -->
+      <div class="lg:col-span-3 space-y-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="result-cards">
+          <div class="card-base p-4 text-center">
+            <p class="text-2xs text-matte-400 uppercase font-bold mb-1" data-i18n="emi.emi">Angsuran / Bulan</p>
+            <p id="res-emi" class="text-xl md:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">-</p>
+          </div>
+          <div class="card-base p-4 text-center">
+            <p class="text-2xs text-matte-400 uppercase font-bold mb-1" data-i18n="emi.total_interest">Total Bunga</p>
+            <p id="res-interest" class="text-xl md:text-2xl font-extrabold text-amber-600 dark:text-amber-400 font-mono tabular-nums">-</p>
+          </div>
+          <div class="card-base p-4 text-center col-span-2 md:col-span-1">
+            <p class="text-2xs text-matte-400 uppercase font-bold mb-1" data-i18n="emi.total_payment">Total Pembayaran</p>
+            <p id="res-total" class="text-xl md:text-2xl font-extrabold text-matte-800 dark:text-white font-mono tabular-nums">-</p>
+          </div>
+        </div>
+
+        <div class="card-base p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="section-title" data-i18n="emi.amortization">Tabel Amortisasi</span>
+            <span id="res-months" class="text-2xs text-matte-400"></span>
+          </div>
+          <div class="overflow-x-auto max-h-80 overflow-y-auto custom-scrollbar rounded-lg border border-matte-200 dark:border-surface-border">
+            <table class="w-full text-xs">
+              <thead class="sticky top-0 bg-matte-100 dark:bg-matte-800 text-matte-500 dark:text-matte-300 uppercase text-2xs">
+                <tr>
+                  <th class="text-left px-3 py-2 font-bold" data-i18n="common.page">Bulan</th>
+                  <th class="text-right px-3 py-2 font-bold" data-i18n="emi.column_payment">Angsuran</th>
+                  <th class="text-right px-3 py-2 font-bold" data-i18n="emi.column_principal">Pokok</th>
+                  <th class="text-right px-3 py-2 font-bold" data-i18n="emi.column_interest">Bunga</th>
+                  <th class="text-right px-3 py-2 font-bold" data-i18n="emi.column_balance">Sisa</th>
+                </tr>
+              </thead>
+              <tbody id="amort-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const loanAmount = document.getElementById('loan-amount') as HTMLInputElement;
+    const interestRate = document.getElementById('interest-rate') as HTMLInputElement;
+    const tenureYears = document.getElementById('tenure-years') as HTMLInputElement;
+    const tenureMonths = document.getElementById('tenure-months') as HTMLInputElement;
+    const calcBtn = document.getElementById('calc-btn');
+    const amortBody = document.getElementById('amort-body');
+    const resEmi = document.getElementById('res-emi');
+    const resInterest = document.getElementById('res-interest');
+    const resTotal = document.getElementById('res-total');
+    const resMonths = document.getElementById('res-months');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    function fmtIDR(n: number): string {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
+    }
+
+    function calculate() {
+      const P = parseFloat(loanAmount.value);
+      const annualRate = parseFloat(interestRate.value);
+      const totalMonths = (parseInt(tenureYears.value) || 0) * 12 + (parseInt(tenureMonths.value) || 0);
+
+      if (isNaN(P) || P <= 0) { toast('Masukkan jumlah pinjaman yang valid', 'error'); return; }
+      if (isNaN(annualRate) || annualRate < 0) { toast('Masukkan bunga yang valid', 'error'); return; }
+      if (totalMonths <= 0) { toast('Tenor minimal 1 bulan', 'error'); return; }
+
+      const monthlyRate = annualRate / 100 / 12;
+      let emi: number;
+      if (monthlyRate === 0) {
+        emi = P / totalMonths;
+      } else {
+        emi = P * monthlyRate * Math.pow(1 + monthlyRate, totalMonths) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+      }
+
+      let balance = P;
+      let totalInterest = 0;
+      let rows = '';
+      for (let m = 1; m <= totalMonths; m++) {
+        const interest = balance * monthlyRate;
+        const principal = emi - interest;
+        balance -= principal;
+        if (balance < 0) balance = 0;
+        totalInterest += interest;
+        rows += `<tr class="border-t border-matte-100 dark:border-matte-800 ${m % 2 ? 'bg-matte-50/50 dark:bg-matte-900/30' : ''}">
+          <td class="px-3 py-2 text-matte-500 dark:text-matte-400 font-mono">${m}</td>
+          <td class="px-3 py-2 text-right font-mono font-semibold">${fmtIDR(emi)}</td>
+          <td class="px-3 py-2 text-right font-mono">${fmtIDR(principal)}</td>
+          <td class="px-3 py-2 text-right font-mono text-amber-600 dark:text-amber-400">${fmtIDR(interest)}</td>
+          <td class="px-3 py-2 text-right font-mono text-matte-500 dark:text-matte-400">${fmtIDR(balance)}</td>
+        </tr>`;
+      }
+
+      resEmi!.textContent = fmtIDR(emi);
+      resInterest!.textContent = fmtIDR(totalInterest);
+      resTotal!.textContent = fmtIDR(emi * totalMonths);
+      resMonths!.textContent = `${totalMonths} bulan`;
+      amortBody!.innerHTML = rows;
+    }
+
+    calcBtn?.addEventListener('click', calculate);
+    [loanAmount, interestRate, tenureYears, tenureMonths].forEach(el => el?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') calculate();
+    }));
+
+    calculate();
+  });
+</script>

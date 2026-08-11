@@ -1,0 +1,248 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Typing Test — Ukur Kecepatan Ketik">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Typing Test"
+      titleKey="header.typing_test"
+      desc="Ukur kecepatan ketik (WPM), akurasi, dan error. Mode 15, 30, atau 60 detik."
+      descKey="header.typing_test_desc"
+      icon='<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01"/><path d="M10 14h4"/>'
+      gradient="from-sky-500 to-blue-600"
+    />
+
+    <!-- Controls -->
+    <div class="flex flex-wrap items-center justify-center gap-3 mb-6 animate-fade-in">
+      <div class="bg-white dark:bg-matte-800 p-1 rounded-xl inline-flex border border-matte-200 dark:border-matte-700">
+        <button data-duration="15" class="mode-btn px-5 py-2 rounded-lg text-sm font-bold bg-sky-500 text-white shadow-md transition-all">15s</button>
+        <button data-duration="30" class="mode-btn px-5 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all">30s</button>
+        <button data-duration="60" class="mode-btn px-5 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all">60s</button>
+      </div>
+      <button id="lang-toggle" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">🇮🇩 ID</button>
+      <button id="restart-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/60 transition-all">🔄 <span data-i18n="tt.restart">Ulang</span></button>
+    </div>
+
+    <!-- Timer + Live stats -->
+    <div class="card-base p-5 mb-6 animate-fade-in">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl font-extrabold font-mono tabular-nums text-matte-800 dark:text-white" id="timer">0s</span>
+          <span class="text-2xs text-matte-400" data-i18n="tt.timer_hint">Ketik untuk mulai timer</span>
+        </div>
+        <div class="flex gap-2 text-center">
+          <div class="stat-pill-default"><span class="font-bold text-lg tabular-nums" id="stat-wpm">0</span> <span class="text-matte-400" data-i18n="tt.wpm">WPM</span></div>
+          <div class="stat-pill-default"><span class="font-bold text-lg tabular-nums" id="stat-acc">0%</span> <span class="text-matte-400" data-i18n="tt.acc">Akurasi</span></div>
+          <div class="stat-pill-default"><span class="font-bold text-lg tabular-nums" id="stat-err">0</span> <span class="text-matte-400" data-i18n="tt.err">Error</span></div>
+        </div>
+      </div>
+
+      <!-- Text Display -->
+      <div id="text-display" class="rounded-xl border border-matte-200 dark:border-surface-border bg-matte-50 dark:bg-matte-900 p-5 text-lg leading-relaxed font-medium tracking-wide select-none min-h-[140px] cursor-text" tabindex="0" aria-label="Area mengetik">
+        <span id="typed-part" class="text-matte-300 dark:text-matte-600"></span><span id="current-word" class="bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300 rounded px-0.5"></span><span id="rest-part" class="text-matte-500 dark:text-matte-400"></span>
+      </div>
+
+      <!-- Result -->
+      <div id="result-card" class="hidden mt-5 rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-900/20 p-6 text-center animate-fade-in-up">
+        <div class="text-3xl mb-2">🎉</div>
+        <h3 class="text-xl font-extrabold text-matte-800 dark:text-white mb-1"><span data-i18n="tt.result_title">Hasil Tes</span> — <span id="res-duration">30s</span></h3>
+        <div class="flex justify-center gap-4 mt-4 flex-wrap">
+          <div><p class="text-3xl font-extrabold text-sky-600 dark:text-sky-400 tabular-nums" id="res-wpm">0</p><p class="text-2xs text-matte-400 uppercase font-bold" data-i18n="tt.wpm">WPM</p></div>
+          <div><p class="text-3xl font-extrabold text-violet-600 dark:text-violet-400 tabular-nums" id="res-cpm">0</p><p class="text-2xs text-matte-400 uppercase font-bold" data-i18n="tt.cpm">CPM</p></div>
+          <div><p class="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums" id="res-acc">0%</p><p class="text-2xs text-matte-400 uppercase font-bold" data-i18n="tt.acc">Akurasi</p></div>
+          <div><p class="text-3xl font-extrabold text-amber-600 dark:text-amber-400 tabular-nums" id="res-err">0</p><p class="text-2xs text-matte-400 uppercase font-bold" data-i18n="tt.err">Error</p></div>
+        </div>
+        <p id="res-rating" class="text-sm font-bold mt-4 text-matte-600 dark:text-matte-300"></p>
+        <button id="try-again" class="mt-4 px-6 py-2.5 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 transition-colors" data-i18n="tt.try_again">🔄 Coba Lagi</button>
+      </div>
+    </div>
+
+    <p class="text-center text-2xs text-matte-400 animate-fade-in" data-i18n="tt.note">Fokus ke kata yang disorot. WPM dihitung dari kata benar per menit.</p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const timerEl = document.getElementById('timer');
+    const typedPart = document.getElementById('typed-part');
+    const currentWord = document.getElementById('current-word');
+    const restPart = document.getElementById('rest-part');
+    const textDisplay = document.getElementById('text-display');
+    const statWpm = document.getElementById('stat-wpm');
+    const statAcc = document.getElementById('stat-acc');
+    const statErr = document.getElementById('stat-err');
+    const resultCard = document.getElementById('result-card');
+    const restartBtn = document.getElementById('restart-btn');
+    const tryAgain = document.getElementById('try-again');
+    const langToggle = document.getElementById('lang-toggle');
+    const modeBtns = document.querySelectorAll('.mode-btn');
+
+    const ID_SENTENCES = [
+      'Semua file diproses langsung di browser kamu tanpa dikirim ke server mana pun.',
+      'Kualitas hasil selalu jadi prioritas utama dalam setiap pekerjaan yang serius.',
+      'Berlatih mengetik setiap hari akan meningkatkan kecepatan dan akurasi secara signifikan.',
+      'Teknologi terbaik adalah teknologi yang membuat hidup manusia menjadi lebih sederhana.',
+      'Jangan pernah berhenti belajar karena hidup tidak pernah berhenti mengajarkan.',
+      'Kopi hangat di pagi hari selalu menemani sesi coding yang produktif dan menyenangkan.',
+      'Data pribadi adalah aset berharga yang wajib kita lindungi dengan baik.',
+      'Kerja keras tanpa henti adalah kunci menuju hasil yang membanggakan.',
+      'Aplikasi yang ringan dan cepat akan disukai oleh banyak pengguna di seluruh dunia.',
+      'Kebiasaan kecil yang dilakukan konsisten akan menghasilkan perubahan yang besar.',
+    ];
+    const EN_SENTENCES = [
+      'The quick brown fox jumps over the lazy dog while the sun sets slowly.',
+      'Practice typing every day to dramatically improve your speed and accuracy.',
+      'Great software is built by small teams with big dreams and strong coffee.',
+      'All your files are processed locally in your browser, never uploaded anywhere.',
+      'Consistency beats intensity when it comes to building lasting new habits.',
+      'The best time to start was yesterday, the next best time is right now.',
+      'Clean code is simple and direct, it reads like well-written prose.',
+      'Technology should serve people, not the other way around.',
+      'Success is the sum of small efforts repeated day in and day out.',
+      'A journey of a thousand miles begins with a single step forward.',
+    ];
+
+    let words: string[] = [];
+    let duration = 30;
+    let lang: 'id' | 'en' = 'id';
+    let wordIndex = 0;
+    let charIndex = 0;
+    let startTime = 0;
+    let timerId: ReturnType<typeof setInterval> | null = null;
+    let totalKeystrokes = 0;
+    let totalErrors = 0;
+    let finished = false;
+
+    function buildText() {
+      const pool = lang === 'id' ? ID_SENTENCES : EN_SENTENCES;
+      const shuffled = [...pool].sort(() => Math.random() - 0.5);
+      words = shuffled.join(' ').split(' ').filter(w => w.length > 0);
+      wordIndex = 0; charIndex = 0;
+      render();
+    }
+
+    function render() {
+      typedPart!.textContent = words.slice(0, wordIndex).join(' ');
+      if (wordIndex < words.length) {
+        currentWord!.textContent = words[wordIndex].slice(0, charIndex);
+        restPart!.textContent = ' ' + words.slice(wordIndex).join(' ');
+      } else {
+        currentWord!.textContent = '';
+        restPart!.textContent = '';
+      }
+    }
+
+    function reset() {
+      if (timerId) clearInterval(timerId);
+      timerId = null; startTime = 0; finished = false;
+      totalKeystrokes = 0; totalErrors = 0;
+      timerEl!.textContent = '0s';
+      statWpm!.textContent = '0'; statAcc!.textContent = '0%'; statErr!.textContent = '0';
+      resultCard?.classList.add('hidden');
+      textDisplay?.classList.remove('pointer-events-none', 'opacity-50');
+      buildText();
+    }
+
+    function startTimer() {
+      if (timerId || startTime) return;
+      startTime = Date.now();
+      timerId = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = Math.max(0, duration - elapsed);
+        timerEl!.textContent = remaining + 's';
+        updateLiveStats(elapsed);
+        if (remaining <= 0) finish();
+      }, 200);
+    }
+
+    function updateLiveStats(elapsedSec: number) {
+      const correctChars = wordIndex * 5; // estimasi kata benar
+      const wpm = elapsedSec > 0 ? Math.round((correctChars / 5) / (elapsedSec / 60)) : 0;
+      statWpm!.textContent = String(wpm);
+      statAcc!.textContent = totalKeystrokes ? Math.round(((totalKeystrokes - totalErrors) / totalKeystrokes) * 100) + '%' : '100%';
+      statErr!.textContent = String(totalErrors);
+    }
+
+    function finish() {
+      if (finished) return;
+      finished = true;
+      if (timerId) clearInterval(timerId);
+      const elapsed = (Date.now() - startTime) / 1000;
+      const correctChars = wordIndex * 5;
+      const wpm = Math.round((correctChars / 5) / (elapsed / 60));
+      const cpm = Math.round(correctChars / (elapsed / 60));
+      const acc = totalKeystrokes ? Math.round(((totalKeystrokes - totalErrors) / totalKeystrokes) * 100) : 100;
+
+      (document.getElementById('res-duration') as HTMLElement).textContent = duration + 's';
+      (document.getElementById('res-wpm') as HTMLElement).textContent = String(wpm);
+      (document.getElementById('res-cpm') as HTMLElement).textContent = String(cpm);
+      (document.getElementById('res-acc') as HTMLElement).textContent = acc + '%';
+      (document.getElementById('res-err') as HTMLElement).textContent = String(totalErrors);
+
+      const rating = document.getElementById('res-rating')!;
+      if (wpm >= 80) rating.textContent = '🏆 Luar biasa! Kamu typist profesional!';
+      else if (wpm >= 60) rating.textContent = '🚀 Hebat! Di atas rata-rata!';
+      else if (wpm >= 40) rating.textContent = '👍 Bagus! Terus latihan!';
+      else if (wpm >= 20) rating.textContent = '💪 Lumayan, tingkatkan lagi!';
+      else rating.textContent = '🌱 Ayo latihan lebih sering!';
+
+      resultCard?.classList.remove('hidden');
+      textDisplay?.classList.add('pointer-events-none', 'opacity-50');
+    }
+
+    textDisplay?.addEventListener('keydown', (e) => {
+      if (finished) return;
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        if (charIndex > 0) { charIndex--; render(); }
+        else if (wordIndex > 0) { wordIndex--; charIndex = words[wordIndex].length; render(); }
+        return;
+      }
+      if (e.key.length !== 1) return; // ignore modifier keys
+      e.preventDefault();
+      if (!startTime) startTimer();
+      totalKeystrokes++;
+      const expected = words[wordIndex] || '';
+      if (e.key === expected[charIndex]) {
+        charIndex++;
+        if (charIndex >= expected.length) {
+          wordIndex++;
+          charIndex = 0;
+        }
+      } else {
+        totalErrors++;
+      }
+      updateLiveStats(Math.floor((Date.now() - startTime) / 1000));
+      render();
+      // Selesai lebih awal kalau semua kata sudah diketik
+      if (wordIndex >= words.length && words.length > 0) finish();
+    });
+
+    // Click area → fokus supaya keyboard jalan
+    textDisplay?.addEventListener('click', () => textDisplay.focus());
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        duration = parseInt((btn as HTMLElement).dataset.duration || '30');
+        modeBtns.forEach(b => {
+          b.className = 'mode-btn px-5 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all';
+        });
+        btn.className = 'mode-btn px-5 py-2 rounded-lg text-sm font-bold bg-sky-500 text-white shadow-md transition-all';
+        reset();
+      });
+    });
+
+    restartBtn?.addEventListener('click', reset);
+    tryAgain?.addEventListener('click', reset);
+
+    langToggle?.addEventListener('click', () => {
+      lang = lang === 'id' ? 'en' : 'id';
+      langToggle.textContent = lang === 'id' ? '🇮🇩 ID' : '🇬🇧 EN';
+      reset();
+    });
+
+    reset();
+  });
+</script>

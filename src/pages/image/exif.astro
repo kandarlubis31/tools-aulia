@@ -1,0 +1,176 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="EXIF Viewer & Remover — Lihat & Hapus Metadata Foto">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="EXIF Viewer & Remover"
+      titleKey="header.exif_viewer"
+      desc="Lihat metadata foto (kamera, GPS, tanggal) dan hapus semuanya demi privasi."
+      descKey="header.exif_viewer_desc"
+      icon='<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="22"/><line x1="2" y1="12" x2="7" y2="12"/><line x1="17" y1="12" x2="22" y2="12"/>'
+      gradient="from-amber-500 to-orange-600"
+    />
+
+    <div class="animate-fade-in">
+      <DropZone
+        id="drop-zone"
+        inputId="file-input"
+        accept="image/jpeg,image/webp,image/tiff"
+        labelKey="upload.drop_image"
+        subLabelKey="upload.or_click"
+        label="Drag & drop foto (JPG/JPEG/TIFF)"
+        gradient="from-amber-500 to-orange-600"
+        hoverClass="hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+        className="max-w-xl mx-auto"
+      />
+    </div>
+
+    <div id="result" class="hidden mt-8 animate-fade-in">
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Preview -->
+        <div class="card-base p-4">
+          <img id="preview" alt="Preview foto" class="rounded-lg max-h-72 w-auto mx-auto object-contain bg-matte-100 dark:bg-matte-800" />
+          <div id="gps-warning" class="hidden mt-3 p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm">
+            ⚠️ <b>GPS location terdeteksi!</b> Foto ini menyimpan koordinat lokasi. Hapus metadata sebelum membagikannya.
+          </div>
+        </div>
+
+        <!-- EXIF table -->
+        <div class="card-base p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="font-bold text-sm" data-i18n="exif.metadata">Metadata EXIF</h2>
+            <span id="meta-count" class="text-xs px-2 py-1 bg-matte-100 dark:bg-matte-800 rounded-md text-matte-500 dark:text-matte-300"></span>
+          </div>
+          <div id="exif-table" class="space-y-1 max-h-72 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
+        <button id="strip-btn" class="gradient-brand px-8 py-3 rounded-xl font-bold text-sm">🧹 <span data-i18n="exif.strip">Hapus Metadata & Download</span></button>
+        <p class="w-full text-center text-xs text-matte-400" data-i18n="exif.note">Stripping = re-encode ulang gambar via canvas, semua metadata (termasuk GPS) hilang permanen.</p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const result = document.getElementById('result');
+    const preview = document.getElementById('preview') as HTMLImageElement;
+    const exifTable = document.getElementById('exif-table');
+    const metaCount = document.getElementById('meta-count');
+    const gpsWarning = document.getElementById('gps-warning');
+    const stripBtn = document.getElementById('strip-btn');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let currentFile: File | null = null;
+    let hasGps = false;
+
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    ['dragenter', 'dragover'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('border-amber-500', 'bg-amber-50', 'dark:bg-amber-950/20'); }));
+    ['dragleave', 'drop'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('border-amber-500', 'bg-amber-50', 'dark:bg-amber-950/20'); }));
+    dropZone?.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt?.files.length) fileInput!.files = dt.files;
+      fileInput?.dispatchEvent(new Event('change'));
+    });
+
+    fileInput?.addEventListener('change', () => {
+      const f = fileInput.files?.[0];
+      if (!f) return;
+      if (!/image\/(jpeg|webp|tiff)/.test(f.type)) { toast('Pilih file JPG/JPEG/TIFF', 'error'); return; }
+      if (f.size > 25 * 1024 * 1024) { toast('Ukuran maksimal 25 MB', 'error'); return; }
+      currentFile = f;
+      preview.src = URL.createObjectURL(f);
+
+      // EXIF read via global EXIF (exif-js)
+      const img = new Image();
+      img.onload = () => {
+        const exifData: Record<string, string> = {};
+        try {
+          EXIF.getData(img, () => {
+            const all = EXIF.getAllTags(img);
+            if (!all || Object.keys(all).length === 0) {
+              exifTable!.innerHTML = '<p class="text-sm text-matte-400" data-i18n="exif.none">Tidak ada metadata EXIF pada foto ini (sudah bersih ✓)</p>';
+              metaCount!.textContent = '0 item';
+              gpsWarning!.classList.add('hidden');
+              hasGps = false;
+              return;
+            }
+            for (const [k, v] of Object.entries(all)) {
+              if (v === undefined || v === null || v === '') continue;
+              let label = k.replace(/([A-Z])/g, ' $1').trim();
+              let val = String(v);
+              if (k === 'DateTime' || k === 'DateTimeOriginal' || k === 'DateTimeDigitized') val = String(v).replace(' ', ' · ');
+              if (k === 'GPSLatitude') val = formatDms(all.GPSLatitude, all.GPSLatitudeRef);
+              if (k === 'GPSLongitude') val = formatDms(all.GPSLongitude, all.GPSLongitudeRef);
+              if (k === 'GPSAltitude') val = `${v} m`;
+              exifData[label] = val;
+            }
+            hasGps = !!(all.GPSLatitude || all.GPSLongitude);
+            renderTable(exifData);
+            gpsWarning!.classList.toggle('hidden', !hasGps);
+          });
+        } catch {
+          exifTable!.innerHTML = '<p class="text-sm text-matte-400">Metadata tidak terbaca.</p>';
+          metaCount!.textContent = '0 item';
+        }
+      };
+      img.src = URL.createObjectURL(f);
+      result?.classList.remove('hidden');
+      result?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    function formatDms(dms: number[] | undefined, ref: string | undefined): string {
+      if (!Array.isArray(dms) || dms.length < 3) return '—';
+      const [d, m, s] = dms.map(Number);
+      if (isNaN(d)) return '—';
+      return `${d}° ${m}' ${s.toFixed(1)}" ${ref || ''}`.trim();
+    }
+
+    function esc(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function renderTable(data: Record<string, string>) {
+      const entries = Object.entries(data);
+      metaCount!.textContent = `${entries.length} item`;
+      exifTable!.innerHTML = entries.map(([k, v]) => `
+        <div class="flex justify-between gap-3 px-3 py-1.5 rounded-md bg-matte-50 dark:bg-surface-elevated/50 text-xs">
+          <span class="text-matte-500 dark:text-matte-400 shrink-0">${esc(k)}</span>
+          <span class="text-matte-700 dark:text-matte-200 text-right font-medium break-all">${esc(v)}</span>
+        </div>`).join('') || '<p class="text-sm text-matte-400">Tidak ada metadata.</p>';
+      // re-apply i18n on dynamic nodes
+      (window as any).processI18n?.();
+    }
+
+    stripBtn?.addEventListener('click', () => {
+      if (!currentFile) return;
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(image, 0, 0);
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/jpeg', 0.92);
+        a.download = currentFile!.name.replace(/\.[^.]+$/, '') + '-bersih.jpg';
+        a.click();
+        toast('Metadata berhasil dihapus!');
+      };
+      image.src = URL.createObjectURL(currentFile);
+    });
+  });
+</script>

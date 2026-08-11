@@ -1,0 +1,264 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="Image Watermark — Tambah Watermark Foto">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Image Watermark"
+      titleKey="header.image_watermark"
+      desc="Tambah watermark teks atau logo ke gambar dengan kontrol posisi, ukuran, dan transparansi."
+      descKey="header.image_watermark_desc"
+      icon='<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>'
+      gradient="from-cyan-500 to-blue-600"
+    />
+
+    <div class="animate-fade-in">
+      <DropZone
+        id="drop-zone"
+        inputId="file-input"
+        accept="image/*"
+        labelKey="upload.drop_image"
+        subLabelKey="upload.or_click"
+        label="Drag & drop gambar di sini"
+        gradient="from-cyan-500 to-blue-600"
+        hoverClass="hover:border-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/20"
+        className="max-w-xl mx-auto"
+      />
+    </div>
+
+    <!-- Editor Card -->
+    <div id="editor-card" class="hidden mt-8 grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
+      <!-- Controls -->
+      <div class="lg:col-span-2 card-base p-5 space-y-5 h-fit">
+        <div>
+          <label class="section-title mb-2 block" for="wm-type" data-i18n="wm.type">Tipe Watermark</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="type-text" class="px-4 py-2.5 rounded-lg text-sm font-bold bg-cyan-500 text-white shadow-md transition-all" data-i18n="wm.text">✏️ Teks</button>
+            <button id="type-logo" class="px-4 py-2.5 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-i18n="wm.logo">🖼️ Logo</button>
+          </div>
+        </div>
+
+        <div id="text-controls">
+          <label class="section-title mb-2 block" for="wm-text" data-i18n="wm.wm_text">Teks Watermark</label>
+          <input id="wm-text" type="text" value="© ToolsAulia" class="w-full px-4 py-2.5 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-cyan-500 transition-colors text-sm" />
+          <label class="section-title mb-2 mt-4 block" for="wm-font-size" data-i18n="label.font_size">Ukuran Font</label>
+          <input id="wm-font-size" type="range" min="12" max="120" value="48" class="w-full accent-cyan-500" />
+          <span id="font-size-val" class="text-2xs text-matte-400">48px</span>
+        </div>
+
+        <div id="logo-controls" class="hidden">
+          <label class="section-title mb-2 block" data-i18n="wm.logo_upload">Upload Logo (PNG dengan transparansi)</label>
+          <input id="logo-input" type="file" accept="image/*" class="block w-full text-xs text-matte-500 file:mr-3 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-cyan-100 dark:file:bg-cyan-900/40 file:text-cyan-700 dark:file:text-cyan-300 file:font-bold file:cursor-pointer" />
+          <label class="section-title mb-2 mt-4 block" for="wm-logo-size" data-i18n="wm.logo_size">Ukuran Logo (%)</label>
+          <input id="wm-logo-size" type="range" min="5" max="60" value="20" class="w-full accent-cyan-500" />
+          <span id="logo-size-val" class="text-2xs text-matte-400">20%</span>
+        </div>
+
+        <div>
+          <label class="section-title mb-2 block" for="wm-opacity" data-i18n="wm.opacity">Transparansi</label>
+          <input id="wm-opacity" type="range" min="5" max="100" value="35" class="w-full accent-cyan-500" />
+          <span id="opacity-val" class="text-2xs text-matte-400">35%</span>
+        </div>
+
+        <div>
+          <span class="section-title mb-2 block" data-i18n="wm.position">Posisi</span>
+          <div class="grid grid-cols-3 gap-1.5">
+            {['tl','tc','tr','ml','mc','mr','bl','bc','br'].map(pos => (
+              <button data-pos={pos} class="pos-btn aspect-square rounded-lg bg-matte-100 dark:bg-surface-hover hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-all text-xs text-matte-400 flex items-center justify-center">●</button>
+            ))}
+          </div>
+          <p class="text-2xs text-matte-400 mt-1.5" data-i18n="wm.tile_hint">Klik 9 titik untuk memilih posisi watermark.</p>
+        </div>
+
+        <button id="render-btn" class="w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="wm.apply">✅ Terapkan & Download</button>
+      </div>
+
+      <!-- Preview -->
+      <div class="lg:col-span-3 card-base p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="section-title" data-i18n="common.preview">Preview</span>
+          <span id="wm-file-name" class="text-2xs text-matte-400 truncate max-w-[200px]"></span>
+        </div>
+        <div class="rounded-xl overflow-hidden bg-checkerboard border border-matte-200 dark:border-surface-border flex items-center justify-center min-h-[320px]">
+          <img id="preview-img" alt="Preview hasil watermark" class="max-h-[420px] max-w-full object-contain hidden" />
+        </div>
+        <p id="preview-empty" class="text-sm text-matte-400 text-center py-16" data-i18n="wm.preview_hint">Upload gambar untuk melihat preview.</p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const editorCard = document.getElementById('editor-card');
+    const previewImg = document.getElementById('preview-img') as HTMLImageElement;
+    const previewEmpty = document.getElementById('preview-empty');
+    const wmText = document.getElementById('wm-text') as HTMLInputElement;
+    const wmFontSize = document.getElementById('wm-font-size') as HTMLInputElement;
+    const fontSizeVal = document.getElementById('font-size-val');
+    const wmOpacity = document.getElementById('wm-opacity') as HTMLInputElement;
+    const opacityVal = document.getElementById('opacity-val');
+    const wmLogoSize = document.getElementById('wm-logo-size') as HTMLInputElement;
+    const logoSizeVal = document.getElementById('logo-size-val');
+    const logoInput = document.getElementById('logo-input') as HTMLInputElement;
+    const textControls = document.getElementById('text-controls');
+    const logoControls = document.getElementById('logo-controls');
+    const typeText = document.getElementById('type-text');
+    const typeLogo = document.getElementById('type-logo');
+    const renderBtn = document.getElementById('render-btn');
+    const wmFileName = document.getElementById('wm-file-name');
+
+    let sourceImg: HTMLImageElement | null = null;
+    let logoImg: HTMLImageElement | null = null;
+    let fileName = 'image.png';
+    let wmType: 'text' | 'logo' = 'text';
+    let position = 'br';
+
+    const t = (key: string, fb: string) => (window.i18n?.t ? window.i18n.t(key, fb) : fb);
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    // DropZone wiring
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    ['dragenter', 'dragover'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('border-cyan-500', 'bg-cyan-50', 'dark:bg-cyan-950/20'); }));
+    ['dragleave', 'drop'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('border-cyan-500', 'bg-cyan-50', 'dark:bg-cyan-950/20'); }));
+    dropZone?.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt?.files.length) fileInput!.files = dt.files;
+      fileInput?.dispatchEvent(new Event('change'));
+    });
+
+    fileInput?.addEventListener('change', () => {
+      const f = fileInput.files?.[0];
+      if (!f) return;
+      if (!f.type.startsWith('image/')) { toast('File harus berupa gambar', 'error'); return; }
+      fileName = f.name;
+      const url = URL.createObjectURL(f);
+      const img = new Image();
+      img.onload = () => {
+        sourceImg = img;
+        editorCard?.classList.remove('hidden');
+        previewEmpty?.classList.add('hidden');
+        previewImg.classList.remove('hidden');
+        if (wmFileName) wmFileName.textContent = `${fileName} (${img.naturalWidth}×${img.naturalHeight})`;
+        renderPreview();
+      };
+      img.src = url;
+    });
+
+    logoInput?.addEventListener('change', () => {
+      const f = logoInput.files?.[0];
+      if (!f) return;
+      const url = URL.createObjectURL(f);
+      const img = new Image();
+      img.onload = () => { logoImg = img; renderPreview(); };
+      img.src = url;
+    });
+
+    function setWmType(type: 'text' | 'logo') {
+      wmType = type;
+      textControls?.classList.toggle('hidden', type !== 'text');
+      logoControls?.classList.toggle('hidden', type !== 'logo');
+      const active = 'px-4 py-2.5 rounded-lg text-sm font-bold bg-cyan-500 text-white shadow-md transition-all';
+      const idle = 'px-4 py-2.5 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
+      typeText!.className = type === 'text' ? active : idle;
+      typeLogo!.className = type === 'logo' ? active : idle;
+      renderPreview();
+    }
+    typeText?.addEventListener('click', () => setWmType('text'));
+    typeLogo?.addEventListener('click', () => setWmType('logo'));
+
+    document.querySelectorAll('.pos-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        position = (btn as HTMLElement).dataset.pos || 'br';
+        document.querySelectorAll('.pos-btn').forEach(b => {
+          b.className = 'pos-btn aspect-square rounded-lg bg-matte-100 dark:bg-surface-hover hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-all text-xs text-matte-400 flex items-center justify-center';
+        });
+        btn.className = 'pos-btn aspect-square rounded-lg bg-cyan-500 text-white shadow-md transition-all text-xs flex items-center justify-center';
+        renderPreview();
+      });
+    });
+
+    [wmFontSize, wmOpacity, wmLogoSize].forEach(slider => slider?.addEventListener('input', () => {
+      if (fontSizeVal) fontSizeVal.textContent = `${wmFontSize.value}px`;
+      if (opacityVal) opacityVal.textContent = `${wmOpacity.value}%`;
+      if (logoSizeVal) logoSizeVal.textContent = `${wmLogoSize.value}%`;
+      renderPreview();
+    }));
+    wmText?.addEventListener('input', renderPreview);
+
+    function getPosition(ctx: CanvasRenderingContext2D, cw: number, ch: number, ww: number, wh: number, pad: number) {
+      const map: Record<string, [number, number]> = {
+        tl: [pad, pad], tc: [(cw - ww) / 2, pad], tr: [cw - ww - pad, pad],
+        ml: [pad, (ch - wh) / 2], mc: [(cw - ww) / 2, (ch - wh) / 2], mr: [cw - ww - pad, (ch - wh) / 2],
+        bl: [pad, ch - wh - pad], bc: [(cw - ww) / 2, ch - wh - pad], br: [cw - ww - pad, ch - wh - pad],
+      };
+      return map[position] || map.br;
+    }
+
+    function renderPreview() {
+      if (!sourceImg) return;
+      const maxDim = 1600;
+      const scale = Math.min(1, maxDim / Math.max(sourceImg.naturalWidth, sourceImg.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(sourceImg.naturalWidth * scale);
+      canvas.height = Math.round(sourceImg.naturalHeight * scale);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.drawImage(sourceImg, 0, 0, canvas.width, canvas.height);
+      drawWatermark(ctx, canvas.width, canvas.height);
+      previewImg.src = canvas.toDataURL('image/png');
+    }
+
+    function drawWatermark(ctx: CanvasRenderingContext2D, cw: number, ch: number) {
+      const alpha = Number(wmOpacity.value) / 100;
+      const pad = Math.max(16, cw * 0.03);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      if (wmType === 'text') {
+        const size = Number(wmFontSize.value);
+        ctx.font = `bold ${size}px Inter, system-ui, sans-serif`;
+        ctx.fillStyle = '#ffffff';
+        const w = ctx.measureText(wmText.value || '').width;
+        const metrics = ctx.measureText(wmText.value || '');
+        const h = (metrics.actualBoundingBoxAscent || size) + (metrics.actualBoundingBoxDescent || 0);
+        const [x, y] = getPosition(ctx, cw, ch, w, h, pad);
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 1;
+        ctx.fillText(wmText.value || '', x, y + h);
+      } else if (wmType === 'logo' && logoImg) {
+        const pct = Number(wmLogoSize.value) / 100;
+        const lw = Math.round(cw * pct);
+        const lh = Math.round(logoImg.naturalHeight * (lw / logoImg.naturalWidth));
+        const [x, y] = getPosition(ctx, cw, ch, lw, lh, pad);
+        ctx.drawImage(logoImg, x, y, lw, lh);
+      }
+      ctx.restore();
+    }
+
+    renderBtn?.addEventListener('click', () => {
+      if (!sourceImg) { toast('Upload gambar dulu', 'error'); return; }
+      if (wmType === 'text' && !wmText.value.trim()) { toast('Isi teks watermark dulu', 'error'); return; }
+      if (wmType === 'logo' && !logoImg) { toast('Upload logo dulu', 'error'); return; }
+      const canvas = document.createElement('canvas');
+      canvas.width = sourceImg.naturalWidth;
+      canvas.height = sourceImg.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.drawImage(sourceImg, 0, 0);
+      drawWatermark(ctx, canvas.width, canvas.height);
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = fileName.replace(/\.[^.]+$/, '') + '-watermarked.png';
+      a.click();
+      toast('Gambar berhasil di-watermark!');
+    });
+  });
+</script>

@@ -1,0 +1,258 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="PDF to Word — Ubah PDF ke DOCX">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="PDF to Word"
+      titleKey="header.pdf_to_word"
+      desc="Konversi file PDF menjadi dokumen Word (.docx) yang bisa diedit. 100% di browser."
+      descKey="header.pdf_to_word_desc"
+      icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6"/><path d="M9 17h6"/>'
+      gradient="from-blue-500 to-indigo-600"
+    />
+
+    <div class="animate-fade-in">
+      <DropZone
+        id="drop-zone"
+        inputId="file-input"
+        accept="application/pdf"
+        labelKey="upload.drop_pdf"
+        subLabelKey="upload.or_click"
+        label="Drag & drop file PDF di sini"
+        gradient="from-blue-500 to-indigo-600"
+        hoverClass="hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+        className="max-w-xl mx-auto"
+      />
+    </div>
+
+    <div id="process" class="hidden mt-8 animate-fade-in card-base p-6 text-center max-w-xl mx-auto">
+      <div class="text-sm font-bold text-matte-700 dark:text-matte-200 mb-1" data-i18n="toword.extracting">Mengekstrak teks dari PDF…</div>
+      <div class="text-xs text-matte-400 mb-4" data-i18n="toword.progress_hint">Teks per halaman diubah menjadi paragraf Word yang bisa diedit.</div>
+      <div class="h-2 rounded-full bg-matte-100 dark:bg-matte-800 overflow-hidden">
+        <div id="progress-bar" class="h-full w-0 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-200"></div>
+      </div>
+      <div id="status-text" class="text-xs text-matte-400 mt-2 font-mono">0%</div>
+      <div class="mt-6">
+        <button id="download-btn" class="hidden gradient-brand px-8 py-3 rounded-xl font-bold text-sm">📄 <span data-i18n="toword.download">Download DOCX</span></button>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6 max-w-lg mx-auto" data-i18n="toword.note">
+      Catatan: teks diekstrak dari lapisan teks PDF. PDF hasil scan (gambar) tidak punya lapisan teks — teksnya tidak akan muncul.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const process = document.getElementById('process');
+    const progressBar = document.getElementById('progress-bar');
+    const statusText = document.getElementById('status-text');
+    const downloadBtn = document.getElementById('download-btn');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let docxName = 'dokumen.docx';
+    let docxBlob: Blob | null = null;
+
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    ['dragenter', 'dragover'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-950/20'); }));
+    ['dragleave', 'drop'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-950/20'); }));
+    dropZone?.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt?.files.length) fileInput!.files = dt.files;
+      fileInput?.dispatchEvent(new Event('change'));
+    });
+
+    fileInput?.addEventListener('change', async () => {
+      const f = fileInput.files?.[0];
+      if (!f) return;
+      if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+        toast('Pilih file PDF', 'error');
+        return;
+      }
+      if (f.size > 50 * 1024 * 1024) { toast('Ukuran maksimal 50 MB', 'error'); return; }
+
+      docxName = f.name.replace(/\.pdf$/i, '') + '.docx';
+      process?.classList.remove('hidden');
+      process?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      downloadBtn?.classList.add('hidden');
+      progressBar!.style.width = '0%';
+      statusText!.textContent = '0%';
+
+      try {
+        const arrayBuffer = await f.arrayBuffer();
+        const pdf = await window.pdfjsLib.getDocument(arrayBuffer).promise;
+        const paragraphs: string[] = [];
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          const lines: string[] = [];
+          let current = '';
+
+          for (const item of content.items as any[]) {
+            if (typeof item.str !== 'string') continue;
+            current += item.str;
+            if (item.hasEOL) {
+              lines.push(current.trim());
+              current = '';
+            }
+          }
+          if (current.trim()) lines.push(current.trim());
+
+          // Kelompokkan baris jadi paragraf (baris pendek = akhir paragraf)
+          const pageParagraphs: string[] = [];
+          let para = '';
+          for (const line of lines) {
+            if (line.length === 0) continue;
+            if (para) para += ' ' + line;
+            else para = line;
+            if (line.length < 60) {
+              pageParagraphs.push(para);
+              para = '';
+            }
+          }
+          if (para) pageParagraphs.push(para);
+          paragraphs.push(...(pageParagraphs.length ? pageParagraphs : ['']));
+
+          const pct = Math.round((i / pdf.numPages) * 100);
+          progressBar!.style.width = pct + '%';
+          statusText!.textContent = `${pct}% — halaman ${i}/${pdf.numPages}`;
+          // beri kesempatan UI render
+          await new Promise(r => setTimeout(r, 0));
+        }
+
+        docxBlob = buildDocx(paragraphs);
+        downloadBtn?.classList.remove('hidden');
+        statusText!.textContent = `✅ ${pdf.numPages} halaman → ${paragraphs.length} paragraf`;
+        toast('Konversi selesai!');
+      } catch {
+        statusText!.textContent = '❌ Gagal membaca PDF';
+        toast('Gagal membaca PDF', 'error');
+      }
+    });
+
+    downloadBtn?.addEventListener('click', () => {
+      if (!docxBlob) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(docxBlob);
+      a.download = docxName;
+      a.click();
+    });
+
+    // ============ DOCX builder (store-only ZIP, tanpa dependency) ============
+    const CRC_TABLE = (() => {
+      const t = new Uint32Array(256);
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+        t[n] = c >>> 0;
+      }
+      return t;
+    })();
+
+    function crc32(bytes: Uint8Array): number {
+      let c = 0xffffffff;
+      for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+      return (c ^ 0xffffffff) >>> 0;
+    }
+
+    function buildZip(files: { name: string; data: Uint8Array }[]): Blob {
+      const encoder = new TextEncoder();
+      const chunks: Uint8Array[] = [];
+      const central: Uint8Array[] = [];
+      let offset = 0;
+
+      for (const file of files) {
+        const nameBytes = encoder.encode(file.name);
+        const crc = crc32(file.data);
+        const size = file.data.length;
+        const local = new Uint8Array(30 + nameBytes.length);
+        const dv = new DataView(local.buffer);
+        dv.setUint32(0, 0x04034b50, true);          // local file header sig
+        dv.setUint16(4, 20, true);                  // version needed
+        dv.setUint16(6, 0, true);                   // flags
+        dv.setUint16(8, 0, true);                   // method: store
+        dv.setUint32(14, crc, true);
+        dv.setUint32(18, size, true);
+        dv.setUint32(22, size, true);
+        dv.setUint16(26, nameBytes.length, true);
+        local.set(nameBytes, 30);
+        chunks.push(local, file.data);
+
+        const cen = new Uint8Array(46 + nameBytes.length);
+        const cdv = new DataView(cen.buffer);
+        cdv.setUint32(0, 0x02014b50, true);         // central dir sig
+        cdv.setUint16(4, 20, true);
+        cdv.setUint16(6, 20, true);
+        cdv.setUint16(8, 0, true);
+        cdv.setUint16(10, 0, true);
+        cdv.setUint32(16, crc, true);
+        cdv.setUint32(20, size, true);
+        cdv.setUint32(24, size, true);
+        cdv.setUint16(28, nameBytes.length, true);
+        cdv.setUint32(42, offset, true);
+        cen.set(nameBytes, 46);
+        central.push(cen);
+        offset += local.length + file.data.length;
+      }
+
+      // End of central directory
+      const centralSize = central.reduce((a, b) => a + b.length, 0);
+      const eocd = new Uint8Array(22);
+      const edv = new DataView(eocd.buffer);
+      edv.setUint32(0, 0x06054b50, true);
+      edv.setUint16(8, files.length, true);
+      edv.setUint16(10, files.length, true);
+      edv.setUint32(12, centralSize, true);
+      edv.setUint32(16, offset, true);
+
+      const all: Uint8Array[] = [...chunks, ...central, eocd];
+      const total = all.reduce((a, b) => a + b.length, 0);
+      const out = new Uint8Array(total);
+      let p = 0;
+      for (const c of all) { out.set(c, p); p += c.length; }
+      return new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    }
+
+    function escXml(s: string): string {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function buildDocx(paragraphs: string[]): Blob {
+      const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    ${paragraphs.map(p => `<w:p><w:r><w:t xml:space="preserve">${escXml(p)}</w:t></w:r></w:p>`).join('\n    ')}
+  </w:body>
+</w:document>`;
+
+      const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+      const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+      const encoder = new TextEncoder();
+      return buildZip([
+        { name: '[Content_Types].xml', data: encoder.encode(contentTypes) },
+        { name: '_rels/.rels', data: encoder.encode(rels) },
+        { name: 'word/document.xml', data: encoder.encode(docXml) },
+      ]);
+    }
+  });
+</script>

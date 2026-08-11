@@ -1,0 +1,164 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Text to Speech — Baca Teks dengan Suara">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Text to Speech"
+      titleKey="header.text_to_speech"
+      desc="Ubah teks menjadi ucapan alami dengan Web Speech API. Pilih suara, atur kecepatan dan nada."
+      descKey="header.text_to_speech_desc"
+      icon='<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>'
+      gradient="from-indigo-500 to-violet-600"
+    />
+
+    <!-- Controls -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="section-title mb-1.5 block" for="voice-select" data-i18n="tts.voice">Suara</label>
+          <select id="voice-select" class="w-full px-4 py-2.5 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-indigo-500 transition-colors text-sm">
+            <option value="" data-i18n="tts.loading_voice">Memuat suara...</option>
+          </select>
+        </div>
+        <div>
+          <label class="section-title mb-1.5 block" data-i18n="tts.rate_pitch">Kecepatan & Nada</label>
+          <div class="flex items-center gap-3">
+            <input id="rate-slider" type="range" min="0.5" max="2" step="0.1" value="1" class="flex-1 accent-indigo-500" aria-label="Kecepatan" />
+            <input id="pitch-slider" type="range" min="0.5" max="2" step="0.1" value="1" class="flex-1 accent-violet-500" aria-label="Nada" />
+          </div>
+          <div class="flex justify-between text-2xs text-matte-400 mt-1">
+            <span id="rate-val">1.0×</span>
+            <span id="pitch-val">1.0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Text Input -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <label class="section-title mb-2 block" for="tts-text" data-i18n="tts.text">Teks</label>
+      <textarea id="tts-text" rows="7" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-indigo-500 transition-colors resize-y text-sm leading-relaxed" placeholder="Tulis atau tempel teks di sini..." data-i18n-attr="placeholder" data-i18n="tts.ph"></textarea>
+      <div class="flex flex-wrap items-center gap-2 mt-3">
+        <button id="sample-btn" class="text-xs font-bold text-indigo-500 hover:text-indigo-600 transition-colors" data-i18n="tts.sample">✨ Contoh Teks</button>
+        <span id="char-count" class="text-2xs text-matte-400 ml-auto"></span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex flex-wrap justify-center gap-3 mb-6 animate-fade-in">
+      <button id="play-btn" class="px-8 py-3.5 rounded-xl font-bold text-sm gradient-brand inline-flex items-center gap-2 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 hover:-translate-y-0.5 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span data-i18n="btn.start">Baca</span>
+      </button>
+      <button id="pause-btn" class="px-6 py-3.5 rounded-xl font-bold text-sm bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all inline-flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+        <span data-i18n="btn.pause">Jeda</span>
+      </button>
+      <button id="stop-btn" class="px-6 py-3.5 rounded-xl font-bold text-sm bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-all inline-flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+        <span data-i18n="common.stop">Berhenti</span>
+      </button>
+    </div>
+
+    <p class="text-center text-2xs text-matte-400 animate-fade-in" data-i18n="tts.note">ℹ️ Suara dihasilkan langsung oleh browser kamu — tidak ada audio yang dikirim ke server. Chrome/Edge menyediakan suara paling banyak.</p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const voiceSelect = document.getElementById('voice-select') as HTMLSelectElement;
+    const ttsText = document.getElementById('tts-text') as HTMLTextAreaElement;
+    const playBtn = document.getElementById('play-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const rateSlider = document.getElementById('rate-slider') as HTMLInputElement;
+    const pitchSlider = document.getElementById('pitch-slider') as HTMLInputElement;
+    const rateVal = document.getElementById('rate-val');
+    const pitchVal = document.getElementById('pitch-val');
+    const charCount = document.getElementById('char-count');
+    const sampleBtn = document.getElementById('sample-btn');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+    const t = (key: string, fb: string) => (window.i18n?.t ? window.i18n.t(key, fb) : fb);
+
+    let voices: SpeechSynthesisVoice[] = [];
+    let supported = 'speechSynthesis' in window;
+
+    function loadVoices() {
+      if (!supported) return;
+      voices = window.speechSynthesis.getVoices();
+      if (!voices.length) return;
+      const preferred = voices.filter(v => /id[-_]ID|Indonesian/i.test(v.lang + ' ' + v.name));
+      const sorted = [...voices].sort((a, b) => {
+        const aId = a.lang.startsWith('id') ? 0 : a.lang.startsWith('en') ? 1 : 2;
+        const bId = b.lang.startsWith('id') ? 0 : b.lang.startsWith('en') ? 1 : 2;
+        return aId - bId || a.name.localeCompare(b.name);
+      });
+      voiceSelect.innerHTML = '';
+      (preferred.length ? preferred : sorted).forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        opt.textContent = `${v.name} (${v.lang})${v.default ? ' — default' : ''}`;
+        voiceSelect.appendChild(opt);
+      });
+    }
+
+    if (supported) {
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    } else {
+      voiceSelect.innerHTML = '<option value="">Web Speech API tidak didukung browser ini</option>';
+      voiceSelect.disabled = true;
+      (playBtn as HTMLButtonElement).disabled = true;
+    }
+
+    function speak() {
+      if (!supported) return;
+      const text = ttsText.value.trim();
+      if (!text) { toast('Teks masih kosong', 'error'); return; }
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      const v = voices.find(x => x.name === voiceSelect.value);
+      if (v) u.voice = v;
+      u.lang = v ? v.lang : 'id-ID';
+      u.rate = parseFloat(rateSlider.value);
+      u.pitch = parseFloat(pitchSlider.value);
+      window.speechSynthesis.speak(u);
+      toast('🔊 Membaca...');
+    }
+
+    playBtn?.addEventListener('click', speak);
+    pauseBtn?.addEventListener('click', () => {
+      if (!supported) return;
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        toast('▶️ Lanjut');
+      } else if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        toast('⏸️ Dijeda');
+      }
+    });
+    stopBtn?.addEventListener('click', () => {
+      if (!supported) return;
+      window.speechSynthesis.cancel();
+      toast('⏹️ Berhenti');
+    });
+
+    rateSlider?.addEventListener('input', () => { if (rateVal) rateVal.textContent = parseFloat(rateSlider.value).toFixed(1) + '×'; });
+    pitchSlider?.addEventListener('input', () => { if (pitchVal) pitchVal.textContent = parseFloat(pitchSlider.value).toFixed(1); });
+    ttsText?.addEventListener('input', () => {
+      if (charCount) charCount.textContent = `${ttsText.value.length} ${t('text.characters', 'karakter')}`;
+    });
+
+    sampleBtn?.addEventListener('click', () => {
+      ttsText.value = 'Halo! Selamat datang di ToolsAulia. Semua tools di sini berjalan 100% di browser kamu — cepat, aman, dan tanpa upload data. Jangan lupa install aplikasinya supaya bisa dipakai offline. Terima kasih sudah berkunjung!';
+      ttsText.dispatchEvent(new Event('input'));
+    });
+
+    ttsText?.dispatchEvent(new Event('input'));
+  });
+</script>

@@ -1,0 +1,185 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="JSON to TypeScript — Generator Interface TS">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="JSON to TypeScript"
+      titleKey="header.json_to_ts"
+      desc="Ubah objek JSON menjadi interface TypeScript yang rapi, termasuk nested object dan array."
+      descKey="header.json_to_ts_desc"
+      icon='<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>'
+      gradient="from-blue-500 to-indigo-600"
+    />
+
+    <!-- Options -->
+    <div class="card-base p-4 mb-6 flex flex-wrap items-end gap-4 animate-fade-in">
+      <div class="flex-1 min-w-[200px]">
+        <label class="section-title mb-1.5 block" for="root-name" data-i18n="jts.root_name">Nama Root Interface</label>
+        <input id="root-name" type="text" value="RootObject" class="w-full px-4 py-2.5 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-blue-500 transition-colors text-sm font-mono" />
+      </div>
+      <label class="flex items-center gap-2 text-sm text-matte-600 dark:text-matte-300 pb-2 cursor-pointer select-none">
+        <input id="optional-flag" type="checkbox" class="w-4 h-4 accent-blue-500" />
+        <span data-i18n="jts.optional">Jadikan semua field optional (?)</span>
+      </label>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+      <div class="card-base p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="section-title" data-i18n="jts.input">JSON Input</span>
+          <div class="flex gap-2">
+            <button id="sample-btn" class="text-xs font-bold text-blue-500 hover:text-blue-600 transition-colors" data-i18n="jts.sample">Contoh</button>
+            <button id="clear-btn" class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors" data-i18n="btn.clear">Clear</button>
+          </div>
+        </div>
+        <textarea id="json-input" rows="16" class="w-full p-4 font-mono text-xs bg-matte-50 dark:bg-matte-900 border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-blue-500 transition-colors resize-y" placeholder='{ "name": "Aulia", "age": 24, "tags": ["dev", "tools"], "address": { "city": "Jakarta", "zip": 12345 } }' data-i18n-attr="placeholder"></textarea>
+        <p id="json-error" class="hidden text-xs font-semibold text-red-500 mt-2"></p>
+      </div>
+
+      <div class="card-base p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="section-title" data-i18n="jts.output">TypeScript Output</span>
+          <div class="flex gap-2">
+            <button id="copy-btn" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="btn.copy">Copy</button>
+            <button id="download-btn" class="text-xs font-bold px-3 py-1.5 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/60 transition" data-i18n="jts.download">⬇ .ts</button>
+          </div>
+        </div>
+        <pre id="ts-output" class="text-xs font-mono text-blue-600 dark:text-blue-400 bg-matte-50 dark:bg-matte-900 rounded-lg p-3 overflow-x-auto min-h-[320px] whitespace-pre-wrap break-words">// Hasil TypeScript akan muncul di sini...</pre>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const jsonInput = document.getElementById('json-input') as HTMLTextAreaElement;
+    const tsOutput = document.getElementById('ts-output');
+    const jsonError = document.getElementById('json-error');
+    const rootName = document.getElementById('root-name') as HTMLInputElement;
+    const optionalFlag = document.getElementById('optional-flag') as HTMLInputElement;
+    const copyBtn = document.getElementById('copy-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const sampleBtn = document.getElementById('sample-btn');
+    const clearBtn = document.getElementById('clear-btn');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    const SAMPLE = {
+      user: { id: 1, name: 'Budi', email: 'budi@example.com', isActive: true, tags: ['admin', 'dev'], address: { city: 'Jakarta', country: 'Indonesia', geo: { lat: -6.2, lng: 106.8 } } },
+      orders: [{ id: 'A1', total: 150000, items: [{ sku: 'X1', qty: 2, price: 75000 }] }],
+      notes: null,
+    };
+
+    let interfaces: string[] = [];
+    let nameCounter = 0;
+
+    function tsName(name: string): string {
+      const clean = name.replace(/[^a-zA-Z0-9_$]/g, '_');
+      return /^[a-zA-Z_$]/.test(clean) ? clean : '_' + clean;
+    }
+
+    function nextName(parent: string): string {
+      nameCounter++;
+      return `${tsName(parent)}Child${nameCounter}`;
+    }
+
+    function typeFor(value: any, parent: string): string {
+      if (value === null) return 'null';
+      if (Array.isArray(value)) {
+        if (value.length === 0) return 'any[]';
+        const elemTypes = new Set(value.map(v => typeFor(v, parent)));
+        return elemTypes.size === 1 ? [...elemTypes][0] + '[]' : `(${[...elemTypes].join(' | ')})[]`;
+      }
+      switch (typeof value) {
+        case 'string': return 'string';
+        case 'number': return 'number';
+        case 'boolean': return 'boolean';
+        case 'object': {
+          const name = nextName(parent);
+          interfaces.push(buildInterface(value, name));
+          return name;
+        }
+        default: return 'any';
+      }
+    }
+
+    function buildInterface(obj: Record<string, any>, name: string): string {
+      const q = optionalFlag.checked ? '?' : '';
+      const lines = Object.entries(obj).map(([key, val]) => `  ${tsName(key)}${q}: ${typeFor(val, name)};`);
+      return `interface ${name} {\n${lines.join('\n')}\n}`;
+    }
+
+    function generate() {
+      jsonError?.classList.add('hidden');
+      interfaces = [];
+      nameCounter = 0;
+      let data: any;
+      try {
+        data = JSON.parse(jsonInput.value || '{}');
+      } catch (e: any) {
+        tsOutput!.textContent = '// ⚠️ JSON tidak valid';
+        if (jsonError) { jsonError.textContent = 'Error: ' + e.message; jsonError.classList.remove('hidden'); }
+        return;
+      }
+      const root = tsName(rootName.value);
+      if (Array.isArray(data)) {
+        if (data.length === 0) { tsOutput!.textContent = '// ⚠️ Array kosong — tidak bisa disimpulkan'; return; }
+        const inner = typeFor(data[0], root);
+        tsOutput!.textContent = [`type ${root} = ${inner}[];`, ...interfaces].join('\n\n');
+        return;
+      }
+      if (typeof data !== 'object' || data === null) {
+        tsOutput!.textContent = `// ⚠️ JSON harus berupa objek atau array. Deteksi: ${typeof data}`;
+        return;
+      }
+      const main = buildInterface(data, root);
+      tsOutput!.textContent = [main, ...interfaces].join('\n\n');
+    }
+
+    function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
+      let timer: ReturnType<typeof setTimeout>;
+      return (...args: Parameters<T>) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
+    }
+
+    const genDebounced = debounce(generate, 300);
+
+    jsonInput?.addEventListener('input', genDebounced);
+    rootName?.addEventListener('input', genDebounced);
+    optionalFlag?.addEventListener('change', generate);
+
+    sampleBtn?.addEventListener('click', () => {
+      jsonInput.value = JSON.stringify(SAMPLE, null, 2);
+      generate();
+    });
+    clearBtn?.addEventListener('click', () => {
+      jsonInput.value = '';
+      tsOutput!.textContent = '// Hasil TypeScript akan muncul di sini...';
+      jsonError?.classList.add('hidden');
+      jsonInput.focus();
+    });
+
+    copyBtn?.addEventListener('click', () => {
+      if (!tsOutput?.textContent || tsOutput.textContent.startsWith('//')) return;
+      navigator.clipboard.writeText(tsOutput.textContent);
+      toast('Kode TypeScript disalin!');
+    });
+
+    downloadBtn?.addEventListener('click', () => {
+      if (!tsOutput?.textContent || tsOutput.textContent.startsWith('//')) return;
+      const blob = new Blob([tsOutput.textContent], { type: 'text/typescript' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = tsName(rootName.value) + '.ts';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    // generate once on load
+    generate();
+  });
+</script>

@@ -1,0 +1,240 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="File Encrypt — Enkripsi File AES-256">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="File Encryptor"
+      titleKey="header.file_encrypt"
+      desc="Enkripsi file dengan AES-256-GCM dan buka kembali dengan password. Semua terjadi di browser."
+      descKey="header.file_encrypt_desc"
+      icon='<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><rect x="9" y="11" width="6" height="8" rx="1"/><path d="M10.5 11V9.5a1.5 1.5 0 0 1 3 0V11"/>'
+      gradient="from-violet-500 to-purple-600"
+    />
+
+    <!-- Tabs -->
+    <div class="flex justify-center gap-3 mb-8 animate-fade-in">
+      <button id="tab-encrypt" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-violet-500 text-white shadow-md transition-all" data-i18n="fe.encrypt_tab">🔒 Enkripsi File</button>
+      <button id="tab-decrypt" class="px-6 py-2.5 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-i18n="fe.decrypt_tab">🔓 Dekripsi File</button>
+    </div>
+
+    <!-- Encrypt -->
+    <div id="encrypt-panel" class="animate-fade-in">
+      <DropZone
+        id="enc-drop-zone"
+        inputId="enc-file-input"
+        labelKey="fe.drop_encrypt"
+        subLabelKey="upload.or_click"
+        label="Pilih file untuk dienkripsi"
+        gradient="from-violet-500 to-purple-600"
+        hoverClass="hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/20"
+        className="max-w-lg mx-auto"
+      />
+      <div class="card-base p-6 mt-6 max-w-lg mx-auto">
+        <label class="section-title mb-2 block" for="enc-password" data-i18n="fe.password">Password</label>
+        <input id="enc-password" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" placeholder="Password enkripsi..." autocomplete="new-password" />
+        <label class="section-title mb-2 mt-4 block" for="enc-confirm" data-i18n="fe.confirm">Konfirmasi Password</label>
+        <input id="enc-confirm" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" placeholder="Ulangi password..." autocomplete="new-password" />
+        <button id="encrypt-btn" class="mt-5 w-full gradient-brand py-3 rounded-xl font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed" data-i18n="fe.encrypt_btn">🔒 Enkripsi & Download</button>
+        <p class="text-2xs text-matte-400 mt-3 text-center" data-i18n="fe.encrypt_hint">Output: file <code class="font-mono">.taenc</code>. Simpan password — tidak bisa dipulihkan!</p>
+      </div>
+    </div>
+
+    <!-- Decrypt -->
+    <div id="decrypt-panel" class="hidden animate-fade-in">
+      <DropZone
+        id="dec-drop-zone"
+        inputId="dec-file-input"
+        accept=".taenc,application/octet-stream"
+        labelKey="fe.drop_decrypt"
+        subLabelKey="upload.or_click"
+        label="Pilih file .taenc untuk didekripsi"
+        gradient="from-emerald-500 to-teal-600"
+        hoverClass="hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+        className="max-w-lg mx-auto"
+        data-hover="emerald"
+      />
+      <div class="card-base p-6 mt-6 max-w-lg mx-auto">
+        <label class="section-title mb-2 block" for="dec-password" data-i18n="fe.password">Password</label>
+        <input id="dec-password" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm" placeholder="Password enkripsi..." autocomplete="current-password" />
+        <button id="decrypt-btn" class="mt-5 w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors" data-i18n="fe.decrypt_btn">🔓 Dekripsi & Download</button>
+        <p class="text-2xs text-matte-400 mt-3 text-center" data-i18n="fe.decrypt_hint">Nama file asli akan dipulihkan otomatis.</p>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div id="status-area" class="hidden max-w-lg mx-auto mt-6 card-base p-4 text-sm font-semibold text-center animate-fade-in"></div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const tabEncrypt = document.getElementById('tab-encrypt');
+    const tabDecrypt = document.getElementById('tab-decrypt');
+    const encryptPanel = document.getElementById('encrypt-panel');
+    const decryptPanel = document.getElementById('decrypt-panel');
+    const encDrop = document.getElementById('enc-drop-zone');
+    const encInput = document.getElementById('enc-file-input') as HTMLInputElement;
+    const decDrop = document.getElementById('dec-drop-zone');
+    const decInput = document.getElementById('dec-file-input') as HTMLInputElement;
+    const encPassword = document.getElementById('enc-password') as HTMLInputElement;
+    const encConfirm = document.getElementById('enc-confirm') as HTMLInputElement;
+    const decPassword = document.getElementById('dec-password') as HTMLInputElement;
+    const encryptBtn = document.getElementById('encrypt-btn') as HTMLButtonElement;
+    const decryptBtn = document.getElementById('decrypt-btn') as HTMLButtonElement;
+    const statusArea = document.getElementById('status-area');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let encFile: File | null = null;
+    let decFile: File | null = null;
+
+    const MAGIC = 'TAUL1';
+
+    // --- DropZone wiring helper ---
+    function wireDropZone(zone: HTMLElement | null, input: HTMLInputElement | null, onFile: (f: File) => void, accent: 'violet' | 'emerald' = 'violet') {
+      const hoverOn = accent === 'emerald'
+        ? ['border-emerald-400', 'bg-emerald-50', 'dark:bg-emerald-950/20']
+        : ['border-violet-400', 'bg-violet-50', 'dark:bg-violet-950/20'];
+      zone?.addEventListener('click', () => input?.click());
+      ['dragenter', 'dragover'].forEach(ev => zone?.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.add(...hoverOn); }));
+      ['dragleave', 'drop'].forEach(ev => zone?.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.remove(...hoverOn); }));
+      zone?.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        if (dt?.files.length) input!.files = dt.files;
+        input?.dispatchEvent(new Event('change'));
+      });
+      input?.addEventListener('change', () => {
+        const f = input.files?.[0];
+        if (f) { onFile(f); statusArea?.classList.add('hidden'); }
+      });
+    }
+
+    wireDropZone(encDrop, encInput, (f) => { encFile = f; toast(`📄 ${f.name} siap dienkripsi`); }, 'violet');
+    wireDropZone(decDrop, decInput, (f) => { decFile = f; toast(`📄 ${f.name} siap didekripsi`); }, 'emerald');
+
+    function setTab(encrypt: boolean) {
+      encryptPanel?.classList.toggle('hidden', !encrypt);
+      decryptPanel?.classList.toggle('hidden', encrypt);
+      const active = 'px-6 py-2.5 rounded-xl text-sm font-bold bg-violet-500 text-white shadow-md transition-all';
+      const activeDec = 'px-6 py-2.5 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all';
+      const idle = 'px-6 py-2.5 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
+      tabEncrypt!.className = encrypt ? active : idle;
+      tabDecrypt!.className = encrypt ? idle : activeDec;
+    }
+    tabEncrypt?.addEventListener('click', () => setTab(true));
+    tabDecrypt?.addEventListener('click', () => setTab(false));
+
+    function setStatus(msg: string, type: 'success' | 'error' | 'info' = 'info', spin = false) {
+      statusArea?.classList.remove('hidden');
+      statusArea!.className = 'max-w-lg mx-auto mt-6 card-base p-4 text-sm font-semibold text-center animate-fade-in ' +
+        (type === 'success' ? '!text-emerald-600 dark:!text-emerald-400'
+          : type === 'error' ? '!text-red-600 dark:!text-red-400'
+          : '!text-matte-600 dark:!text-matte-300');
+      statusArea!.innerHTML = spin
+        ? `<span class="inline-flex items-center gap-2"><span class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>${msg}</span>`
+        : msg;
+    }
+
+    // --- WebCrypto ---
+    const enc = new TextEncoder();
+    const dec = new TextDecoder('utf-8');
+
+    async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
+      const baseKey = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+        baseKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+    }
+
+    function downloadBlob(blob: Blob, name: string) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    encryptBtn?.addEventListener('click', async () => {
+      if (!encFile) { toast('Pilih file dulu', 'error'); return; }
+      const pwd = encPassword.value;
+      if (pwd.length < 4) { toast('Password minimal 4 karakter', 'error'); return; }
+      if (pwd !== encConfirm.value) { toast('Password tidak cocok', 'error'); return; }
+
+      encryptBtn.disabled = true;
+      setStatus('Mengenkripsi dengan AES-256-GCM...', 'info', true);
+      try {
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const key = await deriveKey(pwd, salt);
+        const plaintext = await encFile.arrayBuffer();
+        const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext));
+
+        const nameBytes = enc.encode(encFile.name);
+        const nameLen = new Uint8Array(2);
+        new DataView(nameLen.buffer).setUint16(0, nameBytes.length);
+
+        const out = new Uint8Array(MAGIC.length + nameLen.length + nameBytes.length + salt.length + iv.length + ciphertext.length);
+        let offset = 0;
+        out.set(enc.encode(MAGIC), offset); offset += MAGIC.length;
+        out.set(nameLen, offset); offset += nameLen.length;
+        out.set(nameBytes, offset); offset += nameBytes.length;
+        out.set(salt, offset); offset += salt.length;
+        out.set(iv, offset); offset += iv.length;
+        out.set(ciphertext, offset);
+
+        downloadBlob(new Blob([out], { type: 'application/octet-stream' }), encFile.name + '.taenc');
+        setStatus('✅ File terenkripsi! Download dimulai.', 'success');
+        toast('File berhasil dienkripsi!');
+      } catch {
+        setStatus('❌ Gagal mengenkripsi file', 'error');
+        toast('Enkripsi gagal', 'error');
+      } finally {
+        encryptBtn.disabled = false;
+      }
+    });
+
+    decryptBtn?.addEventListener('click', async () => {
+      if (!decFile) { toast('Pilih file .taenc dulu', 'error'); return; }
+      const pwd = decPassword.value;
+      if (!pwd) { toast('Password kosong', 'error'); return; }
+
+      decryptBtn.disabled = true;
+      setStatus('Mendekripsi file...', 'info', true);
+      try {
+        const data = new Uint8Array(await decFile.arrayBuffer());
+
+        // Validasi magic
+        const magic = dec.decode(data.slice(0, MAGIC.length));
+        if (magic !== MAGIC) throw new Error('Bukan file ToolsAulia (.taenc)');
+
+        let offset = MAGIC.length;
+        const nameLen = new DataView(data.buffer, data.byteOffset + offset, 2).getUint16(0); offset += 2;
+        const name = dec.decode(data.slice(offset, offset + nameLen)); offset += nameLen;
+        const salt = data.slice(offset, offset + 16); offset += 16;
+        const iv = data.slice(offset, offset + 12); offset += 12;
+        const ciphertext = data.slice(offset);
+
+        const key = await deriveKey(pwd, salt);
+        const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+        downloadBlob(new Blob([plaintext], { type: 'application/octet-stream' }), name);
+        setStatus('✅ File berhasil didekripsi!', 'success');
+        toast('File berhasil didekripsi!');
+      } catch {
+        setStatus('❌ Gagal mendekripsi — password salah atau file rusak', 'error');
+        toast('Dekripsi gagal: password salah atau file rusak', 'error');
+      } finally {
+        decryptBtn.disabled = false;
+      }
+    });
+  });
+</script>

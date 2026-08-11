@@ -1,0 +1,240 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Kalkulator Bunga Majemuk — Simulasi Investasi">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Compound Interest Calculator"
+      titleKey="header.compound_interest"
+      desc="Simulasikan pertumbuhan investasi dengan bunga majemuk + grafik tahunan."
+      descKey="header.compound_interest_desc"
+      icon='<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'
+      gradient="from-lime-500 to-emerald-600"
+    />
+
+    <div class="card-base p-6 animate-fade-in">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <label for="principal" class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5">💵 Setoran Awal (Rp)</label>
+          <input id="principal" type="number" value="1000000" min="0" step="100000" class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-lime-500/40 outline-none" />
+        </div>
+        <div>
+          <label for="monthly" class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5">📅 Top-up Bulanan (Rp)</label>
+          <input id="monthly" type="number" value="500000" min="0" step="50000" class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-lime-500/40 outline-none" />
+        </div>
+        <div>
+          <label for="rate" class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5">📈 Bunga per Tahun (%)</label>
+          <input id="rate" type="number" value="7" min="0" max="100" step="0.1" class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-lime-500/40 outline-none" />
+        </div>
+        <div>
+          <label for="years" class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5">⏳ Durasi (tahun)</label>
+          <input id="years" type="number" value="10" min="1" max="60" step="1" class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-lime-500/40 outline-none" />
+        </div>
+        <div>
+          <label for="freq" class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5">🔄 Frekuensi Compound</label>
+          <select id="freq" class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-lime-500/40 outline-none">
+            <option value="12">Bulanan</option>
+            <option value="4">Kuartalan</option>
+            <option value="2">Semesteran</option>
+            <option value="1" selected>Tahunan</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button id="calc-btn" class="gradient-brand w-full px-6 py-2.5 rounded-xl font-bold text-sm">🧮 Hitung</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="result" class="hidden mt-8 animate-fade-in">
+      <!-- Summary cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="card-base p-4 text-center">
+          <p class="text-2xs text-matte-400 mb-1" data-i18n="ci.final_value">Nilai Akhir</p>
+          <p id="s-final" class="text-lg font-bold text-emerald-500 tabular-nums">—</p>
+        </div>
+        <div class="card-base p-4 text-center">
+          <p class="text-2xs text-matte-400 mb-1" data-i18n="ci.total_contrib">Total Setoran</p>
+          <p id="s-contrib" class="text-lg font-bold text-matte-700 dark:text-matte-200 tabular-nums">—</p>
+        </div>
+        <div class="card-base p-4 text-center">
+          <p class="text-2xs text-matte-400 mb-1" data-i18n="ci.total_interest">Total Bunga</p>
+          <p id="s-interest" class="text-lg font-bold text-lime-500 tabular-nums">—</p>
+        </div>
+        <div class="card-base p-4 text-center">
+          <p class="text-2xs text-matte-400 mb-1" data-i18n="ci.growth">Pertumbuhan</p>
+          <p id="s-growth" class="text-lg font-bold text-sky-500 tabular-nums">—</p>
+        </div>
+      </div>
+
+      <div class="card-base p-5 mb-6">
+        <h2 class="font-bold text-sm mb-4" data-i18n="ci.chart">Grafik Pertumbuhan</h2>
+        <canvas id="chart" class="w-full h-64" height="256"></canvas>
+      </div>
+
+      <div class="card-base p-5">
+        <h2 class="font-bold text-sm mb-4" data-i18n="ci.table">Proyeksi Tahunan</h2>
+        <div class="overflow-x-auto max-h-80 overflow-y-auto">
+          <table class="w-full text-xs">
+            <thead class="sticky top-0 bg-matte-50 dark:bg-surface-elevated">
+              <tr class="text-matte-400 text-left">
+                <th class="px-3 py-2 font-bold" data-i18n="ci.col_year">Tahun</th>
+                <th class="px-3 py-2 font-bold text-right" data-i18n="ci.col_contrib">Setoran</th>
+                <th class="px-3 py-2 font-bold text-right" data-i18n="ci.col_interest">Bunga</th>
+                <th class="px-3 py-2 font-bold text-right" data-i18n="ci.col_balance">Saldo</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const calcBtn = document.getElementById('calc-btn');
+    const result = document.getElementById('result');
+    const fmtIDR = (n: number) => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+
+    calcBtn?.addEventListener('click', () => {
+      const principal = parseFloat((document.getElementById('principal') as HTMLInputElement).value) || 0;
+      const monthly = parseFloat((document.getElementById('monthly') as HTMLInputElement).value) || 0;
+      const annualRate = parseFloat((document.getElementById('rate') as HTMLInputElement).value) || 0;
+      const years = Math.max(1, Math.min(60, parseFloat((document.getElementById('years') as HTMLInputElement).value) || 1));
+      const freq = parseInt((document.getElementById('freq') as HTMLSelectElement).value) || 1;
+
+      const ratePerPeriod = annualRate / 100 / freq;
+      const monthsPerPeriod = 12 / freq; // frekuensi compound dalam bulan
+      const totalMonths = years * 12;
+
+      // Simulasi per bulan: top-up bulanan tiap bulan, bunga di-apply tiap periode compound
+      const rows: { year: number; contrib: number; interest: number; balance: number }[] = [];
+      let balance = principal;
+      let totalContrib = principal;
+      let totalInterest = 0;
+      let monthsSinceCompound = 0;
+
+      for (let m = 1; m <= totalMonths; m++) {
+        if (monthly > 0) {
+          balance += monthly;
+          totalContrib += monthly;
+        }
+        monthsSinceCompound++;
+        if (monthsSinceCompound >= monthsPerPeriod) {
+          const interest = balance * ratePerPeriod;
+          balance += interest;
+          totalInterest += interest;
+          monthsSinceCompound = 0;
+        }
+        if (m % 12 === 0) {
+          rows.push({
+            year: m / 12,
+            contrib: totalContrib,
+            interest: totalInterest,
+            balance: balance,
+          });
+        }
+      }
+
+      // Render summary
+      (document.getElementById('s-final') as HTMLElement).textContent = fmtIDR(rows[rows.length - 1].balance);
+      (document.getElementById('s-contrib') as HTMLElement).textContent = fmtIDR(rows[rows.length - 1].contrib);
+      (document.getElementById('s-interest') as HTMLElement).textContent = fmtIDR(rows[rows.length - 1].interest);
+      const growth = ((rows[rows.length - 1].balance / Math.max(1, rows[rows.length - 1].contrib)) * 100) - 100;
+      (document.getElementById('s-growth') as HTMLElement).textContent = `${growth.toFixed(0)}%`;
+
+      // Table
+      (document.getElementById('table-body') as HTMLElement).innerHTML = rows.map(r => `
+        <tr class="border-t border-matte-100 dark:border-matte-800 hover:bg-matte-50 dark:hover:bg-surface-elevated/50">
+          <td class="px-3 py-2 text-matte-500 dark:text-matte-300 font-medium">Tahun ${r.year}</td>
+          <td class="px-3 py-2 text-right tabular-nums text-matte-600 dark:text-matte-300">${fmtIDR(r.contrib)}</td>
+          <td class="px-3 py-2 text-right tabular-nums text-lime-500">${fmtIDR(r.interest)}</td>
+          <td class="px-3 py-2 text-right tabular-nums font-bold text-matte-700 dark:text-matte-200">${fmtIDR(r.balance)}</td>
+        </tr>`).join('');
+
+      drawChart(rows);
+      result?.classList.remove('hidden');
+      result?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    function drawChart(rows: { year: number; balance: number }[]) {
+      const canvas = document.getElementById('chart') as HTMLCanvasElement;
+      if (!canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth || 640;
+      const h = canvas.clientHeight || 256;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const pad = { l: 12, r: 12, t: 20, b: 28 };
+      const maxV = Math.max(...rows.map(r => r.balance)) * 1.05;
+      const chartW = w - pad.l - pad.r;
+      const chartH = h - pad.t - pad.b;
+      const n = rows.length;
+
+      // grid lines
+      ctx.strokeStyle = 'rgba(120,120,130,0.15)';
+      ctx.fillStyle = '#8b949e';
+      ctx.font = '10px monospace';
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.t + chartH - (i / 4) * chartH;
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(w - pad.r, y);
+        ctx.stroke();
+        ctx.fillText(shortFmt(maxV * (i / 4)), 4, y + 3);
+      }
+
+      // area + line
+      const gradient = ctx.createLinearGradient(0, pad.t, 0, pad.t + chartH);
+      gradient.addColorStop(0, 'rgba(132,204,22,0.35)');
+      gradient.addColorStop(1, 'rgba(132,204,22,0.02)');
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const x = pad.l + (i / Math.max(1, n - 1)) * chartW;
+        const y = pad.t + chartH - (rows[i].balance / maxV) * chartH;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.lineTo(pad.l + chartW, pad.t + chartH);
+      ctx.lineTo(pad.l, pad.t + chartH);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const x = pad.l + (i / Math.max(1, n - 1)) * chartW;
+        const y = pad.t + chartH - (rows[i].balance / maxV) * chartH;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#65a30d';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // x labels (tahun)
+      ctx.fillStyle = '#8b949e';
+      const labelEvery = Math.max(1, Math.ceil(n / 8));
+      for (let i = 0; i < n; i++) {
+        if (i % labelEvery !== 0 && i !== n - 1) continue;
+        const x = pad.l + (i / Math.max(1, n - 1)) * chartW;
+        ctx.fillText(String(rows[i].year), x - 6, h - 8);
+      }
+    }
+
+    function shortFmt(n: number) {
+      if (n >= 1e9) return (n / 1e9).toFixed(1) + 'M';
+      if (n >= 1e6) return (n / 1e6).toFixed(0) + 'jt';
+      if (n >= 1e3) return (n / 1e3).toFixed(0) + 'rb';
+      return String(Math.round(n));
+    }
+  });
+</script>

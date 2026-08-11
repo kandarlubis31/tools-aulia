@@ -1,8 +1,38 @@
 # Plan: 100 Tools Baru — ToolsAulia v2 Expansion
 
 > Created: August 11, 2026
-> Target: **58 tools existing → 158 total** (10 kategori × 10 tools baru)
-> Status: 📋 **Plan — menunggu persetujuan eksekusi batch**
+> Target: **58 tools existing (saat plan dibuat) → 158 total** (10 kategori × 10 tools baru). Status: 58 → **78 tools** (Batch 1-2 selesai, lihat Execution Log di bawah).
+> Status: ✅ **B1 + B2 (20 tools) SELESAI — 58 → 78 tools** · Sisa: B3-B5 (80 tools)
+
+## ✅ Batch 1 Execution Log (Aug 11, 2026)
+
+**Hasil: 10 tool baru live · build ✅ · tests 43/43 · guardrail G1 ✅**
+
+| ID | Tool | Halaman | Catatan |
+|----|------|---------|---------|
+| PDF-02 | PDF Password | `/pdf/password` | pdf-lib `setEncryption()` tambah/hapus; mode add/remove; validasi password; download ulang |
+| IMG-04 | Image Watermark | `/image/watermark` | Canvas; teks/logo; 9 posisi; opacity & ukuran slider; preview real-time; download full-res |
+| DEV-02 | JWT Decoder | `/dev/jwt` | atob decode lokal; summary iss/sub/exp/iat dengan waktu relatif; expired highlight; copy per bagian |
+| DEV-04 | JSON to TS | `/dev/json-to-ts` | Generator interface rekursif; nested object + array; nama unik via counter (fix duplikat); optional flag; export .ts |
+| MATH-04 | Loan / EMI Calc | `/calc/emi` | Formula EMI; total bunga/pembayaran; tabel amortisasi 360+ bulan scrollable; format IDR |
+| TXT-03 | Typing Test | `/text/typing-test` | Timer 15/30/60s; highlight kata; WPM/CPM/akurasi/error live; early finish; teks ID/EN; rating hasil |
+| TXT-04 | Text to Speech | `/text/text-to-speech` | Web Speech API; voice select (ID diurutkan pertama); rate & pitch; play/pause/stop; fallback browser |
+| SEC-01 | Bcrypt Hash | `/security/bcrypt` | bcryptjs CDN (dcodeIO.bcrypt + fallback); cost 4-14; hash + verify; hasil copy |
+| SEC-04 | File Encrypt | `/security/file-encrypt` | WebCrypto AES-256-GCM + PBKDF2 100k; format TAUL1 (name+salt+iv+ct); decrypt restore nama asli |
+| DATA-08 | Fake Data Gen | `/data/fake-data` | Dataset Indonesia built-in (tanpa CDN, offline-ready); 10 field checkbox; export JSON/CSV (BOM) |
+
+### Infrastruktur baru
+- **Kategori `text` & `data` ditambahkan** — tools.ts categoryNames, index pills, BaseLayout (catMeta, dropdown, mobile menu, footer, catNames JS), i18n keys (nav/index/footer)
+- Copy "58+" basi → dinamis `{tools.length}+` di index + BaseLayout; README/offline → 69+
+- pdf/index.astro: card PDF Password ditambahkan (kategori security)
+- new-tools.ts: 10 hrefs baru (urut terbaru)
+- i18n: 84 key baru (tool titles, headers, labels per tool) — EN toggle jalan penuh
+
+### Review & fix
+- json-to-ts: nama interface duplikat (sibling nested) → counter global; array double-emission dihapus; exactFlag dead code dibuang
+- jwt: output lama dibersihkan saat token invalid
+- file-encrypt: hover accent deksripsi → emerald (sebelumnya violet)
+- bcrypt: tombol kembali pakai t() agar i18n tidak hilang
 
 ## Konteks & Guardrail
 
@@ -183,3 +213,47 @@
 2. Jalankan `scripts/check-client-side.mjs` (prebuild) + build + vitest tiap batch.
 3. Tool ber-API baru: update `vercel.json` CSP `connect-src` dulu (tandai 🔧CSP).
 4. Simpan fitur yang jalan: audit plan per kategori seperti sebelumnya, update `docs/plan-new-tools.md` jadi execution log.
+
+---
+
+## ✅ Execution Log
+
+### Batch 1 — Quick Wins P1 (SELESAI · 10 tools · 58 → 69 tools)
+
+**Build ✅ · tests ✅ 43/43 · guardrail client-side ✅ · precache 145 entries**
+
+| Tool | Halaman | Highlight |
+|------|---------|-----------|
+| PDF Password | `/pdf/password` | pdf-lib `setEncryption()` tambah/hapus password |
+| Image Watermark | `/image/watermark` | teks/logo, 9 posisi, opacity & ukuran slider |
+| JWT Decoder | `/dev/jwt` | decode lokal, summary iss/sub/exp (waktu relatif) |
+| JSON to TS | `/dev/json-to-ts` | interface rekursif, nested + array, optional flag |
+| Loan / EMI Calc | `/calc/emi` | angsuran + total bunga + tabel amortisasi IDR |
+| Typing Test | `/text/typing-test` | timer 15/30/60s, WPM/CPM/akurasi, rating |
+| Text to Speech | `/text/text-to-speech` | Web Speech API, pilih suara, rate & pitch |
+| Bcrypt Hash | `/security/bcrypt` | bcryptjs CDN, cost 4-14, hash + verify |
+| File Encrypt | `/security/file-encrypt` | AES-256-GCM + PBKDF2, format `.taenc` |
+| Fake Data Gen | `/data/fake-data` | dataset Indonesia built-in, export JSON/CSV |
+
+Infra: kategori baru `text` & `data` (tools.ts, pills, dropdown, mobile, footer, breadcrumb, search, i18n) · 84 key i18n · copy "58+" basi → dinamis `{tools.length}+`.
+
+### Batch 2 — Image & Media (SELESAI · 10 tools · 69 → 79 tools)
+
+**Build ✅ 63.7s · tests ✅ 43/43 · guardrail client-side ✅**
+
+| Tool | Halaman | Highlight |
+|------|---------|-----------|
+| Image Cropper | `/image/cropper` | drag + 8 handle, preset rasio (1:1/16:9/4:5), rotate 90° |
+| Batch Resizer | `/image/batch-resizer` | resize banyak gambar → ZIP, lebar/tinggi/persen + kualitas |
+| EXIF Viewer | `/image/exif` | exif-js CDN, GPS warning, strip metadata via canvas re-encode |
+| Audio Recorder | `/media/audio-recorder` | MediaRecorder + level meter + timer, export WAV/WebM |
+| Waveform Visualizer | `/media/waveform` | decode WebAudio, waveform 240 bar, seek + speed + volume |
+| Audio Trimmer | `/media/audio-trimmer` | drag marker start/end, preview, export WAV |
+| PDF to Word | `/pdf/to-word` | pdf.js ekstraksi teks + DOCX builder (store-only ZIP inline, tanpa dep) |
+| PDF Form Filler | `/pdf/form-filler` | pdf-lib form API: text/checkbox/radio/dropdown + flatten |
+| Compound Interest | `/calc/compound-interest` | simulasi per bulan, tabel tahunan, grafik canvas |
+| Notes (Markdown) | `/utils/notes-md` | marked + DOMPurify preview, autosave localStorage, history, export .md |
+
+Infra: kategori baru `media` (nav/footer/pills/i18n) · `useAudioWav.ts` composable (decode/encodeWav/peaks/waveform) · `vercel.json` Permissions-Policy microphone · 2 card baru di PDF hub + glowColors amber · 41 key i18n UI baru.
+
+Review fixes: bug math compound-interest (top-up bulanan per periode, bukan per bulan) · XSS exif (escape nilai tag) · notes-md tanpa typography plugin (scoped style) · form-filler `getSelected()` · waveform redraw cache · trimmer reuse AudioContext. Copy "69+" → "78+" (README/offline) + seoDesc PDF "18+" → "20+".

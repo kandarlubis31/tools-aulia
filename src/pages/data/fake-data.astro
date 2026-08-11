@@ -1,0 +1,226 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Fake Data Generator — Data Dummy untuk Testing">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Fake Data Generator"
+      titleKey="header.fake_data"
+      desc="Generate data dummy realistis untuk testing: nama, email, alamat, kota, dan lainnya. Export JSON/CSV."
+      descKey="header.fake_data_desc"
+      icon='<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>'
+      gradient="from-teal-500 to-emerald-600"
+    />
+
+    <!-- Controls -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="w-28">
+          <label class="section-title mb-1.5 block" for="row-count" data-i18n="fd.count">Jumlah Data</label>
+          <input id="row-count" type="number" min="1" max="500" value="10" class="w-full px-3 py-2.5 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-teal-500 transition-colors text-sm" />
+        </div>
+        <div class="flex-1 min-w-[220px]">
+          <span class="section-title mb-1.5 block" data-i18n="fd.fields">Field yang Diinginkan</span>
+          <div class="flex flex-wrap gap-2">
+            {[
+              ['name', '👤 Nama', true],
+              ['email', '📧 Email', true],
+              ['phone', '📱 Telepon', true],
+              ['city', '🏙️ Kota', true],
+              ['address', '🏠 Alamat', false],
+              ['company', '🏢 Perusahaan', false],
+              ['job', '💼 Pekerjaan', false],
+              ['username', '👨‍💻 Username', false],
+              ['birthdate', '🎂 Tgl Lahir', false],
+              ['uuid', '🔑 UUID', false],
+            ].map(([id, label, checked]) => (
+              <label class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover cursor-pointer hover:bg-matte-200 dark:hover:bg-surface-elevated transition-colors text-xs font-medium select-none">
+                <input type="checkbox" class="field-chk w-4 h-4 accent-teal-500" data-field={id} checked={checked ? '' : undefined} />
+                <span>{label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button id="generate-btn" class="gradient-brand px-6 py-2.5 rounded-xl font-bold text-sm" data-i18n="fd.generate">⚡ Generate</button>
+          <button id="copy-btn" class="px-4 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="btn.copy">Copy</button>
+          <button id="download-json" class="px-4 py-2.5 rounded-xl text-sm font-bold bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 hover:bg-teal-200 dark:hover:bg-teal-900/60 transition-all">⬇ JSON</button>
+          <button id="download-csv" class="px-4 py-2.5 rounded-xl text-sm font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-all">⬇ CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div class="card-base p-5 animate-fade-in">
+      <div class="flex items-center justify-between mb-3">
+        <span class="section-title" data-i18n="fd.result">Hasil</span>
+        <span id="row-info" class="text-2xs text-matte-400"></span>
+      </div>
+      <div class="overflow-x-auto max-h-[420px] overflow-y-auto custom-scrollbar rounded-lg border border-matte-200 dark:border-surface-border">
+        <table class="w-full text-xs" id="result-table">
+          <thead id="result-head" class="sticky top-0 bg-matte-100 dark:bg-matte-800 text-matte-500 dark:text-matte-300 uppercase text-2xs"></thead>
+          <tbody id="result-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const rowCount = document.getElementById('row-count') as HTMLInputElement;
+    const generateBtn = document.getElementById('generate-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const downloadJson = document.getElementById('download-json');
+    const downloadCsv = document.getElementById('download-csv');
+    const resultHead = document.getElementById('result-head');
+    const resultBody = document.getElementById('result-body');
+    const rowInfo = document.getElementById('row-info');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    // --- Dataset (100% lokal, offline-ready) ---
+    const FIRST_M = ['Budi','Andi','Agus','Joko','Dedi','Rizky','Fajar','Yoga','Dimas','Reza','Eko','Hendra','Bayu','Arif','Teguh','Ivan','Fikri','Rangga','Doni','Gilang'];
+    const FIRST_F = ['Sari','Dewi','Ratna','Putri','Ayu','Indah','Rina','Lestari','Wulan','Maya','Fitri','Nadia','Sinta','Laras','Citra','Rani','Dian','Yuni','Nisa','Anisa'];
+    const LAST = ['Santoso','Wijaya','Pratama','Saputra','Hidayat','Nugroho','Ramadhan','Setiawan','Kurniawan','Maulana','Susanto','Gunawan','Halim','Firmansyah','Purnama','Hakim','Siregar','Utomo','Wibowo','Rahayu'];
+    const CITIES = ['Jakarta','Surabaya','Bandung','Medan','Semarang','Makassar','Palembang','Tangerang','Depok','Bekasi','Malang','Padang','Yogyakarta','Solo','Denpasar','Samarinda','Banjarmasin','Balikpapan','Pekanbaru','Bogor'];
+    const STREETS = ['Jl. Merdeka','Jl. Sudirman','Jl. Gatot Subroto','Jl. Ahmad Yani','Jl. Diponegoro','Jl. Imam Bonjol','Jl. Gajah Mada','Jl. Hayam Wuruk','Jl. Pahlawan','Jl. Pemuda','Jl. Veteran','Jl. Kartini'];
+    const COMPANIES = ['PT Nusantara Digital','PT Karya Bangsa','PT Solusi Prima','PT Teknologi Maju','CV Berkah Jaya','PT Cahaya Abadi','PT Sinar Dunia','PT Indo Kreatif','PT Bumi Sejahtera','PT Citra Mandiri'];
+    const JOBS = ['Software Engineer','Data Analyst','UI/UX Designer','Marketing Executive','Akuntan','HRD','Content Writer','Sales Executive','Project Manager','DevOps Engineer','Graphic Designer','Customer Service'];
+    const DOMAINS = ['gmail.com','yahoo.com','outlook.com','proton.me','icloud.com'];
+    const ADDR_NUM = ['12','23A','45B','7','89','101','15C','34','56','78','90','11A'];
+    const LOREM = ['data','sistem','aplikasi','produk','layanan','proyek','tim','pengguna','analisis','solusi','fitur','performa'];
+
+    const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+    const randInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    function genName(): string {
+      const first = Math.random() < 0.5 ? pick(FIRST_M) : pick(FIRST_F);
+      const last = pick(LAST);
+      return Math.random() < 0.25 ? `${first} ${pick(LAST)} ${last}` : `${first} ${last}`;
+    }
+    function genEmail(name: string): string {
+      return name.toLowerCase().replace(/[^a-z0-9]/g, '.').replace(/\.+/g, '.').replace(/^\.|\.$/g, '') + randInt(1, 99) + '@' + pick(DOMAINS);
+    }
+    function genPhone(): string {
+      const prefixes = ['812','813','821','822','823','852','853','858','811','838'];
+      let p = '08' + pick(prefixes);
+      for (let i = 0; i < 7; i++) p += randInt(0, 9);
+      return p;
+    }
+    function genAddress(city: string): string {
+      return `${pick(STREETS)} No. ${pick(ADDR_NUM)}, ${city}`;
+    }
+    function genUsername(name: string): string {
+      return name.toLowerCase().replace(/[^a-z0-9]/g, '') + randInt(10, 99);
+    }
+    function genBirthdate(): string {
+      const y = randInt(1965, 2005);
+      const m = String(randInt(1, 12)).padStart(2, '0');
+      const d = String(randInt(1, 28)).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+    function genUuid(): string {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+    }
+
+    const FIELD_GEN: Record<string, (row: Record<string, any>) => string> = {
+      name: () => genName(),
+      email: (r) => genEmail(r.name || genName()),
+      phone: () => genPhone(),
+      city: () => pick(CITIES),
+      address: (r) => genAddress(r.city || pick(CITIES)),
+      company: () => pick(COMPANIES),
+      job: () => pick(JOBS),
+      username: (r) => genUsername(r.name || genName()),
+      birthdate: () => genBirthdate(),
+      uuid: () => genUuid(),
+    };
+
+    const FIELD_LABELS: Record<string, string> = {
+      name: 'Nama', email: 'Email', phone: 'Telepon', city: 'Kota', address: 'Alamat',
+      company: 'Perusahaan', job: 'Pekerjaan', username: 'Username', birthdate: 'Tanggal Lahir', uuid: 'UUID',
+    };
+
+    let lastRows: Record<string, any>[] = [];
+
+    function getSelectedFields(): string[] {
+      return Array.from(document.querySelectorAll('.field-chk'))
+        .filter(c => (c as HTMLInputElement).checked)
+        .map(c => (c as HTMLElement).dataset.field || '');
+    }
+
+    function generate() {
+      const fields = getSelectedFields();
+      if (!fields.length) { toast('Pilih minimal 1 field', 'error'); return; }
+      const count = Math.min(500, Math.max(1, parseInt(rowCount.value) || 10));
+      const rows: Record<string, any>[] = [];
+      for (let i = 0; i < count; i++) {
+        const row: Record<string, any> = {};
+        // nama dulu biar email/username bisa pakai
+        if (fields.includes('name')) row.name = FIELD_GEN.name(row);
+        fields.forEach(f => {
+          if (f !== 'name') row[f] = FIELD_GEN[f](row);
+        });
+        rows.push(row);
+      }
+      lastRows = rows;
+      renderTable(fields, rows);
+      rowInfo!.textContent = `${rows.length} rows · ${fields.length} fields`;
+    }
+
+    function renderTable(fields: string[], rows: Record<string, any>[]) {
+      resultHead!.innerHTML = '<tr>' + fields.map(f => `<th class="text-left px-3 py-2 font-bold whitespace-nowrap">${FIELD_LABELS[f] || f}</th>`).join('') + '</tr>';
+      resultBody!.innerHTML = rows.map((row, i) =>
+        '<tr class="' + (i % 2 ? 'bg-matte-50/50 dark:bg-matte-900/30' : '') + ' border-t border-matte-100 dark:border-matte-800">' +
+        fields.map(f => `<td class="px-3 py-2 whitespace-nowrap">${row[f] ?? '-'}</td>`).join('') +
+        '</tr>'
+      ).join('');
+    }
+
+    generateBtn?.addEventListener('click', generate);
+    rowCount?.addEventListener('keydown', (e) => { if (e.key === 'Enter') generate(); });
+
+    copyBtn?.addEventListener('click', () => {
+      if (!lastRows.length) { toast('Generate dulu', 'error'); return; }
+      navigator.clipboard.writeText(JSON.stringify(lastRows, null, 2));
+      toast('Data disalin sebagai JSON!');
+    });
+
+    downloadJson?.addEventListener('click', () => {
+      if (!lastRows.length) { toast('Generate dulu', 'error'); return; }
+      const blob = new Blob([JSON.stringify(lastRows, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'fake-data.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    downloadCsv?.addEventListener('click', () => {
+      if (!lastRows.length) { toast('Generate dulu', 'error'); return; }
+      const fields = Object.keys(lastRows[0]);
+      const esc = (v: any) => {
+        const s = String(v ?? '');
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      };
+      const csv = [fields.join(','), ...lastRows.map(r => fields.map(f => esc(r[f])).join(','))].join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'fake-data.csv';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    generate();
+  });
+</script>

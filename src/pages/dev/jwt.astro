@@ -1,0 +1,171 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="JWT Decoder — Decode Token JWT">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="JWT Decoder"
+      titleKey="header.jwt_decoder"
+      desc="Decode header dan payload token JWT secara lokal. Data tidak pernah meninggalkan browser kamu."
+      descKey="header.jwt_decoder_desc"
+      icon='<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'
+      gradient="from-violet-500 to-purple-600"
+    />
+
+    <!-- Token Input -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <label class="section-title mb-2 block" for="token-input" data-i18n="jwt.token_label">Token JWT</label>
+      <textarea id="token-input" rows="4" class="w-full p-4 font-mono text-xs bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors resize-y" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0In0..." data-i18n-attr="placeholder" data-i18n="jwt.token_ph"></textarea>
+      <div class="flex items-center gap-2 mt-3">
+        <button id="clear-btn" class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors" data-i18n="btn.clear">Clear</button>
+        <span id="token-status" class="text-xs font-semibold"></span>
+      </div>
+    </div>
+
+    <!-- Claims / info ringkas -->
+    <div id="summary-card" class="hidden card-base p-5 mb-6 animate-fade-in">
+      <div class="flex flex-wrap gap-2">
+        <div class="stat-pill-default"><span class="font-bold" id="sum-alg">-</span> <span class="text-matte-400">Alg</span></div>
+        <div class="stat-pill-default"><span class="font-bold" id="sum-typ">-</span> <span class="text-matte-400">Typ</span></div>
+        <div class="stat-pill-default"><span class="font-bold" id="sum-iss">-</span> <span class="text-matte-400" data-i18n="jwt.iss">Issuer</span></div>
+        <div class="stat-pill-default"><span class="font-bold" id="sum-sub">-</span> <span class="text-matte-400" data-i18n="jwt.sub">Subject</span></div>
+        <div class="stat-pill-default"><span class="font-bold" id="sum-exp">-</span> <span class="text-matte-400" data-i18n="jwt.exp">Expires</span></div>
+        <div class="stat-pill-default"><span class="font-bold" id="sum-iat">-</span> <span class="text-matte-400" data-i18n="jwt.iat">Issued</span></div>
+      </div>
+    </div>
+
+    <!-- Decoded Sections -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+      <div class="card-base p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="section-title" data-i18n="jwt.header">Header</span>
+          <button class="copy-btn text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-target="out-header" data-i18n="btn.copy">Copy</button>
+        </div>
+        <pre id="out-header" class="text-xs font-mono text-emerald-600 dark:text-emerald-400 bg-matte-50 dark:bg-matte-900 rounded-lg p-3 overflow-x-auto min-h-[96px] whitespace-pre-wrap break-words">—</pre>
+      </div>
+      <div class="card-base p-4">
+        <div class="flex items-center justify-between mb-3">
+          <span class="section-title" data-i18n="jwt.payload">Payload</span>
+          <button class="copy-btn text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-target="out-payload" data-i18n="btn.copy">Copy</button>
+        </div>
+        <pre id="out-payload" class="text-xs font-mono text-sky-600 dark:text-sky-400 bg-matte-50 dark:bg-matte-900 rounded-lg p-3 overflow-x-auto min-h-[96px] whitespace-pre-wrap break-words">—</pre>
+      </div>
+    </div>
+
+    <div class="card-base p-4 mt-6 animate-fade-in">
+      <div class="flex items-center justify-between mb-3">
+        <span class="section-title" data-i18n="jwt.signature">Signature</span>
+        <button class="copy-btn text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-target="out-signature" data-i18n="btn.copy">Copy</button>
+      </div>
+      <pre id="out-signature" class="text-xs font-mono text-amber-600 dark:text-amber-400 bg-matte-50 dark:bg-matte-900 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words">—</pre>
+      <p class="text-2xs text-matte-400 mt-2 flex items-center gap-1.5">ℹ️ <span data-i18n="jwt.note">Decoder ini hanya membaca isi token — signature tidak diverifikasi (butuh secret). Proses 100% lokal.</span></p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const input = document.getElementById('token-input') as HTMLTextAreaElement;
+    const outHeader = document.getElementById('out-header');
+    const outPayload = document.getElementById('out-payload');
+    const outSignature = document.getElementById('out-signature');
+    const tokenStatus = document.getElementById('token-status');
+    const summaryCard = document.getElementById('summary-card');
+    const copyBtns = document.querySelectorAll('.copy-btn');
+    const clearBtn = document.getElementById('clear-btn');
+
+    const t = (key: string, fb: string) => (window.i18n?.t ? window.i18n.t(key, fb) : fb);
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    function base64UrlDecode(seg: string): string {
+      let b64 = seg.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      const bin = atob(b64);
+      const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    }
+
+    function fmtDate(ts: number): string {
+      if (!ts) return '-';
+      const d = new Date(ts * 1000);
+      const now = Date.now() / 1000;
+      const diff = ts - now;
+      const rel = Math.abs(diff) < 60 ? 'baru saja' : (diff >= 0 ? `dalam ${Math.round(diff / 60)} menit` : `${Math.round(-diff / 60)} menit lalu`);
+      return `${d.toLocaleString('id-ID')} (${rel})`;
+    }
+
+    function decode() {
+      const raw = input.value.trim();
+      if (!raw) {
+        tokenStatus.textContent = '';
+        tokenStatus.className = 'text-xs font-semibold';
+        summaryCard?.classList.add('hidden');
+        outHeader!.textContent = '—';
+        outPayload!.textContent = '—';
+        outSignature!.textContent = '—';
+        return;
+      }
+      const parts = raw.split('.');
+      if (parts.length !== 3) {
+        tokenStatus.textContent = t('jwt.invalid_format', '⚠️ Format tidak valid — JWT terdiri dari 3 bagian (header.payload.signature)');
+        tokenStatus.className = 'text-xs font-semibold text-red-500';
+        summaryCard?.classList.add('hidden');
+        outHeader!.textContent = '—';
+        outPayload!.textContent = '—';
+        outSignature!.textContent = '—';
+        return;
+      }
+      try {
+        const header = JSON.parse(base64UrlDecode(parts[0]));
+        const payload = JSON.parse(base64UrlDecode(parts[1]));
+        outHeader!.textContent = JSON.stringify(header, null, 2);
+        outPayload!.textContent = JSON.stringify(payload, null, 2);
+        outSignature!.textContent = parts[2] || '—';
+        tokenStatus.textContent = t('jwt.valid', '✅ Token valid (format) — header & payload berhasil di-decode');
+        tokenStatus.className = 'text-xs font-semibold text-emerald-500';
+        summaryCard?.classList.remove('hidden');
+
+        const set = (id: string, val: string) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = val;
+        };
+        set('sum-alg', header.alg || '-');
+        set('sum-typ', header.typ || '-');
+        set('sum-iss', payload.iss || '-');
+        set('sum-sub', payload.sub || '-');
+        set('sum-exp', payload.exp ? fmtDate(payload.exp) : '-');
+        set('sum-iat', payload.iat ? fmtDate(payload.iat) : '-');
+        // Highlight expired
+        const expEl = document.getElementById('sum-exp');
+        if (expEl) expEl.className = payload.exp && payload.exp < Date.now() / 1000 ? 'font-bold text-red-500' : 'font-bold';
+      } catch {
+        tokenStatus.textContent = t('jwt.invalid_token', '⚠️ Token tidak valid — bagian bukan Base64/JSON yang benar');
+        tokenStatus.className = 'text-xs font-semibold text-red-500';
+        summaryCard?.classList.add('hidden');
+        outHeader!.textContent = '—';
+        outPayload!.textContent = '—';
+        outSignature!.textContent = '—';
+      }
+    }
+
+    input.addEventListener('input', decode);
+    clearBtn?.addEventListener('click', () => {
+      input.value = '';
+      decode();
+      input.focus();
+    });
+
+    copyBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = (btn as HTMLElement).dataset.target;
+        const el = document.getElementById(targetId || '');
+        if (!el || !el.textContent || el.textContent === '—') return;
+        navigator.clipboard.writeText(el.textContent);
+        toast(t('common.copied', 'Disalin!'));
+      });
+    });
+  });
+</script>

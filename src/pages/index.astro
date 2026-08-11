@@ -51,11 +51,14 @@ const categories = [
   { id: "security", name: "🔒 Security", nameKey: "index.security" },
   { id: "calc", name: "🧮 Calc", nameKey: "index.calc" },
   { id: "utils", name: "⚡ Utils", nameKey: "index.utils" },
-  { id: "file", name: "📂 File", nameKey: "index.file" }
+  { id: "file", name: "📂 File", nameKey: "index.file" },
+  { id: "text", name: "📝 Text", nameKey: "index.text" },
+  { id: "data", name: "🗄️ Data", nameKey: "index.data" },
+  { id: "media", name: "🎵 Media", nameKey: "index.media" }
 ];
 ---
 
-<BaseLayout pageTitle="Dashboard" description="Koleksi 58+ tools developer & produktivitas gratis. Semua berjalan 100% di browser — tanpa install, data aman.">
+<BaseLayout pageTitle="Dashboard" description={`Koleksi ${tools.length}+ tools developer & produktivitas gratis. Semua berjalan 100% di browser — tanpa install, data aman.`}>
 
   <!-- JSON-LD Structured Data for SEO -->
   <script type="application/ld+json" set:html={JSON.stringify({
@@ -63,7 +66,7 @@ const categories = [
     "@type": "WebApplication",
     "name": "ToolsAulia",
     "url": "https://tools.paklubis.my.id",
-    "description": "Koleksi 58+ tools developer & produktivitas gratis. Semua berjalan 100% di browser — tanpa install, data aman.",
+    "description": `Koleksi ${tools.length}+ tools developer & produktivitas gratis. Semua berjalan 100% di browser — tanpa install, data aman.`,
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Windows, Mac, Linux, Android, iOS",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "IDR" }

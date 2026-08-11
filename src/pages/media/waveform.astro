@@ -1,0 +1,191 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="Waveform Visualizer — Lihat Gelombang Audio">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Waveform Visualizer"
+      titleKey="header.waveform"
+      desc="Upload audio dan lihat waveform interaktif dengan playback & progress highlight."
+      descKey="header.waveform_desc"
+      icon='<path d="M2 12h3l2-7 4 14 3-9 2 4h6"/>'
+      gradient="from-sky-500 to-blue-600"
+    />
+
+    <div class="animate-fade-in">
+      <DropZone
+        id="drop-zone"
+        inputId="file-input"
+        accept="audio/*"
+        labelKey="upload.drop_audio"
+        subLabelKey="upload.or_click"
+        label="Drag & drop file audio di sini"
+        gradient="from-sky-500 to-blue-600"
+        hoverClass="hover:border-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/20"
+        className="max-w-xl mx-auto"
+      />
+    </div>
+
+    <div id="player" class="hidden mt-8 animate-fade-in card-base p-5">
+      <div class="flex items-center justify-between mb-3">
+        <div class="min-w-0">
+          <p id="file-name" class="text-sm font-bold text-matte-700 dark:text-matte-200 truncate"></p>
+          <p id="file-meta" class="text-xs text-matte-400 mt-0.5"></p>
+        </div>
+        <button id="play-btn" class="shrink-0 w-14 h-14 rounded-full gradient-brand flex items-center justify-center text-xl shadow-lg shadow-sky-500/30 hover:scale-105 transition-transform">▶️</button>
+      </div>
+
+      <canvas id="waveform" class="w-full h-32 rounded-lg bg-matte-50 dark:bg-surface-elevated/50 cursor-pointer" height="128"></canvas>
+      <div class="flex justify-between text-2xs text-matte-400 mt-1 font-mono tabular-nums">
+        <span id="time-current">00:00</span>
+        <span id="time-total">00:00</span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4 mt-4">
+        <label class="flex items-center gap-2 text-xs text-matte-500 dark:text-matte-300">
+          <span data-i18n="rec.volume">Volume</span>
+          <input id="volume" type="range" min="0" max="1" step="0.05" value="1" class="w-28 accent-sky-500" />
+        </label>
+        <label class="flex items-center gap-2 text-xs text-matte-500 dark:text-matte-300">
+          <span data-i18n="rec.speed">Kecepatan</span>
+          <input id="speed" type="range" min="0.5" max="2" step="0.1" value="1" class="w-28 accent-sky-500" />
+          <span id="speed-label" class="font-mono">1.0×</span>
+        </label>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const player = document.getElementById('player');
+    const fileName = document.getElementById('file-name');
+    const fileMeta = document.getElementById('file-meta');
+    const playBtn = document.getElementById('play-btn');
+    const canvas = document.getElementById('waveform') as HTMLCanvasElement;
+    const timeCurrent = document.getElementById('time-current');
+    const timeTotal = document.getElementById('time-total');
+    const volumeInput = document.getElementById('volume') as HTMLInputElement;
+    const speedInput = document.getElementById('speed') as HTMLInputElement;
+    const speedLabel = document.getElementById('speed-label');
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let audioEl: HTMLAudioElement | null = null;
+    let peaks: number[] = [];
+    let duration = 0;
+    let seeking = false;
+
+    let cachedDraw: ((c: HTMLCanvasElement, p: number[], o?: any) => void) | null = null;
+    async function redraw(progress: number) {
+      if (!cachedDraw) {
+        const m = await import('../../composables/useAudioWav');
+        cachedDraw = m.drawWaveform;
+      }
+      cachedDraw(canvas, peaks, { color: '#7dd3fc', progressColor: '#0284c7', progress });
+    }
+
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    ['dragenter', 'dragover'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('border-sky-500', 'bg-sky-50', 'dark:bg-sky-950/20'); }));
+    ['dragleave', 'drop'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.remove('border-sky-500', 'bg-sky-50', 'dark:bg-sky-950/20'); }));
+    dropZone?.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt?.files.length) fileInput!.files = dt.files;
+      fileInput?.dispatchEvent(new Event('change'));
+    });
+
+    fileInput?.addEventListener('change', async () => {
+      const f = fileInput.files?.[0];
+      if (!f) return;
+      if (!f.type.startsWith('audio/') && !/\.(mp3|wav|ogg|m4a|flac)$/i.test(f.name)) {
+        toast('File harus berupa audio', 'error');
+        return;
+      }
+      if (f.size > 60 * 1024 * 1024) { toast('Ukuran maksimal 60 MB', 'error'); return; }
+
+      try {
+        const { decodeAudioFile, computePeaks, encodeWav, drawWaveform } = await import('../../composables/useAudioWav');
+        const ctx = new AudioContext();
+        const buffer = await decodeAudioFile(f, ctx);
+        ctx.close();
+
+        // Re-encode ke WAV supaya bisa diputar + seek via <audio>
+        const wav = encodeWav(buffer);
+        peaks = computePeaks(buffer, 240);
+        duration = buffer.duration;
+
+        audioEl?.pause();
+        audioEl = new Audio(URL.createObjectURL(wav));
+        audioEl.volume = parseFloat(volumeInput!.value);
+
+        fileName!.textContent = f.name;
+        fileMeta!.textContent = `${(buffer.duration / 60).toFixed(1)} menit · ${buffer.numberOfChannels === 1 ? 'Mono' : 'Stereo'} · ${(f.size / 1024 / 1024).toFixed(1)} MB`;
+        timeTotal!.textContent = fmtTime(duration);
+        player?.classList.remove('hidden');
+        player?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        drawWaveform(canvas, peaks, { color: '#7dd3fc', progressColor: '#0284c7' });
+
+        audioEl.addEventListener('timeupdate', () => {
+          timeCurrent!.textContent = fmtTime(audioEl!.currentTime);
+          if (!seeking) redraw(audioEl!.currentTime / duration);
+        });
+        audioEl.addEventListener('ended', () => {
+          playBtn!.textContent = '▶️';
+          redraw(1);
+        });
+      } catch {
+        toast('Format audio tidak didukung', 'error');
+      }
+    });
+
+    playBtn?.addEventListener('click', () => {
+      if (!audioEl) return;
+      if (audioEl.paused) {
+        audioEl.play();
+        playBtn!.textContent = '⏸️';
+      } else {
+        audioEl.pause();
+        playBtn!.textContent = '▶️';
+      }
+    });
+
+    volumeInput?.addEventListener('input', () => { if (audioEl) audioEl.volume = parseFloat(volumeInput.value); });
+    speedInput?.addEventListener('input', () => {
+      if (audioEl) audioEl.playbackRate = parseFloat(speedInput.value);
+      speedLabel!.textContent = `${parseFloat(speedInput.value).toFixed(1)}×`;
+    });
+
+    canvas?.addEventListener('pointerdown', (e) => {
+      if (!audioEl || !duration) return;
+      seeking = true;
+      seekTo(e);
+    });
+    canvas?.addEventListener('pointermove', (e) => {
+      if (seeking) seekTo(e);
+    });
+    canvas?.addEventListener('pointerup', () => { seeking = false; });
+    canvas?.addEventListener('pointerleave', () => { seeking = false; });
+
+    function seekTo(e: PointerEvent) {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      audioEl!.currentTime = ratio * duration;
+      timeCurrent!.textContent = fmtTime(audioEl!.currentTime);
+      redraw(audioEl!.currentTime / duration);
+    }
+
+    function fmtTime(sec: number) {
+      if (!isFinite(sec)) return '00:00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+  });
+</script>
