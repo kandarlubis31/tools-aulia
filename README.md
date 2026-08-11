@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**98+ Tools Developer & Produktivitas · 100% Client-Side · Gratis Selamanya**
+**129+ Tools Developer & Produktivitas · 100% Client-Side · Gratis Selamanya**
 
 [🇮🇩 Indonesia](#indonesia) · [🇬🇧 English](#english)
 
@@ -22,7 +22,7 @@
 
 ### Tentang
 
-**ToolsAulia** adalah koleksi 98+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
+**ToolsAulia** adalah koleksi 129+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
 
 ### ✨ Kenapa ToolsAulia?
 
@@ -76,7 +76,7 @@ pnpm build      # Production build
 ```
 tools-aulia/
 ├── src/
-│   ├── pages/          # 98+ tool pages (Astro)
+│   ├── pages/          # 129+ tool pages (Astro)
 │   ├── components/     # Shared UI components
 │   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading
 │   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
@@ -109,7 +109,7 @@ tools-aulia/
 
 ### About
 
-**ToolsAulia** is a collection of 98+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
+**ToolsAulia** is a collection of 129+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
 
 ### ✨ Why ToolsAulia?
 
@@ -163,7 +163,7 @@ pnpm build      # Production build
 ```
 tools-aulia/
 ├── src/
-│   ├── pages/          # 98+ tool pages (Astro)
+│   ├── pages/          # 129+ tool pages (Astro)
 │   ├── components/     # Shared UI components
 │   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading
 │   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
