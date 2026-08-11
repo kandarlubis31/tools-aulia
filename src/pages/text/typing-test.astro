@@ -33,7 +33,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <div id="progress-bar" class="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-r-full transition-all duration-300 ease-linear" style="width:100%"></div>
       </div>
 
-      <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-3">
         <div class="flex items-center gap-3">
           <span class="text-3xl font-extrabold font-mono tabular-nums text-matte-800 dark:text-white" id="timer">0s</span>
           <span id="pb-badge" class="hidden px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 animate-bounce-in">🏆 PB!</span>
@@ -44,6 +44,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <div class="stat-pill-default"><span class="font-bold text-lg tabular-nums" id="stat-acc">—</span> <span class="text-matte-400 text-2xs">Akurasi</span></div>
           <div class="stat-pill-default"><span class="font-bold text-lg tabular-nums" id="stat-cpm">0</span> <span class="text-matte-400 text-2xs">CPM</span></div>
         </div>
+      </div>
+
+      <!-- Sparkline Chart -->
+      <div id="sparkline-wrap" class="mb-3 hidden">
+        <canvas id="sparkline-canvas" class="w-full h-8 rounded-md bg-matte-50 dark:bg-matte-900/50" aria-label="Grafik WPM 10 detik terakhir"></canvas>
       </div>
 
       <!-- Text Display — per-character rendering -->
@@ -88,6 +93,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const tryAgain = document.getElementById('try-again')!;
     const langToggle = document.getElementById('lang-toggle')!;
     const soundToggle = document.getElementById('sound-toggle')!;
+    const sparklineWrap = document.getElementById('sparkline-wrap')!;
+    const sparklineCanvas = document.getElementById('sparkline-canvas') as HTMLCanvasElement;
     const modeBtns = document.querySelectorAll('.mode-btn');
 
     const ID_TEXTS = [
@@ -266,6 +273,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       }
     }
 
+    function computeWpm(): number {
+      if (!startTime) return 0;
+      const mins = ((Date.now() - startTime) / 1000) / 60;
+      return mins > 0 ? Math.round((correctKeystrokes / 5) / mins) : 0;
+    }
+
     function updateLiveStats() {
       if (!startTime) return;
       const elapsed = (Date.now() - startTime) / 1000;
@@ -280,6 +293,95 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       // Progress bar
       const pct = (remaining / duration) * 100;
       (document.getElementById('progress-bar')!).style.width = pct + '%';
+    }
+
+    // ---- SPARKLINE ENGINE ----
+    const SPARK_MAX = 20;
+    let wpmHistory: number[] = [];
+    let sparkTimer: ReturnType<typeof setInterval> | null = null;
+
+    function resetSparkline() {
+      wpmHistory = [];
+      sparklineWrap.classList.add('hidden');
+      drawSparkline();
+    }
+
+    function startSparkline() {
+      sparklineWrap.classList.remove('hidden');
+      if (sparkTimer) clearInterval(sparkTimer);
+      sparkTimer = setInterval(() => {
+        if (finished) { stopSparkline(); return; }
+        wpmHistory.push(computeWpm());
+        if (wpmHistory.length > SPARK_MAX) wpmHistory.shift();
+        drawSparkline();
+      }, 500);
+    }
+
+    function stopSparkline() {
+      if (sparkTimer) { clearInterval(sparkTimer); sparkTimer = null; }
+    }
+
+    function drawSparkline() {
+      const canvas = sparklineCanvas;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const W = rect.width * dpr;
+      const H = rect.height * dpr;
+      if (canvas.width !== W) canvas.width = W;
+      if (canvas.height !== H) canvas.height = H;
+
+      const ctx = canvas.getContext('2d')!;
+      ctx.clearRect(0, 0, W, H);
+
+      const pts = wpmHistory;
+      if (pts.length < 2) return;
+
+      const padX = dpr * 2;
+      const padY = dpr * 2;
+      const maxWpm = Math.max(...pts, 10);
+      const minWpm = 0;
+      const stepX = (W - padX * 2) / (SPARK_MAX - 1);
+
+      // Build polyline points
+      const points: [number, number][] = [];
+      for (let i = 0; i < pts.length; i++) {
+        const x = padX + i * stepX;
+        const y = padY + (H - padY * 2) * (1 - (pts[i] - minWpm) / (maxWpm - minWpm || 1));
+        points.push([x, y]);
+      }
+
+      // Gradient fill
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, 'rgba(14, 165, 233, 0.35)');   // sky-500 35%
+      grad.addColorStop(1, 'rgba(14, 165, 233, 0.02)');
+
+      ctx.beginPath();
+      ctx.moveTo(points[0][0], H - padY);
+      for (const [x, y] of points) ctx.lineTo(x, y);
+      ctx.lineTo(points[pts.length - 1][0], H - padY);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Polylines
+      ctx.beginPath();
+      ctx.moveTo(points[0][0], points[0][1]);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(points[i][0], points[i][1]);
+      ctx.strokeStyle = 'rgba(14, 165, 233, 0.9)';
+      ctx.lineWidth = dpr * 1.8;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Dot at latest
+      const last = points[pts.length - 1];
+      ctx.beginPath();
+      ctx.arc(last[0], last[1], dpr * 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#0ea5e9';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = dpr * 1.2;
+      ctx.stroke();
     }
 
     function finish() {
@@ -330,6 +432,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       (document.getElementById('pb-badge')!).classList.add('hidden');
       (document.getElementById('progress-bar')!).style.width = '100%';
       (document.getElementById('ghost-char')!).style.display = 'none';
+      resetSparkline();
       text = pickText();
       buildCharSpans();
       positionCursor();
@@ -344,6 +447,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       // Start timer on first keystroke
       if (!startTime) {
         startTime = Date.now();
+        startSparkline();
         timerId = setInterval(() => {
           const elapsed = Math.floor((Date.now() - startTime) / 1000);
           const remaining = Math.max(0, duration - elapsed);
