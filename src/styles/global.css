@@ -446,27 +446,24 @@ html.dark .checkerboard {
   background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%), linear-gradient(-45deg, #1e293b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1e293b 75%), linear-gradient(-45deg, transparent 75%, #1e293b 75%);
 }
 
-/* ========== CARD GRID (Compact — 6 cols on wide screens) ========== */
+/* ========== CARD GRID ========== */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
+  gap: 1rem;
 }
 @media (min-width: 640px) {
   .card-grid { grid-template-columns: repeat(3, 1fr); }
 }
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .card-grid { grid-template-columns: repeat(4, 1fr); }
 }
-@media (min-width: 1024px) {
-  .card-grid { grid-template-columns: repeat(5, 1fr); }
-}
 @media (min-width: 1440px) {
-  .card-grid { grid-template-columns: repeat(6, 1fr); }
+  .card-grid { grid-template-columns: repeat(5, 1fr); }
 }
 
 /* Lazy render — cards below fold skip paint until scrolled into view */
 .tool-item {
   content-visibility: auto;
-  contain-intrinsic-size: auto 100px;
+  contain-intrinsic-size: auto 120px;
 }

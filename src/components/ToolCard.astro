@@ -5,39 +5,34 @@ interface Props {
   href: string;
   icon: string;
   isSoon?: boolean;
-  isPopular?: boolean;
   titleKey?: string;
   descKey?: string;
   tileClass?: string;
 }
 
-const { title, desc, href, icon, isSoon = false, isPopular = false, titleKey, descKey, tileClass = 'from-matte-100 to-matte-200/60 text-matte-500 dark:from-surface-elevated dark:to-matte-800 dark:text-matte-300' } = Astro.props;
+const { title, desc, href, icon, isSoon = false, titleKey, descKey, tileClass = 'from-matte-100 to-matte-200/60 text-matte-500 dark:from-surface-elevated dark:to-matte-800 dark:text-matte-300' } = Astro.props;
 ---
 
 <a href={isSoon ? "#" : href}
-   class={`card-base group relative flex flex-col p-3 rounded-lg overflow-hidden
+   class={`card-base group relative flex flex-col p-4 rounded-xl overflow-hidden
            ${isSoon ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150'}`}>
   
   {isSoon && (
-    <span class="absolute top-1.5 right-1.5 badge-muted text-2xs px-1">Soon</span>
+    <span class="absolute top-2 right-2 badge-muted text-2xs px-1.5 py-0.5">Soon</span>
   )}
 
-  {isPopular && !isSoon && (
-    <span class="absolute top-1.5 right-1.5 badge-popular text-2xs px-1" data-i18n="badge.popular">🔥 Populer</span>
-  )}
-
-  <!-- Compact icon tile -->
-  <div class={`icon-mono icon-tile w-7 h-7 mb-2 rounded-lg bg-gradient-to-br ${tileClass} transition-all duration-150 group-hover:scale-105 shrink-0`}>
-    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: inherit" set:html={icon} />
+  <!-- Icon tile -->
+  <div class={`icon-mono icon-tile w-10 h-10 mb-3 rounded-xl bg-gradient-to-br ${tileClass} transition-all duration-150 group-hover:scale-110 shrink-0`}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: inherit" set:html={icon} />
   </div>
   
   <!-- Title -->
-  <h3 class="text-xs font-semibold text-matte-800 dark:text-white transition-colors duration-150 group-hover:text-accent-blue leading-snug truncate" data-i18n={titleKey || undefined}>
+  <h3 class="text-sm font-semibold text-matte-800 dark:text-white transition-colors duration-150 group-hover:text-accent-blue leading-snug truncate" data-i18n={titleKey || undefined}>
     {title}
   </h3>
   
   <!-- Description -->
-  <p class="text-2xs text-matte-400 dark:text-matte-300 leading-tight mt-0.5 line-clamp-1" data-i18n={descKey || undefined}>
+  <p class="text-xs text-matte-400 dark:text-matte-300 leading-relaxed mt-1 line-clamp-2" data-i18n={descKey || undefined}>
     {desc}
   </p>
 </a>

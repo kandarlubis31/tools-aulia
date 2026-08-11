@@ -8,7 +8,7 @@ import { newToolHrefs } from '../data/new-tools';
 const newTools = tools.filter(t => newToolHrefs.includes(t.href));
 newTools.sort((a, b) => newToolHrefs.indexOf(a.href) - newToolHrefs.indexOf(b.href));
 
-// --- Icon tile duotone per kategori (Warm Premium) ---
+// --- Icon tile duotone per kategori ---
 // Matte palette — 3 warna inti per kategori, muted & profesional
 const colorTile: Record<string, string> = {
   // Blue family → PDF, Dev, Network
@@ -33,8 +33,7 @@ const colorTile: Record<string, string> = {
   gray: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
 };
 
-// --- Bento highlight kategori (Phase 2) ---
-// Bento categories — unified matte gradients
+// --- Bento highlight kategori ---
 const bentoCats = [
   { id: 'pdf', name: 'PDF', icon: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', tile: 'from-blue-600/80 to-blue-700/80', count: tools.filter(t => t.cat === 'pdf').length },
   { id: 'image', name: 'Image', icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>', tile: 'from-emerald-600/80 to-emerald-700/80', count: tools.filter(t => t.cat === 'image').length },
@@ -46,7 +45,6 @@ const bentoCats = [
 
 // --- DATA KATEGORI ---
 const categories = [
-  { id: "popular", name: "🔥 Favorit", nameKey: "index.popular" },
   { id: "all", name: "📚 Semua", nameKey: "index.all" },
   { id: "pdf", name: "📄 PDF", nameKey: "index.pdf" },
   { id: "image", name: "🖼️ Image", nameKey: "index.image" },
@@ -75,13 +73,13 @@ const categories = [
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "IDR" }
   })} />
 
-  <!-- Background — Subtle grid pattern only (no animated blobs) -->
+  <!-- Background — Subtle grid pattern -->
   <div class="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
     <div class="absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.03)_1px,transparent_1px)] bg-[length:64px_64px]"></div>
   </div>
 
-  <!-- Hero Section (Compact) -->
-  <section class="text-center pt-8 pb-6 px-4 animate-fade-in-down" id="hero-section">
+  <!-- Hero Section -->
+  <section class="text-center pt-8 pb-4 px-4 animate-fade-in-down" id="hero-section">
     <div class="flex items-center justify-center gap-3 mb-3 flex-wrap">
       <span class="badge-accent">
         <span class="flex items-center gap-1.5">
@@ -108,70 +106,59 @@ const categories = [
     </p>
   </section>
 
-  <!-- Bento Highlight Kategori -->
+  <!-- Bento + New Tools (two-column layout) -->
   <section class="max-w-7xl mx-auto px-4 mb-6 animate-fade-in-up">
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-      {bentoCats.map((cat) => (
-        <a href={`/?cat=${cat.id}`} class={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${cat.tile} p-4 flex flex-col gap-2.5 shadow-lg shadow-black/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-200`}>
-          <div class="absolute -top-6 -right-6 w-20 h-20 bg-white/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-300"></div>
-          <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={cat.icon} />
-          </div>
-          <div>
-            <p class="text-sm font-bold text-white leading-tight">{cat.name}</p>
-            <p class="text-2xs text-white/70 font-medium">{cat.count} tools</p>
-          </div>
-          <span class="absolute bottom-3 right-3 text-white/60 group-hover:text-white group-hover:translate-x-0.5 transition-all duration-200">→</span>
-        </a>
-      ))}
-    </div>
-  </section>
+    <div class="flex flex-col lg:flex-row gap-4">
+      
+      <!-- Left: Bento Grid -->
+      <div class="flex-1">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {bentoCats.map((cat) => (
+            <a href={`/?cat=${cat.id}`} class={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${cat.tile} p-4 flex flex-col gap-2.5 shadow-lg shadow-black/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-200`}>
+              <div class="absolute -top-6 -right-6 w-20 h-20 bg-white/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-300"></div>
+              <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={cat.icon} />
+              </div>
+              <div>
+                <p class="text-sm font-bold text-white leading-tight">{cat.name}</p>
+                <p class="text-2xs text-white/70 font-medium">{cat.count} tools</p>
+              </div>
+              <span class="absolute bottom-3 right-3 text-white/60 group-hover:text-white group-hover:translate-x-0.5 transition-all duration-200">→</span>
+            </a>
+          ))}
+        </div>
+      </div>
 
-  <!-- Newly Added Tools -->
-  <section id="new-tools-section" class="max-w-7xl mx-auto px-4 mb-6 animate-fade-in-up">
-    <div class="new-tools-section">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-2.5">
-          <div class="flex items-center gap-1.5">
+      <!-- Right: New Tools Sidebar (vertical) -->
+      <div class="lg:w-64 shrink-0">
+        <div class="card-base p-4 sticky top-20">
+          <div class="flex items-center gap-2 mb-3">
             <span class="relative flex h-2 w-2">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-blue opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2 w-2 bg-accent-blue"></span>
             </span>
-            <span class="section-title" data-i18n="index.new_title">Baru Ditambahkan</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-matte-400 dark:text-matte-300" data-i18n="index.new_title">Baru Ditambahkan</span>
+            <span class="badge-accent text-2xs ml-auto">{newTools.length}</span>
           </div>
-          <span class="badge-accent text-2xs">{newTools.length} tools</span>
+          <div class="flex flex-col gap-1">
+            {newTools.slice(0, 8).map((tool) => (
+              <a 
+                href={tool.href}
+                class="group flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-all duration-150 -mx-1"
+              >
+                <span class="text-xs font-medium text-matte-600 dark:text-matte-300 truncate group-hover:text-accent-blue transition-colors">{tool.title}</span>
+                <span class="text-2xs text-accent-blue font-bold opacity-0 group-hover:opacity-100 transition-opacity ml-auto shrink-0">→</span>
+              </a>
+            ))}
+          </div>
         </div>
       </div>
-      <div class="flex flex-wrap gap-2">
-        {newTools.slice(0, 6).map((tool) => (
-          <a 
-            href={tool.href}
-            class="group inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border hover:border-accent-blue/40 dark:hover:border-accent-blue/40 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-150"
-          >
-            <span class="text-xs font-semibold text-matte-700 dark:text-matte-200 transition-colors duration-150 group-hover:text-accent-blue">{tool.title}</span>
-            <span class="text-2xs text-accent-blue font-bold opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-          </a>
-        ))}
-      </div>
-    </div>
-  </section>
 
-  <!-- Frequently Used -->
-  <section id="frequent-section" class="max-w-7xl mx-auto px-4 mb-4 hidden">
-    <div class="card-base p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="section-title flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          <span>Paling Sering Dipake</span>
-        </h2>
-      </div>
-      <div id="frequent-tools" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-      </div>
     </div>
   </section>
 
   <!-- Recently Used -->
-  <section id="recent-section" class="max-w-7xl mx-auto px-4 mb-10 hidden">
+  <section id="recent-section" class="max-w-7xl mx-auto px-4 mb-6 hidden">
     <div class="card-base p-4">
       <div class="flex items-center justify-between mb-3">
         <h2 class="section-title flex items-center gap-2">
@@ -227,7 +214,6 @@ const categories = [
            <div class="relative shrink-0">
                <label for="sort-select" class="sr-only">Sortir Tools</label>
                <select id="sort-select" class="appearance-none h-full pl-2.5 pr-7 py-2 rounded-lg bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border text-xs font-medium text-matte-600 dark:text-matte-300 outline-none focus:border-accent-blue cursor-pointer transition-all">
-                   <option value="popular" data-i18n="index.sort_popular">Populer</option>
                    <option value="name" data-i18n="index.sort_az">A-Z</option>
                </select>
                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-matte-400">
@@ -254,10 +240,10 @@ const categories = [
     </div>
   </div>
 
-  <!-- Tools Grid (right after bento + new tools, no extra gaps) -->
+  <!-- Tools Grid -->
   <div class="max-w-7xl mx-auto px-4 pb-28 min-h-[50vh]">
     <div class="flex items-center justify-between mb-3">
-        <h2 id="results-count" class="section-title" data-i18n="index.favorites">Favorit Saya</h2>
+        <h2 id="results-count" class="section-title" data-i18n="index.all">Semua Tools</h2>
     </div>
 
     <div id="tools-grid" class="card-grid">
@@ -265,7 +251,6 @@ const categories = [
           <div 
             class="tool-item" 
             data-cat={tool.cat} 
-            data-popular={tool.popular ? "true" : "false"} 
             data-title={tool.title.toLowerCase()}
             data-name={tool.titleKey || tool.title}
             data-color={tool.color}
@@ -276,7 +261,6 @@ const categories = [
                 desc={tool.desc}
                 href={tool.href}
                 icon={tool.icon}
-                isPopular={tool.popular}
                 titleKey={tool.titleKey}
                 descKey={tool.descKey}
                 tileClass={colorTile[tool.color] || colorTile.indigo}
@@ -316,45 +300,15 @@ const categories = [
       const toolsGrid = document.getElementById('tools-grid');
 
       const urlParams = new URLSearchParams(window.location.search);
-      let currentFilter = urlParams.get('cat') || 'popular'; 
+      let currentFilter = urlParams.get('cat') || 'all'; 
       let currentSearch = '';
-      let currentSort = 'popular';
+      let currentSort = 'name';
 
       function getRecentTools() {
         try {
             const recent = localStorage.getItem('recentTools');
             return recent ? JSON.parse(recent) : [];
         } catch(e) { return []; }
-      }
-
-      const frequentSection = document.getElementById('frequent-section');
-      const frequentToolsContainer = document.getElementById('frequent-tools');
-
-      function updateFrequentDisplay() {
-        if (!frequentSection || !frequentToolsContainer) return;
-        try {
-          const freq = JSON.parse(localStorage.getItem('toolUsageFreq') || '{}');
-          const entries = Object.entries(freq) as [string, number][];
-          if (entries.length === 0) { frequentSection.classList.add('hidden'); return; }
-          entries.sort((a, b) => b[1] - a[1]);
-          const top5 = entries.slice(0, 5);
-          frequentSection.classList.remove('hidden');
-          frequentToolsContainer.innerHTML = top5.map(([href, count]) => {
-            const toolEl = Array.from(tools).find(t => t.querySelector('a')?.getAttribute('href')?.split('?')[0] === href);
-            const title = toolEl ? toolEl.getAttribute('data-title') : href;
-            const color = toolEl ? toolEl.getAttribute('data-color') || 'indigo' : 'indigo';
-            const icon = toolEl ? toolEl.getAttribute('data-icon') || '' : '';
-            return `
-            <a href="${href}" class="group flex flex-col items-center justify-center p-2.5 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 border border-amber-200 dark:border-amber-800 hover:border-amber-400 dark:hover:border-amber-600 transition-all duration-150">
-                <div class="icon-mono w-6 h-6 mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
-                </div>
-                <span class="text-2xs font-medium text-matte-500 dark:text-matte-300 text-center leading-tight line-clamp-2">${title}</span>
-                <span class="text-2xs text-amber-500 font-bold mt-0.5">${count}×</span>
-            </a>
-            `;
-          }).join('');
-        } catch { frequentSection.classList.add('hidden'); }
       }
 
       function updateRecentDisplay() {
@@ -396,14 +350,7 @@ const categories = [
          recent.unshift({ href, title, color, icon });
          recent = recent.slice(0, 6);
          localStorage.setItem('recentTools', JSON.stringify(recent));
-
-         // Track usage frequency for "Paling Sering Dipake"
-         try {
-           const freq = JSON.parse(localStorage.getItem('toolUsageFreq') || '{}');
-           freq[href] = (freq[href] || 0) + 1;
-           localStorage.setItem('toolUsageFreq', JSON.stringify(freq));
-         } catch {}          updateRecentDisplay();
-          updateFrequentDisplay();
+         updateRecentDisplay();
       }
 
       tools.forEach(tool => {
@@ -417,15 +364,15 @@ const categories = [
                 if(href && title) saveToRecent(href, title, color, icon);
             });
          }
-      });       clearRecentBtn?.addEventListener('click', () => {
+      });
+
+      clearRecentBtn?.addEventListener('click', () => {
          localStorage.removeItem('recentTools');
-         localStorage.removeItem('toolUsageFreq');
          updateRecentDisplay();
-         updateFrequentDisplay();
-       });
+      });
 
       const updateLinkParams = (activeCat) => {
-         const cat = activeCat === 'popular' ? '' : activeCat;
+         const cat = activeCat === 'all' ? '' : activeCat;
          tools.forEach(tool => {
             const link = tool.querySelector('a');
             if(link) {
@@ -447,14 +394,6 @@ const categories = [
                 const nameB = b.getAttribute('data-name') || '';
                 return nameA.localeCompare(nameB);
             });
-        } else {
-             toolsArray.sort((a, b) => {
-                 const aPop = a.getAttribute('data-popular') === 'true' ? 1 : 0;
-                 const bPop = b.getAttribute('data-popular') === 'true' ? 1 : 0;
-                 const nameA = a.getAttribute('data-name') || '';
-                 const nameB = b.getAttribute('data-name') || '';
-                 return bPop - aPop || nameA.localeCompare(nameB);
-             });
         }
         
         if(toolsGrid) {
@@ -464,23 +403,15 @@ const categories = [
 
         toolsArray.forEach((tool, index) => {
             const cat = tool.getAttribute('data-cat');
-            const isPopular = tool.getAttribute('data-popular') === 'true'; 
             const title = tool.getAttribute('data-title') || '';
             
-            let matchFilter = 
-                currentFilter === 'all' || 
-                (currentFilter === 'popular' && isPopular) || 
-                (currentFilter !== 'popular' && currentFilter !== 'all' && cat === currentFilter);
-
+            let matchFilter = currentFilter === 'all' || cat === currentFilter;
             let matchSearch = title.includes(currentSearch);
 
             if (matchFilter && matchSearch) {
                 tool.classList.remove('hidden');
                 tool.classList.add('animate-fade-in-up');
-                
-                // Add tiny stagger delay
                 tool.style.animationDelay = `${(index % 10) * 30}ms`;
-                
                 visibleCount++;
             } else {
                 tool.classList.add('hidden');
@@ -512,7 +443,7 @@ const categories = [
       function setActiveFilter(filterId) {
         currentFilter = filterId;
         const newUrl = new URL(window.location.href);
-        if (filterId === 'popular') newUrl.searchParams.delete('cat');
+        if (filterId === 'all') newUrl.searchParams.delete('cat');
         else newUrl.searchParams.set('cat', filterId);
         window.history.replaceState({}, '', newUrl);
 
@@ -551,8 +482,7 @@ const categories = [
 
       searchInput?.addEventListener('input', (e) => {
         currentSearch = e.target.value.toLowerCase();
-        if (currentSearch.length > 0 && currentFilter === 'popular') setActiveFilter('all');
-        else renderTools();
+        renderTools();
       });
 
       sortSelect?.addEventListener('change', (e) => {
@@ -563,7 +493,7 @@ const categories = [
       resetSearchBtn?.addEventListener('click', () => {
         if(searchInput) searchInput.value = '';
         currentSearch = '';
-        setActiveFilter('popular');
+        setActiveFilter('all');
       });
 
       const _idxKeydown = (e) => {
@@ -582,10 +512,7 @@ const categories = [
         document.removeEventListener('keydown', _idxKeydown);
       }, { once: true });
 
-      // 3D tilt & parallax removed for performance — replaced with CSS hover lift
-
       updateRecentDisplay();
-      updateFrequentDisplay();
       setActiveFilter(currentFilter);
   });
 </script>
