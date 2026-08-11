@@ -1,0 +1,155 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="User-Agent Parser — Parse User Agent String Online">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="User-Agent Parser"
+      titleKey="header.ua_parser"
+      desc="Parse User-Agent string: browser, OS, device, engine. Auto-detect atau manual."
+      descKey="header.ua_parser_desc"
+      icon='<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'
+      gradient="from-sky-500 to-blue-600"
+    />
+
+    <div class="card-base p-5 animate-fade-in">
+      <div class="flex items-center gap-3 mb-4">
+        <button id="detect-btn" class="gradient-brand px-5 py-2.5 rounded-lg text-sm font-bold">
+          📱 <span data-i18n="ua.detect">Detect Browser Saya</span>
+        </button>
+        <span class="text-xs text-matte-400">atau</span>
+      </div>
+
+      <div class="flex gap-2 mb-5">
+        <textarea id="ua-input" rows="2" placeholder="Paste User-Agent string di sini…"
+          class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono focus:ring-2 focus:ring-sky-500/40 outline-none resize-y"></textarea>
+        <button id="parse-btn" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 hover:bg-sky-200 dark:hover:bg-sky-900/60 transition-all self-start">
+          🔍 <span data-i18n="ua.parse">Parse</span>
+        </button>
+      </div>
+
+      <div id="result-area">
+        <p class="text-xs text-matte-400 text-center py-6" data-i18n="ua.idle">Klik "Detect Browser Saya" atau paste UA string manual.</p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const detectBtn = document.getElementById('detect-btn') as HTMLButtonElement;
+    const uaInput = document.getElementById('ua-input') as HTMLTextAreaElement;
+    const parseBtn = document.getElementById('parse-btn') as HTMLButtonElement;
+    const resultArea = document.getElementById('result-area')!;
+
+    interface UAInfo {
+      browser: string; browserVersion: string;
+      os: string; osVersion: string;
+      device: string; engine: string;
+    }
+
+    function parseUA(ua: string): UAInfo {
+      const ual = ua.toLowerCase();
+      let browser = 'Unknown', browserVersion = '—';
+      let os = 'Unknown', osVersion = '—';
+      let device = 'Desktop';
+      let engine = 'Unknown';
+
+      // Browser
+      if (ual.includes('edg/')) {
+        browser = 'Edge';
+        browserVersion = ua.match(/edg\/([\d.]+)/i)?.[1] || '—';
+      } else if (ual.includes('opr/') || ual.includes('opera')) {
+        browser = 'Opera';
+        browserVersion = ua.match(/opr\/([\d.]+)/i)?.[1] || '—';
+      } else if (ual.includes('chrome/') && !ual.includes('edg/')) {
+        browser = 'Chrome';
+        browserVersion = ua.match(/chrome\/([\d.]+)/i)?.[1] || '—';
+      } else if (ual.includes('safari/') && !ual.includes('chrome/')) {
+        browser = 'Safari';
+        browserVersion = ua.match(/version\/([\d.]+)/i)?.[1] || '—';
+      } else if (ual.includes('firefox/')) {
+        browser = 'Firefox';
+        browserVersion = ua.match(/firefox\/([\d.]+)/i)?.[1] || '—';
+      }
+
+      // Engine
+      if (ual.includes('webkit')) engine = 'WebKit';
+      else if (ual.includes('gecko')) engine = 'Gecko';
+      else if (ual.includes('blink')) engine = 'Blink';
+
+      // OS
+      if (ual.includes('windows nt 10')) { os = 'Windows'; osVersion = '10/11'; }
+      else if (ual.includes('windows nt 6.3')) { os = 'Windows'; osVersion = '8.1'; }
+      else if (ual.includes('windows nt 6.1')) { os = 'Windows'; osVersion = '7'; }
+      else if (ual.includes('mac os x')) {
+        os = 'macOS';
+        const m = ua.match(/mac os x (\d+[._]\d+)/i);
+        osVersion = m ? m[1].replace('_', '.') : '—';
+      }
+      else if (ual.includes('android')) {
+        os = 'Android';
+        const m = ua.match(/android ([\d.]+)/i);
+        osVersion = m ? m[1] : '—';
+      }
+      else if (ual.includes('iphone') || ual.includes('ipad') || ual.includes('ipod')) {
+        os = 'iOS';
+        const m = ua.match(/os ([\d_]+)/i);
+        osVersion = m ? m[1].replace(/_/g, '.') : '—';
+      }
+      else if (ual.includes('linux')) { os = 'Linux'; }
+
+      // Device
+      if (ual.includes('iphone') || ual.includes('android') && ual.includes('mobile')) device = 'Mobile';
+      else if (ual.includes('ipad') || ual.includes('tablet')) device = 'Tablet';
+
+      return { browser, browserVersion, os, osVersion, device, engine };
+    }
+
+    function escHtml(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function renderResult(info: UAInfo, ua: string) {
+      const cards = [
+        { icon: '🌐', label: 'Browser', value: `${info.browser}`, sub: `v${info.browserVersion}` },
+        { icon: '🖥️', label: 'OS', value: info.os, sub: info.osVersion !== '—' ? `v${info.osVersion}` : '' },
+        { icon: '📱', label: 'Device', value: info.device, sub: '' },
+        { icon: '⚙️', label: 'Engine', value: info.engine, sub: '' },
+      ];
+
+      let html = '<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">';
+      cards.forEach(c => {
+        html += `<div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated text-center">
+          <div class="text-2xl mb-1">${c.icon}</div>
+          <div class="text-2xs text-matte-400 font-bold uppercase">${c.label}</div>
+          <div class="text-sm font-bold text-matte-700 dark:text-matte-200">${escHtml(c.value)}</div>
+          ${c.sub ? `<div class="text-2xs text-matte-400 font-mono">${escHtml(c.sub)}</div>` : ''}
+        </div>`;
+      });
+      html += '</div>';
+
+      html += `<details class="mt-3">
+        <summary class="cursor-pointer text-2xs font-bold text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors select-none" data-i18n="ua.raw">Raw UA String</summary>
+        <pre class="mt-2 p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated text-xs font-mono text-matte-500 dark:text-matte-300 overflow-x-auto whitespace-pre-wrap">${escHtml(ua)}</pre>
+      </details>`;
+
+      resultArea.innerHTML = html;
+      (window as any).processI18n?.();
+    }
+
+    detectBtn.addEventListener('click', () => {
+      const ua = navigator.userAgent;
+      uaInput.value = ua;
+      renderResult(parseUA(ua), ua);
+    });
+
+    parseBtn.addEventListener('click', () => {
+      const ua = uaInput.value.trim();
+      if (!ua) return;
+      renderResult(parseUA(ua), ua);
+    });
+  });
+</script>

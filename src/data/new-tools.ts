@@ -7,6 +7,17 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  // ---- Batch 9 (10 tools: Network + Image) ----
+  '/network/speed-test',
+  '/network/latency',
+  '/network/websocket',
+  '/network/http-headers',
+  '/network/ua-parser',
+  '/network/port-ref',
+  '/network/whois',
+  '/network/ssl',
+  '/image/gif-maker',
+  '/image/favicon',
   // ---- Batch 8 (10 tools) ----
   '/text/rot13',
   '/text/morse',

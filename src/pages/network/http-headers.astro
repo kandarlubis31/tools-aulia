@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="HTTP Headers Viewer — Lihat Response Headers URL Online">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="HTTP Headers Viewer"
+      titleKey="header.http_headers"
+      desc="Lihat response headers dari URL manapun. Debug CORS, cache, security."
+      descKey="header.http_headers_desc"
+      icon='<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>'
+      gradient="from-amber-500 to-orange-600"
+    />
+
+    <div class="card-base p-5 animate-fade-in">
+      <div class="flex gap-2 mb-5">
+        <input id="url-input" type="text" value="https://www.google.com"
+          placeholder="https://example.com"
+          class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-amber-500/40 outline-none" />
+        <button id="fetch-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">
+          🔍 <span data-i18n="hdr.fetch">Fetch</span>
+        </button>
+      </div>
+
+      <div id="result-area">
+        <p class="text-xs text-matte-400 text-center py-8" data-i18n="hdr.idle">Masukkan URL lalu klik Fetch. Headers akan ditampilkan di sini.</p>
+      </div>
+    </div>
+
+    <div class="card-base p-4 mt-4 animate-fade-in">
+      <h3 class="text-xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="hdr.common">Common Security Headers</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-2xs font-mono">
+        {['Strict-Transport-Security','Content-Security-Policy','X-Frame-Options','X-Content-Type-Options','Referrer-Policy','Permissions-Policy','X-XSS-Protection','Cross-Origin-Resource-Policy'].map(h => (
+          <span class="sec-hdr px-2 py-1 rounded bg-matte-50 dark:bg-surface-elevated text-matte-400" data-header={h}>{h}</span>
+        ))}
+      </div>
+      <p class="text-2xs text-matte-400 mt-2">🟢 = ada, 🔴 = tidak ada / not set</p>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6" data-i18n="hdr.note">
+      ⚠️ Beberapa header hanya terlihat oleh browser jika server kirim header CORS yang sesuai.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const urlInput = document.getElementById('url-input') as HTMLInputElement;
+    const fetchBtn = document.getElementById('fetch-btn') as HTMLButtonElement;
+    const resultArea = document.getElementById('result-area')!;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    const SEC_HEADERS = ['Strict-Transport-Security','Content-Security-Policy','X-Frame-Options',
+      'X-Content-Type-Options','Referrer-Policy','Permissions-Policy','Cross-Origin-Resource-Policy'];
+
+    function escHtml(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    async function fetchHeaders() {
+      const raw = urlInput.value.trim();
+      if (!raw) { toast('Masukkan URL', 'error'); return; }
+      let url: string;
+      try {
+        const p = new URL(raw.includes('://') ? raw : `https://${raw}`);
+        url = p.toString();
+      } catch { toast('URL tidak valid', 'error'); return; }
+
+      fetchBtn.disabled = true;
+      fetchBtn.innerHTML = '⏳ …';
+      resultArea.innerHTML = '<p class="text-matte-400 text-center py-8 animate-pulse">Fetching headers…</p>';
+
+      const t0 = performance.now();
+      try {
+        const res = await fetch(url, { method: 'HEAD', mode: 'cors', cache: 'no-store' });
+        const elapsed = Math.round(performance.now() - t0);
+        const headers: [string, string][] = [];
+        res.headers.forEach((v, k) => headers.push([k, v]));
+        headers.sort((a, b) => a[0].localeCompare(b[0]));
+
+        let html = `<div class="mb-3 flex items-center gap-3"><span class="px-3 py-1.5 rounded-lg text-2xs font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">${res.status} ${res.statusText}</span><span class="text-2xs text-matte-400 font-mono">${elapsed}ms</span><span class="ml-auto text-2xs text-matte-400 font-mono">${headers.length} headers</span></div>`;
+        html += '<div class="space-y-1 max-h-[50vh] overflow-y-auto">';
+        headers.forEach(([k, v]) => {
+          const isSec = SEC_HEADERS.includes(k);
+          html += `<div class="flex items-start gap-2 p-2 rounded ${isSec ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''}"><span class="text-xs font-bold font-mono text-blue-600 dark:text-blue-400 shrink-0 min-w-[200px]">${escHtml(k)}</span><span class="text-xs font-mono text-matte-600 dark:text-matte-300 break-all">${escHtml(v)}</span></div>`;
+        });
+        html += '</div>';
+        resultArea.innerHTML = html;
+
+        // Highlight security header badges
+        document.querySelectorAll('.sec-hdr').forEach((el) => {
+          const hdr = (el as HTMLElement).dataset.header!;
+          const found = headers.some(([k]) => k.toLowerCase() === hdr.toLowerCase());
+          el.className = `sec-hdr px-2 py-1 rounded text-2xs font-mono ${
+            found ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300' :
+            'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400'
+          }`;
+          el.textContent = `${found ? '🟢' : '🔴'} ${hdr}`;
+        });
+      } catch (e: any) {
+        resultArea.innerHTML = `<div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">❌ Gagal fetch headers.<br><br>Kemungkinan: CORS memblokir, domain tidak ada, atau offline.<br><br><span class="font-mono text-xs">${escHtml(e.message)}</span></div>`;
+      } finally {
+        fetchBtn.disabled = false;
+        fetchBtn.innerHTML = '🔍 <span data-i18n="hdr.fetch">Fetch</span>';
+        (window as any).processI18n?.();
+      }
+    }
+
+    fetchBtn.addEventListener('click', fetchHeaders);
+    urlInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') fetchHeaders(); });
+  });
+</script>

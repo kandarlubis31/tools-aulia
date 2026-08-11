@@ -1,0 +1,180 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="WebSocket Tester — Tes Koneksi WebSocket Online">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="WebSocket Tester"
+      titleKey="header.websocket"
+      desc="Konek ke server WebSocket, kirim pesan, lihat respons real-time."
+      descKey="header.websocket_desc"
+      icon='<path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <div class="card-base p-5 animate-fade-in">
+      <div class="flex gap-2 mb-4">
+        <input id="ws-url" type="text" value="wss://echo.websocket.org"
+          placeholder="wss://echo.websocket.org"
+          class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-emerald-500/40 outline-none" />
+        <button id="connect-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">
+          🔌 <span data-i18n="ws.connect">Connect</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-2xs text-matte-400 font-bold">Status:</span>
+        <span id="status-badge" class="px-3 py-1 rounded-full text-2xs font-bold bg-matte-200 dark:bg-matte-700 text-matte-500 dark:text-matte-300" data-i18n="ws.disconnected">Disconnected</span>
+        <span id="msg-count" class="ml-auto text-2xs text-matte-400 font-mono"></span>
+      </div>
+
+      <!-- Message log -->
+      <div class="mb-4">
+        <label class="text-2xs font-bold text-matte-400 uppercase tracking-wider block mb-2" data-i18n="ws.log">Message Log</label>
+        <div id="msg-log" class="max-h-64 overflow-y-auto space-y-1 p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-100 dark:border-matte-800 min-h-[120px] font-mono text-xs">
+          <p class="text-matte-400 text-center py-4" data-i18n="ws.idle">Connect ke server WebSocket untuk mulai.</p>
+        </div>
+      </div>
+
+      <!-- Send -->
+      <div class="flex gap-2">
+        <input id="msg-input" type="text" placeholder='{"type":"ping"}'
+          class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-emerald-500/40 outline-none" />
+        <button id="send-msg-btn" class="px-6 py-2.5 rounded-lg text-sm font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-all disabled:opacity-50" disabled>
+          📤 <span data-i18n="ws.send">Send</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="card-base p-4 mt-4 animate-fade-in">
+      <h3 class="text-xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="ws.presets">Preset Test Servers</h3>
+      <div class="flex flex-wrap gap-2">
+        {['wss://echo.websocket.org', 'wss://ws.postman-echo.com/raw', 'wss://ws.ifelse.io'].map(url => (
+          <button class="preset-btn px-3 py-1.5 rounded-lg text-2xs font-bold font-mono bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 hover:bg-matte-100 dark:hover:bg-surface-hover transition-all" data-url={url}>
+            {url.replace('wss://', '')}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const wsUrl = document.getElementById('ws-url') as HTMLInputElement;
+    const connectBtn = document.getElementById('connect-btn') as HTMLButtonElement;
+    const statusBadge = document.getElementById('status-badge')!;
+    const msgCount = document.getElementById('msg-count')!;
+    const msgLog = document.getElementById('msg-log')!;
+    const msgInput = document.getElementById('msg-input') as HTMLInputElement;
+    const sendBtn = document.getElementById('send-msg-btn') as HTMLButtonElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let ws: WebSocket | null = null;
+    let msgIdx = 0;
+
+    function addLog(text: string, dir: 'sent' | 'received' | 'system') {
+      msgIdx++;
+      msgCount.textContent = `${msgIdx} msg`;
+      const colors = {
+        sent: 'text-blue-500 border-l-blue-500',
+        received: 'text-emerald-500 border-l-emerald-500',
+        system: 'text-amber-500 border-l-amber-500',
+      };
+      const p = document.createElement('p');
+      p.className = `border-l-2 pl-2 py-0.5 ${colors[dir]}`;
+      p.innerHTML = `<span class="text-matte-400 text-2xs">[${new Date().toLocaleTimeString()}]</span> ${escHtml(text)}`;
+      msgLog.appendChild(p);
+      msgLog.scrollTop = msgLog.scrollHeight;
+    }
+
+    function escHtml(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function setConnected(connected: boolean) {
+      if (connected) {
+        statusBadge.className = 'px-3 py-1 rounded-full text-2xs font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300';
+        statusBadge.textContent = '🟢 Connected';
+        connectBtn.innerHTML = '🔴 <span data-i18n="ws.disconnect">Disconnect</span>';
+        connectBtn.className = 'px-6 py-2.5 rounded-lg text-sm font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/60 transition-all';
+        sendBtn.disabled = false;
+      } else {
+        statusBadge.className = 'px-3 py-1 rounded-full text-2xs font-bold bg-matte-200 dark:bg-matte-700 text-matte-500 dark:text-matte-300';
+        statusBadge.textContent = '⚫ Disconnected';
+        connectBtn.innerHTML = '🔌 <span data-i18n="ws.connect">Connect</span>';
+        connectBtn.className = 'gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold';
+        sendBtn.disabled = true;
+        ws = null;
+      }
+      (window as any).processI18n?.();
+    }
+
+    connectBtn.addEventListener('click', () => {
+      if (ws) {
+        ws.close(1000, 'User disconnected');
+        return;
+      }
+
+      const url = wsUrl.value.trim();
+      if (!url) { toast('Masukkan URL WebSocket', 'error'); return; }
+      if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
+        toast('URL harus diawali ws:// atau wss://', 'error'); return;
+      }
+
+      msgIdx = 0;
+      msgCount.textContent = '';
+      msgLog.innerHTML = '';
+      addLog(`Connecting to ${url}…`, 'system');
+
+      try {
+        ws = new WebSocket(url);
+      } catch (e: any) {
+        addLog(`Error: ${e.message}`, 'system');
+        return;
+      }
+
+      ws.onopen = () => {
+        addLog('✅ Connected', 'system');
+        setConnected(true);
+      };
+
+      ws.onmessage = (e) => {
+        addLog(e.data, 'received');
+      };
+
+      ws.onerror = () => {
+        addLog('⚠️ WebSocket error', 'system');
+      };
+
+      ws.onclose = (e) => {
+        addLog(`Connection closed (code: ${e.code}, reason: ${e.reason || '—'})`, 'system');
+        setConnected(false);
+      };
+    });
+
+    sendBtn.addEventListener('click', () => {
+      const msg = msgInput.value;
+      if (!msg || !ws || ws.readyState !== WebSocket.OPEN) return;
+      ws.send(msg);
+      addLog(msg, 'sent');
+      msgInput.value = '';
+      msgInput.focus();
+    });
+
+    msgInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendBtn.click();
+    });
+
+    // Preset buttons
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        wsUrl.value = (btn as HTMLElement).dataset.url || '';
+      });
+    });
+  });
+</script>

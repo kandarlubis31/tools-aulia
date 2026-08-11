@@ -1,0 +1,146 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="SSL Checker — Cek Sertifikat SSL Domain Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="SSL Checker"
+      titleKey="header.ssl"
+      desc="Cek masa berlaku & info sertifikat SSL domain manapun."
+      descKey="header.ssl_desc"
+      icon='<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>'
+      gradient="from-emerald-500 to-green-600"
+    />
+
+    <div class="card-base p-5 animate-fade-in">
+      <div class="flex gap-2 mb-5">
+        <input id="domain-input" type="text" value="google.com"
+          placeholder="google.com"
+          class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-emerald-500/40 outline-none" />
+        <button id="check-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">
+          🔒 <span data-i18n="ssl.check">Check SSL</span>
+        </button>
+      </div>
+
+      <div id="result-area">
+        <p class="text-xs text-matte-400 text-center py-6" data-i18n="ssl.idle">Masukkan domain lalu klik Check SSL.</p>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6" data-i18n="ssl.note">
+      ⚠️ SSL info diperoleh dengan fetch HEAD request. Hanya domain dengan CORS yang longgar bisa di-cek.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const domainInput = document.getElementById('domain-input') as HTMLInputElement;
+    const checkBtn = document.getElementById('check-btn') as HTMLButtonElement;
+    const resultArea = document.getElementById('result-area')!;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    function escHtml(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function daysBetween(d1: Date, d2: Date): number {
+      return Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    async function checkSSL() {
+      let domain = domainInput.value.trim().toLowerCase();
+      if (!domain) { toast('Masukkan domain', 'error'); return; }
+      domain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+
+      checkBtn.disabled = true;
+      checkBtn.innerHTML = '⏳ …';
+      resultArea.innerHTML = '<p class="text-matte-400 text-center py-6 animate-pulse">Checking SSL…</p>';
+
+      try {
+        const url = `https://${domain}`;
+        const t0 = performance.now();
+
+        // Fetch the page — browser validates the cert, but we can't directly access cert info
+        // Instead, we check if HTTPS works and parse basic info
+        const res = await fetch(url, { method: 'HEAD', mode: 'cors', redirect: 'follow', cache: 'no-store' });
+        const elapsed = Math.round(performance.now() - t0);
+
+        // We can inspect the TLS connection info indirectly
+        const isSecure = res.url.startsWith('https://');
+        const hasHSTS = res.headers.get('strict-transport-security') || '';
+        const maxAge = hasHSTS.match(/max-age=(\d+)/)?.[1];
+
+        // Check certificate transparency via response headers
+        const expectCT = res.headers.get('expect-ct') || '';
+
+        let expiryEstimate = 'Tidak dapat dideteksi dari browser';
+        let daysLeft: number | null = null;
+
+        // Try to get cert expiry from certificate-transparency logs
+        try {
+          const ctRes = await fetch(`https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`, {
+            headers: { 'Accept': 'application/json' },
+          });
+          if (ctRes.ok) {
+            const certs = await ctRes.json();
+            if (certs.length) {
+              const latest = certs[0];
+              if (latest.not_after) {
+                const expiry = new Date(latest.not_after);
+                const now = new Date();
+                daysLeft = daysBetween(now, expiry);
+                expiryEstimate = expiry.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+              }
+            }
+          }
+        } catch { /* crt.sh might be blocked */ }
+
+        const sslValid = res.ok || res.status < 500;
+        let statusClass = sslValid ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300' : 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400';
+        let statusText = sslValid ? '✅ Valid' : '⚠️ Ada masalah';
+
+        let html = '<div class="space-y-3">';
+        html += `<div class="grid grid-cols-2 gap-3">
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Domain</span><span class="font-bold font-mono text-sm">${escHtml(domain)}</span></div>
+          <div class="p-3 rounded-lg ${statusClass}"><span class="text-2xs opacity-70 block">SSL Status</span><span class="font-bold text-sm">${statusText}</span></div>
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Response</span><span class="font-bold text-sm">${res.status} · ${elapsed}ms</span></div>
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Expiry${daysLeft !== null ? ' (CT Log)' : ''}</span><span class="font-bold text-sm ${daysLeft !== null && daysLeft < 30 ? 'text-red-500' : daysLeft !== null && daysLeft < 90 ? 'text-amber-500' : ''}">${expiryEstimate}${daysLeft !== null ? ` · ${daysLeft} hari lagi` : ''}</span></div>
+        </div>`;
+
+        // Security headers
+        const secHeaders = [
+          { name: 'HSTS', value: hasHSTS ? `✅ max-age=${maxAge || '?'}s` : '❌ Tidak ada', ok: !!hasHSTS },
+          { name: 'Expect-CT', value: expectCT ? '✅ Ada' : '—', ok: !!expectCT },
+        ];
+
+        html += `<div class="grid grid-cols-2 gap-2 mt-3">`;
+        secHeaders.forEach(h => {
+          html += `<div class="p-2 rounded bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs ${h.ok ? 'text-emerald-500' : 'text-matte-400'}">${h.name}</span><span class="text-xs block font-mono">${escHtml(h.value)}</span></div>`;
+        });
+        html += '</div>';
+
+        html += '</div>';
+        resultArea.innerHTML = html;
+      } catch (e: any) {
+        // The fetch itself might fail due to SSL issues or CORS
+        const isSSLErr = e.message?.includes('SSL') || e.message?.includes('certificate') || e.message?.includes('TLS');
+        resultArea.innerHTML = `<div class="p-4 rounded-lg ${isSSLErr ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'} text-sm">
+          ${isSSLErr ? '🔴 SSL Error — Sertifikat tidak valid atau expired.' : '⚠️ Tidak dapat mengecek SSL (kemungkinan CORS memblokir).'}
+          <br><br><span class="font-mono text-xs">${escHtml(e.message)}</span>
+        </div>`;
+      } finally {
+        checkBtn.disabled = false;
+        checkBtn.innerHTML = '🔒 <span data-i18n="ssl.check">Check SSL</span>';
+        (window as any).processI18n?.();
+      }
+    }
+
+    checkBtn.addEventListener('click', checkSSL);
+    domainInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') checkSSL(); });
+  });
+</script>

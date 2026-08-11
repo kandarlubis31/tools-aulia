@@ -1,0 +1,215 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Favicon Generator — Buat Favicon Online Gratis">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Favicon Generator"
+      titleKey="header.favicon"
+      desc="Generate favicon dari teks/emoji + download semua ukuran (16×16 s.d. 512×512)."
+      descKey="header.favicon_desc"
+      icon='<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1.5"/>'
+      gradient="from-orange-500 to-amber-600"
+    />
+
+    <div class="card-base p-5 animate-fade-in">
+      <div class="grid sm:grid-cols-2 gap-5">
+        <!-- Input -->
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5"><span data-i18n="fav.text">Teks / Emoji</span></label>
+            <input id="text-input" type="text" value="⚡" maxlength="4"
+              class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-center text-2xl focus:ring-2 focus:ring-orange-500/40 outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5"><span data-i18n="fav.bg_color">Background</span></label>
+            <div class="flex gap-2">
+              <input id="bg-color" type="color" value="#3b82f6"
+                class="w-10 h-10 rounded-lg cursor-pointer border border-matte-200 dark:border-matte-700" />
+              <div class="flex flex-wrap gap-1.5">
+                {['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#1e293b'].map(c => (
+                  <button class="color-swatch w-7 h-7 rounded-md border border-matte-200 dark:border-matte-600 hover:scale-110 transition-transform" style={`background:${c}`} data-color={c}></button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5"><span data-i18n="fav.shape">Bentuk</span></label>
+            <div class="flex gap-2">
+              <button class="shape-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300" data-shape="rounded" data-i18n="fav.rounded">Bulat</button>
+              <button class="shape-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300" data-shape="square" data-i18n="fav.square">Kotak</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="flex flex-col items-center justify-center gap-4">
+          <span class="text-2xs text-matte-400 font-bold uppercase tracking-wider" data-i18n="fav.preview">Preview</span>
+          <div class="flex flex-wrap gap-4 items-end justify-center">
+            <div class="text-center">
+              <canvas id="preview-16" width="16" height="16" class="rounded shadow-sm"></canvas>
+              <span class="text-2xs text-matte-400 block mt-1">16×16</span>
+            </div>
+            <div class="text-center">
+              <canvas id="preview-32" width="32" height="32" class="rounded-md shadow-sm"></canvas>
+              <span class="text-2xs text-matte-400 block mt-1">32×32</span>
+            </div>
+            <div class="text-center">
+              <canvas id="preview-64" width="64" height="64" class="rounded-lg shadow-sm"></canvas>
+              <span class="text-2xs text-matte-400 block mt-1">64×64</span>
+            </div>
+            <div class="text-center">
+              <canvas id="preview-128" width="128" height="128" class="rounded-xl shadow-sm"></canvas>
+              <span class="text-2xs text-matte-400 block mt-1">128×128</span>
+            </div>
+          </div>
+
+          <button id="download-all-btn" class="gradient-brand px-5 py-2.5 rounded-lg text-sm font-bold mt-2">
+            💾 <span data-i18n="fav.download_all">Download Semua (8 files)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6" data-i18n="fav.note">
+      ℹ️ Teks/emoji akan di-render sebagai favicon. Untuk hasil terbaik, pakai 1-2 karakter. 8 file akan didownload satu per satu (16px — 512px).
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const textInput = document.getElementById('text-input') as HTMLInputElement;
+    const bgColor = document.getElementById('bg-color') as HTMLInputElement;
+    const downloadAllBtn = document.getElementById('download-all-btn') as HTMLButtonElement;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    let shape: 'rounded' | 'square' = 'rounded';
+
+    const SIZES = [16, 32, 64, 128, 180, 192, 256, 512];
+
+    function drawFavicon(size: number, canvasId?: string) {
+      const canvas = canvasId
+        ? (document.getElementById(canvasId) as HTMLCanvasElement)
+        : document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d')!;
+
+      // Background
+      ctx.fillStyle = bgColor.value;
+      if (shape === 'rounded') {
+        const r = size * 0.2;
+        ctx.beginPath();
+        ctx.moveTo(r, 0);
+        ctx.lineTo(size - r, 0);
+        ctx.quadraticCurveTo(size, 0, size, r);
+        ctx.lineTo(size, size - r);
+        ctx.quadraticCurveTo(size, size, size - r, size);
+        ctx.lineTo(r, size);
+        ctx.quadraticCurveTo(0, size, 0, size - r);
+        ctx.lineTo(0, r);
+        ctx.quadraticCurveTo(0, 0, r, 0);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        ctx.fillRect(0, 0, size, size);
+      }
+
+      // Text
+      const text = textInput.value.trim() || '⚡';
+      const fontSize = size * 0.55;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, size / 2, size / 2 + 1);
+
+      return canvas;
+    }
+
+    function updatePreviews() {
+      SIZES.forEach(s => {
+        if (s <= 128) {
+          drawFavicon(s, `preview-${s}`);
+        }
+      });
+      // Also update larger previews indirectly
+    }
+
+    async function downloadAll() {
+      toast('Menyiapkan download…');
+
+      const canvases = SIZES.map(s => drawFavicon(s));
+      const files: { name: string; blob: Blob }[] = [];
+
+      canvases.forEach((c, i) => {
+        const dataUrl = c.toDataURL('image/png');
+        const binary = atob(dataUrl.split(',')[1]);
+        const bytes = new Uint8Array(binary.length);
+        for (let j = 0; j < binary.length; j++) bytes[j] = binary.charCodeAt(j);
+        files.push({ name: `favicon-${SIZES[i]}x${SIZES[i]}.png`, blob: new Blob([bytes], { type: 'image/png' }) });
+      });
+
+      // Create simple ZIP manually or download individually
+      // For simplicity, download the 64x64 as the main favicon
+      const mainCanvas = canvases[0]; // 16x16
+      const mainDataUrl = mainCanvas.toDataURL('image/png');
+
+      // Download all files individually
+      for (const f of files) {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(f.blob);
+        a.download = f.name;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        await new Promise(r => setTimeout(r, 300));
+      }
+
+      // Also download a combined favicon.ico (use 64x64 PNG for now)
+      const bigCanvas = canvases[3]; // 128x128
+      const a = document.createElement('a');
+      const bigUrl = bigCanvas.toDataURL('image/png');
+      a.href = bigUrl;
+      a.download = 'favicon.ico';
+      a.click();
+      URL.revokeObjectURL(bigUrl);
+
+      toast('Semua ukuran didownload!');
+    }
+
+    // Event listeners
+    textInput.addEventListener('input', updatePreviews);
+    bgColor.addEventListener('input', updatePreviews);
+
+    document.querySelectorAll('.color-swatch').forEach(btn => {
+      btn.addEventListener('click', () => {
+        bgColor.value = (btn as HTMLElement).dataset.color!;
+        updatePreviews();
+      });
+    });
+
+    document.querySelectorAll('.shape-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.shape-btn').forEach(b => {
+          b.className = 'shape-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300';
+        });
+        const el = btn as HTMLElement;
+        el.className = 'shape-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300';
+        shape = el.dataset.shape as 'rounded' | 'square';
+        updatePreviews();
+      });
+    });
+
+    downloadAllBtn.addEventListener('click', downloadAll);
+
+    // Initial render
+    updatePreviews();
+  });
+</script>

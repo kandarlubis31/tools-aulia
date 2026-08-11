@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="WHOIS Lookup — Cek Info Domain Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="WHOIS Lookup"
+      titleKey="header.whois"
+      desc="Cek informasi domain: registrar, expiry, nameserver. Via API publik."
+      descKey="header.whois_desc"
+      icon='<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>'
+      gradient="from-indigo-500 to-violet-600"
+    />
+
+    <div class="card-base p-5 animate-fade-in">
+      <div class="flex gap-2 mb-5">
+        <input id="domain-input" type="text" value="google.com"
+          placeholder="google.com"
+          class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-indigo-500/40 outline-none" />
+        <button id="lookup-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">
+          🔍 <span data-i18n="whois.lookup">Lookup</span>
+        </button>
+      </div>
+
+      <div id="result-area">
+        <p class="text-xs text-matte-400 text-center py-6" data-i18n="whois.idle">Masukkan domain lalu klik Lookup.</p>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6" data-i18n="whois.note">
+      ℹ️ WHOIS query via API publik (rdap.org) — mungkin ada rate limiting.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const domainInput = document.getElementById('domain-input') as HTMLInputElement;
+    const lookupBtn = document.getElementById('lookup-btn') as HTMLButtonElement;
+    const resultArea = document.getElementById('result-area')!;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    function escHtml(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function formatDate(d: string): string {
+      if (!d) return '—';
+      try {
+        const date = new Date(d);
+        return date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+      } catch { return d; }
+    }
+
+    async function lookup() {
+      let domain = domainInput.value.trim().toLowerCase();
+      if (!domain) { toast('Masukkan domain', 'error'); return; }
+      // Strip protocol
+      domain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+      if (!domain.includes('.')) { toast('Domain tidak valid', 'error'); return; }
+
+      lookupBtn.disabled = true;
+      lookupBtn.innerHTML = '⏳ …';
+      resultArea.innerHTML = '<p class="text-matte-400 text-center py-6 animate-pulse">Querying WHOIS…</p>';
+
+      try {
+        // Use RDAP (Registration Data Access Protocol) — lebih terstruktur dari WHOIS text
+        const res = await fetch(`https://rdap.org/domain/${encodeURIComponent(domain)}`, {
+          headers: { 'Accept': 'application/json' },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        const events = data.events || [];
+        const created = events.find((e: any) => e.eventAction === 'registration')?.eventDate || '—';
+        const updated = events.find((e: any) => e.eventAction === 'last changed')?.eventDate || '—';
+        const expires = events.find((e: any) => e.eventAction === 'expiration')?.eventDate || '—';
+
+        const nameservers = (data.nameservers || []).map((n: any) => n.ldhName).filter(Boolean);
+        const statuses = data.status || [];
+        const entities = data.entities || [];
+        const registrar = entities.find((e: any) => e.roles?.includes('registrar'));
+        const registrarName = registrar?.vcardArray?.[1]?.find((v: any) => v[0] === 'fn')?.[3] || '—';
+
+        let html = '<div class="space-y-3">';
+        html += `<div class="grid grid-cols-2 gap-3">
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Domain</span><span class="font-bold font-mono text-sm">${escHtml(domain)}</span></div>
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Registrar</span><span class="font-bold text-sm">${escHtml(registrarName)}</span></div>
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Dibuat</span><span class="font-bold text-sm">${formatDate(created)}</span></div>
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Kadaluarsa</span><span class="font-bold text-sm ${expires !== '—' ? new Date(expires) < new Date() ? 'text-red-500' : 'text-emerald-500' : ''}">${formatDate(expires)}</span></div>
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Terakhir Diupdate</span><span class="font-bold text-sm">${formatDate(updated)}</span></div>
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Nameservers</span><span class="font-bold text-xs font-mono">${nameservers.length ? nameservers.map(n => escHtml(n)).join('<br>') : '—'}</span></div>
+        </div>`;
+
+        if (statuses.length) {
+          html += `<div class="flex flex-wrap gap-1.5"><span class="text-2xs text-matte-400">Status: </span>${statuses.map((s: string) => `<span class="px-2 py-0.5 rounded text-2xs font-bold font-mono bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300">${escHtml(s)}</span>`).join('')}</div>`;
+        }
+
+        html += '</div>';
+        resultArea.innerHTML = html;
+      } catch (e: any) {
+        resultArea.innerHTML = `<div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">❌ Gagal query WHOIS.<br><br><span class="font-mono text-xs">${escHtml(e.message)}</span><br><br>Pastikan domain valid. API RDAP mungkin rate-limited.</div>`;
+      } finally {
+        lookupBtn.disabled = false;
+        lookupBtn.innerHTML = '🔍 <span data-i18n="whois.lookup">Lookup</span>';
+        (window as any).processI18n?.();
+      }
+    }
+
+    lookupBtn.addEventListener('click', lookup);
+    domainInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') lookup(); });
+  });
+</script>

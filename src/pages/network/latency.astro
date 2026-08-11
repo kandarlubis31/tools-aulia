@@ -1,0 +1,141 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Latency Tester — Ukur Latensi Host Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Latency Tester"
+      titleKey="header.latency"
+      desc="Ping beberapa host sekaligus & bandingkan latensi. 100% client-side."
+      descKey="header.latency_desc"
+      icon='<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>'
+      gradient="from-violet-500 to-purple-600"
+    />
+
+    <div class="card-base p-5 animate-fade-in">
+      <div class="flex gap-2 mb-4">
+        <input id="host-input" type="text" value="google.com, github.com, cloudflare.com, youtube.com"
+          placeholder="google.com, github.com, …"
+          class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-violet-500/40 outline-none" />
+        <button id="ping-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">
+          🏓 <span data-i18n="latency.ping">Ping</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3 mb-4">
+        <label class="text-2xs text-matte-400 font-bold"><span data-i18n="latency.samples">Sampel</span>:</label>
+        <select id="count-select" class="px-2.5 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none focus:ring-2 focus:ring-violet-500/40">
+          <option value="4">4</option>
+          <option value="8" selected>8</option>
+          <option value="16">16</option>
+        </select>
+      </div>
+
+      <div id="results-area" class="space-y-2">
+        <p class="text-xs text-matte-400 text-center py-6" data-i18n="latency.idle">Ketik host (pisahkan dengan koma) lalu klik Ping.</p>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6" data-i18n="latency.note">
+      ⚠️ Latensi &lt;20ms = excellent, 20-50ms = good, 50-100ms = average, &gt;100ms = poor.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const hostInput = document.getElementById('host-input') as HTMLInputElement;
+    const pingBtn = document.getElementById('ping-btn') as HTMLButtonElement;
+    const countSelect = document.getElementById('count-select') as HTMLSelectElement;
+    const resultsArea = document.getElementById('results-area')!;
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    function latencyColor(ms: number): string {
+      if (ms < 20) return 'text-emerald-500';
+      if (ms < 50) return 'text-lime-500';
+      if (ms < 100) return 'text-amber-500';
+      return 'text-red-500';
+    }
+
+    function barColor(ms: number): string {
+      if (ms < 20) return 'bg-emerald-500';
+      if (ms < 50) return 'bg-lime-500';
+      if (ms < 100) return 'bg-amber-500';
+      return 'bg-red-500';
+    }
+
+    async function pingHost(host: string): Promise<number> {
+      // Prepend https:// if missing
+      const url = host.includes('://') ? host : `https://${host}`;
+      const t0 = performance.now();
+      try {
+        await fetch(`${url}/favicon.ico?t=${Date.now()}`, {
+          method: 'HEAD', cache: 'no-store', mode: 'no-cors',
+        });
+      } catch { /* CORS or network error — still measure the attempt */ }
+      return Math.round(performance.now() - t0);
+    }
+
+    function renderResult(host: string, times: number[]) {
+      const avg = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+      const min = Math.min(...times);
+      const max = Math.max(...times);
+      const pct = Math.min(avg / 200, 1);
+      const pctW = Math.round(pct * 100);
+
+      const div = document.createElement('div');
+      div.className = 'p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated';
+      div.innerHTML = `
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-sm font-bold font-mono text-matte-700 dark:text-matte-200">${escHtml(host)}</span>
+          <span class="text-sm font-bold tabular-nums ${latencyColor(avg)}">${avg} ms</span>
+        </div>
+        <div class="h-2 rounded-full bg-matte-200 dark:bg-matte-700 overflow-hidden mb-2">
+          <div class="h-full rounded-full transition-all duration-700 ${barColor(avg)}" style="width:${pctW}%"></div>
+        </div>
+        <div class="flex gap-3 text-2xs text-matte-400 font-mono">
+          <span>Min: ${min}ms</span>
+          <span>Max: ${max}ms</span>
+          <span>Samples: ${times.length}</span>
+        </div>`;
+      return div;
+    }
+
+    function escHtml(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    pingBtn.addEventListener('click', async () => {
+      const hosts = hostInput.value.split(',').map(h => h.trim()).filter(Boolean);
+      if (!hosts.length) { toast('Masukkan host dulu', 'error'); return; }
+
+      pingBtn.disabled = true;
+      pingBtn.innerHTML = '⏳ …';
+      resultsArea.innerHTML = '';
+
+      const count = parseInt(countSelect.value);
+      for (const host of hosts) {
+        const row = document.createElement('div');
+        row.className = 'p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated animate-pulse';
+        row.innerHTML = `<div class="flex items-center justify-between"><span class="text-sm font-bold font-mono">${escHtml(host)}</span><span class="text-sm text-matte-400">Pinging…</span></div>`;
+        resultsArea.appendChild(row);
+
+        const times: number[] = [];
+        for (let i = 0; i < count; i++) {
+          const ms = await pingHost(host);
+          times.push(ms);
+          row.innerHTML = renderResult(host, times).innerHTML;
+          await new Promise(r => setTimeout(r, 150));
+        }
+      }
+
+      pingBtn.disabled = false;
+      pingBtn.innerHTML = '🔄 <span data-i18n="latency.retry">Ulangi</span>';
+      (window as any).processI18n?.();
+    });
+  });
+</script>

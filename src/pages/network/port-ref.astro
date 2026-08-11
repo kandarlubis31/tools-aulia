@@ -1,0 +1,134 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Port Reference — Daftar Port TCP/UDP Umum Online">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Port Reference"
+      titleKey="header.port_ref"
+      desc="Referensi lengkap port TCP/UDP umum & kegunaannya. 100% offline."
+      descKey="header.port_ref_desc"
+      icon='<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M17 12h.01"/><path d="M7 12h.01"/>'
+      gradient="from-teal-500 to-cyan-600"
+    />
+
+    <div class="animate-fade-in space-y-4">
+      <!-- Search -->
+      <div class="card-base p-4">
+        <div class="flex gap-2">
+          <input id="search-input" type="text" placeholder="Cari port atau service… (contoh: 443, https, mysql)"
+            class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-teal-500/40 outline-none" />
+        </div>
+        <span id="result-count" class="text-2xs text-matte-400 mt-2 block"></span>
+      </div>
+
+      <!-- Port table -->
+      <div class="card-base p-0 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-matte-50 dark:bg-surface-elevated text-left">
+                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider w-16">Port</th>
+                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider w-20">Proto</th>
+                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider">Service</th>
+                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider hidden sm:table-cell">Deskripsi</th>
+              </tr>
+            </thead>
+            <tbody id="port-tbody" class="divide-y divide-matte-100 dark:divide-matte-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const tbody = document.getElementById('port-tbody')!;
+    const resultCount = document.getElementById('result-count')!;
+
+    const PORTS = [
+      { port: 20, proto: 'TCP', svc: 'FTP Data', desc: 'File Transfer Protocol — transfer data' },
+      { port: 21, proto: 'TCP', svc: 'FTP Control', desc: 'FTP — kontrol koneksi' },
+      { port: 22, proto: 'TCP', svc: 'SSH', desc: 'Secure Shell — remote login aman' },
+      { port: 23, proto: 'TCP', svc: 'Telnet', desc: 'Remote login (tidak aman, hindari)' },
+      { port: 25, proto: 'TCP', svc: 'SMTP', desc: 'Simple Mail Transfer Protocol — kirim email' },
+      { port: 53, proto: 'TCP/UDP', svc: 'DNS', desc: 'Domain Name System — resolve nama domain' },
+      { port: 67, proto: 'UDP', svc: 'DHCP Server', desc: 'Dynamic Host Configuration Protocol' },
+      { port: 68, proto: 'UDP', svc: 'DHCP Client', desc: 'DHCP — dapat IP otomatis' },
+      { port: 80, proto: 'TCP', svc: 'HTTP', desc: 'Hypertext Transfer Protocol — web standar' },
+      { port: 110, proto: 'TCP', svc: 'POP3', desc: 'Post Office Protocol — terima email' },
+      { port: 123, proto: 'UDP', svc: 'NTP', desc: 'Network Time Protocol — sinkronisasi waktu' },
+      { port: 143, proto: 'TCP', svc: 'IMAP', desc: 'Internet Message Access Protocol — email' },
+      { port: 161, proto: 'UDP', svc: 'SNMP', desc: 'Simple Network Management Protocol' },
+      { port: 194, proto: 'TCP', svc: 'IRC', desc: 'Internet Relay Chat' },
+      { port: 389, proto: 'TCP', svc: 'LDAP', desc: 'Lightweight Directory Access Protocol' },
+      { port: 443, proto: 'TCP', svc: 'HTTPS', desc: 'HTTP over TLS/SSL — web aman' },
+      { port: 465, proto: 'TCP', svc: 'SMTPS', desc: 'SMTP over SSL — kirim email aman' },
+      { port: 514, proto: 'UDP', svc: 'Syslog', desc: 'System logging protocol' },
+      { port: 587, proto: 'TCP', svc: 'SMTP Submission', desc: 'SMTP — submit email ke server' },
+      { port: 636, proto: 'TCP', svc: 'LDAPS', desc: 'LDAP over SSL' },
+      { port: 853, proto: 'TCP/UDP', svc: 'DNS over TLS', desc: 'DNS query via TLS (DoT)' },
+      { port: 993, proto: 'TCP', svc: 'IMAPS', desc: 'IMAP over SSL — email aman' },
+      { port: 995, proto: 'TCP', svc: 'POP3S', desc: 'POP3 over SSL — email aman' },
+      { port: 1080, proto: 'TCP', svc: 'SOCKS Proxy', desc: 'SOCKS proxy server' },
+      { port: 1194, proto: 'UDP', svc: 'OpenVPN', desc: 'OpenVPN — tunneling VPN' },
+      { port: 1433, proto: 'TCP', svc: 'MSSQL', desc: 'Microsoft SQL Server database' },
+      { port: 1521, proto: 'TCP', svc: 'Oracle DB', desc: 'Oracle database default listener' },
+      { port: 1723, proto: 'TCP', svc: 'PPTP', desc: 'Point-to-Point Tunneling Protocol (VPN)' },
+      { port: 1883, proto: 'TCP', svc: 'MQTT', desc: 'Message Queuing Telemetry Transport (IoT)' },
+      { port: 2049, proto: 'TCP/UDP', svc: 'NFS', desc: 'Network File System' },
+      { port: 3000, proto: 'TCP', svc: 'Dev Server', desc: 'Node.js / React / dev server default' },
+      { port: 3306, proto: 'TCP', svc: 'MySQL', desc: 'MySQL database server' },
+      { port: 3389, proto: 'TCP', svc: 'RDP', desc: 'Remote Desktop Protocol (Windows)' },
+      { port: 4000, proto: 'TCP', svc: 'Dev Server', desc: 'Alternate dev server port' },
+      { port: 5000, proto: 'TCP', svc: 'Dev Server', desc: 'Python Flask / dev server' },
+      { port: 5432, proto: 'TCP', svc: 'PostgreSQL', desc: 'PostgreSQL database server' },
+      { port: 5672, proto: 'TCP', svc: 'AMQP', desc: 'Advanced Message Queuing Protocol (RabbitMQ)' },
+      { port: 5900, proto: 'TCP', svc: 'VNC', desc: 'Virtual Network Computing — remote desktop' },
+      { port: 6379, proto: 'TCP', svc: 'Redis', desc: 'Redis key-value store' },
+      { port: 6443, proto: 'TCP', svc: 'K8s API', desc: 'Kubernetes API server' },
+      { port: 6667, proto: 'TCP', svc: 'IRC', desc: 'IRC default port (alternate)' },
+      { port: 6881, proto: 'TCP/UDP', svc: 'BitTorrent', desc: 'BitTorrent peer-to-peer transfer' },
+      { port: 8000, proto: 'TCP', svc: 'Dev Server', desc: 'Python/Django dev server' },
+      { port: 8080, proto: 'TCP', svc: 'HTTP Alt', desc: 'HTTP alternate — proxy / dev / Jenkins' },
+      { port: 8443, proto: 'TCP', svc: 'HTTPS Alt', desc: 'HTTPS alternate — dev / admin panel' },
+      { port: 9000, proto: 'TCP', svc: 'Dev Server', desc: 'PHP-FPM / SonarQube / dev server' },
+      { port: 9092, proto: 'TCP', svc: 'Kafka', desc: 'Apache Kafka message broker' },
+      { port: 9200, proto: 'TCP', svc: 'Elasticsearch', desc: 'Elasticsearch REST API' },
+      { port: 11211, proto: 'TCP/UDP', svc: 'Memcached', desc: 'Memcached caching system' },
+      { port: 25565, proto: 'TCP', svc: 'Minecraft', desc: 'Minecraft game server default' },
+      { port: 27017, proto: 'TCP', svc: 'MongoDB', desc: 'MongoDB database default port' },
+    ];
+
+    function escHtml(s: string): string {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function render(filter: string) {
+      const q = filter.toLowerCase().trim();
+      const filtered = q ? PORTS.filter(p =>
+        String(p.port).includes(q) || p.proto.toLowerCase().includes(q) ||
+        p.svc.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q)
+      ) : PORTS;
+
+      resultCount.textContent = filtered.length === PORTS.length
+        ? `${PORTS.length} port`
+        : `${filtered.length} dari ${PORTS.length} port`;
+
+      tbody.innerHTML = filtered.map(p => `
+        <tr class="hover:bg-matte-50 dark:hover:bg-surface-elevated transition-colors">
+          <td class="px-4 py-2.5 font-mono font-bold text-blue-600 dark:text-blue-400">${p.port}</td>
+          <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded text-2xs font-bold font-mono ${p.proto.includes('UDP') ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300' : 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300'}">${p.proto}</span></td>
+          <td class="px-4 py-2.5 font-bold text-matte-700 dark:text-matte-200">${escHtml(p.svc)}</td>
+          <td class="px-4 py-2.5 text-xs text-matte-500 dark:text-matte-400 hidden sm:table-cell">${escHtml(p.desc)}</td>
+        </tr>`).join('');
+    }
+
+    searchInput.addEventListener('input', () => render(searchInput.value));
+    render('');
+  });
+</script>

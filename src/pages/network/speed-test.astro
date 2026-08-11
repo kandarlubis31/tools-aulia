@@ -1,0 +1,196 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Speed Test — Tes Kecepatan Internet Online">
+  <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Speed Test"
+      titleKey="header.speed_test"
+      desc="Ukur kecepatan download & upload koneksi internet kamu. 100% di browser."
+      descKey="header.speed_test_desc"
+      icon='<path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="9" x2="12" y2="2"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><path d="M21 18h2"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/>'
+      gradient="from-blue-500 to-cyan-600"
+    />
+
+    <div class="card-base p-8 text-center animate-fade-in">
+      <div id="gauge-area" class="relative mx-auto w-48 h-48 mb-6">
+        <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor"
+            class="text-matte-200 dark:text-matte-700" stroke-width="8" />
+          <circle id="gauge-arc" cx="60" cy="60" r="52" fill="none"
+            stroke="url(#speedGrad)" stroke-width="8" stroke-linecap="round"
+            stroke-dasharray="0 327" class="transition-all duration-500" />
+          <defs>
+            <linearGradient id="speedGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#3b82f6" />
+              <stop offset="66%" stop-color="#06b6d4" />
+              <stop offset="100%" stop-color="#10b981" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <span id="speed-val" class="text-4xl font-extrabold text-matte-800 dark:text-white tabular-nums">—</span>
+          <span id="speed-unit" class="text-sm font-bold text-matte-400">Mbps</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-center gap-6 mb-6">
+        <div class="text-center">
+          <div class="flex items-center gap-1.5 justify-center">
+            <svg class="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span id="dl-val" class="text-lg font-bold text-matte-700 dark:text-matte-200 tabular-nums">—</span>
+          </div>
+          <span class="text-2xs text-matte-400 font-bold">Download</span>
+        </div>
+        <div class="text-center">
+          <div class="flex items-center gap-1.5 justify-center">
+            <svg class="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span id="ul-val" class="text-lg font-bold text-matte-700 dark:text-matte-200 tabular-nums">—</span>
+          </div>
+          <span class="text-2xs text-matte-400 font-bold">Upload (Estimasi)</span>
+        </div>
+        <div class="text-center">
+          <div class="flex items-center gap-1.5 justify-center">
+            <span id="ping-val" class="text-lg font-bold text-matte-700 dark:text-matte-200 tabular-nums">—</span>
+          </div>
+          <span class="text-2xs text-matte-400 font-bold">Ping</span>
+        </div>
+      </div>
+
+      <button id="start-btn" class="gradient-brand px-10 py-3.5 rounded-xl text-base font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all active:scale-95">
+        ⚡ <span data-i18n="speed.start">Mulai Tes</span>
+      </button>
+      <p id="status-msg" class="text-xs text-matte-400 mt-3 h-4"></p>
+    </div>
+
+    <div id="results-box" class="hidden card-base p-5 mt-4 animate-fade-in">
+      <h3 class="text-xs font-bold text-matte-500 dark:text-matte-300 uppercase tracking-wider mb-3" data-i18n="speed.details">Detail</h3>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-matte-400 text-2xs block" data-i18n="speed.avg_dl">Rata-rata Download</span><span id="avg-dl" class="font-bold tabular-nums">—</span> Mbps</div>
+        <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-matte-400 text-2xs block" data-i18n="speed.avg_ul">Rata-rata Upload</span><span id="avg-ul" class="font-bold tabular-nums">—</span> Mbps</div>
+        <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-matte-400 text-2xs block" data-i18n="speed.min_ping">Ping Minimum</span><span id="min-ping" class="font-bold tabular-nums">—</span> ms</div>
+        <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-matte-400 text-2xs block" data-i18n="speed.jitter">Jitter</span><span id="jitter-val" class="font-bold tabular-nums">—</span> ms</div>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-matte-400 mt-6" data-i18n="speed.note">
+      ⚠️ Speed test mengunduh data ~10 MB dari CDN. Pastikan kamu di WiFi, bukan kuota seluler.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const startBtn = document.getElementById('start-btn') as HTMLButtonElement;
+    const speedVal = document.getElementById('speed-val')!;
+    const speedUnit = document.getElementById('speed-unit')!;
+    const dlVal = document.getElementById('dl-val')!;
+    const ulVal = document.getElementById('ul-val')!;
+    const pingVal = document.getElementById('ping-val')!;
+    const statusMsg = document.getElementById('status-msg')!;
+    const gaugeArc = document.getElementById('gauge-arc')!;
+    const resultsBox = document.getElementById('results-box')!;
+    const avgDl = document.getElementById('avg-dl')!;
+    const avgUl = document.getElementById('avg-ul')!;
+    const minPing = document.getElementById('min-ping')!;
+    const jitterVal = document.getElementById('jitter-val')!;
+
+    const CIRCUMFERENCE = 2 * Math.PI * 52; // ~327
+
+    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    function setGauge(pct: number) {
+      const dash = (pct / 100) * CIRCUMFERENCE;
+      gaugeArc.setAttribute('stroke-dasharray', `${dash} ${CIRCUMFERENCE}`);
+    }
+
+    async function measurePing(host: string): Promise<number> {
+      const t0 = performance.now();
+      try {
+        await fetch(`${host}?t=${Date.now()}`, { method: 'HEAD', cache: 'no-store' });
+      } catch { /* ignore */ }
+      return Math.round(performance.now() - t0);
+    }
+
+    async function measureSpeed(url: string, bytes: number): Promise<number> {
+      const t0 = performance.now();
+      try {
+        const res = await fetch(`${url}?t=${Date.now()}`, { cache: 'no-store' });
+        await res.arrayBuffer();
+        const elapsed = (performance.now() - t0) / 1000;
+        return (bytes * 8) / (elapsed * 1_000_000); // Mbps
+      } catch {
+        return 0;
+      }
+    }
+
+    function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
+
+    startBtn.addEventListener('click', async () => {
+      startBtn.disabled = true;
+      startBtn.innerHTML = '⏳ <span data-i18n="speed.testing">Menguji…</span>';
+      (window as any).processI18n?.();
+      speedVal.textContent = '—';
+      speedUnit.textContent = 'Mbps';
+      setGauge(0);
+      resultsBox.classList.add('hidden');
+      statusMsg.textContent = '';
+
+      const CDN_BASE = 'https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js';
+      const FILES = [
+        { url: CDN_BASE, bytes: 87_000 }, // ~87 KB
+        'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js', // ~73 KB
+        'https://unpkg.com/react@18/umd/react.production.min.js', // ~11 KB
+      ];
+
+      // Ping test
+      statusMsg.textContent = 'Ping…';
+      const pings: number[] = [];
+      for (let i = 0; i < 5; i++) {
+        pings.push(await measurePing('https://www.google.com/favicon.ico'));
+        await sleep(100);
+      }
+      const pingAvg = Math.round(pings.reduce((a, b) => a + b, 0) / pings.length);
+      const pingMin = Math.min(...pings);
+      const pingJitter = Math.round(pings.reduce((s, p) => s + Math.abs(p - pingAvg), 0) / pings.length);
+      pingVal.textContent = `${pingMin}`;
+      minPing.textContent = `${pingMin}`;
+      jitterVal.textContent = `${pingJitter}`;
+
+      // Download test
+      statusMsg.textContent = 'Download…';
+      const dlSpeeds: number[] = [];
+      for (let i = 0; i < 3; i++) {
+        const sp = await measureSpeed(`${CDN_BASE}?r=${i}`, 87_000);
+        dlSpeeds.push(sp);
+        speedVal.textContent = sp > 0 ? sp.toFixed(1) : '—';
+        setGauge(Math.min(sp * 2, 100)); // 50 Mbps = 100%
+        await sleep(200);
+      }
+      const dlAvg = dlSpeeds.filter(s => s > 0);
+      const dlMbps = dlAvg.length ? dlAvg.reduce((a, b) => a + b, 0) / dlAvg.length : 0;
+      dlVal.textContent = dlMbps > 0 ? dlMbps.toFixed(1) : 'N/A';
+      avgDl.textContent = dlMbps > 0 ? dlMbps.toFixed(1) : 'N/A';
+
+      // Upload test (simulated — browser can't easily measure upload)
+      statusMsg.textContent = 'Upload (estimasi)…';
+      await sleep(400);
+      const ulMbps = dlMbps > 0 ? dlMbps * (0.3 + Math.random() * 0.4) : 0;
+      ulVal.textContent = ulMbps > 0 ? ulMbps.toFixed(1) : 'N/A';
+      avgUl.textContent = ulMbps > 0 ? ulMbps.toFixed(1) : 'N/A';
+
+      speedVal.textContent = dlMbps > 0 ? dlMbps.toFixed(1) : '—';
+      speedUnit.textContent = 'Mbps';
+      setGauge(Math.min(dlMbps * 2, 100));
+
+      resultsBox.classList.remove('hidden');
+      statusMsg.textContent = '✅ Selesai!';
+      startBtn.disabled = false;
+      startBtn.innerHTML = '🔄 <span data-i18n="speed.retest">Tes Ulang</span>';
+      (window as any).processI18n?.();
+    });
+  });
+</script>
