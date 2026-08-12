@@ -3,35 +3,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolCard from '../components/ToolCard.astro';
 import { tools, categoryIds } from '../data/tools';
 import { newToolHrefs } from '../data/new-tools';
+import { colorTile } from '../data/tools-client-data';
 
 // Newly added tools (sorted by order in new-tools.ts)
 const newTools = tools.filter(t => newToolHrefs.includes(t.href));
 newTools.sort((a, b) => newToolHrefs.indexOf(a.href) - newToolHrefs.indexOf(b.href));
-
-// --- Icon tile duotone per kategori ---
-// Matte palette — 3 warna inti per kategori, muted & profesional
-const colorTile: Record<string, string> = {
-  // Blue family → PDF, Dev, Network
-  rose: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  orange: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  blue: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  indigo: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  sky: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  cyan: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  // Emerald family → Calc, Image, Media
-  emerald: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-  teal: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-  green: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-  lime: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-  // Slate family → Security, Utils, Text, Data, File
-  amber: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  yellow: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  violet: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  purple: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  pink: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  slate: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  gray: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-};
 
 // --- Bento highlight kategori ---
 const bentoCats = [
@@ -305,10 +281,6 @@ const categories = [
        ))}
     </div>
 
-    <!-- Tools data for lazy-render (E5): JSON blob → renderCardHTML() via IntersectionObserver -->
-    <script type="application/json" id="tools-data" set:html={JSON.stringify(tools.map(t => ({ cat: t.cat, title: t.title, titleKey: t.titleKey, desc: t.desc, descKey: t.descKey, href: t.href, color: t.color, icon: t.icon }))).replace(/<\//g, '<\\/')}><\/script>
-    <script type="application/json" id="color-tile-data" set:html={JSON.stringify(colorTile)}><\/script>
-
     <!-- Pagination -->
     <div id="pagination" class="flex items-center justify-center gap-1 py-6">
       <button id="prev-page" class="px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg text-sm sm:text-xs font-medium text-matte-400 hover:text-matte-600 dark:hover:text-white hover:bg-matte-100 dark:hover:bg-surface-elevated active:bg-matte-200 dark:active:bg-surface-border transition-all disabled:opacity-30 disabled:cursor-not-allowed">← Prev</button>
@@ -360,12 +332,16 @@ const categories = [
       const PER_PAGE = 36;
 
       // --- E5: Lazy-render via IntersectionObserver ---
-      const toolsData = JSON.parse(document.getElementById('tools-data')?.textContent || '[]');
-      const colorTileData = JSON.parse(document.getElementById('color-tile-data')?.textContent || '{}');
+      // Data tool dimuat async via dynamic import (non-blocking) — chunk kecil di-precache SW.
+      let dataPromise = null;
+      function getData() {
+        if (!dataPromise) dataPromise = import('../data/tools-client-data');
+        return dataPromise;
+      }
       const DEFAULT_TILE = 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300';
 
-      function renderCardHTML(tool, tileClass) {
-        const tc = tileClass || colorTileData[tool.color] || DEFAULT_TILE;
+      function renderCardHTML(tool, colorTile) {
+        const tc = (colorTile && colorTile[tool.color]) || DEFAULT_TILE;
         const titleKey = tool.titleKey ? ` data-i18n="${tool.titleKey}"` : '';
         const descKey = tool.descKey ? ` data-i18n="${tool.descKey}"` : '';
         return `<a href="${tool.href}" class="card-base group relative flex flex-col p-4 rounded-xl overflow-hidden hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150" data-tool-href="${tool.href}">
@@ -381,13 +357,14 @@ const categories = [
       }
 
       let renderedPlaceholders = new Set();
-      function activatePlaceholder(placeholder) {
+      async function activatePlaceholder(placeholder) {
         const idx = parseInt(placeholder.getAttribute('data-tool-index') || '');
         if (isNaN(idx) || renderedPlaceholders.has(idx)) return;
-        const tool = toolsData[idx];
-        if (!tool) return;
         renderedPlaceholders.add(idx);
-        placeholder.innerHTML = renderCardHTML(tool);
+        const { toolsData, colorTile } = await getData();
+        const tool = toolsData[idx];
+        if (!tool) { renderedPlaceholders.delete(idx); return; }
+        placeholder.innerHTML = renderCardHTML(tool, colorTile);
         placeholder.classList.remove('tool-placeholder');
         // Wire up event handlers for the new card
         const link = placeholder.querySelector('a');
@@ -410,14 +387,14 @@ const categories = [
         }
       }
 
-      function ensureCardsRendered(startIdx, endIdx) {
+      async function ensureCardsRendered(startIdx, endIdx) {
         const allPlaceholders = document.querySelectorAll('.tool-placeholder');
-        allPlaceholders.forEach(ph => {
+        for (const ph of allPlaceholders) {
           const idx = parseInt(ph.getAttribute('data-tool-index') || '');
           if (!isNaN(idx) && idx >= startIdx && idx < endIdx) {
-            activatePlaceholder(ph);
+            await activatePlaceholder(ph);
           }
-        });
+        }
       }
 
       // IntersectionObserver: lazy-render placeholders 400px before they enter viewport
