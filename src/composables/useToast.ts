@@ -30,7 +30,7 @@ export function showToast(message: string, type: ToastType = 'success', duration
   }
 
   const toast = document.createElement('div');
-  toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-x-10 opacity-0 min-w-[300px] backdrop-blur-sm ${COLOR_MAP[type]}`;
+  toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg transform transition-all duration-300 translate-x-10 opacity-0 min-w-[280px] max-w-[calc(100vw-2.5rem)] backdrop-blur-sm ${COLOR_MAP[type]}`;
   toast.setAttribute('role', 'status');
 
   const msg = typeof window._tToast === 'function' ? window._tToast(message) : message;
