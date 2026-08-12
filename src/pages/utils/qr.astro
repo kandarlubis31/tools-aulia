@@ -196,9 +196,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <div class="mt-6">
             <label class="flex justify-between text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.qr_size">
               <span>Ukuran</span>
-              <span id="size-val">250px</span>
+              <span id="size-val" class="font-mono font-bold text-accent-blue">250 × 250 px</span>
             </label>
             <input type="range" id="qr-size" min="100" max="500" value="250" class="w-full h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-matte-500" />
+            <p id="size-physical" class="mt-1 text-xs text-matte-400 font-medium">≈ 2.1 × 2.1 cm (print @ 300 DPI)</p>
           </div>
           
           <div class="mt-6">
@@ -210,6 +211,30 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
               <button class="error-level-btn" data-level="H" data-i18n="label.highest">Tertinggi (30%)</button>
             </div>
           </div>
+          
+          <div class="mt-6">
+            <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2">Logo di Tengah (Opsional)</label>
+            <div class="flex items-center gap-3 flex-wrap">
+              <button id="logo-upload-btn" class="px-4 py-2 rounded-lg font-medium text-sm bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover border border-transparent transition-all inline-flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Unggah Logo
+              </button>
+              <button id="logo-remove-btn" class="hidden px-4 py-2 rounded-lg font-medium text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">Hapus Logo</button>
+              <input type="file" id="logo-input" accept="image/*" class="hidden" />
+            </div>
+            <div id="logo-preview" class="hidden mt-3 flex items-center gap-3">
+              <img id="logo-thumb" class="w-10 h-10 rounded-lg object-contain bg-white border border-matte-200 dark:border-surface-border p-1" alt="Logo preview" />
+              <span id="logo-name" class="text-xs text-matte-400 font-medium truncate max-w-[160px]"></span>
+            </div>
+            <div id="logo-size-row" class="hidden mt-4">
+              <label class="flex justify-between text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1">
+                <span>Ukuran Logo</span>
+                <span id="logo-size-val" class="font-mono">20%</span>
+              </label>
+              <input type="range" id="logo-size" min="10" max="30" value="20" class="w-full h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-matte-500" />
+              <p class="mt-1 text-[10px] text-matte-400">Disarankan pakai koreksi error "Tertinggi (30%)" agar QR tetap bisa discan.</p>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -218,7 +243,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <h3 class="text-sm font-semibold text-matte-700 dark:text-white mb-4" data-i18n="label.preview">Preview</h3>
           <div class="flex flex-col items-center justify-center bg-matte-100 dark:bg-surface-hover p-6 rounded-xl">
             <div class="bg-white p-4 rounded-xl shadow-lg transition-transform hover:scale-105 duration-300">
-              <canvas id="qr-code"></canvas>
+              <canvas id="qr-code" class="max-w-full h-auto"></canvas>
             </div>
             <p class="mt-4 text-sm text-matte-400 font-medium" data-i18n="text.preview_live">Preview Live</p>
           </div>
@@ -324,6 +349,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const resetBtn = document.getElementById('reset-btn');
   const clearHistoryBtn = document.getElementById('clear-history-btn');
   const historyContainer = document.getElementById('history-container');
+  const logoInput = document.getElementById('logo-input');
+  const logoUploadBtn = document.getElementById('logo-upload-btn');
+  const logoRemoveBtn = document.getElementById('logo-remove-btn');
+  const logoPreview = document.getElementById('logo-preview');
+  const logoThumb = document.getElementById('logo-thumb');
+  const logoName = document.getElementById('logo-name');
+  const logoSizeRow = document.getElementById('logo-size-row');
+  const logoSize = document.getElementById('logo-size');
+  const logoSizeVal = document.getElementById('logo-size-val');
+  const sizePhysical = document.getElementById('size-physical');
   
   // QR Code instance
   let qr = new QRious({
@@ -337,6 +372,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   
   // Current QR type
   let currentQRType = 'text';
+  
+  // Logo state
+  let logoImage: HTMLImageElement | null = null;
+  let logoSizePct = 0.2;
   
   // History (using composable)
   const qrHistoryManager = useLocalHistory('qrHistory', 10);
@@ -407,9 +446,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     }
   });
   
-  // Size Slider
+  // Size Slider — tampilkan ukuran live (px + perkiraan cetak @ 300 DPI)
+  function formatSizeLabel(px: number) {
+    const cm = (px / 300 * 2.54).toFixed(1);
+    sizeVal.innerText = `${px} × ${px} px`;
+    sizePhysical.innerText = `≈ ${cm} × ${cm} cm (print @ 300 DPI)`;
+  }
   qrSize.addEventListener('input', (e) => {
-    sizeVal.innerText = `${e.target.value}px`;
+    formatSizeLabel(parseInt((e.target as HTMLInputElement).value));
     updateQR();
   });
   
@@ -418,6 +462,81 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.querySelectorAll('input, textarea, select').forEach(el => {
     el.addEventListener('input', debouncedUpdate);
   });
+  
+  // --- Logo di tengah ---
+  logoUploadBtn.addEventListener('click', () => (logoInput as HTMLInputElement).click());
+  logoInput.addEventListener('change', (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      window.showToast?.(window._tToast ? window._tToast('File harus berupa gambar.') : 'File harus berupa gambar.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        logoImage = img;
+        (logoThumb as HTMLImageElement).src = reader.result as string;
+        logoName.textContent = file.name;
+        logoPreview.classList.remove('hidden');
+        logoRemoveBtn.classList.remove('hidden');
+        logoSizeRow.classList.remove('hidden');
+        // Naikkan koreksi error ke H (30%) agar QR tetap discan meski ada logo.
+        errorLevelButtons.forEach(b => {
+          b.classList.remove('active');
+          if (b.dataset.level === 'H') b.classList.add('active');
+        });
+        window.showToast?.(window._tToast ? window._tToast('Logo ditambahkan — koreksi error dinaikkan ke Tertinggi (30%).') : 'Logo ditambahkan — koreksi error dinaikkan ke Tertinggi (30%).', 'success');
+        updateQR();
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+  logoRemoveBtn.addEventListener('click', () => {
+    logoImage = null;
+    (logoInput as HTMLInputElement).value = '';
+    logoPreview.classList.add('hidden');
+    logoRemoveBtn.classList.add('hidden');
+    logoSizeRow.classList.add('hidden');
+    updateQR();
+  });
+  logoSize.addEventListener('input', (e) => {
+    logoSizePct = parseInt((e.target as HTMLInputElement).value) / 100;
+    logoSizeVal.innerText = `${(e.target as HTMLInputElement).value}%`;
+    updateQR();
+  });
+  
+  function drawLogo() {
+    if (!logoImage) return;
+    const ctx = (canvas as HTMLCanvasElement).getContext('2d');
+    if (!ctx) return;
+    const size = (canvas as HTMLCanvasElement).width;
+    const logoPx = Math.floor(size * logoSizePct);
+    const pad = Math.max(2, Math.floor(logoPx * 0.15));
+    const box = logoPx + pad * 2;
+    const bx = Math.floor((size - box) / 2);
+    const by = Math.floor((size - box) / 2);
+    // Kotak senada warna background (hapus modul QR di belakang logo)
+    ctx.fillStyle = bgColor.value;
+    if (typeof ctx.roundRect === 'function') {
+      ctx.beginPath();
+      ctx.roundRect(bx, by, box, box, box * 0.18);
+      ctx.fill();
+    } else {
+      ctx.fillRect(bx, by, box, box);
+    }
+    // Gambar logo (pertahankan aspect ratio, center)
+    const lw = logoImage.naturalWidth || logoImage.width;
+    const lh = logoImage.naturalHeight || logoImage.height;
+    const ratio = Math.min(logoPx / lw, logoPx / lh);
+    const dw = Math.max(1, Math.floor(lw * ratio));
+    const dh = Math.max(1, Math.floor(lh * ratio));
+    const dx = bx + pad + Math.floor((logoPx - dw) / 2);
+    const dy = by + pad + Math.floor((logoPx - dh) / 2);
+    ctx.drawImage(logoImage, dx, dy, dw, dh);
+  }
   
   // Update QR Code
   function updateQR() {
@@ -521,6 +640,9 @@ END:VEVENT`;
       size: parseInt(qrSize.value),
       level: activeErrorLevel
     });
+    
+    // Gambar logo di tengah (jika ada)
+    drawLogo();
   }
   
   // Download PNG
@@ -545,8 +667,8 @@ END:VEVENT`;
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
     
-    // Fill white background
-    tempCtx.fillStyle = '#ffffff';
+    // Fill background sesuai warna yang dipilih (JPG tak support transparansi)
+    tempCtx.fillStyle = bgColor.value;
     tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
     
     // Draw the QR code on top
@@ -615,7 +737,7 @@ END:VEVENT`;
         }
       } else if (el.id === 'qr-size') {
         el.value = '250';
-        sizeVal.innerText = window._tToast ? window._tToast('250px') : '250px';
+        formatSizeLabel(250);
       } else if (el.id === 'qr-color-hex') {
         el.value = '#000000';
       } else if (el.id === 'bg-color-hex') {
@@ -649,6 +771,16 @@ END:VEVENT`;
     
     // Reset current QR type
     currentQRType = 'text';
+    
+    // Reset logo
+    logoImage = null;
+    (logoInput as HTMLInputElement).value = '';
+    logoPreview.classList.add('hidden');
+    logoRemoveBtn.classList.add('hidden');
+    logoSizeRow.classList.add('hidden');
+    (logoSize as HTMLInputElement).value = '20';
+    logoSizePct = 0.2;
+    logoSizeVal.innerText = '20%';
     
     // Update QR
     updateQR();
