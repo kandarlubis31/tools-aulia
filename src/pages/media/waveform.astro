@@ -74,9 +74,6 @@ import DropZone from '../../components/DropZone.astro';
     const speedInput = document.getElementById('speed') as HTMLInputElement;
     const speedLabel = document.getElementById('speed-label');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let audioEl: HTMLAudioElement | null = null;
     let peaks: number[] = [];
     let duration = 0;
@@ -104,10 +101,10 @@ import DropZone from '../../components/DropZone.astro';
       const f = fileInput.files?.[0];
       if (!f) return;
       if (!f.type.startsWith('audio/') && !/\.(mp3|wav|ogg|m4a|flac)$/i.test(f.name)) {
-        toast('File harus berupa audio', 'error');
+        showToast('File harus berupa audio', 'error');
         return;
       }
-      if (f.size > 60 * 1024 * 1024) { toast('Ukuran maksimal 60 MB', 'error'); return; }
+      if (f.size > 60 * 1024 * 1024) { showToast('Ukuran maksimal 60 MB', 'error'); return; }
 
       try {
         const { decodeAudioFile, computePeaks, encodeWav, drawWaveform } = await import('../../composables/useAudioWav');
@@ -141,7 +138,7 @@ import DropZone from '../../components/DropZone.astro';
           redraw(1);
         });
       } catch {
-        toast('Format audio tidak didukung', 'error');
+        showToast('Format audio tidak didukung', 'error');
       }
     });
 

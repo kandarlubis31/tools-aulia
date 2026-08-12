@@ -81,8 +81,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const charCount = document.getElementById('char-count');
     const sampleBtn = document.getElementById('sample-btn');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
     const t = (key: string, fb: string) => (window.i18n?.t ? window.i18n.t(key, fb) : fb);
 
     let voices: SpeechSynthesisVoice[] = [];
@@ -119,7 +117,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     function speak() {
       if (!supported) return;
       const text = ttsText.value.trim();
-      if (!text) { toast('Teks masih kosong', 'error'); return; }
+      if (!text) { showToast('Teks masih kosong', 'error'); return; }
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       const v = voices.find(x => x.name === voiceSelect.value);
@@ -128,7 +126,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       u.rate = parseFloat(rateSlider.value);
       u.pitch = parseFloat(pitchSlider.value);
       window.speechSynthesis.speak(u);
-      toast('🔊 Membaca...');
+      showToast('🔊 Membaca...');
     }
 
     playBtn?.addEventListener('click', speak);
@@ -136,16 +134,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       if (!supported) return;
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
-        toast('▶️ Lanjut');
+        showToast('▶️ Lanjut');
       } else if (window.speechSynthesis.speaking) {
         window.speechSynthesis.pause();
-        toast('⏸️ Dijeda');
+        showToast('⏸️ Dijeda');
       }
     });
     stopBtn?.addEventListener('click', () => {
       if (!supported) return;
       window.speechSynthesis.cancel();
-      toast('⏹️ Berhenti');
+      showToast('⏹️ Berhenti');
     });
 
     rateSlider?.addEventListener('input', () => { if (rateVal) rateVal.textContent = parseFloat(rateSlider.value).toFixed(1) + '×'; });

@@ -77,9 +77,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const clearBtn = document.getElementById('clear-btn');
 
     const t = (key: string, fb: string) => (window.i18n?.t ? window.i18n.t(key, fb) : fb);
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     function base64UrlDecode(seg: string): string {
       let b64 = seg.replace(/-/g, '+').replace(/_/g, '/');
       while (b64.length % 4) b64 += '=';
@@ -164,7 +161,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const el = document.getElementById(targetId || '');
         if (!el || !el.textContent || el.textContent === '—') return;
         navigator.clipboard.writeText(el.textContent);
-        toast(t('common.copied', 'Disalin!'));
+        showToast(t('common.copied', 'Disalin!'));
       });
     });
   });

@@ -120,9 +120,6 @@ import DropZone from '../../components/DropZone.astro';
     let position = 'br';
 
     const t = (key: string, fb: string) => (window.i18n?.t ? window.i18n.t(key, fb) : fb);
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     // DropZone wiring
     dropZone?.addEventListener('click', () => fileInput?.click());
     ['dragenter', 'dragover'].forEach(ev => dropZone?.addEventListener(ev, (e) => { e.preventDefault(); dropZone.classList.add('border-cyan-500', 'bg-cyan-50', 'dark:bg-cyan-950/20'); }));
@@ -136,7 +133,7 @@ import DropZone from '../../components/DropZone.astro';
     fileInput?.addEventListener('change', () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (!f.type.startsWith('image/')) { toast('File harus berupa gambar', 'error'); return; }
+      if (!f.type.startsWith('image/')) { showToast('File harus berupa gambar', 'error'); return; }
       fileName = f.name;
       const url = URL.createObjectURL(f);
       const img = new Image();
@@ -244,9 +241,9 @@ import DropZone from '../../components/DropZone.astro';
     }
 
     renderBtn?.addEventListener('click', () => {
-      if (!sourceImg) { toast('Upload gambar dulu', 'error'); return; }
-      if (wmType === 'text' && !wmText.value.trim()) { toast('Isi teks watermark dulu', 'error'); return; }
-      if (wmType === 'logo' && !logoImg) { toast('Upload logo dulu', 'error'); return; }
+      if (!sourceImg) { showToast('Upload gambar dulu', 'error'); return; }
+      if (wmType === 'text' && !wmText.value.trim()) { showToast('Isi teks watermark dulu', 'error'); return; }
+      if (wmType === 'logo' && !logoImg) { showToast('Upload logo dulu', 'error'); return; }
       const canvas = document.createElement('canvas');
       canvas.width = sourceImg.naturalWidth;
       canvas.height = sourceImg.naturalHeight;
@@ -258,7 +255,7 @@ import DropZone from '../../components/DropZone.astro';
       a.href = canvas.toDataURL('image/png');
       a.download = fileName.replace(/\.[^.]+$/, '') + '-watermarked.png';
       a.click();
-      toast('Gambar berhasil di-watermark!');
+      showToast('Gambar berhasil di-watermark!');
     });
   });
 </script>

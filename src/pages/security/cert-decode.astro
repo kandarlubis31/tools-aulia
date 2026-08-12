@@ -17,8 +17,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  const { showToast, _tToast } = window as any;
-
   document.getElementById('decode-btn').addEventListener('click', async () => {
     const pem = document.getElementById('cert-input').value.trim();
     if (!pem) { showToast?.(_tToast?.('Paste sertifikat dulu', 'Paste certificate first'), 'error'); return; }

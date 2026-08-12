@@ -63,9 +63,6 @@ import DropZone from '../../components/DropZone.astro';
     const sheetBody = document.getElementById('sheet-body');
     const exportCsvBtn = document.getElementById('export-csv-btn');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let wb: any = null;
     let currentSheet = '';
     let currentRows: any[][] = [];
@@ -82,18 +79,18 @@ import DropZone from '../../components/DropZone.astro';
     fileInput?.addEventListener('change', async () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (f.size > 20 * 1024 * 1024) { toast('File maksimal 20 MB', 'error'); return; }
+      if (f.size > 20 * 1024 * 1024) { showToast('File maksimal 20 MB', 'error'); return; }
       try {
         const buf = await f.arrayBuffer();
         wb = (window as any).XLSX.read(buf, { type: 'array' });
-        if (!wb.SheetNames.length) { toast('Tidak ada sheet', 'error'); return; }
+        if (!wb.SheetNames.length) { showToast('Tidak ada sheet', 'error'); return; }
         fileName!.textContent = f.name;
         renderTabs();
         selectSheet(wb.SheetNames[0]);
         viewer?.classList.remove('hidden');
         viewer?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch {
-        toast('File Excel tidak bisa dibaca', 'error');
+        showToast('File Excel tidak bisa dibaca', 'error');
       }
     });
 
@@ -140,7 +137,7 @@ import DropZone from '../../components/DropZone.astro';
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
       a.download = currentSheet.replace(/[^\w\-]+/g, '_') + '.csv';
       a.click();
-      toast('CSV berhasil di-export!');
+      showToast('CSV berhasil di-export!');
     });
   });
 </script>

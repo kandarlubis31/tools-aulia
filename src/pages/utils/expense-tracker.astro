@@ -81,8 +81,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       interface Expense {
         id: string;
         amount: number;
@@ -237,12 +235,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const date = (document.getElementById('expense-date') as HTMLInputElement)?.value;
 
         if (!amount || amount <= 0) {
-          toast('Masukkan nominal yang valid!', 'error');
+          showToast('Masukkan nominal yang valid!', 'error');
           return;
         }
 
         if (!date) {
-          toast('Pilih tanggal!', 'error');
+          showToast('Pilih tanggal!', 'error');
           return;
         }
 
@@ -261,7 +259,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         
         renderExpenses();
         renderChart();
-        toast('Pengeluaran ditambahkan!', 'success');
+        showToast('Pengeluaran ditambahkan!', 'success');
       });
 
       // Delete expense
@@ -275,7 +273,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           saveExpenses();
           renderExpenses();
           renderChart();
-          toast('Pengeluaran dihapus!', 'success');
+          showToast('Pengeluaran dihapus!', 'success');
         }
       });
 

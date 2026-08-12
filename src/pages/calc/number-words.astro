@@ -35,8 +35,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       let language = 'id';
 
       const ones = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas', 'dua belas', 'tiga belas', 'empat belas', 'lima belas', 'enam belas', 'tujuh belas', 'delapan belas', 'sembilan belas'];
@@ -106,14 +104,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const num = parseInt(input);
 
         if (isNaN(num)) {
-          toast('Masukkan angka yang valid!', 'error');
+          showToast('Masukkan angka yang valid!', 'error');
           return;
         }
 
         const words = numberToWords(num, language);
         document.getElementById('words-output')!.textContent = words;
         document.getElementById('result')?.classList.remove('hidden');
-        toast('Dikonversi!', 'success');
+        showToast('Dikonversi!', 'success');
       });
     });
   </script>

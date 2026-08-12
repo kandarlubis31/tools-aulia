@@ -41,8 +41,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const output = document.getElementById('output')! as HTMLTextAreaElement;
   const lineCount = document.getElementById('line-count')!;
   const charCount = document.getElementById('char-count')!;
-  const { showToast, _tToast } = window as any;
-
   function getLines(): string[] {
     return input.value.split('\n').filter(l => l.trim() !== '');
   }

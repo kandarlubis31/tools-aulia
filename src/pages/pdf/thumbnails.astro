@@ -47,8 +47,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       let pdfDoc: any = null;
 
       // Drop zone
@@ -72,20 +70,20 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       async function loadPDF(file: File) {
         const pdfjsLib = await (window as any).waitForCdnLib?.('pdfjs', { maxRetries: 40 });
-        if (!pdfjsLib) { toast('Gagal load PDF library', 'error'); return; }
+        if (!pdfjsLib) { showToast('Gagal load PDF library', 'error'); return; }
 
         const arrayBuffer = await file.arrayBuffer();
         pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
         document.getElementById('filename')!.textContent = file.name;
         document.getElementById('filename')!.classList.remove('hidden');
-        toast('PDF dimuat! Klik Generate untuk membuat thumbnail.', 'success');
+        showToast('PDF dimuat! Klik Generate untuk membuat thumbnail.', 'success');
       }
 
       // Generate thumbnails
       document.getElementById('generate-btn')?.addEventListener('click', async () => {
         if (!pdfDoc) {
-          toast('Upload PDF terlebih dahulu!', 'error');
+          showToast('Upload PDF terlebih dahulu!', 'error');
           return;
         }
 
@@ -125,14 +123,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             link.download = `page-${i}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-            toast(`Halaman ${i} didownload!`, 'success');
+            showToast(`Halaman ${i} didownload!`, 'success');
           });
 
           grid!.appendChild(container);
         }
 
         loading?.classList.add('hidden');
-        toast(`${pdfDoc.numPages} thumbnail digenerate!`, 'success');
+        showToast(`${pdfDoc.numPages} thumbnail digenerate!`, 'success');
       });
     });
   </script>

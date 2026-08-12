@@ -50,8 +50,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       // Luhn algorithm
       function luhnCheck(num: string): { valid: boolean; checksum: string } {
         // Remove spaces and dashes
@@ -101,7 +99,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const checksumEl = document.getElementById('checksum-value');
 
         if (!input) {
-          toast('Masukkan nomor kartu!', 'error');
+          showToast('Masukkan nomor kartu!', 'error');
           return;
         }
 
@@ -115,7 +113,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         if (checksumEl) checksumEl.textContent = checksum;
         resultEl?.classList.remove('hidden');
 
-        toast(valid ? 'Nomor valid!' : 'Nomor tidak valid', valid ? 'success' : 'error');
+        showToast(valid ? 'Nomor valid!' : 'Nomor tidak valid', valid ? 'success' : 'error');
       });
 
       // Auto-format input

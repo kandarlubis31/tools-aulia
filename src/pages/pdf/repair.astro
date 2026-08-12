@@ -49,9 +49,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const pagesInfo = document.getElementById('pages-info')!;
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let repairedBytes: Uint8Array | null = null;
 
     async function loadPdfJs() {
@@ -155,7 +152,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       a.download = `repaired-${Date.now()}.pdf`;
       a.click();
       URL.revokeObjectURL(a.href);
-      toast('PDF diperbaiki didownload!');
+      showToast('PDF diperbaiki didownload!');
     });
   });
 </script>

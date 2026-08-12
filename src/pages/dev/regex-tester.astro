@@ -88,9 +88,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const sampleBtn = document.getElementById('sample-btn');
     const flagBtns = document.querySelectorAll('.flag-btn');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     function esc(s: string): string {
       return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
@@ -185,7 +182,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       patternInput.value = '[\\w.+-]+@[\\w-]+\\.[\\w.]+';
       testInput.value = 'Hubungi kami di support@toolsaulia.com atau admin@paklubis.my.id — balasan dalam 1x24 jam.\nEmail lain: halo@example.co.id, test@mail.org';
       run();
-      toast('Contoh terisi!');
+      showToast('Contoh terisi!');
     });
   });
 </script>

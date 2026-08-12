@@ -76,9 +76,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const copyRespBtn = document.getElementById('copy-resp-btn');
     const prettyBtn = document.getElementById('pretty-btn');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let rawResponse = '';
 
     function addHeaderRow(key = '', value = '') {
@@ -103,10 +100,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     sendBtn?.addEventListener('click', async () => {
       const url = urlInput.value.trim();
-      if (!url) { toast('URL wajib diisi', 'error'); return; }
+      if (!url) { showToast('URL wajib diisi', 'error'); return; }
       let parsed: URL;
-      try { parsed = new URL(url); } catch { toast('URL tidak valid', 'error'); return; }
-      if (!/^https?:$/.test(parsed.protocol)) { toast('Hanya http/https', 'error'); return; }
+      try { parsed = new URL(url); } catch { showToast('URL tidak valid', 'error'); return; }
+      if (!/^https?:$/.test(parsed.protocol)) { showToast('Hanya http/https', 'error'); return; }
 
       const method = methodSelect.value;
       const headers: Record<string, string> = {};
@@ -176,9 +173,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       if (!rawResponse) return;
       try {
         await navigator.clipboard.writeText(rawResponse);
-        toast('Response tersalin!');
+        showToast('Response tersalin!');
       } catch {
-        toast('Gagal menyalin', 'error');
+        showToast('Gagal menyalin', 'error');
       }
     });
 

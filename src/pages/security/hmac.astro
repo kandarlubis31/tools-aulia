@@ -41,8 +41,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       let algorithm = 'SHA-256';
 
       // Algorithm buttons
@@ -64,7 +62,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const secret = (document.getElementById('secret') as HTMLInputElement)?.value;
 
         if (!message || !secret) {
-          toast('Masukkan message dan secret key!', 'error');
+          showToast('Masukkan message dan secret key!', 'error');
           return;
         }
 
@@ -82,9 +80,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
           document.getElementById('hmac-output')!.textContent = hashHex;
           document.getElementById('result')?.classList.remove('hidden');
-          toast('HMAC digenerate!', 'success');
+          showToast('HMAC digenerate!', 'success');
         } catch (e: any) {
-          toast('Error: ' + e.message, 'error');
+          showToast('Error: ' + e.message, 'error');
         }
       });
 
@@ -93,7 +91,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const hmac = document.getElementById('hmac-output')?.textContent;
         if (hmac) {
           navigator.clipboard.writeText(hmac);
-          toast('HMAC disalin!', 'success');
+          showToast('HMAC disalin!', 'success');
         }
       });
     });

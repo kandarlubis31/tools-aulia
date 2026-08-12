@@ -101,8 +101,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       // Set default time to now
       const now = new Date();
       const timeInput = document.getElementById('tz-time') as HTMLInputElement;
@@ -115,7 +113,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const toTz = (document.getElementById('tz-to') as HTMLSelectElement).value;
 
         if (!time) {
-          toast('Masukkan waktu!', 'error');
+          showToast('Masukkan waktu!', 'error');
           return;
         }
 
@@ -152,9 +150,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           document.getElementById('result-to-tz')!.textContent = toAbbr;
           document.getElementById('tz-result')?.classList.remove('hidden');
 
-          toast('Konversi berhasil!', 'success');
+          showToast('Konversi berhasil!', 'success');
         } catch (e: any) {
-          toast('Error konversi: ' + e.message, 'error');
+          showToast('Error konversi: ' + e.message, 'error');
         }
       });
 
@@ -165,7 +163,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const temp = fromSelect.value;
         fromSelect.value = toSelect.value;
         toSelect.value = temp;
-        toast('Zona ditukar!', 'success');
+        showToast('Zona ditukar!', 'success');
       });
     });
   </script>

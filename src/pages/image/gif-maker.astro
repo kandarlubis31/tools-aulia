@@ -78,9 +78,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     const MAX_SIZE = 400;
 
     interface Frame {
@@ -123,14 +120,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     async function addFiles(files: FileList | File[]) {
       const fileArr = Array.from(files).filter(f => f.type.startsWith('image/'));
-      if (!fileArr.length) { toast('Pilih file gambar (PNG, JPG, WEBP)', 'error'); return; }
+      if (!fileArr.length) { showToast('Pilih file gambar (PNG, JPG, WEBP)', 'error'); return; }
 
       for (const file of fileArr) {
         try {
           const frame = await resizeImage(file);
           frames.push(frame);
         } catch {
-          toast(`Gagal baca: ${file.name}`, 'error');
+          showToast(`Gagal baca: ${file.name}`, 'error');
         }
       }
       frames.sort((a, b) => a.name.localeCompare(b.name));
@@ -216,7 +213,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     downloadBtn.addEventListener('click', () => {
       if (!frames.length) return;
-      toast('Mendownload frame…');
+      showToast('Mendownload frame…');
       frames.forEach((f, i) => {
         setTimeout(() => {
           const a = document.createElement('a');

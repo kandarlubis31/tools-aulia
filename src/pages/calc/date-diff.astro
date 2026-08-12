@@ -57,8 +57,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       // Set default dates
       const today = new Date();
       const lastMonth = new Date(today);
@@ -90,7 +88,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const businessOnly = (document.getElementById('business-days') as HTMLInputElement).checked;
 
         if (!startInput.value || !endInput.value) {
-          toast('Pilih kedua tanggal!', 'error');
+          showToast('Pilih kedua tanggal!', 'error');
           return;
         }
 
@@ -112,7 +110,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         }
 
         document.getElementById('result')?.classList.remove('hidden');
-        toast('Selisih dihitung!', 'success');
+        showToast('Selisih dihitung!', 'success');
       });
     });
   </script>

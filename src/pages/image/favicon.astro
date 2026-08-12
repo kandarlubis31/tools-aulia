@@ -87,9 +87,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const bgColor = document.getElementById('bg-color') as HTMLInputElement;
     const downloadAllBtn = document.getElementById('download-all-btn') as HTMLButtonElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let shape: 'rounded' | 'square' = 'rounded';
 
     const SIZES = [16, 32, 64, 128, 180, 192, 256, 512];
@@ -144,7 +141,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     }
 
     async function downloadAll() {
-      toast('Menyiapkan download…');
+      showToast('Menyiapkan download…');
 
       const canvases = SIZES.map(s => drawFavicon(s));
       const files: { name: string; blob: Blob }[] = [];
@@ -181,7 +178,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       a.click();
       URL.revokeObjectURL(bigUrl);
 
-      toast('Semua ukuran didownload!');
+      showToast('Semua ukuran didownload!');
     }
 
     // Event listeners

@@ -69,8 +69,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       // Indonesian 5-letter words
       const WORDS = [
         'RUMAH', 'KUCING', 'ANJING', 'BUNGA', 'POHON',
@@ -202,7 +200,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
         if (key === 'ENTER') {
           if (currentCol < 5) {
-            toast('Masukkan 5 huruf!', 'error');
+            showToast('Masukkan 5 huruf!', 'error');
             return;
           }
 
@@ -214,7 +212,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             document.getElementById('status-text')!.textContent = '🎉 Benar! Kamu menang!';
             document.getElementById('status-text')!.className = 'text-lg font-bold mb-4 text-green-600 dark:text-green-400';
             document.getElementById('game-status')?.classList.remove('hidden');
-            toast('Selamat! Kamu benar!', 'success');
+            showToast('Selamat! Kamu benar!', 'success');
           } else if (currentRow >= 5) {
             gameOver = true;
             document.getElementById('status-text')!.textContent = `💀 Game over! Jawaban: ${targetWord}`;

@@ -33,8 +33,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       function formatHTML(html: string): string {
         let formatted = '';
         let indent = 0;
@@ -72,21 +70,21 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       // Format button
       document.getElementById('format-btn')?.addEventListener('click', () => {
         const input = (document.getElementById('html-input') as HTMLTextAreaElement)?.value;
-        if (!input) { toast('Masukkan HTML!', 'error'); return; }
+        if (!input) { showToast('Masukkan HTML!', 'error'); return; }
 
         const output = formatHTML(input);
         (document.getElementById('html-output') as HTMLTextAreaElement).value = output;
-        toast('HTML diformat!', 'success');
+        showToast('HTML diformat!', 'success');
       });
 
       // Minify button
       document.getElementById('minify-btn')?.addEventListener('click', () => {
         const input = (document.getElementById('html-input') as HTMLTextAreaElement)?.value;
-        if (!input) { toast('Masukkan HTML!', 'error'); return; }
+        if (!input) { showToast('Masukkan HTML!', 'error'); return; }
 
         const output = minifyHTML(input);
         (document.getElementById('html-output') as HTMLTextAreaElement).value = output;
-        toast('HTML di-minify!', 'success');
+        showToast('HTML di-minify!', 'success');
       });
 
       // Copy output
@@ -94,7 +92,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const output = (document.getElementById('html-output') as HTMLTextAreaElement)?.value;
         if (output) {
           navigator.clipboard.writeText(output);
-          toast('Disalin!', 'success');
+          showToast('Disalin!', 'success');
         }
       });
     });

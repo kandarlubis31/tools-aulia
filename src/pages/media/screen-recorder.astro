@@ -67,9 +67,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const previewVideo = document.getElementById('preview-video') as HTMLVideoElement;
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let mediaRecorder: MediaRecorder | null = null;
     let stream: MediaStream | null = null;
     let chunks: Blob[] = [];
@@ -133,7 +130,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         };
       } catch (e: any) {
         if (e.name === 'AbortError') return;
-        toast('Gagal mulai rekam: ' + e.message, 'error');
+        showToast('Gagal mulai rekam: ' + e.message, 'error');
       }
     }
 
@@ -164,7 +161,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       a.href = previewVideo.src;
       a.download = `screen-record-${Date.now()}.webm`;
       a.click();
-      toast('Video didownload!');
+      showToast('Video didownload!');
     });
   });
 </script>

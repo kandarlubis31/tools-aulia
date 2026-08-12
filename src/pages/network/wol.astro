@@ -17,8 +17,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  const { showToast, _tToast } = window as any;
-
   document.getElementById('wake-btn').addEventListener('click', async () => {
     const mac = document.getElementById('mac').value.trim();
     if (!mac) { showToast?.(_tToast?.('Masukkan MAC address','Enter MAC address'),'error'); return; }

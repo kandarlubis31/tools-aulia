@@ -68,9 +68,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const downloadWebmBtn = document.getElementById('download-webm-btn');
     const resetBtn = document.getElementById('reset-btn');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let mediaRecorder: MediaRecorder | null = null;
     let chunks: Blob[] = [];
     let stream: MediaStream | null = null;
@@ -107,7 +104,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       } catch {
         statusText!.textContent = '❌ Akses mikrofon ditolak — periksa izin browser.';
         statusText!.dataset.i18n = '';
-        toast('Mikrofon tidak diizinkan', 'error');
+        showToast('Mikrofon tidak diizinkan', 'error');
         return;
       }
       chunks = [];
@@ -162,16 +159,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const wav = encodeWav(buf);
         downloadBlob(wav, 'rekaman.wav');
         ctx.close();
-        toast('WAV berhasil di-download!');
+        showToast('WAV berhasil di-download!');
       } catch {
-        toast('Gagal konversi ke WAV — gunakan WebM', 'error');
+        showToast('Gagal konversi ke WAV — gunakan WebM', 'error');
       }
     });
 
     downloadWebmBtn?.addEventListener('click', () => {
       if (!finalBlob) return;
       downloadBlob(finalBlob, 'rekaman.webm');
-      toast('WebM berhasil di-download!');
+      showToast('WebM berhasil di-download!');
     });
 
     resetBtn?.addEventListener('click', () => {

@@ -51,9 +51,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const fetchBtn = document.getElementById('fetch-btn') as HTMLButtonElement;
     const resultArea = document.getElementById('result-area')!;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     const SEC_HEADERS = ['Strict-Transport-Security','Content-Security-Policy','X-Frame-Options',
       'X-Content-Type-Options','Referrer-Policy','Permissions-Policy','Cross-Origin-Resource-Policy'];
 
@@ -63,12 +60,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     async function fetchHeaders() {
       const raw = urlInput.value.trim();
-      if (!raw) { toast('Masukkan URL', 'error'); return; }
+      if (!raw) { showToast('Masukkan URL', 'error'); return; }
       let url: string;
       try {
         const p = new URL(raw.includes('://') ? raw : `https://${raw}`);
         url = p.toString();
-      } catch { toast('URL tidak valid', 'error'); return; }
+      } catch { showToast('URL tidak valid', 'error'); return; }
 
       fetchBtn.disabled = true;
       fetchBtn.innerHTML = '⏳ …';

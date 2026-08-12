@@ -37,8 +37,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       function validateXML(xml: string): { valid: boolean; error?: string } {
         try {
           const parser = new DOMParser();
@@ -92,7 +90,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       // Format button
       document.getElementById('format-btn')?.addEventListener('click', () => {
         const input = (document.getElementById('xml-input') as HTMLTextAreaElement)?.value;
-        if (!input) { toast('Masukkan XML!', 'error'); return; }
+        if (!input) { showToast('Masukkan XML!', 'error'); return; }
 
         const { valid, error } = validateXML(input);
         showValidation(valid, error);
@@ -100,14 +98,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         if (valid) {
           const output = formatXML(input);
           (document.getElementById('xml-output') as HTMLTextAreaElement).value = output;
-          toast('XML diformat!', 'success');
+          showToast('XML diformat!', 'success');
         }
       });
 
       // Minify button
       document.getElementById('minify-btn')?.addEventListener('click', () => {
         const input = (document.getElementById('xml-input') as HTMLTextAreaElement)?.value;
-        if (!input) { toast('Masukkan XML!', 'error'); return; }
+        if (!input) { showToast('Masukkan XML!', 'error'); return; }
 
         const { valid, error } = validateXML(input);
         showValidation(valid, error);
@@ -115,14 +113,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         if (valid) {
           const output = minifyXML(input);
           (document.getElementById('xml-output') as HTMLTextAreaElement).value = output;
-          toast('XML di-minify!', 'success');
+          showToast('XML di-minify!', 'success');
         }
       });
 
       // Expand button
       document.getElementById('expand-btn')?.addEventListener('click', () => {
         const input = (document.getElementById('xml-input') as HTMLTextAreaElement)?.value;
-        if (!input) { toast('Masukkan XML!', 'error'); return; }
+        if (!input) { showToast('Masukkan XML!', 'error'); return; }
 
         const { valid, error } = validateXML(input);
         showValidation(valid, error);
@@ -130,7 +128,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         if (valid) {
           const output = formatXML(input, 4);
           (document.getElementById('xml-output') as HTMLTextAreaElement).value = output;
-          toast('XML di-expand!', 'success');
+          showToast('XML di-expand!', 'success');
         }
       });
 
@@ -139,7 +137,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const output = (document.getElementById('xml-output') as HTMLTextAreaElement)?.value;
         if (output) {
           navigator.clipboard.writeText(output);
-          toast('Disalin!', 'success');
+          showToast('Disalin!', 'success');
         }
       });
     });

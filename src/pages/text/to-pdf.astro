@@ -55,9 +55,6 @@ line break untuk paragraf baru."
     const convertBtn = document.getElementById('convert-btn') as HTMLButtonElement;
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let pdfBytes: Uint8Array | null = null;
 
     async function loadPdfLib() {
@@ -93,7 +90,7 @@ line break untuk paragraf baru."
 
     async function convert() {
       const text = textInput.value.trim();
-      if (!text) { toast('Tulis teks dulu', 'error'); return; }
+      if (!text) { showToast('Tulis teks dulu', 'error'); return; }
 
       convertBtn.disabled = true;
       convertBtn.innerHTML = '⏳ …';
@@ -130,7 +127,7 @@ line break untuk paragraf baru."
       downloadBtn.classList.remove('hidden');
       convertBtn.innerHTML = '✅ Converted';
       convertBtn.disabled = false;
-      toast(`${totalPages} halaman PDF dibuat!`);
+      showToast(`${totalPages} halaman PDF dibuat!`);
     }
 
     convertBtn.addEventListener('click', convert);
@@ -142,7 +139,7 @@ line break untuk paragraf baru."
       a.download = `text-${Date.now()}.pdf`;
       a.click();
       URL.revokeObjectURL(a.href);
-      toast('PDF didownload!');
+      showToast('PDF didownload!');
     });
   });
 </script>

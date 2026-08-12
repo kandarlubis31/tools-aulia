@@ -68,9 +68,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
     const statsText = document.getElementById('stats-text')!;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     const WORDS = ['langit','biru','awan','putih','angin','sepoi','daun','hijau','bunga','mekar','air','jernih','batu','gunung','tinggi','rumah','kayu','jalan','lurus','pohon','rindang','sungai','deras','pantai','indah','senja','merah','bulan','purnama','bintang','gemerlap','malam','tenang','pagi','cerah','hujan','rintik','tanah','basah','kopi','hangat','buku','cerita','kucing','lucu','musik','indah','lukisan','cantik','robot','cepat','teknologi','modern','digital','kreatif','inovasi','ide','brilian','masa','depan','waktu','singkat','teman','setia','cinta','abadi','harapan','baru','mimpi','indah','karya','seni','data','akurat','kode','bersih','server','responsif'];
 
     function randWord(): string {

@@ -52,8 +52,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       let img: HTMLImageElement | null = null;
 
       // Drop zone
@@ -77,7 +75,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       function handleFile(file: File) {
         if (!file.type.startsWith('image/')) {
-          toast('File harus gambar!', 'error');
+          showToast('File harus gambar!', 'error');
           return;
         }
         const reader = new FileReader();
@@ -169,7 +167,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           link.download = 'meme.png';
           link.href = canvas.toDataURL('image/png');
           link.click();
-          toast('Meme didownload!', 'success');
+          showToast('Meme didownload!', 'success');
         }
       });
     });

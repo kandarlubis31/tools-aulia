@@ -36,7 +36,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const fileName=document.getElementById('file-name')!,searchInput=document.getElementById('search-input') as HTMLInputElement;
     const searchBtn=document.getElementById('search-btn') as HTMLButtonElement;
     const resultsArea=document.getElementById('results-area')!;
-    const toast = (m:string,t:'success'|'error'='success')=>window.showToast?.(window._tToast?window._tToast(m):m,t);
     let pdfDoc:any=null;
 
     async function loadPdfJs(){if((window as any).pdfjsLib)return(window as any).pdfjsLib;return new Promise(r=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.onload=()=>r((window as any).pdfjsLib);document.head.appendChild(s);})}
@@ -54,7 +53,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     fileInput.addEventListener('change',()=>{const f=fileInput.files?.[0];if(f)processFile(f);});
 
     searchBtn.addEventListener('click',async()=>{
-      const q=searchInput.value.trim().toLowerCase();if(!q||!pdfDoc){toast('Upload PDF & masukkan kata kunci','error');return;}
+      const q=searchInput.value.trim().toLowerCase();if(!q||!pdfDoc){showToast('Upload PDF & masukkan kata kunci','error');return;}
       searchBtn.disabled=true;searchBtn.innerHTML='⏳…';const results:{page:number,text:string}[]=[];
       for(let p=1;p<=pdfDoc.numPages;p++){
         const page=await pdfDoc.getPage(p);const tc=await page.getTextContent();

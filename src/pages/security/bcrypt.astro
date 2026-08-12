@@ -72,9 +72,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const verifyBtn = document.getElementById('verify-btn');
     const verifyResult = document.getElementById('verify-result');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     // bcryptjs UMD exposes dcodeIO.bcrypt (atau window.bcrypt pada build tertentu)
     function getBcrypt(): any {
       return (window as any).dcodeIO?.bcrypt || (window as any).bcrypt;
@@ -107,9 +104,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     hashBtn?.addEventListener('click', async () => {
       const pwd = hashPassword.value;
-      if (!pwd) { toast('Password kosong', 'error'); return; }
+      if (!pwd) { showToast('Password kosong', 'error'); return; }
       const bc = await waitForBcrypt();
-      if (!bc) { toast('Gagal memuat library bcrypt — cek koneksi', 'error'); return; }
+      if (!bc) { showToast('Gagal memuat library bcrypt — cek koneksi', 'error'); return; }
       (hashBtn as HTMLButtonElement).disabled = true;
       hashBtn.textContent = '⏳ Memproses...';
       setTimeout(() => {
@@ -118,9 +115,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           const hashed = bc.hashSync(pwd, salt);
           hashOutput!.textContent = hashed;
           hashResult?.classList.remove('hidden');
-          toast('Hash berhasil dibuat!');
+          showToast('Hash berhasil dibuat!');
         } catch (e) {
-          toast('Gagal membuat hash', 'error');
+          showToast('Gagal membuat hash', 'error');
         } finally {
           (hashBtn as HTMLButtonElement).disabled = false;
           hashBtn.textContent = t('bcrypt.generate_hash', 'Generate Hash');
@@ -131,15 +128,15 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     copyHash?.addEventListener('click', async () => {
       if (!hashOutput?.textContent) return;
       await navigator.clipboard.writeText(hashOutput.textContent);
-      toast('Hash disalin!');
+      showToast('Hash disalin!');
     });
 
     verifyBtn?.addEventListener('click', async () => {
       const pwd = verifyPassword.value;
       const hash = verifyHash.value.trim();
-      if (!pwd || !hash) { toast('Isi password dan hash', 'error'); return; }
+      if (!pwd || !hash) { showToast('Isi password dan hash', 'error'); return; }
       const bc = await waitForBcrypt();
-      if (!bc) { toast('Gagal memuat library bcrypt — cek koneksi', 'error'); return; }
+      if (!bc) { showToast('Gagal memuat library bcrypt — cek koneksi', 'error'); return; }
       try {
         const ok = bc.compareSync(pwd, hash);
         verifyResult?.classList.remove('hidden');
@@ -148,7 +145,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400');
         verifyResult!.textContent = ok ? '✅ Cocok! Password valid untuk hash ini.' : '❌ Tidak cocok! Password salah.';
       } catch {
-        toast('Hash tidak valid', 'error');
+        showToast('Hash tidak valid', 'error');
       }
     });
   });

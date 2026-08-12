@@ -70,9 +70,6 @@ import DropZone from '../../components/DropZone.astro';
     const gpsWarning = document.getElementById('gps-warning');
     const stripBtn = document.getElementById('strip-btn');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let currentFile: File | null = null;
     let hasGps = false;
 
@@ -88,8 +85,8 @@ import DropZone from '../../components/DropZone.astro';
     fileInput?.addEventListener('change', () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (!/image\/(jpeg|webp|tiff)/.test(f.type)) { toast('Pilih file JPG/JPEG/TIFF', 'error'); return; }
-      if (f.size > 25 * 1024 * 1024) { toast('Ukuran maksimal 25 MB', 'error'); return; }
+      if (!/image\/(jpeg|webp|tiff)/.test(f.type)) { showToast('Pilih file JPG/JPEG/TIFF', 'error'); return; }
+      if (f.size > 25 * 1024 * 1024) { showToast('Ukuran maksimal 25 MB', 'error'); return; }
       currentFile = f;
       preview.src = URL.createObjectURL(f);
 
@@ -168,7 +165,7 @@ import DropZone from '../../components/DropZone.astro';
         a.href = canvas.toDataURL('image/jpeg', 0.92);
         a.download = currentFile!.name.replace(/\.[^.]+$/, '') + '-bersih.jpg';
         a.click();
-        toast('Metadata berhasil dihapus!');
+        showToast('Metadata berhasil dihapus!');
       };
       image.src = URL.createObjectURL(currentFile);
     });

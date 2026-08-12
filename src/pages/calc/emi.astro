@@ -96,9 +96,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const resTotal = document.getElementById('res-total');
     const resMonths = document.getElementById('res-months');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     function fmtIDR(n: number): string {
       return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
     }
@@ -108,9 +105,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const annualRate = parseFloat(interestRate.value);
       const totalMonths = (parseInt(tenureYears.value) || 0) * 12 + (parseInt(tenureMonths.value) || 0);
 
-      if (isNaN(P) || P <= 0) { toast('Masukkan jumlah pinjaman yang valid', 'error'); return; }
-      if (isNaN(annualRate) || annualRate < 0) { toast('Masukkan bunga yang valid', 'error'); return; }
-      if (totalMonths <= 0) { toast('Tenor minimal 1 bulan', 'error'); return; }
+      if (isNaN(P) || P <= 0) { showToast('Masukkan jumlah pinjaman yang valid', 'error'); return; }
+      if (isNaN(annualRate) || annualRate < 0) { showToast('Masukkan bunga yang valid', 'error'); return; }
+      if (totalMonths <= 0) { showToast('Tenor minimal 1 bulan', 'error'); return; }
 
       const monthlyRate = annualRate / 100 / 12;
       let emi: number;

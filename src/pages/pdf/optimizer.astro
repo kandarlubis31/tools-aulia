@@ -59,9 +59,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const savingsText = document.getElementById('savings-text')!;
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let optimizedBytes: Uint8Array | null = null;
 
     async function loadPdfLib() {
@@ -141,7 +138,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       a.download = `optimized-${Date.now()}.pdf`;
       a.click();
       URL.revokeObjectURL(a.href);
-      toast('PDF teroptimasi didownload!');
+      showToast('PDF teroptimasi didownload!');
     });
   });
 </script>

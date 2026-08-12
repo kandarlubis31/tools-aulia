@@ -116,9 +116,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const MAX_HISTORY = 6;
     let saveTimer = 0;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     function load() {
       try {
         const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
@@ -174,7 +171,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             area.value = h.body || '';
             render();
             save();
-            toast('Catatan dimuat!');
+            showToast('Catatan dimuat!');
           });
         });
       } catch { /* ignore */ }
@@ -205,7 +202,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       a.download = (titleInput.value || 'catatan').replace(/[^\w\- ]/g, '').trim() || 'catatan';
       a.download += '.md';
       a.click();
-      toast('Export berhasil!');
+      showToast('Export berhasil!');
     });
 
     newBtn?.addEventListener('click', () => {
@@ -215,7 +212,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       save();
       render();
       area.focus();
-      toast('Catatan baru dibuat');
+      showToast('Catatan baru dibuat');
     });
 
     clearBtn?.addEventListener('click', () => {

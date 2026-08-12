@@ -53,9 +53,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
     const fitCheck = document.getElementById('fit-check') as HTMLInputElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let imageFiles: File[] = [];
     let pdfBytes: Uint8Array | null = null;
 
@@ -125,7 +122,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       pdfBytes = await doc.save();
       convertBtn.innerHTML = '✅ Converted';
       downloadBtn.classList.remove('hidden');
-      toast(`${imageFiles.length} gambar → PDF`);
+      showToast(`${imageFiles.length} gambar → PDF`);
     }
 
     dropZone.addEventListener('click', () => fileInput.click());
@@ -150,7 +147,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       a.download = `images-${Date.now()}.pdf`;
       a.click();
       URL.revokeObjectURL(a.href);
-      toast('PDF didownload!');
+      showToast('PDF didownload!');
     });
   });
 </script>

@@ -30,8 +30,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       const emojiMap: Record<string, string> = {
         'happy': '😊', 'sad': '😢', 'love': '❤️', 'heart': '❤️', 'star': '⭐', 'fire': '🔥', 'cool': '😎', 'angry': '😠', 'laugh': '😂', 'cry': '😭',
         'sun': '☀️', 'moon': '🌙', 'rain': '🌧️', 'snow': '❄️', 'cloud': '☁️', 'wind': '💨', 'thunder': '⛈️',
@@ -63,19 +61,19 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       document.getElementById('translate-btn')?.addEventListener('click', () => {
         const text = (document.getElementById('text-input') as HTMLTextAreaElement)?.value;
         if (!text) {
-          toast('Masukkan teks!', 'error');
+          showToast('Masukkan teks!', 'error');
           return;
         }
         const emoji = translateToEmoji(text);
         (document.getElementById('emoji-output') as HTMLTextAreaElement).value = emoji;
-        toast('Ditranslate!', 'success');
+        showToast('Ditranslate!', 'success');
       });
 
       document.getElementById('copy-output')?.addEventListener('click', () => {
         const output = (document.getElementById('emoji-output') as HTMLTextAreaElement)?.value;
         if (output) {
           navigator.clipboard.writeText(output);
-          toast('Disalin!', 'success');
+          showToast('Disalin!', 'success');
         }
       });
     });

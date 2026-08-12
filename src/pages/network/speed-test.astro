@@ -99,9 +99,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     const CIRCUMFERENCE = 2 * Math.PI * 52; // ~327
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     function setGauge(pct: number) {
       const dash = (pct / 100) * CIRCUMFERENCE;
       gaugeArc.setAttribute('stroke-dasharray', `${dash} ${CIRCUMFERENCE}`);

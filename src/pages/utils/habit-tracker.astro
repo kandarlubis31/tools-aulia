@@ -64,8 +64,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       interface Habit {
         id: string;
         name: string;
@@ -183,7 +181,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const name = input.value.trim();
         
         if (!name) {
-          toast('Masukkan nama habit!', 'error');
+          showToast('Masukkan nama habit!', 'error');
           return;
         }
 
@@ -198,7 +196,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         saveHabits();
         input.value = '';
         renderHabits();
-        toast('Habit ditambahkan!', 'success');
+        showToast('Habit ditambahkan!', 'success');
       });
 
       // Enter key
@@ -235,7 +233,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           habits = habits.filter(h => h.id !== id);
           saveHabits();
           renderHabits();
-          toast('Habit dihapus!', 'success');
+          showToast('Habit dihapus!', 'success');
         }
       });
 

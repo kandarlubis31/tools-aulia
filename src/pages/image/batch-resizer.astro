@@ -89,9 +89,6 @@ import DropZone from '../../components/DropZone.astro';
     const qualityRange = document.getElementById('quality-range') as HTMLInputElement;
     const qualityVal = document.getElementById('quality-val');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let files: File[] = [];
 
     qualityRange?.addEventListener('input', () => {
@@ -113,7 +110,7 @@ import DropZone from '../../components/DropZone.astro';
 
     fileInput?.addEventListener('change', () => {
       const list = Array.from(fileInput.files || []).filter(f => f.type.startsWith('image/'));
-      if (!list.length) { toast('Tidak ada file gambar valid', 'error'); return; }
+      if (!list.length) { showToast('Tidak ada file gambar valid', 'error'); return; }
       files = [...files, ...list].slice(0, 50);
       settingsCard?.classList.remove('hidden');
       updateCount();
@@ -158,7 +155,7 @@ import DropZone from '../../components/DropZone.astro';
     }
 
     processBtn?.addEventListener('click', async () => {
-      if (!files.length) { toast('Pilih gambar dulu', 'error'); return; }
+      if (!files.length) { showToast('Pilih gambar dulu', 'error'); return; }
       processBtn.disabled = true;
       processBtn.textContent = '⏳ Memproses...';
       resultsGrid?.classList.add('hidden');
@@ -193,7 +190,7 @@ import DropZone from '../../components/DropZone.astro';
           } catch { continue; }
         }
 
-        if (!processed) { toast('Semua file gagal diproses', 'error'); return; }
+        if (!processed) { showToast('Semua file gagal diproses', 'error'); return; }
 
         const content = await zip.generateAsync({ type: 'blob' });
         const a = document.createElement('a');
@@ -212,9 +209,9 @@ import DropZone from '../../components/DropZone.astro';
           </div>`
         ).join('');
 
-        toast(`✅ ${processed} gambar berhasil di-resize & di-zip!`);
+        showToast(`✅ ${processed} gambar berhasil di-resize & di-zip!`);
       } catch {
-        toast('Gagal memproses — library ZIP tidak termuat?', 'error');
+        showToast('Gagal memproses — library ZIP tidak termuat?', 'error');
       } finally {
         processBtn.disabled = false;
         processBtn.textContent = '⚡ Resize & ZIP';

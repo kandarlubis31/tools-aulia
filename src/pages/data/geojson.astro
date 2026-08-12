@@ -50,9 +50,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const geojsonInfo = document.getElementById('geojson-info')!;
     const mapDiv = document.getElementById('map')!;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let map: any = null;
     let geoLayer: any = null;
 
@@ -98,9 +95,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const features = data.type === 'FeatureCollection' ? data.features : [data];
         geojsonInfo.textContent = `${features.length} feature(s)`;
         geojsonInfo.classList.remove('hidden');
-        toast('GeoJSON ditampilkan!');
+        showToast('GeoJSON ditampilkan!');
       } catch (e: any) {
-        toast('GeoJSON tidak valid: ' + e.message, 'error');
+        showToast('GeoJSON tidak valid: ' + e.message, 'error');
       }
     }
 
@@ -113,7 +110,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         geojsonInput.value = text;
         geojsonInput.classList.remove('hidden');
       } catch {
-        toast('JSON tidak valid', 'error');
+        showToast('JSON tidak valid', 'error');
       }
     }
 

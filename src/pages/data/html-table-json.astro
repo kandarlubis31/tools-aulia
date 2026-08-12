@@ -22,8 +22,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  const { showToast, _tToast } = window as any;
-
   document.getElementById('parse-btn').addEventListener('click', () => {
     const html = document.getElementById('html-input').value;
     if (!html.trim()) { showToast?.(_tToast?.('Paste HTML tabel dulu','Paste HTML table first'),'error'); return; }

@@ -51,9 +51,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const countSelect = document.getElementById('count-select') as HTMLSelectElement;
     const resultsArea = document.getElementById('results-area')!;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     function latencyColor(ms: number): string {
       if (ms < 20) return 'text-emerald-500';
       if (ms < 50) return 'text-lime-500';
@@ -111,7 +108,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     pingBtn.addEventListener('click', async () => {
       const hosts = hostInput.value.split(',').map(h => h.trim()).filter(Boolean);
-      if (!hosts.length) { toast('Masukkan host dulu', 'error'); return; }
+      if (!hosts.length) { showToast('Masukkan host dulu', 'error'); return; }
 
       pingBtn.disabled = true;
       pingBtn.innerHTML = '⏳ …';

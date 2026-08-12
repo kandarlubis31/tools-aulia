@@ -54,8 +54,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       let options: string[] = ['Option 1', 'Option 2', 'Option 3'];
       let currentRotation = 0;
       let isSpinning = false;
@@ -137,12 +135,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const value = input.value.trim();
         
         if (!value) {
-          toast('Masukkan opsi!', 'error');
+          showToast('Masukkan opsi!', 'error');
           return;
         }
 
         if (options.length >= 10) {
-          toast('Maksimal 10 opsi!', 'error');
+          showToast('Maksimal 10 opsi!', 'error');
           return;
         }
 
@@ -150,7 +148,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         input.value = '';
         renderOptions();
         renderWheel();
-        toast('Opsi ditambahkan!', 'success');
+        showToast('Opsi ditambahkan!', 'success');
       });
 
       // Enter key
@@ -175,7 +173,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       // Spin wheel
       document.getElementById('spin-btn')?.addEventListener('click', () => {
         if (isSpinning || options.length < 2) {
-          if (options.length < 2) toast('Minimal 2 opsi!', 'error');
+          if (options.length < 2) showToast('Minimal 2 opsi!', 'error');
           return;
         }
 
@@ -201,7 +199,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           document.getElementById('wheel-result')?.classList.remove('hidden');
           
           isSpinning = false;
-          toast(`Hasil: ${result}!`, 'success');
+          showToast(`Hasil: ${result}!`, 'success');
         }, 1100);
       });
 

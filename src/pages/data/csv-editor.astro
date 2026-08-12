@@ -74,9 +74,6 @@ import DropZone from '../../components/DropZone.astro';
     const exportBtn = document.getElementById('export-btn');
     const dimLabel = document.getElementById('dim-label');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let data: string[][] = [];
     let selectedRow = -1;
 
@@ -176,7 +173,7 @@ import DropZone from '../../components/DropZone.astro';
     }
 
     function loadRows(rows: string[][]) {
-      if (!rows.length) { toast('CSV kosong', 'error'); return; }
+      if (!rows.length) { showToast('CSV kosong', 'error'); return; }
       data = rows;
       selectedRow = -1;
       render();
@@ -196,19 +193,19 @@ import DropZone from '../../components/DropZone.astro';
     fileInput?.addEventListener('change', async () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (f.size > 10 * 1024 * 1024) { toast('File maksimal 10 MB', 'error'); return; }
+      if (f.size > 10 * 1024 * 1024) { showToast('File maksimal 10 MB', 'error'); return; }
       const text = await f.text();
       const delim = f.name.endsWith('.tsv') ? '\t' : ',';
       loadRows(parseCsv(text, delim));
-      toast('CSV dimuat!');
+      showToast('CSV dimuat!');
     });
 
     pasteBtn?.addEventListener('click', async () => {
       try {
         const text = await navigator.clipboard.readText();
-        if (text.trim()) { loadRows(parseCsv(text)); toast('CSV dari clipboard dimuat!'); }
+        if (text.trim()) { loadRows(parseCsv(text)); showToast('CSV dari clipboard dimuat!'); }
       } catch {
-        toast('Tidak bisa akses clipboard', 'error');
+        showToast('Tidak bisa akses clipboard', 'error');
       }
     });
 
@@ -228,7 +225,7 @@ import DropZone from '../../components/DropZone.astro';
       data.splice(selectedRow, 1);
       selectedRow = -1;
       render();
-      toast('Baris dihapus');
+      showToast('Baris dihapus');
     });
 
     searchInput?.addEventListener('input', render);
@@ -239,7 +236,7 @@ import DropZone from '../../components/DropZone.astro';
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
       a.download = 'hasil.csv';
       a.click();
-      toast('CSV berhasil di-export!');
+      showToast('CSV berhasil di-export!');
     });
   });
 </script>

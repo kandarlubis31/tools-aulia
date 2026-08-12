@@ -52,8 +52,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       function splitSentences(text: string): string[] {
         return text.split(/[.!?]+/).filter(s => s.trim().length > 0).map(s => s.trim());
       }
@@ -104,7 +102,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const numSentences = parseInt((document.getElementById('sentence-count') as HTMLInputElement)?.value) || 3;
 
         if (!text || text.trim().length < 50) {
-          toast('Masukkan teks minimal 50 karakter!', 'error');
+          showToast('Masukkan teks minimal 50 karakter!', 'error');
           return;
         }
 
@@ -116,14 +114,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         document.getElementById('reduction')!.textContent = `${Math.round((1 - summary.length / text.length) * 100)}%`;
         document.getElementById('result')?.classList.remove('hidden');
         
-        toast('Teks diringkas!', 'success');
+        showToast('Teks diringkas!', 'success');
       });
 
       document.getElementById('copy-result')?.addEventListener('click', () => {
         const summary = document.getElementById('summary-output')?.textContent;
         if (summary) {
           navigator.clipboard.writeText(summary);
-          toast('Ringkasan disalin!', 'success');
+          showToast('Ringkasan disalin!', 'success');
         }
       });
     });

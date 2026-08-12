@@ -68,8 +68,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       const charsets: Record<string, string> = {
         standard: ' .:-=+*#%@',
         blocks: ' ░▒▓█',
@@ -100,7 +98,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       function handleFile(file: File) {
         if (!file.type.startsWith('image/')) {
-          toast('File harus gambar!', 'error');
+          showToast('File harus gambar!', 'error');
           return;
         }
 
@@ -128,7 +126,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       // Convert button
       document.getElementById('convert-btn')?.addEventListener('click', () => {
         if (!imageData) {
-          toast('Upload gambar terlebih dahulu!', 'error');
+          showToast('Upload gambar terlebih dahulu!', 'error');
           return;
         }
 
@@ -184,7 +182,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           }
         }
         document.getElementById('ascii-container')?.classList.remove('hidden');
-        toast('ASCII art dibuat!', 'success');
+        showToast('ASCII art dibuat!', 'success');
       });
 
       // Copy ASCII
@@ -192,7 +190,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const output = document.getElementById('ascii-output');
         if (output) {
           navigator.clipboard.writeText(output.textContent || '');
-          toast('ASCII disalin!', 'success');
+          showToast('ASCII disalin!', 'success');
         }
       });
     });

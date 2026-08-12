@@ -63,9 +63,6 @@ import DropZone from '../../components/DropZone.astro';
     const downloadBtn = document.getElementById('download-btn');
     const flattenInput = document.getElementById('flatten') as HTMLInputElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let originalBytes: ArrayBuffer | null = null;
     let pdfFile: File | null = null;
 
@@ -82,10 +79,10 @@ import DropZone from '../../components/DropZone.astro';
       const f = fileInput.files?.[0];
       if (!f) return;
       if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
-        toast('Pilih file PDF', 'error');
+        showToast('Pilih file PDF', 'error');
         return;
       }
-      if (f.size > 50 * 1024 * 1024) { toast('Ukuran maksimal 50 MB', 'error'); return; }
+      if (f.size > 50 * 1024 * 1024) { showToast('Ukuran maksimal 50 MB', 'error'); return; }
 
       pdfFile = f;
       originalBytes = await f.arrayBuffer();
@@ -193,7 +190,7 @@ import DropZone from '../../components/DropZone.astro';
       a.href = URL.createObjectURL(new Blob([out], { type: 'application/pdf' }));
       a.download = pdfFile!.name.replace(/\.pdf$/i, '') + '-terisi.pdf';
       a.click();
-      toast('PDF berhasil diisi!');
+      showToast('PDF berhasil diisi!');
     });
 
     // ---- Page previews via pdf.js ----

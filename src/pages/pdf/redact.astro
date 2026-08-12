@@ -55,8 +55,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       let pdfDoc: any = null;
       let currentPage = 1;
       let totalPages = 0;
@@ -86,7 +84,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       async function loadPDF(file: File) {
         const pdfjsLib = await (window as any).waitForCdnLib?.('pdfjs', { maxRetries: 40 });
-        if (!pdfjsLib) { toast('Gagal load PDF library', 'error'); return; }
+        if (!pdfjsLib) { showToast('Gagal load PDF library', 'error'); return; }
 
         const arrayBuffer = await file.arrayBuffer();
         pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -103,7 +101,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         document.getElementById('redact-btn')?.classList.remove('hidden');
 
         await renderPage(currentPage);
-        toast('PDF dimuat!', 'success');
+        showToast('PDF dimuat!', 'success');
       }
 
       async function renderPage(pageNum: number) {
@@ -176,7 +174,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           ctx.fillStyle = '#000000';
           ctx.fillRect(x / 1.5, y / 1.5, w / 1.5, h / 1.5);
           
-          toast('Area ditambahkan!', 'success');
+          showToast('Area ditambahkan!', 'success');
         }
       });
 
@@ -197,7 +195,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       // Download (simplified - just saves the canvas as image for now)
       document.getElementById('download-btn')?.addEventListener('click', () => {
-        toast('PDF dengan sensor akan didownload', 'success');
+        showToast('PDF dengan sensor akan didownload', 'success');
         // In production, you'd use pdf-lib to actually modify the PDF
       });
     });

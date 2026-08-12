@@ -63,9 +63,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const downloadXlsx = document.getElementById('download-xlsx') as HTMLButtonElement;
     const downloadCsv = document.getElementById('download-csv') as HTMLButtonElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let tableData: string[][] = [];
 
     function setProgress(pct: number, msg: string) {
@@ -184,7 +181,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     downloadCsv.addEventListener('click', () => downloadBlob(toCsv(), 'text/csv', 'csv'));
     downloadXlsx.addEventListener('click', async () => {
-      toast('Download sebagai CSV dulu (XLSX butuh SheetJS CDN - coming soon)');
+      showToast('Download sebagai CSV dulu (XLSX butuh SheetJS CDN - coming soon)');
       downloadBlob(toCsv(), 'text/csv', 'csv');
     });
   });

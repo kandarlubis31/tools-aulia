@@ -63,9 +63,6 @@ import DropZone from '../../components/DropZone.astro';
     const errorBox = document.getElementById('error-box');
     const downloadBtn = document.getElementById('download-btn');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let resultText = '';
     let resultExt = 'json';
     let resultName = 'hasil';
@@ -82,12 +79,12 @@ import DropZone from '../../components/DropZone.astro';
     fileInput?.addEventListener('change', async () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (f.size > 5 * 1024 * 1024) { toast('File maksimal 5 MB', 'error'); return; }
+      if (f.size > 5 * 1024 * 1024) { showToast('File maksimal 5 MB', 'error'); return; }
       const text = await f.text();
       const ext = f.name.split('.').pop()?.toLowerCase() || '';
 
       const ready = await window.waitForCdnLib?.('jsyaml', { maxRetries: 40 });
-      if (!ready) { toast('Library YAML gagal dimuat, cek koneksi', 'error'); return; }
+      if (!ready) { showToast('Library YAML gagal dimuat, cek koneksi', 'error'); return; }
 
       try {
         let result: string;
@@ -113,7 +110,7 @@ import DropZone from '../../components/DropZone.astro';
         converter?.classList.remove('hidden');
         converter?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         errorBox!.classList.add('hidden');
-        toast('Konversi berhasil!');
+        showToast('Konversi berhasil!');
       } catch (e: any) {
         errorBox!.textContent = `⚠ ${e.message}`;
         errorBox!.classList.remove('hidden');

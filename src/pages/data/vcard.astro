@@ -56,8 +56,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       let vcardContent = '';
 
       document.getElementById('generate-btn')?.addEventListener('click', () => {
@@ -69,7 +67,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const address = (document.getElementById('vcard-address') as HTMLTextAreaElement)?.value;
 
         if (!name) {
-          toast('Masukkan nama!', 'error');
+          showToast('Masukkan nama!', 'error');
           return;
         }
 
@@ -90,7 +88,7 @@ END:VCARD`;
 
         document.getElementById('vcard-output')!.textContent = vcardContent;
         document.getElementById('result')?.classList.remove('hidden');
-        toast('vCard digenerate!', 'success');
+        showToast('vCard digenerate!', 'success');
       });
 
       document.getElementById('download-btn')?.addEventListener('click', () => {
@@ -102,7 +100,7 @@ END:VCARD`;
         link.download = 'contact.vcf';
         link.click();
         URL.revokeObjectURL(url);
-        toast('vCard didownload!', 'success');
+        showToast('vCard didownload!', 'success');
       });
     });
   </script>

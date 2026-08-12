@@ -71,9 +71,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const msgInput = document.getElementById('msg-input') as HTMLInputElement;
     const sendBtn = document.getElementById('send-msg-btn') as HTMLButtonElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let ws: WebSocket | null = null;
     let msgIdx = 0;
 
@@ -121,9 +118,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       }
 
       const url = wsUrl.value.trim();
-      if (!url) { toast('Masukkan URL WebSocket', 'error'); return; }
+      if (!url) { showToast('Masukkan URL WebSocket', 'error'); return; }
       if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
-        toast('URL harus diawali ws:// atau wss://', 'error'); return;
+        showToast('URL harus diawali ws:// atau wss://', 'error'); return;
       }
 
       msgIdx = 0;

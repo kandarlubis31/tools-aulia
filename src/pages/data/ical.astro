@@ -84,9 +84,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const startTime = document.getElementById('ev-start-time') as HTMLInputElement;
     const endTime = document.getElementById('ev-end-time') as HTMLInputElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     function esc(s: string): string {
       return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
     }
@@ -114,7 +111,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     function generate(): string {
       const title = (document.getElementById('ev-title') as HTMLInputElement).value.trim();
-      if (!title) { toast('Judul event wajib diisi', 'error'); return ''; }
+      if (!title) { showToast('Judul event wajib diisi', 'error'); return ''; }
       const loc = (document.getElementById('ev-loc') as HTMLInputElement).value.trim();
       const desc = (document.getElementById('ev-desc') as HTMLTextAreaElement).value.trim();
       const reminder = parseInt((document.getElementById('ev-reminder') as HTMLSelectElement).value) || 0;
@@ -124,7 +121,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       let dtStart = toIcsDate(startDate, allday ? null : startTime.value);
       let dtEnd = toIcsDate(endDate, allday ? null : endTime.value);
-      if (!dtStart || !dtEnd) { toast('Tanggal tidak valid', 'error'); return ''; }
+      if (!dtStart || !dtEnd) { showToast('Tanggal tidak valid', 'error'); return ''; }
       if (allday && dtStart === dtEnd) {
         // RFC 5545: DTEND all-day bersifat exclusive (+1 hari)
         const d = new Date(endDate + 'T00:00:00');
@@ -174,7 +171,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
       a.download = title.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') + '.ics';
       a.click();
-      toast('File .ics berhasil di-download!');
+      showToast('File .ics berhasil di-download!');
     });
 
     copyBtn?.addEventListener('click', async () => {
@@ -182,9 +179,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       if (!ics) return;
       try {
         await navigator.clipboard.writeText(ics);
-        toast('Teks .ics tersalin!');
+        showToast('Teks .ics tersalin!');
       } catch {
-        toast('Gagal menyalin', 'error');
+        showToast('Gagal menyalin', 'error');
       }
     });
 

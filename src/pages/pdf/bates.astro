@@ -52,7 +52,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const digitsSelect = document.getElementById('digits-select') as HTMLSelectElement;
     const startInput = document.getElementById('start-input') as HTMLInputElement;
 
-    const toast = (m: string, t: 'success'|'error'='success') => window.showToast?.(window._tToast?window._tToast(m):m,t);
     let pdfBytes: Uint8Array|null = null, pdfFile: File|null = null, position = 'bottom-right';
 
     async function loadPdfLib() {
@@ -89,7 +88,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       });
       pdfBytes=await doc.save();
       downloadBtn.classList.remove('hidden');applyBtn.innerHTML='✅ Done';applyBtn.disabled=false;
-      toast('Bates numbers applied!');
+      showToast('Bates numbers applied!');
     });
 
     downloadBtn.addEventListener('click',()=>{

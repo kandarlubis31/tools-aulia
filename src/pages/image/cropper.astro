@@ -71,9 +71,6 @@ import DropZone from '../../components/DropZone.astro';
     const resetCropBtn = document.getElementById('reset-crop-btn');
     const cropInfo = document.getElementById('crop-info');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let img: HTMLImageElement | null = null;
     let fileName = 'image.png';
     let rotation = 0; // 0|90|180|270
@@ -98,7 +95,7 @@ import DropZone from '../../components/DropZone.astro';
     fileInput?.addEventListener('change', () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (!f.type.startsWith('image/')) { toast('File harus berupa gambar', 'error'); return; }
+      if (!f.type.startsWith('image/')) { showToast('File harus berupa gambar', 'error'); return; }
       fileName = f.name;
       const url = URL.createObjectURL(f);
       const image = new Image();
@@ -380,7 +377,7 @@ import DropZone from '../../components/DropZone.astro';
       a.href = out.toDataURL('image/png');
       a.download = fileName.replace(/\.[^.]+$/, '') + '-cropped.png';
       a.click();
-      toast('Gambar berhasil di-crop!');
+      showToast('Gambar berhasil di-crop!');
     });
   });
 </script>

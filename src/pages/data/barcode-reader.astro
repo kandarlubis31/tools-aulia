@@ -63,9 +63,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const resultText = document.getElementById('result-text')!;
     const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let stream: MediaStream | null = null;
     let scanInterval: number | null = null;
 
@@ -76,10 +73,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     // Try native BarcodeDetector API first
     async function detectFromCanvas(canvas: HTMLCanvasElement): Promise<string | null> {
-      // @ts-ignore
       if ('BarcodeDetector' in window) {
         try {
-          // @ts-ignore
+          const BarcodeDetector = (window as any).BarcodeDetector;
           const detector = new BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39', 'data_matrix'] });
           const barcodes = await detector.detect(canvas);
           if (barcodes.length) return barcodes[0].rawValue;
@@ -110,7 +106,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           }
         }, 500);
       } catch (e: any) {
-        toast('Kamera tidak tersedia: ' + e.message, 'error');
+        showToast('Kamera tidak tersedia: ' + e.message, 'error');
       }
     }
 
@@ -135,7 +131,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           if (result) {
             showResult(result);
           } else {
-            toast('Barcode tidak terdeteksi di gambar', 'error');
+            showToast('Barcode tidak terdeteksi di gambar', 'error');
           }
         };
       };
@@ -156,8 +152,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     copyBtn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(resultText.textContent || '');
-        toast('Hasil tersalin!');
-      } catch { toast('Gagal menyalin', 'error'); }
+        showToast('Hasil tersalin!');
+      } catch { showToast('Gagal menyalin', 'error'); }
     });
   });
 </script>

@@ -57,9 +57,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const sampleBtn = document.getElementById('sample-btn');
     const upperToggle = document.getElementById('uppercase-toggle') as HTMLInputElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     const KEYWORDS = new Set([
       'SELECT', 'FROM', 'WHERE', 'GROUP', 'BY', 'ORDER', 'HAVING', 'LIMIT', 'OFFSET',
       'JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'OUTER', 'CROSS', 'ON', 'AS', 'AND', 'OR', 'NOT', 'IN', 'EXISTS',
@@ -248,16 +245,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       if (!outputArea!.textContent) return;
       try {
         await navigator.clipboard.writeText(outputArea!.textContent);
-        toast('Query tersalin!');
+        showToast('Query tersalin!');
       } catch {
-        toast('Gagal menyalin', 'error');
+        showToast('Gagal menyalin', 'error');
       }
     });
 
     sampleBtn?.addEventListener('click', () => {
       inputArea.value = `select u.id,u.name,count(o.id) as total_orders from users u left join orders o on o.user_id=u.id and o.status='paid' where u.created_at>='2025-01-01' and u.city in ('Jakarta','Bandung') group by u.id,u.name having count(o.id)>=3 order by total_orders desc limit 10;`;
       run();
-      toast('Contoh dimuat!');
+      showToast('Contoh dimuat!');
     });
   });
 </script>

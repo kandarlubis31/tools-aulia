@@ -72,9 +72,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const preview = document.getElementById('color-preview')!;
     const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let updating = false;
 
     function rgbToHex(r: number, g: number, b: number): string {
@@ -169,8 +166,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     copyBtn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText('#' + hexInput.value);
-        toast('HEX tersalin!');
-      } catch { toast('Gagal menyalin', 'error'); }
+        showToast('HEX tersalin!');
+      } catch { showToast('Gagal menyalin', 'error'); }
     });
   });
 </script>

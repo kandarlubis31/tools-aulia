@@ -65,9 +65,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const sampleBtn = document.getElementById('sample-btn');
     const clearBtn = document.getElementById('clear-btn');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     const SAMPLE = {
       user: { id: 1, name: 'Budi', email: 'budi@example.com', isActive: true, tags: ['admin', 'dev'], address: { city: 'Jakarta', country: 'Indonesia', geo: { lat: -6.2, lng: 106.8 } } },
       orders: [{ id: 'A1', total: 150000, items: [{ sku: 'X1', qty: 2, price: 75000 }] }],
@@ -165,7 +162,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     copyBtn?.addEventListener('click', () => {
       if (!tsOutput?.textContent || tsOutput.textContent.startsWith('//')) return;
       navigator.clipboard.writeText(tsOutput.textContent);
-      toast('Kode TypeScript disalin!');
+      showToast('Kode TypeScript disalin!');
     });
 
     downloadBtn?.addEventListener('click', () => {

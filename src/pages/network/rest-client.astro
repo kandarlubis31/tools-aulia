@@ -91,9 +91,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const responseBody = document.getElementById('response-body');
     const copyRespBtn = document.getElementById('copy-resp-btn');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let rawResponse = '';
 
     // ---- helpers ----
@@ -212,7 +209,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           saved.splice(idx, 1);
           localStorage.setItem(SAVED_KEY, JSON.stringify(saved));
           renderSaved();
-          toast('Request dihapus');
+          showToast('Request dihapus');
         });
       });
     }
@@ -227,14 +224,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     saveBtn?.addEventListener('click', () => {
       const url = urlInput.value.trim();
-      if (!url) { toast('URL wajib diisi', 'error'); return; }
+      if (!url) { showToast('URL wajib diisi', 'error'); return; }
       const saved = readSaved();
       let name: string;
       try { name = new URL(url).hostname || url; } catch { name = url.split('/')[2] || url; }
       saved.unshift({ name, method: methodSelect.value, url, headers: getHeaders(), body: bodyArea.value, savedAt: Date.now() });
       localStorage.setItem(SAVED_KEY, JSON.stringify(saved.slice(0, 30)));
       renderSaved();
-      toast('Request tersimpan!');
+      showToast('Request tersimpan!');
     });
 
     // ---- Send ----
@@ -243,11 +240,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     sendBtn?.addEventListener('click', async () => {
       const rawUrl = urlInput.value.trim();
-      if (!rawUrl) { toast('URL wajib diisi', 'error'); return; }
+      if (!rawUrl) { showToast('URL wajib diisi', 'error'); return; }
       const url = substitute(rawUrl);
       let parsed: URL;
-      try { parsed = new URL(url); } catch { toast('URL tidak valid (cek env var)', 'error'); return; }
-      if (!/^https?:$/.test(parsed.protocol)) { toast('Hanya http/https', 'error'); return; }
+      try { parsed = new URL(url); } catch { showToast('URL tidak valid (cek env var)', 'error'); return; }
+      if (!/^https?:$/.test(parsed.protocol)) { showToast('Hanya http/https', 'error'); return; }
 
       const method = methodSelect.value;
       const headers: Record<string, string> = {};
@@ -299,9 +296,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       if (!rawResponse) return;
       try {
         await navigator.clipboard.writeText(rawResponse);
-        toast('Response tersalin!');
+        showToast('Response tersalin!');
       } catch {
-        toast('Gagal menyalin', 'error');
+        showToast('Gagal menyalin', 'error');
       }
     });
 

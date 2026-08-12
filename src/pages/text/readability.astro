@@ -54,8 +54,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <script>
     document.addEventListener('astro:page-load', () => {
-      const toast = (msg: string, type?: string) => (window as any).showToast?.((window as any)._tToast ? (window as any)._tToast(msg) : msg, type);
-
       function countSyllables(word: string): number {
         word = word.toLowerCase().replace(/[^a-z]/g, '');
         if (word.length <= 3) return 1;
@@ -110,11 +108,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       document.getElementById('analyze-btn')?.addEventListener('click', () => {
         const text = (document.getElementById('text-input') as HTMLTextAreaElement)?.value;
         if (!text || text.trim().length < 10) {
-          toast('Masukkan minimal 10 karakter!', 'error');
+          showToast('Masukkan minimal 10 karakter!', 'error');
           return;
         }
         analyzeText(text);
-        toast('Analisis selesai!', 'success');
+        showToast('Analisis selesai!', 'success');
       });
     });
   </script>

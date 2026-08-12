@@ -87,9 +87,6 @@ import DropZone from '../../components/DropZone.astro';
     const decryptBtn = document.getElementById('decrypt-btn') as HTMLButtonElement;
     const statusArea = document.getElementById('status-area');
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let encFile: File | null = null;
     let decFile: File | null = null;
 
@@ -114,8 +111,8 @@ import DropZone from '../../components/DropZone.astro';
       });
     }
 
-    wireDropZone(encDrop, encInput, (f) => { encFile = f; toast(`📄 ${f.name} siap dienkripsi`); }, 'violet');
-    wireDropZone(decDrop, decInput, (f) => { decFile = f; toast(`📄 ${f.name} siap didekripsi`); }, 'emerald');
+    wireDropZone(encDrop, encInput, (f) => { encFile = f; showToast(`📄 ${f.name} siap dienkripsi`); }, 'violet');
+    wireDropZone(decDrop, decInput, (f) => { decFile = f; showToast(`📄 ${f.name} siap didekripsi`); }, 'emerald');
 
     function setTab(encrypt: boolean) {
       encryptPanel?.classList.toggle('hidden', !encrypt);
@@ -165,10 +162,10 @@ import DropZone from '../../components/DropZone.astro';
     }
 
     encryptBtn?.addEventListener('click', async () => {
-      if (!encFile) { toast('Pilih file dulu', 'error'); return; }
+      if (!encFile) { showToast('Pilih file dulu', 'error'); return; }
       const pwd = encPassword.value;
-      if (pwd.length < 4) { toast('Password minimal 4 karakter', 'error'); return; }
-      if (pwd !== encConfirm.value) { toast('Password tidak cocok', 'error'); return; }
+      if (pwd.length < 4) { showToast('Password minimal 4 karakter', 'error'); return; }
+      if (pwd !== encConfirm.value) { showToast('Password tidak cocok', 'error'); return; }
 
       encryptBtn.disabled = true;
       setStatus('Mengenkripsi dengan AES-256-GCM...', 'info', true);
@@ -194,19 +191,19 @@ import DropZone from '../../components/DropZone.astro';
 
         downloadBlob(new Blob([out], { type: 'application/octet-stream' }), encFile.name + '.taenc');
         setStatus('✅ File terenkripsi! Download dimulai.', 'success');
-        toast('File berhasil dienkripsi!');
+        showToast('File berhasil dienkripsi!');
       } catch {
         setStatus('❌ Gagal mengenkripsi file', 'error');
-        toast('Enkripsi gagal', 'error');
+        showToast('Enkripsi gagal', 'error');
       } finally {
         encryptBtn.disabled = false;
       }
     });
 
     decryptBtn?.addEventListener('click', async () => {
-      if (!decFile) { toast('Pilih file .taenc dulu', 'error'); return; }
+      if (!decFile) { showToast('Pilih file .taenc dulu', 'error'); return; }
       const pwd = decPassword.value;
-      if (!pwd) { toast('Password kosong', 'error'); return; }
+      if (!pwd) { showToast('Password kosong', 'error'); return; }
 
       decryptBtn.disabled = true;
       setStatus('Mendekripsi file...', 'info', true);
@@ -228,10 +225,10 @@ import DropZone from '../../components/DropZone.astro';
         const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
         downloadBlob(new Blob([plaintext], { type: 'application/octet-stream' }), name);
         setStatus('✅ File berhasil didekripsi!', 'success');
-        toast('File berhasil didekripsi!');
+        showToast('File berhasil didekripsi!');
       } catch {
         setStatus('❌ Gagal mendekripsi — password salah atau file rusak', 'error');
-        toast('Dekripsi gagal: password salah atau file rusak', 'error');
+        showToast('Dekripsi gagal: password salah atau file rusak', 'error');
       } finally {
         decryptBtn.disabled = false;
       }

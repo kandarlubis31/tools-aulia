@@ -77,9 +77,6 @@ import DropZone from '../../components/DropZone.astro';
     const exportBtn = document.getElementById('export-btn');
     const previewAudio = document.getElementById('preview-audio') as HTMLAudioElement;
 
-    const toast = (msg: string, type: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-
     let buffer: AudioBuffer | null = null;
     let peaks: number[] = [];
     let duration = 0;
@@ -101,10 +98,10 @@ import DropZone from '../../components/DropZone.astro';
       const f = fileInput.files?.[0];
       if (!f) return;
       if (!f.type.startsWith('audio/') && !/\.(mp3|wav|ogg|m4a|flac)$/i.test(f.name)) {
-        toast('File harus berupa audio', 'error');
+        showToast('File harus berupa audio', 'error');
         return;
       }
-      if (f.size > 60 * 1024 * 1024) { toast('Ukuran maksimal 60 MB', 'error'); return; }
+      if (f.size > 60 * 1024 * 1024) { showToast('Ukuran maksimal 60 MB', 'error'); return; }
 
       try {
         const { decodeAudioFile, computePeaks, drawWaveform } = await import('../../composables/useAudioWav');
@@ -123,7 +120,7 @@ import DropZone from '../../components/DropZone.astro';
         drawWaveform(canvas, peaks, { color: '#c4b5fd', progressColor: '#8b5cf6' });
         layout();
       } catch {
-        toast('Format audio tidak didukung', 'error');
+        showToast('Format audio tidak didukung', 'error');
       }
     });
 
@@ -182,7 +179,7 @@ import DropZone from '../../components/DropZone.astro';
       previewAudio!.src = URL.createObjectURL(sliceBuffer(buffer, start, end));
       previewAudio!.classList.remove('hidden');
       previewAudio!.play();
-      toast('Memutar hasil potongan…');
+      showToast('Memutar hasil potongan…');
     });
 
     exportBtn?.addEventListener('click', async () => {
@@ -194,7 +191,7 @@ import DropZone from '../../components/DropZone.astro';
       a.href = URL.createObjectURL(wav);
       a.download = fileName!.textContent!.replace(/\.[^.]+$/, '') + '-trimmed.wav';
       a.click();
-      toast('Audio berhasil dipotong!');
+      showToast('Audio berhasil dipotong!');
     });
 
     function sliceBuffer(buf: AudioBuffer, s: number, e: number): AudioBuffer {
