@@ -60,7 +60,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 </BaseLayout>
 
-<script is:inline>
+<script>
   document.addEventListener('astro:page-load', () => {
     const nameInput = document.getElementById('name-input') as HTMLInputElement;
     const eventInput = document.getElementById('event-input') as HTMLInputElement;
@@ -174,8 +174,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     });
 
     // Default active
-    (document.querySelector('.border-color-btn[data-color="#1e40af"]') as HTMLElement)
-      ?.style.outline = '3px solid #1e40af';
+    const defaultBtn = document.querySelector('.border-color-btn[data-color="#1e40af"]');
+    if (defaultBtn) defaultBtn.style.outline = '3px solid #1e40af';
     update();
   });
 </script>

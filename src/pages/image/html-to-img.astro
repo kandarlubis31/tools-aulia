@@ -334,7 +334,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     function renderPreview() {
       const code = codeInput.value.trim();
       const width = parseInt(widthInput.value) || 800;
-      const height = heightInput.value === 'auto' ? 'auto' : parseInt(heightInput.value);
+      const parsedH = parseInt(heightInput.value);
+      const height = heightInput.value === 'auto' || isNaN(parsedH) ? 'auto' : parsedH;
 
       if (!code) {
         previewContent.innerHTML = '';
@@ -374,13 +375,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       doc.write(`<!DOCTYPE html><html><head><style>${CSS_RESET}</style></head><body>${code}</body></html>`);
       doc.close();
 
-      // Auto-height: baca scrollHeight setelah doc.close().
-      if (height === 'auto' && doc.body) {
-        const bodyHeight = doc.body.scrollHeight;
-        const htmlHeight = doc.documentElement.scrollHeight;
-        const finalHeight = Math.max(bodyHeight, htmlHeight, 400);
+      // Auto-height: baca scrollHeight setelah doc.close(), lalu ukur ulang saat iframe selesai
+      // load (mencakup font/gambar async yang belum siap saat doc.close()).
+      const autoResize = () => {
+        const doc2 = iframe.contentWindow?.document;
+        if (!doc2?.body) return;
+        const finalHeight = Math.max(doc2.body.scrollHeight, doc2.documentElement.scrollHeight, 400);
         iframe.style.height = finalHeight + 'px';
-      }
+        if (appliedScale < 1) previewContent.style.height = (finalHeight * appliedScale) + 'px';
+      };
+      if (height === 'auto' && doc.body) autoResize();
+      if (height === 'auto') iframe.addEventListener('load', autoResize);
 
       // Scale: adjust preview-content wrapper height to match visual scale
       if (appliedScale < 1) {
@@ -584,7 +589,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         if (!iframe) return;
         if (!iframe.contentWindow || !iframe.contentWindow.document.body) return;
         
-        const restoreShare = window.showButtonSpinner(shareBtn as HTMLButtonElement, '⏳');
+        const restoreShare = window.showButtonSpinner(shareBtn, '⏳');
 
         const shareReady = await window.waitForCdnLib('html2canvas', { maxRetries: 5 });
         if (!shareReady) {

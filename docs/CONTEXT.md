@@ -32,10 +32,13 @@
 - `src/data/tools.ts` — Tool registry (170 entries: 168 tools + PDF hub + 1 index)
 - `src/i18n/translations.ts` — All i18n keys (tool, header, UI) — ~2300+ lines
 - `src/layouts/BaseLayout.astro` — Global layout + nav + footer + i18n toggle
+- `src/pages/og/[slug].png.ts` — Build-time OG image generator (231 PNG statis via resvg-js, font TTF di `src/assets/fonts/`)
+- `scripts/woff-to-ttf.mjs` — Converter WOFF → TTF (resvg-js tidak bisa load WOFF)
 - `src/styles/global.css` — Tailwind + custom CSS (card-grid, hover-lift, content-visibility)
 - `vercel.json` — CSP headers + Permissions-Policy
 - `src/data/new-tools.ts` — New tools list (110 entries, homepage shows 6 newest)
 - `scripts/check-client-side.mjs` — Guardrail: ensures no server-side processing
+- `scripts/check-inline-scripts.mjs` — Guardrail: blocks TS/bare-import in attributed `<script>` (emitted raw) — runs in `prebuild`
 
 ### Composables (17)
 - `useClipboard.ts` — Copy to clipboard
@@ -116,7 +119,7 @@ Hero (compact: 8px padding, inline stats, no buttons)
 ## Testing
 
 - **Unit tests:** 43 tests (6 files) — vitest
-- **Guardrail:** `scripts/check-client-side.mjs` — verifies client-side processing
+- **Guardrail:** `scripts/check-client-side.mjs` (client-side only) + `scripts/check-inline-scripts.mjs` (inline scripts murni JS) — keduanya jalan di `prebuild`
 - **Build:** `pnpm astro build` → Vercel adapter (~28-55s, 330 precache entries, ~33.2MB; was 32.9MB + 6.4MB dead gif removed)
 - **CI:** Vercel auto-deploy on push to main
 
@@ -128,7 +131,11 @@ Hero (compact: 8px padding, inline stats, no buttons)
 - **Plan 100 Tools:** `docs/plan-new-tools.md` — ✅ COMPLETE (110 tools, 58 → 168)
 - **Plan 59 Tools:** `docs/plan-59-tools.md` — 🎉 COMPLETE (59/59, 168 → 227)
 - **Plan Improve:** `docs/plan-improve.md` — ✅ COMPLETE (Batch A: UX, Batch B: Quality)
-- **Plan v2 Polish:** `docs/plan-v2-polish.md` — 🚀 **Batch C+D DONE** (showcase, audit, tests 62, changelog+RSS, Umami AKTIF). Next: Batch E (OG images, share button, feedback)
+- **Plan v2 Polish:** `docs/plan-v2-polish.md` — 🎉 **ALL BATCHES COMPLETE** (C: showcase+audit+tests, D: lazy-load+analytics+changelog+RSS, E1: OG images, E2: share button, E3: feedback widget). 62 tests, Umami AKTIF, guardrail inline-script.
+- **OG Images (E1):** ✅ SELESAI — 231 PNG statis per-tool di-generate saat build, `og:image` otomatis per halaman, sitemap & precache bersih
+- **Bugfix JS-inline (Aug 2026):** ✅ SELESAI — TS syntax yang bocor ke `<script is:inline>` mematikan tool. Fix: html-to-img, certificate, BaseLayout (search modal + shortcut + scroll-reveal + error boundary), 7 halaman PDF (`<script type="module">` raw → `<script>` + static import pdf-lib), prabowo-countdown. **Aturan: Astro cuma bundle `<script>` TANPA atribut** — jangan pakai `type="module"`/`id`/`is:inline` kalau mau diproses esbuild
+- **Share Button (E2):** ✅ SELESAI — tombol "Bagikan" di ToolPageHeader (semua tool page): Web Share API + fallback copy URL, track event `share` via Umami
+- **Feedback Widget (E3):** ✅ SELESAI — tombol "🐛 Lapor Bug" floating di pojok kiri bawah → modal form → GitHub Issues pre-filled (deskripsi, halaman, user agent, timestamp), semua halaman via BaseLayout
 - **Analytics:** Umami Cloud aktif (website ID `e52b94c6...`) — page views + event `tool_use`
 - **B12-B17:** ✅ SELESAI (59 tools added)
 - **227 tools** — 12 kategori, 331 precache entries, `/showcase` (Top 20) + `/changelog` + `/rss.xml` pages
@@ -151,6 +158,7 @@ pnpm test
 
 # Guardrail check
 node scripts/check-client-side.mjs
+node scripts/check-inline-scripts.mjs   # inline scripts (is:inline/type=module) harus murni JS
 
 # Add new tool
 # 1. Add entry to src/data/tools.ts

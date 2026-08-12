@@ -24,7 +24,7 @@ interface Props {
 const { 
   pageTitle, 
   description: propDescription,
-  ogImage = "/og-image.png",
+  ogImage: ogImageProp = '',
   canonicalUrl,
   noIndex = false,
   pdfJs = false
@@ -32,6 +32,10 @@ const {
 
 const pathname = Astro.url.pathname;
 const currentPath = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname;
+
+// OG image (E1): dynamic per-page PNG from /og/[slug].png (e.g. /pdf/merge → /og/pdf-merge.png)
+// Pages can still override via the `ogImage` prop.
+const ogImage = ogImageProp || (currentPath === '/' ? '/og/home.png' : `/og/${currentPath.slice(1).replace(/\//g, '-')}.png`);
 
 // --- Analytics (D2): Umami, privacy-first ---
 // Website ID aktif (ToolsAulia). Override kapan pun via env var PUBLIC_UMAMI_WEBSITE_ID di Vercel.
@@ -226,6 +230,51 @@ if (isPdfRoot) {
   <button id="back-to-top" aria-label="Back to top" class="fixed bottom-6 right-6 z-[90] w-11 h-11 rounded-lg bg-matte-900 dark:bg-white text-white dark:text-matte-900 shadow-md flex items-center justify-center opacity-0 translate-y-4 pointer-events-none transition-all duration-150 hover:opacity-90">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
   </button>
+
+  <!-- Feedback Widget (E3): "🐛 Lapor Bug" button → modal → GitHub Issues -->
+  <button id="feedback-btn" aria-label="Lapor Bug" class="fixed bottom-6 left-6 z-[85] flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border shadow-lg hover:shadow-xl hover:border-amber-400/60 dark:hover:border-amber-500/30 hover:-translate-y-0.5 transition-all duration-200 text-xs font-semibold text-matte-600 dark:text-matte-300">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500 shrink-0"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/><line x1="12" y1="13" x2="12" y2="17"/><line x1="12" y1="9" x2="12.01" y2="9"/></svg>
+    <span data-i18n="feedback.button">🐛 Lapor Bug</span>
+  </button>
+
+  <!-- Feedback Modal -->
+  <div id="feedback-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 opacity-0 transition-opacity duration-200" role="dialog" aria-modal="true" aria-label="Lapor Bug">
+    <div class="bg-white dark:bg-surface-elevated rounded-2xl border border-matte-200 dark:border-surface-border shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-200">
+      <!-- Header -->
+      <div class="flex items-center justify-between p-5 border-b border-matte-100 dark:border-surface-border">
+        <div>
+          <h2 class="text-base font-bold text-matte-800 dark:text-white" data-i18n="feedback.title">Lapor Bug</h2>
+          <p class="text-xs text-matte-400 mt-0.5" data-i18n="feedback.subtitle">Bantu kami memperbaiki ToolsAulia</p>
+        </div>
+        <button id="feedback-close" aria-label="Tutup" class="w-8 h-8 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <!-- Form -->
+      <div class="p-5 space-y-4">
+        <div>
+          <label for="feedback-desc" class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1.5" data-i18n="feedback.desc_label">Deskripsi Bug</label>
+          <textarea id="feedback-desc" rows="4" class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/20 text-sm text-matte-800 dark:text-white placeholder-matte-400 resize-none transition-colors" data-i18n-attr="placeholder" data-i18n="feedback.desc_placeholder" placeholder="Jelaskan bug yang kamu temui…" required></textarea>
+        </div>
+        <div>
+          <label for="feedback-steps" class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1.5" data-i18n="feedback.steps_label">Langkah Reproduksi (opsional)</label>
+          <textarea id="feedback-steps" rows="3" class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/20 text-sm text-matte-800 dark:text-white placeholder-matte-400 resize-none transition-colors" data-i18n-attr="placeholder" data-i18n="feedback.steps_placeholder" placeholder="1. Buka halaman…&#10;2. Klik…&#10;3. …"></textarea>
+        </div>
+        <div>
+          <label for="feedback-contact" class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1.5" data-i18n="feedback.contact_label">Kontak (opsional)</label>
+          <input type="text" id="feedback-contact" class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/20 text-sm text-matte-800 dark:text-white placeholder-matte-400 transition-colors" data-i18n-attr="placeholder" data-i18n="feedback.contact_placeholder" placeholder="Email atau username GitHub…" />
+        </div>
+      </div>
+      <!-- Footer -->
+      <div class="flex items-center gap-3 p-5 pt-0">
+        <button id="feedback-cancel" class="flex-1 py-2.5 px-4 rounded-lg border border-matte-200 dark:border-surface-border text-matte-500 dark:text-matte-400 font-semibold text-sm hover:bg-matte-50 dark:hover:bg-surface-hover transition-colors" data-i18n="common.cancel">Batal</button>
+        <button id="feedback-submit" class="flex-1 py-2.5 px-4 rounded-lg bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <span data-i18n="feedback.submit">Buka di GitHub</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div id="offline-indicator" class="hidden fixed bottom-0 left-0 w-full bg-matte-800 dark:bg-matte-700 text-white text-center py-2 text-sm font-medium z-[100] shadow-lg animate-slide-up">
     <span data-i18n="offline.msg">⚠️ Koneksi terputus. Anda sedang offline.</span>
@@ -584,7 +633,7 @@ if (isPdfRoot) {
           revealEls.forEach(el => el.classList.add('is-visible'));
         } else {
           // Reuse satu observer per SPA session (cegah akumulasi saat view transition)
-          if ((window as any)._revealObserver) (window as any)._revealObserver.disconnect();
+          if (window._revealObserver) window._revealObserver.disconnect();
           const revealObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
               if (entry.isIntersecting) {
@@ -593,7 +642,7 @@ if (isPdfRoot) {
               }
             });
           }, { threshold: 0.1, rootMargin: '0px 0px -32px 0px' });
-          (window as any)._revealObserver = revealObserver;
+          window._revealObserver = revealObserver;
           revealEls.forEach(el => revealObserver.observe(el));
         }
       }
@@ -807,7 +856,7 @@ if (isPdfRoot) {
         window._shortcutsRegistered = true;
         document.addEventListener('keydown', (e) => {
           const tag = document.activeElement?.tagName;
-          const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (document.activeElement as HTMLElement)?.isContentEditable;
+          const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || !!document.activeElement?.isContentEditable;
           if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
             openSearch();
@@ -1013,7 +1062,7 @@ if (isPdfRoot) {
     if (!window._errorBoundarySet) {
       window._errorBoundarySet = true;
 
-      const showErrorOverlay = (message: string) => {
+      const showErrorOverlay = (message) => {
         // Avoid stacking multiple error toasts
         if (document.getElementById('error-boundary-toast')) return;
 
@@ -1381,6 +1430,107 @@ if (isPdfRoot) {
     document.addEventListener('astro:page-load', () => {
       document.getElementById('lang-toggle-desktop')?.addEventListener('click', toggleLang);
       document.getElementById('lang-toggle-mobile')?.addEventListener('click', toggleLang);
+    });
+  </script>
+
+  <!-- Feedback Widget script (E3) -->
+  <script>
+    import { showToast } from '../composables/useToast';
+
+    const REPO = 'kandarlubis31/tools-aulia';
+
+    function openFeedbackModal() {
+      const modal = document.getElementById('feedback-modal');
+      const card = modal?.querySelector('div');
+      if (!modal || !card) return;
+      modal.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        modal.classList.add('opacity-100');
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-95');
+      });
+      document.getElementById('feedback-desc')?.focus();
+    }
+
+    function closeFeedbackModal() {
+      const modal = document.getElementById('feedback-modal');
+      const card = modal?.querySelector('div');
+      if (!modal || !card) return;
+      modal.classList.add('opacity-0');
+      modal.classList.remove('opacity-100');
+      card.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    function buildFeedbackUrl() {
+      const desc = document.getElementById('feedback-desc')?.value?.trim();
+      if (!desc) return null;
+
+      const steps = document.getElementById('feedback-steps')?.value?.trim() || '';
+      const contact = document.getElementById('feedback-contact')?.value?.trim() || '';
+
+      const title = `[Bug] ${desc.slice(0, 80)}${desc.length > 80 ? '…' : ''}`;
+      const body = [
+        `**Deskripsi Bug:**`,
+        desc,
+        '',
+        steps ? `**Langkah Reproduksi:**\n${steps}\n` : '',
+        contact ? `**Kontak:** ${contact}\n` : '',
+        `---`,
+        `**Halaman:** ${window.location.href}`,
+        `**User Agent:** ${navigator.userAgent}`,
+        `**Timestamp:** ${new Date().toISOString()}`,
+      ].filter(Boolean).join('\n');
+
+      const params = new URLSearchParams({ title, body, labels: 'bug' });
+      return `https://github.com/${REPO}/issues/new?${params.toString()}`;
+    }
+
+    function handleFeedbackSubmit() {
+      const url = buildFeedbackUrl();
+      if (!url) {
+        showToast(
+          window._tToast?.('Mohon isi deskripsi bug terlebih dahulu.') || 'Mohon isi deskripsi bug terlebih dahulu.',
+          'warning',
+        );
+        document.getElementById('feedback-desc')?.focus();
+        return;
+      }
+      window.umami?.track?.('feedback', { tool: window.location.pathname });
+      window.open(url, '_blank', 'noopener');
+      showToast(
+        window._tToast?.('Terima kasih! GitHub Issues akan terbuka di tab baru.') || 'Terima kasih! GitHub Issues akan terbuka di tab baru.',
+        'success',
+        5000,
+      );
+      closeFeedbackModal();
+    }
+
+    document.addEventListener('astro:page-load', () => {
+      const btn = document.getElementById('feedback-btn');
+      if (btn && !btn.dataset.bound) {
+        btn.dataset.bound = 'true';
+        btn.addEventListener('click', openFeedbackModal);
+      }
+
+      const closeBtn = document.getElementById('feedback-close');
+      const cancelBtn = document.getElementById('feedback-cancel');
+      const submitBtn = document.getElementById('feedback-submit');
+      const modal = document.getElementById('feedback-modal');
+
+      closeBtn?.addEventListener('click', closeFeedbackModal);
+      cancelBtn?.addEventListener('click', closeFeedbackModal);
+      submitBtn?.addEventListener('click', handleFeedbackSubmit);
+
+      modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeFeedbackModal();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+          closeFeedbackModal();
+        }
+      });
     });
   </script>
 

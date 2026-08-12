@@ -30,7 +30,7 @@ export default defineConfig({
     },
     workbox: {
       globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
-      globIgnores: ["**/404.html", "**/404/index.html"],
+      globIgnores: ["**/404.html", "**/404/index.html", "**/og/*.png"], // OG cards (build-time): hanya dipakai social crawler, bukan offline user → skip precache
       navigateFallback: '/offline.html',
       navigateFallbackDenylist: [/^\/api\/.*/],
       maximumFileSizeToCacheInBytes: 25 * 1024 * 1024, // 25 MB — headroom for kbbi-sinonim.json (9.4MB) + id-words.json (2.6MB) + AI models

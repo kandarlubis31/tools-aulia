@@ -27,8 +27,14 @@ const PATTERNS = [
   { re: /output\s*:\s*['"]server['"]/, label: 'output: "server" (SSR mode)' },
 ];
 
-// Satu-satunya file yang boleh punya pola server-side
-const ALLOWED = [join(SRC, 'pages', 'api', 'proxy.ts')];
+// File yang boleh punya pola server-side:
+// 1. src/pages/api/proxy.ts — CORS forwarding-only (allowlist 6 domain, tidak menyentuh data user)
+// 2. src/pages/og/[slug].png.ts — OG image generator: BUILD-TIME ONLY (prerender=true +
+//    getStaticPaths). Merender PNG statis dari metadata tool, tidak pernah menyentuh data user.
+const ALLOWED = [
+  join(SRC, 'pages', 'api', 'proxy.ts'),
+  join(SRC, 'pages', 'og', '[slug].png.ts'),
+];
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {

@@ -25,4 +25,33 @@ const { title, desc = '', icon = '', gradient = 'from-sky-500 to-indigo-500', ti
       {desc}
     </p>
   )}
+  <!-- Share button (E2): Web Share API + clipboard fallback, di semua tool page -->
+  <div class="flex justify-center mt-4">
+    <button
+      id="tool-share-btn"
+      type="button"
+      class="inline-flex items-center gap-1.5 text-xs font-semibold text-matte-500 dark:text-matte-400 hover:text-accent-blue dark:hover:text-accent-blue border border-matte-200 dark:border-surface-border hover:border-accent-blue/40 rounded-full px-3.5 py-1.5 transition-colors"
+      aria-label="Share this tool"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      <span data-i18n="common.share">Bagikan</span>
+    </button>
+  </div>
 </div>
+
+<script>
+  import { shareContent } from '../composables/useShare';
+
+  document.addEventListener('astro:page-load', () => {
+    const shareBtn = document.getElementById('tool-share-btn');
+    if (!shareBtn || shareBtn.dataset.bound === 'true') return;
+    shareBtn.dataset.bound = 'true';
+
+    shareBtn.addEventListener('click', async () => {
+      const title = (document.querySelector('h1')?.textContent || document.title).trim();
+      const text = `Coba "${title}" — gratis & 100% di browser, tanpa upload.`;
+      (window as any).umami?.track?.('share', { tool: window.location.pathname });
+      await shareContent(text, title, 'Link berhasil disalin!', 'Gagal membagikan!', window.location.href);
+    });
+  });
+</script>

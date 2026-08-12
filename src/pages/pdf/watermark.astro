@@ -93,9 +93,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 </BaseLayout>
 
-<script type="module">
-  // Dynamic Import untuk library (menghindari error encrypt kemarin)
-  const { PDFDocument, rgb, degrees, StandardFonts } = await import('pdf-lib');
+<script>
+  // Import statis — di-bundle Vite (dynamic import top-level tidak bisa di-bundle Astro)
+  import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
 
   // Elements
   const dropZone = document.getElementById('drop-zone');

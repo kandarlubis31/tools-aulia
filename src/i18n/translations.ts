@@ -2656,6 +2656,19 @@ export const translations: Record<string, { id: string; en: string }> = {
   'header.bucket_list_desc': { id: 'Catat & track mimpi hidup. 100% client-side localStorage.', en: 'Track dreams & life goals. 100% client-side localStorage.' },
   'header.audio_convert': { id: 'Audio Converter', en: 'Audio Converter' },
   'header.audio_convert_desc': { id: 'Konversi format audio via WebAudio offline render. 100% client-side.', en: 'Convert audio formats via WebAudio offline render. 100% client-side.' },
+
+  // --- FEEDBACK WIDGET (E3) ---
+  'feedback.button': { id: '🐛 Lapor Bug', en: '🐛 Report Bug' },
+  'feedback.title': { id: 'Lapor Bug', en: 'Report Bug' },
+  'feedback.subtitle': { id: 'Bantu kami memperbaiki ToolsAulia', en: 'Help us improve ToolsAulia' },
+  'feedback.desc_label': { id: 'Deskripsi Bug', en: 'Bug Description' },
+  'feedback.desc_placeholder': { id: 'Jelaskan bug yang kamu temui…', en: 'Describe the bug you found…' },
+  'feedback.steps_label': { id: 'Langkah Reproduksi (opsional)', en: 'Steps to Reproduce (optional)' },
+  'feedback.steps_placeholder': { id: '1. Buka halaman…\n2. Klik…\n3. …', en: '1. Open the page…\n2. Click…\n3. …' },
+  'feedback.contact_label': { id: 'Kontak (opsional)', en: 'Contact (optional)' },
+  'feedback.contact_placeholder': { id: 'Email atau username GitHub…', en: 'Email or GitHub username…' },
+  'feedback.submit': { id: 'Buka di GitHub', en: 'Open on GitHub' },
+  'feedback.close': { id: 'Tutup', en: 'Close' },
 };
 
 export function t(key, fallback) {
