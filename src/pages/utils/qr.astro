@@ -181,7 +181,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             <div>
               <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.qr_color">Warna QR</label>
               <div class="flex items-center gap-2">
-                <input type="color" id="qr-color" value="#000000"class="w-full h-10 rounded cursor-pointer border border-matte-200 dark:border-surface-border" /><input type="text" id="qr-color-hex" value="#000000" class="w-24 p-2 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border text-sm focus:border-accent-blue outline-none font-mono" />
+                <input type="color" id="qr-color" value="#000000" class="w-full h-10 rounded cursor-pointer border border-matte-200 dark:border-surface-border" /><input type="text" id="qr-color-hex" value="#000000" class="w-24 p-2 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border text-sm focus:border-accent-blue outline-none font-mono" />
               </div>
             </div>
             <div>
@@ -330,9 +330,31 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   import { useLocalHistory } from '../../composables/useLocalHistory';
   import { copyImageToClipboard } from '../../composables/useClipboard';
 
-  // Elements
-  const canvas = document.getElementById('qr-code');
-  const qrTypeButtons = document.querySelectorAll('.qr-type-btn');
+  // State module-level: persisten antar navigasi SPA (ClientRouter).
+  const qrHistoryManager = useLocalHistory('qrHistory', 10);
+  let qrHistory = qrHistoryManager.getAll();
+  let currentQRType = 'text';
+  let logoImage: HTMLImageElement | null = null;
+  let logoSizePct = 0.2;
+  let qrPngBlob: Blob | null = null;
+  let blobTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Elemen & handler di-bind ulang tiap navigasi SPA (DOM di-swap oleh
+  // ClientRouter → refs top-level jadi stale). Guard via dataset.qrBound.
+  function init() {
+    const canvas = document.getElementById('qr-code') as HTMLCanvasElement | null;
+    if (!canvas || canvas.dataset.qrBound === 'true') return;
+    canvas.dataset.qrBound = 'true';
+
+    // Reset state transient mengikuti DOM fresh (type text, tanpa logo).
+    currentQRType = 'text';
+    logoImage = null;
+    logoSizePct = 0.2;
+    qrPngBlob = null;
+    if (blobTimer) { clearTimeout(blobTimer); blobTimer = null; }
+
+    // Elements
+    const qrTypeButtons = document.querySelectorAll('.qr-type-btn');
   const errorLevelButtons = document.querySelectorAll('.error-level-btn');
   const qrInputContainers = document.querySelectorAll('.qr-input-container');
   const qrColor = document.getElementById('qr-color');
@@ -358,7 +380,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const logoSize = document.getElementById('logo-size');
   const logoSizeVal = document.getElementById('logo-size-val');
   
-  // QR Code instance
+  // QR Code instance (local — bound ke canvas DOM saat ini)
   let qr = new QRious({
     element: canvas,
     value: 'https://paklubis.my.id',
@@ -368,16 +390,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     level: 'M'
   });
   
-  // Current QR type
-  let currentQRType = 'text';
-  
-  // Logo state
-  let logoImage: HTMLImageElement | null = null;
-  let logoSizePct = 0.2;
-  
-  // Blob PNG ter-generate (untuk copy clipboard yang lebih reliable)
-  let qrPngBlob: Blob | null = null;
-  let blobTimer: ReturnType<typeof setTimeout> | null = null;
   function refreshBlob() {
     if (blobTimer) clearTimeout(blobTimer);
     blobTimer = setTimeout(() => {
@@ -385,15 +397,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     }, 150);
   }
   
-  // History (using composable)
-  const qrHistoryManager = useLocalHistory('qrHistory', 10);
-  let qrHistory = qrHistoryManager.getAll();
-  
-  // Initialize
-  document.addEventListener('astro:page-load', () => {
-    renderHistory();
-    updateQR();
-  });
+  // Render awal untuk DOM yang baru.
+  renderHistory();
+  updateQR();
   
   // QR Type Selection
   qrTypeButtons.forEach(btn => {
@@ -881,4 +887,8 @@ END:VEVENT`;
   }
   
   // Debounce function (imported from composables)
+  }
+
+  document.addEventListener('astro:page-load', init);
+  init();
 </script>
