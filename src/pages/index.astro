@@ -292,9 +292,9 @@ const categories = [
 
     <!-- Pagination -->
     <div id="pagination" class="flex items-center justify-center gap-1 py-6">
-      <button id="prev-page" class="px-3 py-1.5 rounded-lg text-xs font-medium text-matte-400 hover:text-matte-600 dark:hover:text-white hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all disabled:opacity-30 disabled:cursor-not-allowed">← Prev</button>
+      <button id="prev-page" class="px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg text-sm sm:text-xs font-medium text-matte-400 hover:text-matte-600 dark:hover:text-white hover:bg-matte-100 dark:hover:bg-surface-elevated active:bg-matte-200 dark:active:bg-surface-border transition-all disabled:opacity-30 disabled:cursor-not-allowed">← Prev</button>
       <div id="page-numbers" class="flex gap-0.5"></div>
-      <button id="next-page" class="px-3 py-1.5 rounded-lg text-xs font-medium text-matte-400 hover:text-matte-600 dark:hover:text-white hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all disabled:opacity-30 disabled:cursor-not-allowed">Next →</button>
+      <button id="next-page" class="px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-lg text-sm sm:text-xs font-medium text-matte-400 hover:text-matte-600 dark:hover:text-white hover:bg-matte-100 dark:hover:bg-surface-elevated active:bg-matte-200 dark:active:bg-surface-border transition-all disabled:opacity-30 disabled:cursor-not-allowed">Next →</button>
     </div>
 
     <!-- Empty State -->
@@ -511,12 +511,15 @@ const categories = [
         pageItems.forEach((tool, i) => {
             tool.classList.remove('hidden');
             tool.classList.add('animate-fade-in-up');
-            tool.style.animationDelay = `${(i % 12) * 25}ms`;
+            tool.style.animationDelay = `${Math.min(i, 8) * 25}ms`;
         });
 
+        // Batch DOM writes in rAF to prevent layout thrashing
         if(toolsGrid) {
-            toolsGrid.innerHTML = '';
-            pageItems.forEach(el => toolsGrid.appendChild(el));
+            requestAnimationFrame(() => {
+                toolsGrid.innerHTML = '';
+                pageItems.forEach(el => toolsGrid.appendChild(el));
+            });
         }
 
         // Update title

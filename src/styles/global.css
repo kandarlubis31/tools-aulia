@@ -213,6 +213,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .card-base:active {
   transform: scale(0.98);
 }
+/* Instant touch feedback — no hover delay on mobile */
+@media (pointer: coarse) {
+  .card-base:active, a:active, button:active {
+    transition: transform 0.05s ease, background-color 0.05s ease !important;
+  }
+}
 
 /* ========== BADGE ========== */
 .badge-sm {
@@ -469,7 +475,21 @@ html.dark .checkerboard {
   .card-grid { grid-template-columns: repeat(5, 1fr); }
 }
 
-/* Lazy render — cards below fold skip paint until scrolled into view */
+/* Pagination — bigger tap targets on mobile */
+#page-numbers button {
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 639px) {
+  #page-numbers button {
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 0.8125rem;
+  }
+}
 .tool-item {
   content-visibility: auto;
   contain-intrinsic-size: auto 120px;
