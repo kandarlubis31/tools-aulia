@@ -1,7 +1,8 @@
 ---
 import { ClientRouter } from 'astro:transitions';
 import { tools, getToolByHref } from '../data/tools';
-import '../styles/global.css';
+import globalCssUrl from '../styles/global.css?url';
+import criticalCss from '../styles/critical.css?raw';
 import interWoff2 from '../assets/fonts/Inter-Variable.woff2';
 import jakartaWoff2 from '../assets/fonts/PlusJakartaSans-Variable.woff2';
 
@@ -177,6 +178,12 @@ if (isPdfRoot) {
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
   <link rel="dns-prefetch" href="https://unpkg.com">
   
+  <!-- Performance: inline critical above-the-fold CSS → no render-blocking stylesheet -->
+  <style is:inline set:html={criticalCss}></style>
+  <!-- Full Tailwind bundle loaded async (non-render-blocking) -->
+  <link rel="stylesheet" href={globalCssUrl} media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href={globalCssUrl}></noscript>
+
   <!-- Performance: Preload self-hosted fonts (woff2 variable, same-origin → no crossorigin) -->
   <link rel="preload" href={interWoff2} as="font" type="font/woff2">
   <link rel="preload" href={jakartaWoff2} as="font" type="font/woff2">

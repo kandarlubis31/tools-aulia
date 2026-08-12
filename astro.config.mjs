@@ -9,7 +9,7 @@ export default defineConfig({
   site: 'https://tools.paklubis.my.id',
   output: "static",
   adapter: vercel(),
-  integrations: [tailwind(), AstroPWA({
+  integrations: [tailwind({ applyBaseStyles: false }), AstroPWA({
     registerType: 'autoUpdate',
     includeAssets: ['favicon.svg', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'safari-pinned-tab.svg', 'og-image.png', 'offline.html', 'pwa-192x192.png', 'pwa-512x512.png'],
     manifest: {
