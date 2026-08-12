@@ -128,9 +128,9 @@ Hero (compact: 8px padding, inline stats, no buttons)
 - **Plan 100 Tools:** `docs/plan-new-tools.md` — ✅ COMPLETE (110 tools, 58 → 168)
 - **Plan 59 Tools:** `docs/plan-59-tools.md` — 🎉 COMPLETE (59/59, 168 → 227)
 - **Plan Improve:** `docs/plan-improve.md` — ✅ COMPLETE (Batch A: UX, Batch B: Quality)
-- **Plan v2 Polish:** `docs/plan-v2-polish.md` — 🚀 **Batch C DONE** (showcase /top-20, size audit, tests 62). Next: Batch D (lazy load, analytics, changelog)
+- **Plan v2 Polish:** `docs/plan-v2-polish.md` — 🚀 **Batch C+D DONE** (showcase, audit, tests 62, changelog+RSS, Umami gate). Next: Batch E (OG images, share button, feedback)
 - **B12-B17:** ✅ SELESAI (59 tools added)
-- **227 tools** — 12 kategori, 330 precache entries, `/showcase` (Top 20) page
+- **227 tools** — 12 kategori, 331 precache entries, `/showcase` (Top 20) + `/changelog` + `/rss.xml` pages
 - **Pagination:** 36 tools per page — smooth UX untuk 227 tools
 - **UI/UX Optimization:** ✅ SELESAI (Aug 2026) — compact hero, dense grid, hover lift, no tilt JS
 

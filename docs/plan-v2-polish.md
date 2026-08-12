@@ -1,8 +1,30 @@
 # Plan: v2 Polish — Performance + Analytics + Growth
 
 > Created: August 12, 2026
-> Status: 🚀 **Batch C SELESAI** — menunggu Batch D (Architecture)
+> Status: 🚀 **Batch C + D SELESAI** — menunggu Batch E (Growth)
 > Scope: 227 tools existing, 328 precache, 12 kategori
+
+---
+
+## ✅ Execution Log — Batch D (Architecture)
+
+**Commit:** `8d8246c` · Build ✅ 25s · 331 precache · Tests 62/62
+
+### D1. Lazy Load Tool Pages ✅ (VERIFIED — sudah complete)
+- **Audit: 0 static npm imports** di semua 227 halaman tool — semua library berat (pdf-lib, mammoth, js-tiktoken, marked, qrcode, fflate, html2canvas, html2pdf, imgly) sudah dynamic import / CDN (useCdnLib)
+- Astro code-split per halaman sudah aktif sejak migrasi PDF composables
+- Tidak ada perubahan yang diperlukan
+
+### D2. Analytics Umami ✅ (env-gated)
+- Script Umami di `<head>` BaseLayout — **hanya render kalau env var diset**: `PUBLIC_UMAMI_WEBSITE_ID` (required) + `PUBLIC_UMAMI_SRC` (opsional, default cloud.umami.is)
+- `umami.track('tool_use', { tool: href })` di klik tool card (index.astro) — data tool paling laris!
+- ⏳ **Menunggu user**: daftar Umami Cloud → set 2 env var di Vercel → analytics langsung jalan
+
+### D3. Changelog + RSS ✅
+- Halaman **`/changelog`**: timeline 9 entri (v1.0 Launch → v2.6 Batch C), version badge, tag chips warna, tombol Subscribe RSS
+- **`/rss.xml`**: auto-generated dari `src/data/changelog.ts` (satu sumber data, zero duplikasi), valid XML, anchor `#v2-6` nyambung ke artikel
+- Footer: link 📋 Changelog + 📡 RSS Feed
+- 14 i18n keys baru (`changelog.*` + `footer.changelog` + `footer.rss`)
 
 ---
 
