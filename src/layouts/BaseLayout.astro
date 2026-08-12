@@ -2,6 +2,8 @@
 import { ClientRouter } from 'astro:transitions';
 import { tools, getToolByHref } from '../data/tools';
 import '../styles/global.css';
+import interWoff2 from '../assets/fonts/Inter-Variable.woff2';
+import jakartaWoff2 from '../assets/fonts/PlusJakartaSans-Variable.woff2';
 
 // Derive search-friendly tool list from shared data
 const searchTools = tools.map(t => ({
@@ -168,8 +170,6 @@ if (isPdfRoot) {
   })} />
   
   <!-- Performance: Preconnect to critical origins -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
@@ -177,10 +177,9 @@ if (isPdfRoot) {
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
   <link rel="dns-prefetch" href="https://unpkg.com">
   
-  <!-- Performance: Preload critical fonts (non-blocking) -->
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" as="style" crossorigin="anonymous" fetchpriority="high">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" crossorigin="anonymous">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" crossorigin="anonymous"></noscript>
+  <!-- Performance: Preload self-hosted fonts (woff2 variable, same-origin → no crossorigin) -->
+  <link rel="preload" href={interWoff2} as="font" type="font/woff2">
+  <link rel="preload" href={jakartaWoff2} as="font" type="font/woff2">
   
   <ClientRouter />
 
