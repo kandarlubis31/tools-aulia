@@ -221,7 +221,23 @@ if (isPdfRoot) {
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
   <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#2563eb" />
   
-  <!-- PWA registration handled automatically by @vite-pwa/astro with registerType: autoUpdate -->
+  <!-- PWA registration (deferred): run off the critical path so it doesn't block first paint / add to TBT.
+       requestIdleCallback fires when the main thread is free; window load is the fallback for older browsers.
+       registerType:autoUpdate keeps the auto-update behavior (sw.js self-updates via skipWaiting). -->
+  <script is:inline>
+    (function () {
+      var register = function () {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+        }
+      };
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(register, { timeout: 4000 });
+      } else {
+        window.addEventListener('load', register, { once: true });
+      }
+    })();
+  </script>
 </head>  <body class="antialiased bg-[#fafafa] dark:bg-matte-950 text-matte-800 dark:text-white min-h-screen flex flex-col font-sans">
   
   <!-- Skip to content -->

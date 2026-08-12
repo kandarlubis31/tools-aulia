@@ -11,6 +11,10 @@ export default defineConfig({
   adapter: vercel(),
   integrations: [tailwind({ applyBaseStyles: false }), AstroPWA({
     registerType: 'autoUpdate',
+    // Registration is handled manually in BaseLayout (deferred via requestIdleCallback)
+    // to keep it off the critical path. The auto-injected registerSW.js was not being
+    // referenced in the built HTML (broken injection) → SW never registered.
+    injectRegister: false,
     includeAssets: ['favicon.svg', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'safari-pinned-tab.svg', 'og-image.png', 'offline.html', 'pwa-192x192.png', 'pwa-512x512.png'],
     manifest: {
       name: 'ToolsAulia',
