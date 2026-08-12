@@ -33,6 +33,11 @@ export default defineConfig({
       ]
     },
     workbox: {
+      // Auto-activate + claim: SW baru langsung aktif & menguasai halaman yang
+      // sudah terbuka → controllerchange memicu reload, user tak terjebak cache lama.
+      // (injectRegister:false menonaktifkan auto-set ini di plugin, jadi set manual.)
+      skipWaiting: true,
+      clientsClaim: true,
       globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
       globIgnores: ["**/404.html", "**/404/index.html", "**/og/*.png", "**/_astro/index.*.js"], // OG: social-only | index.*.js: Vite shared chunks (dynamic import) — skip precache (~6MB saved)
       navigateFallback: '/offline',

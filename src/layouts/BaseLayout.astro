@@ -229,9 +229,37 @@ if (isPdfRoot) {
   <script is:inline>
     (function () {
       var register = function () {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
-        }
+        if (!('serviceWorker' in navigator)) return;
+        // Reload sekali ketika SW BARU mengambil alih (deploy update). Tanpa ini,
+        // HTML yang di-precache tetap menyajikan aset lama setelah deploy, sehingga
+        // user terus melihat bug lama sampai manual clear cache / reload.
+        var hadController = !!navigator.serviceWorker.controller;
+        var reloaded = false;
+        var doReload = function () {
+          if (reloaded || !navigator.serviceWorker.controller) return;
+          reloaded = true;
+          if (window.showToast) {
+            window.showToast(window._tToast ? window._tToast('Versi baru tersedia — memuat ulang...') : 'Versi baru tersedia — memuat ulang...', 'info');
+          }
+          setTimeout(function () { window.location.reload(); }, 700);
+        };
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          // Hanya reload pada update nyata (sebelumnya sudah ada controller),
+          // bukan pada install/claim pertama kali.
+          if (!hadController || !navigator.serviceWorker.controller) return;
+          if (document.visibilityState === 'visible') {
+            doReload();
+          } else {
+            var onVis = function () {
+              if (document.visibilityState === 'visible') {
+                document.removeEventListener('visibilitychange', onVis);
+                doReload();
+              }
+            };
+            document.addEventListener('visibilitychange', onVis);
+          }
+        });
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
       };
       if ('requestIdleCallback' in window) {
         window.requestIdleCallback(register, { timeout: 4000 });
