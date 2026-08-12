@@ -33,9 +33,9 @@ const {
 const pathname = Astro.url.pathname;
 const currentPath = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname;
 
-// --- Analytics (D2): Umami, privacy-first — only active when env vars are set ---
-// Set PUBLIC_UMAMI_WEBSITE_ID (required) + PUBLIC_UMAMI_SRC (optional, default cloud) in Vercel.
-const UMAMI_WEBSITE_ID = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID as string | undefined;
+// --- Analytics (D2): Umami, privacy-first ---
+// Website ID aktif (ToolsAulia). Override kapan pun via env var PUBLIC_UMAMI_WEBSITE_ID di Vercel.
+const UMAMI_WEBSITE_ID = (import.meta.env.PUBLIC_UMAMI_WEBSITE_ID as string | undefined) || 'e52b94c6-d2fc-41bd-a258-d6f9db81a9ec';
 const UMAMI_SRC = (import.meta.env.PUBLIC_UMAMI_SRC as string | undefined) || 'https://cloud.umami.is/script.js';
 
 const isHome = currentPath === '/';

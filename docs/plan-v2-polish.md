@@ -15,10 +15,11 @@
 - Astro code-split per halaman sudah aktif sejak migrasi PDF composables
 - Tidak ada perubahan yang diperlukan
 
-### D2. Analytics Umami ✅ (env-gated)
-- Script Umami di `<head>` BaseLayout — **hanya render kalau env var diset**: `PUBLIC_UMAMI_WEBSITE_ID` (required) + `PUBLIC_UMAMI_SRC` (opsional, default cloud.umami.is)
-- `umami.track('tool_use', { tool: href })` di klik tool card (index.astro) — data tool paling laris!
-- ⏳ **Menunggu user**: daftar Umami Cloud → set 2 env var di Vercel → analytics langsung jalan
+### D2. Analytics Umami ✅ **AKTIF**
+- Website ID ToolsAulia: `e52b94c6-d2fc-41bd-a258-d6f9db81a9ec` (Umami Cloud) — di-set sebagai default di BaseLayout, override via env var `PUBLIC_UMAMI_WEBSITE_ID` kapan pun
+- Script `cloud.umami.is/script.js` di `<head>` — terverifikasi ada di built HTML
+- `umami.track('tool_use', { tool: href })` di klik tool card — dashboard bisa lihat tool paling laris
+- Verifikasi: buka dashboard Umami Cloud setelah deploy → live events mulai masuk
 
 ### D3. Changelog + RSS ✅
 - Halaman **`/changelog`**: timeline 9 entri (v1.0 Launch → v2.6 Batch C), version badge, tag chips warna, tombol Subscribe RSS
