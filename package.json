@@ -10,10 +10,11 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "prebuild": "node scripts/check-client-side.mjs && node scripts/check-inline-scripts.mjs",
+    "prebuild": "node scripts/check-client-side.mjs && node scripts/check-inline-scripts.mjs && node scripts/check-critical-css.mjs",
     "preview": "astro preview",
     "check:client-side": "node scripts/check-client-side.mjs",
     "check:inline": "node scripts/check-inline-scripts.mjs",
+    "check:critical": "node scripts/check-critical-css.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },
