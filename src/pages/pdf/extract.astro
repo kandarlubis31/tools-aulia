@@ -38,7 +38,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  import { PDFDocument } from 'pdf-lib';
+  let PDFDocument: any;
+  async function _loadPdfLib() {
+    if (!PDFDocument) {
+      const lib = await import('pdf-lib');
+      PDFDocument = lib.PDFDocument;
+    }
+    return PDFDocument;
+  }
 
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('file-input');
@@ -140,8 +147,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     try {
       const arrayBuffer = await currentFile.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      const newPdf = await PDFDocument.create();
+      const pdfDoc = await (await _loadPdfLib()).load(arrayBuffer);
+      const newPdf = await (await _loadPdfLib()).create();
 
       const sortedIndices = Array.from(selectedPages).sort((a, b) => a - b);
       const copiedPages = await newPdf.copyPages(pdfDoc, sortedIndices);

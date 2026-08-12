@@ -95,7 +95,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <script>
   // Import statis — di-bundle Vite (dynamic import top-level tidak bisa di-bundle Astro)
-  import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
+  let _pdfLib: any;
+  async function _loadPdfLib() {
+    if (!_pdfLib) _pdfLib = await import('pdf-lib');
+    return _pdfLib;
+  }
 
   // Elements
   const dropZone = document.getElementById('drop-zone');
@@ -262,6 +266,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const restoreBtn = window.showButtonSpinner(saveBtn, (window._tToast) ? window._tToast('Memproses...') : 'Memproses...');
 
     try {
+        const { PDFDocument, rgb, degrees, StandardFonts } = await _loadPdfLib();
         const arrayBuffer = await currentFile.arrayBuffer();
         const pdfDoc = await PDFDocument.load(arrayBuffer);
         const pages = pdfDoc.getPages();

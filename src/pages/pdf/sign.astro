@@ -110,7 +110,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <script>
   // --- 1. SETUP & IMPORTS ---
-  import { PDFDocument } from 'pdf-lib';
+  let PDFDocument: any;
+  async function _loadPdfLib() {
+    if (!PDFDocument) {
+      const lib = await import('pdf-lib');
+      PDFDocument = lib.PDFDocument;
+    }
+    return PDFDocument;
+  }
 
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('file-input');
@@ -384,7 +391,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       try {
           const arrayBuffer = await currentFile.arrayBuffer();
-          const pdfDoc = await PDFDocument.load(arrayBuffer);
+          const pdfDoc = await (await _loadPdfLib()).load(arrayBuffer);
           const pages = pdfDoc.getPages();
           const page = pages[0]; // Logic halaman 1 dulu
           const { width, height } = page.getSize();

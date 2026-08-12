@@ -299,9 +299,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   function preloadTokenizer() {
     if (gptEncoderPromise) return gptEncoderPromise;
-    gptEncoderPromise = import('js-tiktoken')
-      .then(({ getEncoding }) => {
-        gptEncoder = getEncoding('cl100k_base');
+    // Load only cl100k_base ranks (via lite core) instead of the full 5.4MB
+    // js-tiktoken entry which bundles every encoding (o200k_base, p50k_*, gpt2...).
+    gptEncoderPromise = Promise.all([
+      import('js-tiktoken/lite'),
+      import('js-tiktoken/ranks/cl100k_base'),
+    ])
+      .then(([{ Tiktoken }, { default: cl100kBase }]) => {
+        gptEncoder = new Tiktoken(cl100kBase);
         return gptEncoder;
       })
       .catch((err) => { console.error('Gagal memuat tokenizer GPT:', err); return null; });

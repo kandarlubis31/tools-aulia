@@ -73,7 +73,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  import { PDFDocument } from 'pdf-lib';
+  let PDFDocument: any;
+  async function _loadPdfLib() {
+    if (!PDFDocument) {
+      const lib = await import('pdf-lib');
+      PDFDocument = lib.PDFDocument;
+    }
+    return PDFDocument;
+  }
 
   const workspace = document.getElementById('workspace');
   const filenameDisplay = document.getElementById('filename');
@@ -175,7 +182,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     try {
       const totalPages = pdfDocSource.numPages;
-      const newPdf = await PDFDocument.create();
+      const newPdf = await (await _loadPdfLib()).create();
 
       // Canvas sementara untuk pemrosesan
       const tempCanvas = document.createElement('canvas');

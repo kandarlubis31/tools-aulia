@@ -35,7 +35,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  import { PDFDocument } from 'pdf-lib';
+  let PDFDocument: any;
+  async function _loadPdfLib() {
+    if (!PDFDocument) {
+      const lib = await import('pdf-lib');
+      PDFDocument = lib.PDFDocument;
+    }
+    return PDFDocument;
+  }
 
   const dropZone = document.getElementById('drop-zone');
   const workspace = document.getElementById('workspace');
@@ -135,8 +142,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     try {
       const arrayBuffer = await currentFile.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      const newPdf = await PDFDocument.create();
+      const pdfDoc = await (await _loadPdfLib()).load(arrayBuffer);
+      const newPdf = await (await _loadPdfLib()).create();
 
       // Get new order from DOM
       const newOrderIndices = [...pagesGrid.querySelectorAll('.draggable-item')].map(item => parseInt(item.dataset.index));

@@ -54,7 +54,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  import { PDFDocument } from 'pdf-lib';
+  let PDFDocument: any;
+  async function _loadPdfLib() {
+    if (!PDFDocument) {
+      const lib = await import('pdf-lib');
+      PDFDocument = lib.PDFDocument;
+    }
+    return PDFDocument;
+  }
 
   const formArea = document.getElementById('form-area');
   const saveBtn = document.getElementById('save-btn');
@@ -80,7 +87,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   async function loadMetadata(file) {
     const arrayBuffer = await file.arrayBuffer();
     // Load tanpa update existing info dulu
-    const pdfDoc = await PDFDocument.load(arrayBuffer, { updateMetadata: false });
+    const pdfDoc = await (await _loadPdfLib()).load(arrayBuffer, { updateMetadata: false });
     
     inpTitle.value = pdfDoc.getTitle() || '';
     inpAuthor.value = pdfDoc.getAuthor() || '';
@@ -97,7 +104,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     try {
         const arrayBuffer = await currentFile.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(arrayBuffer);
+        const pdfDoc = await (await _loadPdfLib()).load(arrayBuffer);
 
         pdfDoc.setTitle(inpTitle.value);
         pdfDoc.setAuthor(inpAuthor.value);
