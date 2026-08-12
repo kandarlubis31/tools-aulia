@@ -517,3 +517,12 @@ html.dark .checkerboard {
   contain: layout style paint;
   min-width: 0;
 }
+
+/* ========== BELOW-THE-FOLD RENDERING ========== */
+/* content-visibility: auto → browser skips style/layout/paint untuk konten
+   off-screen, memangkas Style & Layout pass (kontributor TBT terbesar).
+   contain-intrinsic-size `auto` = placeholder + ingat ukuran asli setelah render. */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
