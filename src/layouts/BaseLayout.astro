@@ -33,6 +33,11 @@ const {
 const pathname = Astro.url.pathname;
 const currentPath = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname;
 
+// --- Analytics (D2): Umami, privacy-first — only active when env vars are set ---
+// Set PUBLIC_UMAMI_WEBSITE_ID (required) + PUBLIC_UMAMI_SRC (optional, default cloud) in Vercel.
+const UMAMI_WEBSITE_ID = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID as string | undefined;
+const UMAMI_SRC = (import.meta.env.PUBLIC_UMAMI_SRC as string | undefined) || 'https://cloud.umami.is/script.js';
+
 const isHome = currentPath === '/';
 const isPdfRoot = currentPath === '/pdf';
 const isPdfTool = currentPath.startsWith('/pdf/');
@@ -171,6 +176,11 @@ if (isPdfRoot) {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" crossorigin="anonymous">
   
   <ClientRouter />
+
+  <!-- Analytics (D2): Umami — rendered only when PUBLIC_UMAMI_WEBSITE_ID is configured -->
+  {UMAMI_WEBSITE_ID && (
+    <script is:inline async defer src={UMAMI_SRC} data-website-id={UMAMI_WEBSITE_ID} data-domains="tools.paklubis.my.id"></script>
+  )}
 
   <script is:inline>
     // Flag JS aktif — scroll reveal (.animate-on-scroll) hanya tersembunyi saat JS jalan
@@ -522,6 +532,8 @@ if (isPdfRoot) {
             </li>
             <li><a href="https://paklubis.my.id" target="_blank" rel="noopener noreferrer" class="footer-link" data-i18n="footer.website">Website</a></li>
             <li><a href="https://github.com/kandarlubis31" target="_blank" rel="noopener noreferrer" class="footer-link" data-i18n="footer.github">Github</a></li>
+            <li><a href="/changelog" class="footer-link inline-flex items-center gap-1.5" data-i18n="footer.changelog">📋 Changelog</a></li>
+            <li><a href="/rss.xml" class="footer-link inline-flex items-center gap-1.5" target="_blank" rel="noopener noreferrer" data-i18n="footer.rss">📡 RSS Feed</a></li>
           </ul>
           <span id="offline-ready-badge" class="hidden mt-4 text-2xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full inline-flex items-center gap-1">📦 Offline-ready</span>
         </div>

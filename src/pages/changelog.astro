@@ -1,0 +1,88 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolPageHeader from '../components/ToolPageHeader.astro';
+import { changelogEntries, changelogSlug, changelogTagMeta } from '../data/changelog';
+---
+
+<BaseLayout
+  pageTitle="Changelog"
+  description="Catatan update ToolsAulia: tools baru, fitur, dan perbaikan. Subscribe via RSS."
+>
+  <ToolPageHeader
+    title="Changelog"
+    desc="Catatan update ToolsAulia: tools baru, fitur, dan perbaikan. Subscribe via RSS biar gak ketinggalan!"
+    icon='<polyline points="4 17 10 11 13 14 20 7"/><polyline points="14 7 20 7 20 13"/>'
+    gradient="from-indigo-500 to-violet-500"
+    titleKey="changelog.title"
+    descKey="changelog.desc"
+  />
+
+  <div class="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+    <div class="absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.03)_1px,transparent_1px)] bg-[length:64px_64px]"></div>
+  </div>
+
+  <div class="max-w-3xl mx-auto px-4 pb-24">
+    <!-- RSS Subscribe -->
+    <div class="flex items-center justify-between mb-8">
+      <p class="text-xs text-matte-400 dark:text-matte-300 flex items-center gap-1.5">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-blue opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-accent-blue"></span>
+        </span>
+        <span data-i18n="changelog.latest">Terbaru</span>: {changelogEntries[0]?.version} — {changelogEntries[0]?.title}
+      </p>
+      <a
+        href="/rss.xml"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-matte-900 dark:bg-white text-white dark:text-matte-900 text-xs font-bold hover:scale-105 transition-transform shadow-sm shrink-0"
+        data-i18n="changelog.subscribe"
+      >📡 Subscribe RSS</a>
+    </div>
+
+    <!-- Timeline -->
+    <div class="relative">
+      <!-- Vertical line -->
+      <div class="absolute left-4 sm:left-5 top-2 bottom-2 w-px bg-matte-200 dark:bg-surface-border" aria-hidden="true"></div>
+
+      <div class="space-y-8">
+        {changelogEntries.map((entry, idx) => (
+          <article id={changelogSlug(entry.version)} class="relative pl-12 sm:pl-16">
+            <!-- Dot -->
+            <span class="absolute left-4 sm:left-5 top-1.5 -translate-x-1/2 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-matte-950 bg-gradient-to-br from-sky-500 to-violet-500 shadow-sm" aria-hidden="true"></span>
+
+            <div class="card-base p-5 rounded-xl hover:shadow-md transition-shadow duration-150">
+              <div class="flex items-center gap-2.5 flex-wrap mb-1.5">
+                <span class="text-2xs font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-accent-blue/10 text-accent-blue">{entry.version}</span>
+                <time class="text-2xs font-medium text-matte-400 dark:text-matte-300" datetime={entry.date}>
+                  {new Date(entry.date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </time>
+                {idx === 0 && (
+                  <span class="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400" data-i18n="changelog.latest">Terbaru</span>
+                )}
+                <span class="ml-auto flex gap-1">
+                  {entry.tags.map((tag) => {
+                    const meta = changelogTagMeta[tag] || changelogTagMeta.docs;
+                    return <span class={`text-2xs font-bold px-1.5 py-0.5 rounded ${meta.cls}`} data-i18n={meta.key}>{tag}</span>;
+                  })}
+                </span>
+              </div>
+
+              <h2 class="text-sm font-bold text-matte-800 dark:text-white mb-1">{entry.title}</h2>
+              <p class="text-xs text-matte-400 dark:text-matte-300 mb-2.5">{entry.desc}</p>
+
+              <ul class="space-y-1.5">
+                {entry.items.map((item) => (
+                  <li class="flex items-start gap-2 text-xs text-matte-600 dark:text-matte-300 leading-relaxed">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-accent-blue mt-0.5 shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

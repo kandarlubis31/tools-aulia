@@ -75,6 +75,23 @@ export const translations: Record<string, { id: string; en: string }> = {
   'footer.network_tools': { id: 'Network Tools', en: 'Network Tools' },
   'footer.popular': { id: 'Tools Populer', en: 'Popular Tools' },
   'footer.support': { id: 'Bantuan', en: 'Support' },
+  'footer.changelog': { id: '📋 Changelog', en: '📋 Changelog' },
+  'footer.rss': { id: '📡 RSS Feed', en: '📡 RSS Feed' },
+
+  // --- CHANGELOG (D3) ---
+  'changelog.title': { id: 'Changelog', en: 'Changelog' },
+  'changelog.desc': { id: 'Catatan update ToolsAulia: tools baru, fitur, dan perbaikan. Subscribe via RSS biar gak ketinggalan!', en: 'ToolsAulia update log: new tools, features, and fixes. Subscribe via RSS so you never miss a thing!' },
+  'changelog.subscribe': { id: 'Subscribe RSS', en: 'Subscribe RSS' },
+  'changelog.latest': { id: 'Terbaru', en: 'Latest' },
+  'changelog.tag_feat': { id: 'Fitur', en: 'Feature' },
+  'changelog.tag_ui': { id: 'UI', en: 'UI' },
+  'changelog.tag_perf': { id: 'Performa', en: 'Performance' },
+  'changelog.tag_refactor': { id: 'Refactor', en: 'Refactor' },
+  'changelog.tag_test': { id: 'Test', en: 'Test' },
+  'changelog.tag_fix': { id: 'Fix', en: 'Fix' },
+  'changelog.tag_ux': { id: 'UX', en: 'UX' },
+  'changelog.tag_audit': { id: 'Audit', en: 'Audit' },
+  'changelog.tag_docs': { id: 'Docs', en: 'Docs' },
 
   // --- INDEX / DASHBOARD ---
   'index.badge': { id: '🚀 Productivity Booster', en: '🚀 Productivity Booster' },

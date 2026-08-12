@@ -385,6 +385,8 @@ const categories = [
         const counts = getUsageCounts();
         counts[href] = (counts[href] || 0) + 1;
         localStorage.setItem('toolUsage', JSON.stringify(counts));
+        // D2: Umami event tracking (no-op kalau Umami belum di-setup)
+        (window as any).umami?.track?.('tool_use', { tool: href });
       }
 
       function getRecentTools() {
