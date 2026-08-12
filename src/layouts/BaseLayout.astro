@@ -496,7 +496,7 @@ if (isPdfRoot) {
       <div class="p-4 border-b border-matte-200 dark:border-surface-border">
         <div class="relative">
           <input type="text" id="search-modal-input" placeholder="Cari tools..." class="w-full pl-9 pr-9 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 text-sm text-matte-800 dark:text-white transition-all duration-150" autocomplete="off" data-i18n-attr="placeholder" data-i18n="search.placeholder">
-          <button id="close-search" class="absolute inset-y-0 right-0 pr-3 flex items-center" aria-label="Close search">
+          <button id="close-search" class="absolute inset-y-0 right-0 w-11 flex items-center justify-center rounded-r-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors" aria-label="Close search">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 hover:text-matte-600 dark:hover:text-matte-300"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
@@ -866,7 +866,7 @@ if (isPdfRoot) {
         const input = document.getElementById('search-modal-input');
         const btn = document.getElementById('search-btn');
         if (modal) modal.classList.add('hidden');
-        if (input) input.value = '';
+        if (input) { input.value = ''; input.blur(); }
         if (btn) btn.setAttribute('aria-expanded', 'false');
       };
       
@@ -1044,6 +1044,14 @@ if (isPdfRoot) {
         });
       }
 
+      // Close the modal when a search result link is clicked (SPA nav otherwise leaves it open)
+      if (searchResultsEl && !searchResultsEl.dataset.hasCloseListener) {
+        searchResultsEl.dataset.hasCloseListener = 'true';
+        searchResultsEl.addEventListener('click', function (e) {
+          if (e.target && e.target.closest && e.target.closest('a')) closeSearchModal();
+        });
+      }
+
       const navLoad = document.getElementById('navigation-loading');
       var navBar = navLoad && navLoad.querySelector('div');
       
@@ -1152,14 +1160,28 @@ if (isPdfRoot) {
   </script>
 
   <script>
-    import { translations, getLang, setLang, t } from '../i18n/translations';
+    import { getLang, setLang } from '../i18n/lang';
     import { showToast } from '../composables/useToast';
     import { showButtonSpinner, inlineSpinnerSm, inlineSpinnerMd } from '../composables/useLoading';
     import { usePdfDropZone } from '../composables/usePdfDropZone';
     import { loadPdf, renderPageToCanvas, renderAllPagesToCanvases } from '../composables/usePdfRenderer';
     import { downloadBlob, downloadBytes } from '../composables/usePdfDownload';
     import { waitForCdnLib } from '../composables/useCdnLib';
-    window.i18n = { getLang, setLang, translations, t };
+    // i18n dictionary (210KB) is lazy-loaded on demand (English only) so it no
+    // longer bloats the eager bundle — this was the old ~195KB "main.js".
+    let i18nModPromise = null;
+    function loadI18nModule() {
+      if (!i18nModPromise) i18nModPromise = import('../i18n/translations');
+      return i18nModPromise;
+    }
+    window.i18n = {
+      getLang,
+      setLang,
+      // Indonesian (default) is already rendered in the HTML; English resolves
+      // via the lazy module (this shim is replaced after load).
+      t: function (key, fallback) { return fallback ?? key; },
+      translations: {}
+    };
     window.showToast = showToast;
     window.showButtonSpinner = showButtonSpinner;
     window.inlineSpinnerSm = inlineSpinnerSm;
@@ -1172,13 +1194,8 @@ if (isPdfRoot) {
     window.downloadBytes = downloadBytes;
     window.waitForCdnLib = waitForCdnLib;
 
-    // Auto-generate dictionary from translations.ts for all unique tool headings/descriptions
-    const dynamicPhrases = Object.values(translations).reduce((acc: Record<string, string>, item: any) => {
-      if (item && item.id && item.en && item.id !== item.en) {
-        acc[item.id] = item.en;
-      }
-      return acc;
-    }, {});
+    // Auto-generated id→en dictionary (populated lazily with the translations module)
+    let dynamicPhrases = {};
 
     const commonPhrases = {
       'atau klik untuk pilih file (bisa banyak sekaligus)': 'or click to select files (multiple allowed)',
@@ -1383,7 +1400,21 @@ if (isPdfRoot) {
       'Catatan: Ping adalah latensi asli, kecepatan adalah simulasi.': 'Note: Ping is real latency, speed is simulated.',
       'Riwayat Perhitungan': 'Calculation History',
     };
-    const allPhrases = { ...dynamicPhrases, ...commonPhrases };
+    let allPhrases = { ...commonPhrases };
+
+    async function ensureTranslations() {
+      const mod = await loadI18nModule();
+      window.i18n.translations = mod.translations;
+      window.i18n.t = mod.t;
+      if (!dynamicPhrases || Object.keys(dynamicPhrases).length === 0) {
+        dynamicPhrases = Object.values(mod.translations).reduce((acc, item) => {
+          if (item && item.id && item.en && item.id !== item.en) acc[item.id] = item.en;
+          return acc;
+        }, {});
+        allPhrases = { ...dynamicPhrases, ...commonPhrases };
+      }
+      return mod;
+    }
 
     const skipTags = ['SCRIPT','STYLE','NOSCRIPT','SVG','CODE','PRE','TEXTAREA','INPUT','SELECT'];
 
@@ -1419,42 +1450,50 @@ if (isPdfRoot) {
       walk(node);
     }
 
-    function processI18n() {
+    async function processI18n() {
       const lang = getLang();
       document.documentElement.lang = lang;
-
-      // --- Translate Page Title ---
-      const originalTitle = document.querySelector('meta[name="original-title"]')?.getAttribute('content') || '';
-      if (originalTitle) {
-        const translatedTitle = lang === 'en' ? (allPhrases[originalTitle] || originalTitle) : originalTitle;
-        document.title = `${translatedTitle} | PakLubis Tools`;
-      }
 
       const desktopLabel = document.getElementById('lang-label-desktop');
       const mobileLabel = document.getElementById('lang-label-mobile');
       if (desktopLabel) desktopLabel.textContent = lang.toUpperCase();
       if (mobileLabel) mobileLabel.textContent = lang.toUpperCase();
 
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (!key) return;
-        const attr = el.getAttribute('data-i18n-attr');
-        const entry = translations[key];
-        if (!entry) return;
-        const text = entry[lang];
-        if (attr) {
-          if (attr === 'textContent') el.textContent = text;
-          else el.setAttribute(attr, text);
-        } else {
-          el.textContent = text;
+      const originalTitle = document.querySelector('meta[name="original-title"]')?.getAttribute('content') || '';
+
+      if (lang === 'en') {
+        const mod = await ensureTranslations();
+        if (originalTitle) {
+          document.title = `${allPhrases[originalTitle] || originalTitle} | PakLubis Tools`;
         }
-      });
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (!key) return;
+          const attr = el.getAttribute('data-i18n-attr');
+          const entry = mod.translations[key];
+          if (!entry) return;
+          const text = entry.en;
+          if (attr) {
+            if (attr === 'textContent') el.textContent = text;
+            else el.setAttribute(attr, text);
+          } else {
+            el.textContent = text;
+          }
+        });
+      } else if (originalTitle) {
+        document.title = `${originalTitle} | PakLubis Tools`;
+      }
 
       walkAndTranslate(document.body, lang);
     }
 
     function translateNode(node) {
-      walkAndTranslate(node, getLang());
+      const lang = getLang();
+      if (lang === 'en') {
+        ensureTranslations().then(function () { walkAndTranslate(node, 'en'); });
+      } else {
+        walkAndTranslate(node, lang);
+      }
     }
 
     window.i18n.translateNode = translateNode;
@@ -1462,11 +1501,11 @@ if (isPdfRoot) {
     document.addEventListener('astro:page-load', processI18n);
     processI18n();
 
-    function toggleLang() {
+    async function toggleLang() {
       const newLang = getLang() === 'id' ? 'en' : 'id';
       setLang(newLang);
-      // Instant language switch — no reload! processI18n walks the full DOM.
-      processI18n();
+      // Instant language switch — load dict (if en) then walk the full DOM.
+      await processI18n();
       // Update lang label badges immediately
       const label = newLang === 'id' ? 'ID' : 'EN';
       document.getElementById('lang-label-desktop') && (document.getElementById('lang-label-desktop').textContent = label);

@@ -2682,16 +2682,4 @@ export function t(key, fallback) {
   }
 }
 
-export function getLang() {
-  try {
-    return (typeof localStorage !== 'undefined' && localStorage.getItem('lang')) || 'id';
-  } catch (e) {
-    return 'id';
-  }
-}
-
-export function setLang(lang) {
-  try {
-    localStorage.setItem('lang', lang);
-  } catch (e) {}
-}
+export { getLang, setLang } from './lang';
