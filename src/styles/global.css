@@ -464,6 +464,10 @@ html.dark .checkerboard {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+  overflow: hidden;
+}
+.card-grid > * {
+  min-width: 0;
 }
 @media (min-width: 640px) {
   .card-grid { grid-template-columns: repeat(3, 1fr); }
@@ -494,4 +498,5 @@ html.dark .checkerboard {
   content-visibility: auto;
   contain-intrinsic-size: auto 120px;
   contain: layout style paint;
+  min-width: 0;
 }
