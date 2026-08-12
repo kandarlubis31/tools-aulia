@@ -645,5 +645,12 @@ const categories = [
 
       updateRecentDisplay();
       setActiveFilter(currentFilter);
+
+      // Instant lang switch (E4): re-render tools + sections on langchange
+      window.addEventListener('langchange', () => {
+        updateRecentDisplay();
+        updateFavDisplay();
+        renderTools();
+      });
   });
 </script>
