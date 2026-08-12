@@ -24,6 +24,31 @@ export interface ChangelogEntry {
 export const changelogEntries: ChangelogEntry[] = [
   {
     date: '2026-08-12',
+    version: 'v2.7',
+    title: 'Batch E — OG, Share, Feedback + Guardrail',
+    titleEn: 'Batch E — OG, Share, Feedback + Guardrail',
+    desc: 'OG image generator, tombol share, widget lapor bug, dan guardrail anti-regresi.',
+    descEn: 'OG image generator, share button, bug report widget, and anti-regression guardrail.',
+    items: [
+      '🎨 OG Image Generator: 231 PNG statis per-tool di-build time, auto og:image di semua halaman',
+      '🔗 Tombol "Bagikan" di tiap tool: Web Share API + fallback copy link',
+      '🐛 Feedback Widget: tombol "Lapor Bug" → modal form → GitHub Issues pre-filled',
+      '🛡️ Guardrail check-inline-scripts.mjs: deteksi TS/bare-import di inline script, gated di prebuild',
+      '🔧 Hotfix: TS syntax bocor di 10+ inline script (html-to-img, certificate, 7 PDF, BaseLayout, prabowo-countdown)',
+      '📡 Analytics Umami Cloud aktif + RSS feed + halaman /changelog',
+    ],
+    itemsEn: [
+      '🎨 OG Image Generator: 231 static PNGs per tool at build time, auto og:image on all pages',
+      '🔗 Share button on every tool: Web Share API + clipboard fallback',
+      '🐛 Feedback Widget: "Report Bug" floating button → modal form → GitHub Issues pre-filled',
+      '🛡️ Guardrail check-inline-scripts.mjs: detects TS/bare-import in inline scripts, gated at prebuild',
+      '🔧 Hotfix: TS syntax leaked in 10+ inline scripts (html-to-img, certificate, 7 PDF, BaseLayout, prabowo-countdown)',
+      '📡 Umami Cloud analytics active + RSS feed + /changelog page',
+    ],
+    tags: ['feat', 'fix', 'ux'],
+  },
+  {
+    date: '2026-08-12',
     version: 'v2.6',
     title: 'Batch C — Polish & Performance',
     titleEn: 'Batch C — Polish & Performance',
