@@ -1,8 +1,37 @@
 # Plan: v2 Polish — Performance + Analytics + Growth
 
 > Created: August 12, 2026
-> Status: 📋 **Plan dibuat — 3 batch, 9 item**
+> Status: 🚀 **Batch C SELESAI** — menunggu Batch D (Architecture)
 > Scope: 227 tools existing, 328 precache, 12 kategori
+
+---
+
+## ✅ Execution Log — Batch C (Quick Wins)
+
+**Commit:** `b592342` · Build ✅ 28.7s · 330 precache · Tests 62/62 (+19)
+
+### C1. Top 20 Showcase ✅
+- Halaman `/showcase` baru — hero star icon + 2 section:
+  - **🔥 Paling Sering Dipakai**: per-user, di-render dari localStorage `toolUsage` (hidden kalau belum ada data)
+  - **⭐ Pilihan Editor**: 20 tools kurasi server-rendered (SEO-friendly) + rank badge + category chip
+- CTA "⭐ Top 20 Tools" di hero homepage → `/showcase`
+- 10 i18n keys baru (`showcase.*` + `index.top20`)
+- Browser-verified: 0 console errors, cards clickable
+
+### C2. Build Size Audit ✅
+| Temuan | Ukuran | Tindakan |
+|--------|--------|----------|
+| `public/img/ngamuk.gif` — DEAD asset (0 referensi) | 6.4MB | 🗑️ Dihapus (recoverable via git) |
+| `kbbi-sinonim.json` + `id-words.json` (sinonim only) | 12MB | ✅ Sudah lazy-fetch + runtime-cache, tidak di-precache |
+| imgly ort-wasm (remove-bg only) | 23.9MB | ✅ Sudah dynamic import → code-split, hanya ke-load di halaman remove-bg |
+| sounds/*.mp3 (prabowo-countdown) | 3.6MB | ✅ Tidak di-precache (mp3), on-demand |
+| vendor/pdfjs | 1.4MB | ✅ Di-precache (fitur offline PDF), disengaja |
+
+### C3. Unit Tests Composables ✅
+- `useCdnLib.test.ts` (5 tests) — fake timers, retry/interval/never-loads
+- `usePdfDownload.test.ts` (4 tests) — blob/bytes/dataURL download, URL revoke
+- `usePdfDropZone.test.ts` (10 tests) — click/drag/invalid/oversize/multiple/cleanup
+- **43 → 62 tests**, 9/9 files pass
 
 ---
 
