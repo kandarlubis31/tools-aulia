@@ -506,6 +506,9 @@ if (isPdfRoot) {
           <p data-i18n="search.empty">Ketik untuk mencari tools</p>
         </div>
       </div>
+      <div class="p-2.5 border-t border-matte-100 dark:border-surface-border flex items-center justify-end">
+        <button id="search-cancel" class="px-5 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 text-sm font-semibold hover:bg-matte-200 dark:hover:bg-matte-600 transition-colors" data-i18n="feedback.close">Tutup</button>
+      </div>
     </div>
   </div>
 
@@ -860,6 +863,11 @@ if (isPdfRoot) {
         if (modal) modal.classList.remove('hidden');
         if (input) input.focus();
         if (btn) btn.setAttribute('aria-expanded', 'true');
+        // Android back support: push a history entry so back closes the modal
+        if (!window.__searchModalOpen) {
+          window.__searchModalOpen = true;
+          history.pushState({ __searchOpen: true }, '');
+        }
       };
       const closeSearchModal = () => {
         const modal = document.getElementById('search-modal');
@@ -868,7 +876,25 @@ if (isPdfRoot) {
         if (modal) modal.classList.add('hidden');
         if (input) { input.value = ''; input.blur(); }
         if (btn) btn.setAttribute('aria-expanded', 'false');
+        if (window.__searchModalOpen) {
+          window.__searchModalOpen = false;
+          if (history.state && history.state.__searchOpen) history.back();
+        }
       };
+
+      // Android back button: close the modal instead of navigating away
+      if (!window._searchPopstateBound) {
+        window._searchPopstateBound = true;
+        window.addEventListener('popstate', function () {
+          if (window.__searchModalOpen) {
+            window.__searchModalOpen = false;
+            var m = document.getElementById('search-modal');
+            var i = document.getElementById('search-modal-input');
+            if (m) m.classList.add('hidden');
+            if (i) { i.value = ''; i.blur(); }
+          }
+        });
+      }
       
       if(searchBtn && !searchBtn.dataset.hasListener) {
           searchBtn.dataset.hasListener = 'true';
@@ -889,6 +915,11 @@ if (isPdfRoot) {
       }
       
       if (closeSearch) closeSearch.addEventListener('click', closeSearchModal);
+      const searchCancel = document.getElementById('search-cancel');
+      if (searchCancel && !searchCancel.dataset.hasListener) {
+        searchCancel.dataset.hasListener = 'true';
+        searchCancel.addEventListener('click', closeSearchModal);
+      }
       if (searchModal) searchModal.addEventListener('click', (e) => {
         if (e.target === searchModal) closeSearchModal();
       });
