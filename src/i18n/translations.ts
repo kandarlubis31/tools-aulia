@@ -111,6 +111,17 @@ export const translations: Record<string, { id: string; en: string }> = {
   'index.favorites': { id: 'Favorit Saya', en: 'My Favorites' },
   'index.search_input_placeholder': { id: 'Cari tools...', en: 'Search tools...' },
   'index.search_shortcut': { id: 'Ctrl K', en: 'Ctrl K' },
+  'index.top20': { id: '⭐ Top 20 Tools', en: '⭐ Top 20 Tools' },
+
+  // --- SHOWCASE (Top 20) ---
+  'showcase.title': { id: 'Top 20 Tools Terbaik', en: 'Top 20 Best Tools' },
+  'showcase.desc': { id: 'Kurasi 20 tools paling populer & bermanfaat di ToolsAulia. Semua 100% di browser — tanpa install, data aman.', en: 'A curated list of the 20 most popular & useful ToolsAulia tools. All 100% in-browser — no install, data safe.' },
+  'showcase.top_used': { id: '🔥 Paling Sering Dipakai', en: '🔥 Most Used' },
+  'showcase.top_used_desc': { id: 'Berdasarkan aktivitas kamu di browser ini.', en: 'Based on your activity in this browser.' },
+  'showcase.editors_pick': { id: '⭐ Pilihan Editor', en: '⭐ Editor’s Picks' },
+  'showcase.editors_pick_desc': { id: 'Tools yang paling sering dipakai dan paling bermanfaat.', en: 'The most used and most useful tools.' },
+  'showcase.see_all': { id: 'Lihat Semua Tools', en: 'See All Tools' },
+  'showcase.open': { id: 'Buka Tools', en: 'Open Tool' },
 
   // --- COMMON TOOL PHRASES (used by auto-replacer) ---
   'common.reset': { id: 'Reset', en: 'Reset' },
