@@ -241,6 +241,7 @@ h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-seri
 .max-w-7xl { max-width: 80rem; }
 .max-w-lg { max-width: 32rem; }
 .min-h-\[50vh\] { min-height: 50vh; }
+.min-h-screen { min-height: 100vh; }
 
 /* ---- Spacing: padding ---- */
 .p-1 { padding: 0.25rem; }
@@ -321,6 +322,7 @@ h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-seri
 
 /* ---- Colors: background ---- */
 .bg-white { background-color: #fff; }
+.bg-\[\#fafafa\] { background-color: #fafafa; }
 .bg-white\/10 { background-color: rgb(255 255 255 / 0.1); }
 .bg-white\/20 { background-color: rgb(255 255 255 / 0.2); }
 .bg-white\/80 { background-color: rgb(255 255 255 / 0.8); }
@@ -403,6 +405,7 @@ h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-seri
 @media (min-width: 640px) {
   .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
   .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .card-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (min-width: 768px) {
   .md\:flex { display: flex; }
@@ -420,4 +423,7 @@ h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-seri
   .lg\:flex-row { flex-direction: row; }
   .lg\:w-64 { width: 16rem; }
   .card-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (min-width: 1440px) {
+  .card-grid { grid-template-columns: repeat(5, 1fr); }
 }
