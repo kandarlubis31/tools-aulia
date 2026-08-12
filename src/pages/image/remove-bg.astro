@@ -336,6 +336,10 @@ import DropZone from '../../components/DropZone.astro';
 
       const startTime = Date.now();
       resultBlob = await removeBg(originalFile, {
+        // Offload onnx inference ke Web Worker + paksa CPU (GPU/WebGPU sering
+        // malah crash di device low-end). Main thread tetap responsif.
+        proxyToWorker: true,
+        device: 'cpu',
         progress: (key: string, current: number, total: number) => {
           const pct = Math.round((current / total) * 100);
           if (key.includes('download') || key.includes('model') || key === 'init') {

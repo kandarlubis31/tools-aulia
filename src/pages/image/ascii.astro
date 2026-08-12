@@ -106,12 +106,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         reader.onload = (e) => {
           const img = new Image();
           img.onload = () => {
+            // Downscale ke max 400px: ASCII cuma butuh resolusi kecil, dan ini
+            // membebaskan memori (full-res ImageData 12MP ≈ 48MB).
+            const MAX_DIM = 400;
+            const s = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+            const w = Math.round(img.width * s);
+            const h = Math.round(img.height * s);
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d')!;
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            imageData = ctx.getImageData(0, 0, img.width, img.height);
+            canvas.width = w;
+            canvas.height = h;
+            ctx.drawImage(img, 0, 0, w, h);
+            imageData = ctx.getImageData(0, 0, w, h);
             
             preview.src = e.target?.result as string;
             document.getElementById('preview-container')?.classList.remove('hidden');

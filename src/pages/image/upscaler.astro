@@ -37,6 +37,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { sharpenPixels } from '../../composables/useImageWorker';
+
   document.addEventListener('astro:page-load',()=>{
     const dropZone=document.getElementById('drop-zone')!,fileInput=document.getElementById('file-input') as HTMLInputElement;
     const fileName=document.getElementById('file-name')!,scaleVal=document.getElementById('scale-val')!;
@@ -49,29 +51,50 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     let origImg:ImageData|null=null,origW=0,origH=0,upscaledDataUrl='';
 
+    const MAX_PIXELS = 24 * 1024 * 1024; // ~24MP — cap output biar gak OOM di HP low-end
+    let upscaleReq = 0; // race guard: slider input bisa nembak cepat
+    let warnedCap = false;
+    let upscaleBusy = false, upscaleQueued = false;
+
+    // Gate: cuma 1 upscale jalan sekaligus (getImageData 24MP ≈ 96MB copy).
+    // Event berikutnya di-coalesce jadi satu — hindari numpuk buffer besar di low-end.
     function upscale(){
-      if(!origImg)return;const scale=parseFloat(scaleSlider.value);scaleVal.textContent=scale+'x';
+      if(upscaleBusy){upscaleQueued=true;return;}
+      upscaleBusy=true;
+      doUpscale().finally(()=>{
+        upscaleBusy=false;
+        if(upscaleQueued){upscaleQueued=false;upscale();}
+      });
+    }
+
+    async function doUpscale(){
+      if(!origImg)return;
+      let scale=parseFloat(scaleSlider.value);
+      // Clamp: 4x dari 12MP = 192MP = tab crash. Batasi ke max pixel aman.
+      const maxScale=Math.sqrt(MAX_PIXELS/(origW*origH));
+      if(scale>maxScale){
+        scale=Math.max(1,Math.floor(maxScale*10)/10);
+        scaleSlider.value=String(scale);
+        if(!warnedCap){warnedCap=true;toast('Skala dibatasi '+scale+'x agar aman di perangkat ini');}
+      }
+      scaleVal.textContent=scale+'x';
       const w=Math.round(origW*scale),h=Math.round(origH*scale);
       upCanvas.width=w;upCanvas.height=h;const octx=upCanvas.getContext('2d')!;
       octx.imageSmoothingEnabled=true;octx.imageSmoothingQuality='high';
       origCanvas.width=origW;origCanvas.height=origH;origCanvas.getContext('2d')!.putImageData(origImg,0,0);
       octx.drawImage(origCanvas,0,0,w,h);
-      if(sharpenCheck.checked)applySharpen(octx,w,h);
-      upscaledDataUrl=upCanvas.toDataURL('image/png');
-    }
 
-    function applySharpen(ctx:CanvasRenderingContext2D,w:number,h:number){
-      const imgData=ctx.getImageData(0,0,w,h),d=imgData.data,out=new Uint8ClampedArray(d);
-      const kernel=[0,-1,0,-1,5,-1,0,-1,0];
-      for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){
-        let r=0,g=0,b=0;
-        for(let ky=-1;ky<=1;ky++)for(let kx=-1;kx<=1;kx++){
-          const idx=((y+ky)*w+(x+kx))*4,wgt=kernel[(ky+1)*3+(kx+1)];
-          r+=d[idx]*wgt;g+=d[idx+1]*wgt;b+=d[idx+2]*wgt;
-        }
-        const idx=(y*w+x)*4;out[idx]=Math.max(0,Math.min(255,r));out[idx+1]=Math.max(0,Math.min(255,g));out[idx+2]=Math.max(0,Math.min(255,b));
+      const reqId=++upscaleReq;
+      if(sharpenCheck.checked){
+        try{
+          const imgData=octx.getImageData(0,0,w,h);
+          const sharpened=await sharpenPixels(imgData.data,w,h); // off-main-thread
+          if(reqId!==upscaleReq)return; // ada upscale lebih baru — buang hasil stale
+          octx.putImageData(new ImageData(sharpened,w,h),0,0);
+        }catch(err){/* fallback: hasil tetap upscale, tanpa sharpen */}
       }
-      ctx.putImageData(new ImageData(out,w,h),0,0);
+      if(reqId!==upscaleReq)return;
+      upscaledDataUrl=upCanvas.toDataURL('image/png');
     }
 
     function processFile(file:File){
@@ -86,7 +109,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     dropZone.addEventListener('dragover',e=>{e.preventDefault();});
     dropZone.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer?.files?.[0];if(f)processFile(f);});
     fileInput.addEventListener('change',()=>{const f=fileInput.files?.[0];if(f)processFile(f);});
-    scaleSlider.addEventListener('input',upscale);sharpenCheck.addEventListener('change',upscale);
+    // Debounce slider: tiap input = getImageData 24MP (~96MB copy). Debounce biar gak numpuk.
+    let upscaleTimer: ReturnType<typeof setTimeout> | null = null;
+    scaleSlider.addEventListener('input',()=>{
+      if(upscaleTimer)clearTimeout(upscaleTimer);
+      upscaleTimer=setTimeout(()=>{upscaleTimer=null;upscale();},80);
+    });
+    sharpenCheck.addEventListener('change',()=>upscale());
 
     downloadBtn.addEventListener('click',()=>{
       if(!upscaledDataUrl)return;const a=document.createElement('a');a.href=upscaledDataUrl;a.download='upscaled-'+Date.now()+'.png';a.click();
