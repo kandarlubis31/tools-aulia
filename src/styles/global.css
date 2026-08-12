@@ -52,8 +52,10 @@
 
 /* ========== BASE ========== */
 html { font-family: 'Inter', system-ui, sans-serif; }
+a, button, input, select, textarea { touch-action: manipulation; }
 html {
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 body {
   background-color: var(--bg-page);
@@ -62,6 +64,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.15s ease, color 0.15s ease;
   overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ========== HEADING FONT (Warm Premium) ========== */
@@ -124,8 +127,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .dark .custom-scrollbar { scrollbar-color: #30363d transparent; }
 
 /* ========== ANIMATIONS (Clean & Fast) ========== */
-.animate-fade-in-down { animation: fadeInDown 0.25s ease-out; }
-.animate-fade-in-up { animation: fadeInUp 0.25s ease-out; }
+.animate-fade-in-down { animation: fadeInDown 0.25s ease-out; will-change: transform, opacity; }
+.animate-fade-in-up { animation: fadeInUp 0.25s ease-out; will-change: transform, opacity; }
 .animate-slide-up { animation: slideUp 0.3s ease-out; }
 
 @keyframes fadeInDown { 
@@ -470,4 +473,5 @@ html.dark .checkerboard {
 .tool-item {
   content-visibility: auto;
   contain-intrinsic-size: auto 120px;
+  contain: layout style paint;
 }
