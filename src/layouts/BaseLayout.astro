@@ -184,9 +184,11 @@ if (isPdfRoot) {
   <link rel="stylesheet" href={globalCssUrl} media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href={globalCssUrl}></noscript>
 
-  <!-- Performance: Preload self-hosted fonts (woff2 variable, same-origin → no crossorigin) -->
-  <link rel="preload" href={interWoff2} as="font" type="font/woff2">
-  <link rel="preload" href={jakartaWoff2} as="font" type="font/woff2">
+  <!-- Performance: Preload self-hosted fonts. crossorigin is required so the preload's
+       credentials mode matches the CORS font fetch from @font-face — otherwise the
+       preload is ignored and the font is fetched twice. -->
+  <link rel="preload" href={interWoff2} as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href={jakartaWoff2} as="font" type="font/woff2" crossorigin>
   
   <ClientRouter />
 
@@ -869,7 +871,7 @@ if (isPdfRoot) {
           history.pushState({ __searchOpen: true }, '');
         }
       };
-      const closeSearchModal = () => {
+      const closeSearchModal = (skipHistory) => {
         const modal = document.getElementById('search-modal');
         const input = document.getElementById('search-modal-input');
         const btn = document.getElementById('search-btn');
@@ -878,7 +880,12 @@ if (isPdfRoot) {
         if (btn) btn.setAttribute('aria-expanded', 'false');
         if (window.__searchModalOpen) {
           window.__searchModalOpen = false;
-          if (history.state && history.state.__searchOpen) history.back();
+          // skipHistory: closing because a search result link was clicked — the SPA
+          // router is navigating in parallel. Calling history.back() here races with
+          // Astro's pushState and aborts the transition ("Transition was aborted ...
+          // invalid state"), which is what made the modal re-open. Only pop the
+          // history entry for explicit closes (X / Tutup / backdrop / Esc).
+          if (!skipHistory && history.state && history.state.__searchOpen) history.back();
         }
       };
 
@@ -914,11 +921,11 @@ if (isPdfRoot) {
         });
       }
       
-      if (closeSearch) closeSearch.addEventListener('click', closeSearchModal);
+      if (closeSearch) closeSearch.addEventListener('click', () => closeSearchModal());
       const searchCancel = document.getElementById('search-cancel');
       if (searchCancel && !searchCancel.dataset.hasListener) {
         searchCancel.dataset.hasListener = 'true';
-        searchCancel.addEventListener('click', closeSearchModal);
+        searchCancel.addEventListener('click', () => closeSearchModal());
       }
       if (searchModal) searchModal.addEventListener('click', (e) => {
         if (e.target === searchModal) closeSearchModal();
@@ -1079,7 +1086,7 @@ if (isPdfRoot) {
       if (searchResultsEl && !searchResultsEl.dataset.hasCloseListener) {
         searchResultsEl.dataset.hasCloseListener = 'true';
         searchResultsEl.addEventListener('click', function (e) {
-          if (e.target && e.target.closest && e.target.closest('a')) closeSearchModal();
+          if (e.target && e.target.closest && e.target.closest('a')) closeSearchModal(true);
         });
       }
 

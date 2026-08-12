@@ -15,7 +15,7 @@ export default defineConfig({
     // to keep it off the critical path. The auto-injected registerSW.js was not being
     // referenced in the built HTML (broken injection) → SW never registered.
     injectRegister: false,
-    includeAssets: ['favicon.svg', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'safari-pinned-tab.svg', 'og-image.png', 'offline.html', 'pwa-192x192.png', 'pwa-512x512.png'],
+    includeAssets: ['favicon.svg', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'safari-pinned-tab.svg', 'og-image.png', 'pwa-192x192.png', 'pwa-512x512.png'],
     manifest: {
       name: 'ToolsAulia',
       short_name: 'ToolsAulia',
@@ -35,7 +35,7 @@ export default defineConfig({
     workbox: {
       globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
       globIgnores: ["**/404.html", "**/404/index.html", "**/og/*.png", "**/_astro/index.*.js"], // OG: social-only | index.*.js: Vite shared chunks (dynamic import) — skip precache (~6MB saved)
-      navigateFallback: '/offline.html',
+      navigateFallback: '/offline',
       navigateFallbackDenylist: [/^\/api\/.*/],
       maximumFileSizeToCacheInBytes: 25 * 1024 * 1024, // 25 MB — headroom for kbbi-sinonim.json (9.4MB) + id-words.json (2.6MB) + AI models
       runtimeCaching: [

@@ -1,12 +1,17 @@
+---
+// Offline fallback page (used by the service worker navigateFallback).
+// It's a standalone route (not using BaseLayout) so it stays fully self-contained.
+---
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex" />
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
   <title>Kamu Offline | ToolsAulia</title>
-  <style>
+  <style is:inline>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -137,10 +142,10 @@
     </div>
 
     <p id="status-text"><span id="status-dot"></span> <span id="status-label">Memeriksa koneksi...</span></p>
-    <p class="hint">🌐 Sambungkan internet untuk akses semua 139+ tools.</p>
+    <p class="hint">🌐 Sambungkan internet untuk akses semua 227+ tools.</p>
   </div>
 
-  <script>
+  <script is:inline>
     // Auto-check connectivity every 5 seconds and auto-reload when back online
     function updateStatus() {
       const dot = document.getElementById('status-dot');
