@@ -199,7 +199,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
               <span id="size-val" class="font-mono font-bold text-accent-blue">250 × 250 px</span>
             </label>
             <input type="range" id="qr-size" min="100" max="500" value="250" class="w-full h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-matte-500" />
-            <p id="size-physical" class="mt-1 text-xs text-matte-400 font-medium">≈ 2.1 × 2.1 cm (print @ 300 DPI)</p>
           </div>
           
           <div class="mt-6">
@@ -358,7 +357,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const logoSizeRow = document.getElementById('logo-size-row');
   const logoSize = document.getElementById('logo-size');
   const logoSizeVal = document.getElementById('logo-size-val');
-  const sizePhysical = document.getElementById('size-physical');
   
   // QR Code instance
   let qr = new QRious({
@@ -376,6 +374,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   // Logo state
   let logoImage: HTMLImageElement | null = null;
   let logoSizePct = 0.2;
+  
+  // Blob PNG ter-generate (untuk copy clipboard yang lebih reliable)
+  let qrPngBlob: Blob | null = null;
+  let blobTimer: ReturnType<typeof setTimeout> | null = null;
+  function refreshBlob() {
+    if (blobTimer) clearTimeout(blobTimer);
+    blobTimer = setTimeout(() => {
+      (canvas as HTMLCanvasElement).toBlob((b) => { if (b) qrPngBlob = b; }, 'image/png');
+    }, 150);
+  }
   
   // History (using composable)
   const qrHistoryManager = useLocalHistory('qrHistory', 10);
@@ -446,11 +454,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     }
   });
   
-  // Size Slider — tampilkan ukuran live (px + perkiraan cetak @ 300 DPI)
+  // Size Slider — tampilkan ukuran live dalam satuan pixel
   function formatSizeLabel(px: number) {
-    const cm = (px / 300 * 2.54).toFixed(1);
     sizeVal.innerText = `${px} × ${px} px`;
-    sizePhysical.innerText = `≈ ${cm} × ${cm} cm (print @ 300 DPI)`;
   }
   qrSize.addEventListener('input', (e) => {
     formatSizeLabel(parseInt((e.target as HTMLInputElement).value));
@@ -641,21 +647,36 @@ END:VEVENT`;
       level: activeErrorLevel
     });
     
+    // qrious cuma re-render bila ada field yang berubah. Saat hanya logo yang
+    // berubah (geser ukuran / hapus), set() tidak re-render → paksa re-render
+    // selalu supaya box/logo lama gak nyangkut (bug "bolong putih" & logo
+    // terhapus yang masih nempel). Biaya frame gen QR ~1ms, negligible.
+    (qr as any).update();
+    
     // Gambar logo di tengah (jika ada)
     drawLogo();
+    refreshBlob();
   }
   
-  // Download PNG
+  // Download PNG (toBlob — non-blocking, konsisten dengan JPG)
   downloadPngBtn.addEventListener('click', () => {
-    const link = document.createElement('a');
-    link.download = 'qrcode.png';
-    link.href = canvas.toDataURL();
-    link.click();
-    
-    // Add to history
-    addToHistory('PNG');
-    
-    window.showToast(window._tToast ? window._tToast('QR Code diunduh sebagai PNG!') : 'QR Code diunduh sebagai PNG!', 'success');
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        window.showToast?.(window._tToast ? window._tToast('Gagal membuat PNG.') : 'Gagal membuat PNG.', 'error');
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `qrcode-${parseInt(qrSize.value)}px.png`;
+      link.href = url;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      
+      // Add to history
+      addToHistory('PNG');
+      
+      window.showToast(window._tToast ? window._tToast('QR Code diunduh sebagai PNG!') : 'QR Code diunduh sebagai PNG!', 'success');
+    });
   });
   
   // Download JPG
@@ -676,7 +697,7 @@ END:VEVENT`;
     
     // Download as JPG
     const link = document.createElement('a');
-    link.download = 'qrcode.jpg';
+    link.download = `qrcode-${parseInt(qrSize.value)}px.jpg`;
     link.href = tempCanvas.toDataURL('image/jpeg', 0.9);
     link.click();
     
@@ -686,13 +707,21 @@ END:VEVENT`;
     window.showToast(window._tToast ? window._tToast('QR Code diunduh sebagai JPG!') : 'QR Code diunduh sebagai JPG!', 'success');
   });
   
-  // Copy to Clipboard (via composable)
+  // Copy to Clipboard — pakai blob pre-generate biar clipboard.write() jalan
+  // langsung di dalam gesture (lebih reliable); fallback ke composable.
   copyBtn.addEventListener('click', async () => {
-    const ok = await copyImageToClipboard(canvas);
+    let ok = false;
+    if (qrPngBlob) {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': qrPngBlob })]);
+        ok = true;
+      } catch { ok = false; }
+    }
+    if (!ok) ok = await copyImageToClipboard(canvas);
     if (ok) {
       window.showToast(window._tToast ? window._tToast('QR Code disalin ke clipboard!') : 'QR Code disalin ke clipboard!', 'success');
     } else {
-      window.showToast(window._tToast ? window._tToast('Gagal menyalin ke clipboard') : 'Gagal menyalin ke clipboard', 'error');
+      window.showToast(window._tToast ? window._tToast('Gagal menyalin ke clipboard (browser tidak mendukung)') : 'Gagal menyalin ke clipboard (browser tidak mendukung)', 'error');
     }
   });
   
