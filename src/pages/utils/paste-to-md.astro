@@ -600,7 +600,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             script.onload = () => {
               resolved = true;
               clearTimeout(timeoutId);
-              (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+              (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
               resolve((window as any).pdfjsLib);
             };
             script.onerror = () => {
@@ -609,7 +609,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
               if (script.parentNode) script.remove();
               reject(new Error('Gagal memuat PDF.js — periksa koneksi internet.'));
             };
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+            script.src = '/vendor/pdfjs/pdf.min.js';
             document.head.appendChild(script);
           });
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, useWorkerFetch: false, isEvalSupported: false }).promise;

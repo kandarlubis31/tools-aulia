@@ -74,7 +74,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       if ((window as any).pdfjsLib) return (window as any).pdfjsLib;
       return new Promise((resolve) => {
         const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.src = '/vendor/pdfjs/pdf.min.js';
         script.onload = () => resolve((window as any).pdfjsLib);
         document.head.appendChild(script);
       });
@@ -87,7 +87,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       setProgress(5, 'Loading PDF.js…');
 
       const pdfjsLib = await loadPdfJs();
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
       setProgress(15, 'Membaca PDF…');
 
       const buffer = await file.arrayBuffer();

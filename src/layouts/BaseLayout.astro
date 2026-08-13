@@ -1734,11 +1734,11 @@ if (isPdfRoot) {
 
   {pdfJs && (
     <>
-      <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" async></script>
+      <script is:inline src="/vendor/pdfjs/pdf.min.js" async></script>
       <script is:inline async>
         (function waitForPdfjs() {
           if (window.pdfjsLib) {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
           } else {
             setTimeout(waitForPdfjs, 50);
           }

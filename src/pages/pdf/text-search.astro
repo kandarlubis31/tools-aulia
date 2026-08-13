@@ -38,11 +38,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const resultsArea=document.getElementById('results-area')!;
     let pdfDoc:any=null;
 
-    async function loadPdfJs(){if((window as any).pdfjsLib)return(window as any).pdfjsLib;return new Promise(r=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.onload=()=>r((window as any).pdfjsLib);document.head.appendChild(s);})}
+    async function loadPdfJs(){if((window as any).pdfjsLib)return(window as any).pdfjsLib;return new Promise(r=>{const s=document.createElement('script');s.src='/vendor/pdfjs/pdf.min.js';s.onload=()=>r((window as any).pdfjsLib);document.head.appendChild(s);})}
 
     async function processFile(file:File){
       fileName.textContent=file.name;resultsArea.innerHTML='<p class=\"text-xs text-matte-400 text-center py-4\">Loading PDF…</p>';
-      const pdfjsLib=await loadPdfJs();pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      const pdfjsLib=await loadPdfJs();pdfjsLib.GlobalWorkerOptions.workerSrc='/vendor/pdfjs/pdf.worker.min.js';
       pdfDoc=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
       resultsArea.innerHTML=`<p class=\"text-xs text-matte-400 text-center py-4\">✅ ${pdfDoc.numPages} halaman siap. Cari kata kunci.</p>`;
     }

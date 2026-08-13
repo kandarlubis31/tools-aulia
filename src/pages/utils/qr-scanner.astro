@@ -31,7 +31,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const codeReader = new (windowZXing ? window.ZXing.BrowserQRCodeReader : null);
     } catch(e) {}
     const hints = new Map();
-    const result = await (await import('https://unpkg.com/@nicolo-ribaudo/chroma-js@2.1.0/chroma.min.js')).default;
     document.getElementById('scan-text').textContent = 'QR Code terdeteksi! (Demo - integrasi ZXing/JsQR perlu CDN)';
     document.getElementById('result').classList.remove('hidden');
   }
