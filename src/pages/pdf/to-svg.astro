@@ -41,9 +41,23 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   dz.addEventListener('dragleave', () => dz.classList.remove('border-accent-blue'));
   dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('border-accent-blue'); handler({ target: { files: e.dataTransfer.files } }); });
 
+  // Load pdf.js lokal dari /vendor/pdfjs/ (offline-first). Kalau belum ada,
+  // inject script dinamis — sama seperti repair/text-search/to-excel.
+  async function loadPdfJs() {
+    if ((window as any).pdfjsLib) return (window as any).pdfjsLib;
+    return new Promise((resolve) => {
+      const s = document.createElement('script');
+      s.src = '/vendor/pdfjs/pdf.min.js';
+      s.onload = () => resolve((window as any).pdfjsLib);
+      document.head.appendChild(s);
+    });
+  }
+
   async function handler(e) {
     const f = e.target.files[0]; if (!f) return;
-    const pdfjsLib = await import('../../composables/useCdnLib').then(m => m.waitForCdnLib('pdfjs'));
+    const pdfjsLib = await loadPdfJs();
+    if (!pdfjsLib) return;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
     pdfDoc = await pdfjsLib.getDocument({ data: new Uint8Array(await f.arrayBuffer()) }).promise;
     pageCount = pdfDoc.numPages;
     document.getElementById('page-num').max = pageCount;
