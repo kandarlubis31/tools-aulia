@@ -665,7 +665,10 @@ const categories = [
         const newUrl = new URL(window.location.href);
         if (filterId === 'all') newUrl.searchParams.delete('cat');
         else newUrl.searchParams.set('cat', filterId);
-        window.history.replaceState({}, '', newUrl);
+        // Preserve history.state (index/scroll Astro) — replaceState({}) lama
+        // menghapus state.index → router Astro korup saat back/forward dari URL
+        // ber-filter (navigasi phantom, transisi aborted).
+        window.history.replaceState((window.history.state || {}), '', newUrl);
 
         filterBtns.forEach(btn => {
             if(btn.getAttribute('data-filter') === filterId) {

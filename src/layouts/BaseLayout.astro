@@ -190,6 +190,27 @@ if (isPdfRoot) {
   <link rel="preload" href={interWoff2} as="font" type="font/woff2" crossorigin>
   <link rel="preload" href={jakartaWoff2} as="font" type="font/woff2" crossorigin>
   
+  <!-- Search modal — Android-back blocker. WAJIB di head SEBELUM ClientRouter:
+       inline head script jalan saat parse (sebelum module script ClientRouter yang
+       deferred), jadi stopImmediatePropagation() di sini mencegah listener popstate
+       Astro berjalan saat entry modal di-pop → back tutup modal TANPA navigasi /
+       re-render phantom. Tanpa ini, back dengan modal terbuka memicu transisi
+       palsu (dan pushState {__searchOpen} lama tanpa index membuat state.index
+       undefined → router Astro korup permanen: transisi aborted, modal nyangkut). -->
+  <script is:inline>
+    window.addEventListener('popstate', function (e) {
+      if (window.__searchModalOpen || window.__searchPendingPop) {
+        window.__searchModalOpen = false;
+        window.__searchPendingPop = false;
+        var m = document.getElementById('search-modal');
+        var i = document.getElementById('search-modal-input');
+        if (m) m.classList.add('hidden');
+        if (i) { i.value = ''; i.blur(); }
+        e.stopImmediatePropagation();
+      }
+    });
+  </script>
+  
   <ClientRouter />
 
   <!-- Analytics (D2): Umami — rendered only when PUBLIC_UMAMI_WEBSITE_ID is configured -->
@@ -881,6 +902,12 @@ if (isPdfRoot) {
           mobileToggle.addEventListener('click', handleThemeToggle);
       }
 
+      // Fresh DOM setelah navigasi SPA → modal pasti tertutup. Reset flag biar
+      // leak (navigasi dengan modal terbuka) tidak membuat back ter-swallow oleh
+      // head blocker.
+      window.__searchModalOpen = false;
+      window.__searchPendingPop = false;
+
       const searchBtn = document.getElementById('search-btn');
       const searchModal = document.getElementById('search-modal');
       const searchInput = document.getElementById('search-modal-input');
@@ -893,10 +920,23 @@ if (isPdfRoot) {
         if (modal) modal.classList.remove('hidden');
         if (input) input.focus();
         if (btn) btn.setAttribute('aria-expanded', 'true');
-        // Android back support: push a history entry so back closes the modal
+        // Android back support: push entry KOPI index dari history.state saat ini.
+        // Router Astro membaca history.state.index untuk deteksi arah back/forward
+        // — pushState asing TANPA index (bug lama {__searchOpen} polos) membuat
+        // state.index = undefined → currentHistoryIndex korup permanen → transisi
+        // aborted / navigasi phantom / modal nyangkut. Salin index + scroll supaya
+        // kalau back mendarat di entry ini Astro tetap bisa navigasi benar (dan head
+        // blocker mencegah navigasi saat modal masih terbuka).
         if (!window.__searchModalOpen) {
           window.__searchModalOpen = true;
-          history.pushState({ __searchOpen: true }, '');
+          // history.state bisa berupa {} (replaceState filter index.astro) atau state
+          // Astro {index,...} — SELALU jamin index numerik supaya state.index tidak
+          // pernah undefined (korupsi router Astro).
+          const s = history.state || {};
+          history.pushState(
+            { ...s, __searchOpen: true, index: typeof s.index === 'number' ? s.index : 0, scrollX: s.scrollX ?? 0, scrollY: s.scrollY ?? 0 },
+            ''
+          );
         }
       };
       const closeSearchModal = (skipHistory) => {
@@ -908,12 +948,17 @@ if (isPdfRoot) {
         if (btn) btn.setAttribute('aria-expanded', 'false');
         if (window.__searchModalOpen) {
           window.__searchModalOpen = false;
-          // skipHistory: closing because a search result link was clicked — the SPA
-          // router is navigating in parallel. Calling history.back() here races with
-          // Astro's pushState and aborts the transition ("Transition was aborted ...
-          // invalid state"), which is what made the modal re-open. Only pop the
-          // history entry for explicit closes (X / Tutup / backdrop / Esc).
-          if (!skipHistory && history.state && history.state.__searchOpen) history.back();
+          // Pop entry modal dari history. Head blocker (sebelum ClientRouter) baca
+          // __searchPendingPop → stopImmediatePropagation → router Astro TIDAK
+          // navigasi → close eksplisit (X / Tutup / backdrop / Esc) bersih, tanpa
+          // re-render phantom.
+          // skipHistory: close karena klik hasil pencarian — router Astro sedang
+          // navigasi paralel; history.back() di sini race dengan pushState Astro dan
+          // abort transisi (bug lama "modal kebuka lagi").
+          if (!skipHistory && history.state && history.state.__searchOpen) {
+            window.__searchPendingPop = true;
+            history.back();
+          }
         }
       };
 
