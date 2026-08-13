@@ -24,6 +24,27 @@ export interface ChangelogEntry {
 export const changelogEntries: ChangelogEntry[] = [
   {
     date: '2026-08-13',
+    version: 'v2.13',
+    title: 'Search Modal — Close yang Dijamin Jalan (Defense-in-Depth)',
+    titleEn: 'Search Modal — Guaranteed Close (Defense-in-Depth)',
+    desc: 'Modal pencarian sekarang TIDAK BISA nyangkut terbuka: tombol Tutup/X punya inline handler yang jalan walau JS bundle gagal/stale, head script menutup modal via Esc/klik luar/bfcache-restore, entry history modal dibersihkan, dan modal auto-tutup sebelum navigasi SPA.',
+    descEn: 'The search modal can no longer get stuck open: Tutup/X buttons have inline handlers that work even if the JS bundle fails or is stale, the head script closes the modal via Esc/outside-click/bfcache-restore, lingering modal history entries are cleaned up, and the modal auto-closes before SPA navigation.',
+    items: [
+      '🔒 Close anti-gagal: tombol Tutup & X pakai inline onclick — jalan meski module script gagal load / cache stale (verified: 8 module diblokir, modal tetap bisa ditutup)',
+      '🧹 Cleanup entry history modal (__searchOpen) — back/forward tidak lagi bertemu state modal yang mengendap',
+      '⌨️ Esc, klik di luar kartu, dan restore bfcache (back Android) kini ditangani head script — selalu aktif tanpa JS module',
+      '🔄 Modal auto-tutup saat astro:before-swap — tidak pernah kebawa terbuka lintas navigasi SPA',
+    ],
+    itemsEn: [
+      'Guaranteed close: Tutup & X buttons use inline onclick — works even if module scripts fail to load / stale cache (verified: 8 modules blocked, modal still closes)',
+      'Lingering modal history entries (__searchOpen) cleaned up — back/forward no longer meets stale modal state',
+      'Esc, outside-card click, and bfcache restore (Android back) now handled by head script — always active without JS modules',
+      'Modal auto-closes on astro:before-swap — never carried open across SPA navigation',
+    ],
+    tags: ['fix', 'pwa'],
+  },
+  {
+    date: '2026-08-13',
     version: 'v2.12',
     title: 'Search Modal Fix — Leak Listener + ID Collision + Toast Overlay',
     titleEn: 'Search Modal Fix — Listener Leak + ID Collision + Toast Overlay',

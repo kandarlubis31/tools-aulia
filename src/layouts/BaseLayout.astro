@@ -198,6 +198,11 @@ if (isPdfRoot) {
        palsu (dan pushState {__searchOpen} lama tanpa index membuat state.index
        undefined → router Astro korup permanen: transisi aborted, modal nyangkut). -->
   <script is:inline>
+    // ── Search modal — Android-back blocker + GUARANTEED close (defense-in-depth). ──
+    // Inline head script: selalu ada bahkan jika bundle module gagal load / stale,
+    // jadi modal TIDAK PERNAH bisa "nyangkut terbuka". WAJIB di head SEBELUM
+    // ClientRouter: stopImmediatePropagation() mencegah listener popstate Astro
+    // berjalan saat entry modal di-pop → back tutup modal TANPA navigasi.
     window.addEventListener('popstate', function (e) {
       if (window.__searchModalOpen || window.__searchPendingPop) {
         window.__searchModalOpen = false;
@@ -207,7 +212,50 @@ if (isPdfRoot) {
         if (m) m.classList.add('hidden');
         if (i) { i.value = ''; i.blur(); }
         e.stopImmediatePropagation();
+      } else if (history.state && history.state.__searchOpen) {
+        // Entry modal yang "mengendap" (dibuka via hasil pencarian → skipHistory):
+        // saat back/forward mendarat di entry-nya dengan modal tertutup, strip flag
+        // __searchOpen supaya entry berperilaku seperti halaman normal — mencegah
+        // keanehan arah back/forward dan phantom state di navigasi berikutnya.
+        var st = Object.assign({}, history.state);
+        delete st.__searchOpen;
+        history.replaceState(st, '');
       }
+    });
+    // Close yang dijamin jalan TANPA module script: Esc, klik di luar kartu, dan
+    // restore dari bfcache (back Android yang mengembalikan halaman lama dengan
+    // modal masih terbuka).
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var m = document.getElementById('search-modal');
+        if (m && !m.classList.contains('hidden')) m.classList.add('hidden');
+      }
+    });
+    document.addEventListener('click', function (e) {
+      var m = document.getElementById('search-modal');
+      if (!m || m.classList.contains('hidden')) return;
+      var card = m.querySelector('div');
+      if (card && !card.contains(e.target)) {
+        m.classList.add('hidden');
+        var i = document.getElementById('search-modal-input');
+        if (i) { i.value = ''; i.blur(); }
+      }
+    }, true);
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted) {
+        var m = document.getElementById('search-modal');
+        if (m) m.classList.add('hidden');
+        window.__searchModalOpen = false;
+        window.__searchPendingPop = false;
+      }
+    });
+    // SPA navigation: tutup modal sebelum DOM di-swap — modal tidak pernah
+    // kebawa terbuka ke halaman berikutnya.
+    document.addEventListener('astro:before-swap', function () {
+      var m = document.getElementById('search-modal');
+      if (m) m.classList.add('hidden');
+      window.__searchModalOpen = false;
+      window.__searchPendingPop = false;
     });
   </script>
   
@@ -561,7 +609,7 @@ if (isPdfRoot) {
       <div class="p-4 border-b border-matte-200 dark:border-surface-border">
         <div class="relative">
           <input type="text" id="search-modal-input" placeholder="Cari tools..." class="w-full pl-9 pr-9 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 text-sm text-matte-800 dark:text-white transition-all duration-150" autocomplete="off" data-i18n-attr="placeholder" data-i18n="search.placeholder">
-          <button id="close-search" class="absolute inset-y-0 right-0 w-11 flex items-center justify-center rounded-r-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors" aria-label="Close search">
+          <button id="close-search" onclick="(function(){var m=document.getElementById('search-modal');if(m)m.classList.add('hidden');var i=document.getElementById('search-modal-input');if(i){i.value='';i.blur();}})()" class="absolute inset-y-0 right-0 w-11 flex items-center justify-center rounded-r-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors" aria-label="Close search">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 hover:text-matte-600 dark:hover:text-matte-300"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
@@ -572,7 +620,7 @@ if (isPdfRoot) {
         </div>
       </div>
       <div class="p-2.5 border-t border-matte-100 dark:border-surface-border flex items-center justify-end">
-        <button id="search-cancel" class="px-5 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 text-sm font-semibold hover:bg-matte-200 dark:hover:bg-matte-600 transition-colors" data-i18n="feedback.close">Tutup</button>
+        <button id="search-cancel" onclick="(function(){var m=document.getElementById('search-modal');if(m)m.classList.add('hidden');var i=document.getElementById('search-modal-input');if(i){i.value='';i.blur();}})()" class="px-5 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 text-sm font-semibold hover:bg-matte-200 dark:hover:bg-matte-600 transition-colors" data-i18n="feedback.close">Tutup</button>
       </div>
     </div>
   </div>
