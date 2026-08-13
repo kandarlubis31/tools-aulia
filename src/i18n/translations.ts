@@ -976,6 +976,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'label.qr_size': { id: 'Ukuran', en: 'Size' },
   'label.customization': { id: 'Kustomisasi', en: 'Customization' },
   'label.actions': { id: 'Aksi', en: 'Actions' },
+  'qr.export_hint': { id: 'Isi konten QR dulu untuk mengunduh / menyalin.', en: 'Fill in the QR content first to download / copy.' },
   'label.history': { id: 'Riwayat', en: 'History' },
   'label.compression_level': { id: 'Tingkat Kompresi', en: 'Compression Level' },
   'label.contrast_sharpness': { id: 'Kontras (Ketajaman)', en: 'Contrast (Sharpness)' },

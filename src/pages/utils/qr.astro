@@ -277,6 +277,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
               <span data-i18n="btn.reset">Reset</span>
             </button>
+            
+            <p id="export-hint" class="hidden text-xs text-amber-500 dark:text-amber-400 font-medium" data-i18n="qr.export_hint">Isi konten QR dulu untuk mengunduh / menyalin.</p>
           </div>
         </div>
         
@@ -318,6 +320,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   
   .action-btn {
     @apply bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold py-2.5 px-4 rounded-lg hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2;
+  }
+  
+  .action-btn:disabled {
+    @apply opacity-40 cursor-not-allowed;
+  }
+  
+  .action-btn:disabled:hover {
+    @apply opacity-40;
   }
   
   .history-item {
@@ -379,6 +389,46 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const logoSizeRow = document.getElementById('logo-size-row');
   const logoSize = document.getElementById('logo-size');
   const logoSizeVal = document.getElementById('logo-size-val');
+  const exportHint = document.getElementById('export-hint');
+  
+  // Tombol export — disabled saat konten kosong (hindari QR default menyesatkan
+  // yang kebawa ke download/copy/share).
+  const exportButtons = [downloadPngBtn, downloadJpgBtn, copyBtn, shareBtn];
+  
+  function getValue(id: string) {
+    return ((document.getElementById(id) as HTMLInputElement | null)?.value || '').trim();
+  }
+  
+  // Konten dianggap kosong kalau field WAJIB (yang punya fallback default di
+  // updateQR) belum terisi. Field opsional (password, pesan, query, dll) tidak
+  // mempengaruhi status ini.
+  function isQREmpty() {
+    switch (currentQRType) {
+      case 'text': return getValue('qr-text') === '';
+      case 'wifi': return getValue('wifi-ssid') === '';
+      case 'email': return getValue('email-address') === '';
+      case 'sms': return getValue('sms-number') === '';
+      case 'phone': return getValue('phone-number') === '';
+      case 'vcard': return getValue('vcard-firstname') === '' && getValue('vcard-lastname') === '';
+      case 'location': return getValue('location-lat') === '' && getValue('location-lng') === '' && getValue('location-query') === '';
+      case 'event': return getValue('event-title') === '';
+      default: return getValue('qr-text') === '';
+    }
+  }
+  
+  function setExportDisabled(disabled: boolean) {
+    exportButtons.forEach(btn => { if (btn) btn.disabled = disabled; });
+    if (exportHint) exportHint.classList.toggle('hidden', !disabled);
+  }
+  
+  // Defense-in-depth: updateQR di-debounce 300ms → ada jendela kecil konten
+  // kosong tapi tombol belum disabled. Blokir + toast supaya QR default tidak
+  // ter-export dalam keadaan apapun.
+  function guardExportEmpty(): boolean {
+    if (!isQREmpty()) return false;
+    window.showToast?.(window._tToast ? window._tToast('Isi konten QR dulu sebelum mengunduh / menyalin.') : 'Isi konten QR dulu sebelum mengunduh / menyalin.', 'error');
+    return true;
+  }
   
   // QR Code instance (local — bound ke canvas DOM saat ini)
   let qr = new QRious({
@@ -662,10 +712,14 @@ END:VEVENT`;
     // Gambar logo di tengah (jika ada)
     drawLogo();
     refreshBlob();
+    
+    // Nonaktifkan tombol export saat konten kosong (hindari QR default menyesatkan)
+    setExportDisabled(isQREmpty());
   }
   
   // Download PNG (toBlob — non-blocking, konsisten dengan JPG)
   downloadPngBtn.addEventListener('click', () => {
+    if (guardExportEmpty()) return;
     canvas.toBlob((blob) => {
       if (!blob) {
         window.showToast?.(window._tToast ? window._tToast('Gagal membuat PNG.') : 'Gagal membuat PNG.', 'error');
@@ -687,6 +741,7 @@ END:VEVENT`;
   
   // Download JPG
   downloadJpgBtn.addEventListener('click', () => {
+    if (guardExportEmpty()) return;
     // Create a temporary canvas with white background
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
@@ -716,6 +771,7 @@ END:VEVENT`;
   // Copy to Clipboard — pakai blob pre-generate biar clipboard.write() jalan
   // langsung di dalam gesture (lebih reliable); fallback ke composable.
   copyBtn.addEventListener('click', async () => {
+    if (guardExportEmpty()) return;
     let ok = false;
     if (qrPngBlob) {
       try {
@@ -733,6 +789,7 @@ END:VEVENT`;
   
   // Share
   shareBtn.addEventListener('click', async () => {
+    if (guardExportEmpty()) return;
     if (navigator.share && navigator.canShare) {
       try {
         canvas.toBlob(async (blob) => {
