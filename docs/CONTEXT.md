@@ -142,7 +142,7 @@ Hero (compact: 8px padding, inline stats, no buttons)
 - **227 tools** — 12 kategori, 331 precache entries, `/showcase` (Top 20) + `/changelog` + `/rss.xml` pages
 - **Pagination:** 36 tools per page — smooth UX untuk 227 tools
 - **UI/UX Optimization:** ✅ SELESAI (Aug 2026) — compact hero, dense grid, hover lift, no tilt JS
-- **Video Editor (Phase 1):** ✅ — `/media/video-editor` (FFmpeg.wasm client-side): import multi-klip, trim/split, reorder, merge, export MP4. Self-hosted core di `public/vendor/ffmpeg/` + runtime-cache SW.
+- **Video Editor (Phase 1):** ✅ — `/edit-video` (FFmpeg.wasm client-side): import multi-klip, trim/split, reorder, merge, export MP4. Self-hosted core di `public/vendor/ffmpeg/` + runtime-cache SW.
 - **Video Editor (Phase 2):** ✅ — efek per-klip: speed (0.25–4×), volume/mute, rotasi (0/90/180/270), crop (center aspect preset), + watermark teks global (drawtext, font self-host).
 - **Video Editor (Phase 3):** ✅ — timeline horizontal (single track): blok ∝ durasi, drag-reorder, edge-trim, playhead + click-to-seek; transisi antar klip (fade/fadeblack/slide/wipe) via `xfade`+`acrossfade`. Full multi-track NLE (layer video/audio/teks + keyframes + preview real-time) masih di luar scope ffmpeg.wasm batch-encode.
 

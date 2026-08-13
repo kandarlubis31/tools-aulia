@@ -2715,7 +2715,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'editor.timeline': { id: 'Timeline', en: 'Timeline' },
   'editor.transition': { id: 'Transisi', en: 'Transition' },
   'editor.timeline_hint': { id: 'Seret blok untuk urutkan, tarik tepi untuk trim, klik untuk preview. Klik penanda ⧉ untuk ganti transisi antar klip.', en: 'Drag blocks to reorder, drag edges to trim, click to preview. Click the ⧉ marker to change transitions between clips.' },
-  'editor.no_audio_trans': { id: 'Transisi aktif tapi ada klip tanpa audio → output tanpa audio', en: 'Transitions active but a clip has no audio → output without audio' },
+  'editor.no_audio': { id: 'Ada klip tanpa audio → hasil digabung tanpa audio', en: 'A clip has no audio → merged result will be silent' },
 
   // --- FEEDBACK WIDGET (E3) ---
   'feedback.button': { id: '🐛 Lapor Bug', en: '🐛 Report Bug' },
