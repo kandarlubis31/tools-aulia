@@ -68,9 +68,23 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         if (file) loadPDF(file);
       });
 
+      // Load pdf.js lokal dari /vendor/pdfjs/ (offline-first). waitForCdnLib('pdfjs')
+      // sebelumnya ngecek window.pdfjs yang tidak pernah ada — pdf.js nge-set
+      // window.pdfjsLib, dan halaman ini tidak pernah load library-nya sama sekali.
+      async function loadPdfJs() {
+        if ((window as any).pdfjsLib) return (window as any).pdfjsLib;
+        return new Promise((resolve) => {
+          const s = document.createElement('script');
+          s.src = '/vendor/pdfjs/pdf.min.js';
+          s.onload = () => resolve((window as any).pdfjsLib);
+          document.head.appendChild(s);
+        });
+      }
+
       async function loadPDF(file: File) {
-        const pdfjsLib = await (window as any).waitForCdnLib?.('pdfjs', { maxRetries: 40 });
+        const pdfjsLib = await loadPdfJs();
         if (!pdfjsLib) { showToast('Gagal load PDF library', 'error'); return; }
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
 
         const arrayBuffer = await file.arrayBuffer();
         pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;

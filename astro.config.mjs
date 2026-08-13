@@ -40,7 +40,35 @@ export default defineConfig({
       clientsClaim: true,
       globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
       globIgnores: ["**/404.html", "**/404/index.html", "**/og/*.png", "**/_astro/index.*.js"], // OG: social-only | index.*.js: Vite shared chunks (dynamic import) — skip precache (~6MB saved)
-      navigateFallback: '/offline',
+      // manifestTransforms custom → GANTI transform bawaan @vite-pwa/astro.
+      // Transform bawaan mengubah 'pdf/annotate/index.html' → 'pdf/annotate' (tanpa
+      // slash) yang TIDAK PERNAH cocok dengan navigasi Astro directory-format
+      // '/pdf/annotate/' → semua halaman jatuh ke navigateFallback ('Kamu Lagi
+      // Offline') — bug kritis yang sudah terverifikasi di production. Transform ini
+      // menghasilkan 'pdf/annotate/' (trailing slash) → PrecacheRoute cocok →
+      // halaman disajikan dari precache (offline-first) + fallback tetap ada.
+      manifestTransforms: [
+        async (entries) => {
+          for (const e of entries) {
+            if (!e.url.endsWith('.html')) continue;
+            const url = e.url.startsWith('/') ? e.url.slice(1) : e.url;
+            if (url === 'index.html') {
+              e.url = '/';
+            } else {
+              const parts = url.split('/');
+              if (parts[parts.length - 1] === 'index.html') {
+                parts.pop();
+                e.url = parts.join('/') + '/';
+              } else {
+                parts[parts.length - 1] = parts[parts.length - 1].replace(/\.html$/, '');
+                e.url = parts.join('/');
+              }
+            }
+          }
+          return { manifest: entries, warnings: [] };
+        },
+      ],
+      navigateFallback: '/offline/',
       navigateFallbackDenylist: [/^\/api\/.*/],
       maximumFileSizeToCacheInBytes: 25 * 1024 * 1024, // 25 MB — headroom for kbbi-sinonim.json (9.4MB) + id-words.json (2.6MB) + AI models
       runtimeCaching: [
