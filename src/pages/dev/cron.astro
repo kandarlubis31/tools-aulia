@@ -183,7 +183,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script is:inline>
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     // --- ELEMENTS ---
     const cronInput = document.getElementById('cron-input');
     const humanResult = document.getElementById('human-result');

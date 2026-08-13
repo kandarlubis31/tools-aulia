@@ -68,7 +68,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
   const original = document.getElementById('text-original') as HTMLTextAreaElement;
   const modified = document.getElementById('text-modified') as HTMLTextAreaElement;
   const btn = document.getElementById('compare-btn');

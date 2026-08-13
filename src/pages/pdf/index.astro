@@ -386,7 +386,10 @@ const getColorClass = (color: string) => {
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const searchInput = document.getElementById('pdf-search-input');
     const categoryBtns = document.querySelectorAll('.pdf-category-btn');
     const mobileFilter = document.getElementById('pdf-mobile-filter');

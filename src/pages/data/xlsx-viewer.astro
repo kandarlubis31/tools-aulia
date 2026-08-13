@@ -81,8 +81,11 @@ import DropZone from '../../components/DropZone.astro';
 </script>
 
 <script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
   import { loadCdnLib } from '../../composables/useCdnLib';
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input') as HTMLInputElement;
     const viewer = document.getElementById('viewer');

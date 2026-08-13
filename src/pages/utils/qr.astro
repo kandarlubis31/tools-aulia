@@ -356,6 +356,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
   import { debounce } from '../../composables/useDebounce';
   import { useLocalHistory } from '../../composables/useLocalHistory';
   import { copyImageToClipboard } from '../../composables/useClipboard';

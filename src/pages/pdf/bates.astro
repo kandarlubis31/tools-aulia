@@ -44,7 +44,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
+    // Guard SPA leak: hanya jalan di halaman ini (digits-select unik di bates).
+    // Tanpa guard, listener bocor & crash di halaman lain (dropZone null → addEventListener).
+    if (!document.getElementById('digits-select')) return;
     const dropZone = document.getElementById('drop-zone')!, fileInput = document.getElementById('file-input') as HTMLInputElement;
     const fileName = document.getElementById('file-name')!, applyBtn = document.getElementById('apply-btn') as HTMLButtonElement;
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;

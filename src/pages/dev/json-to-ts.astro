@@ -54,7 +54,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const jsonInput = document.getElementById('json-input') as HTMLTextAreaElement;
     const tsOutput = document.getElementById('ts-output');
     const jsonError = document.getElementById('json-error');

@@ -31,7 +31,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load',()=>{
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load',()=>{if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     // Guard SPA leak: listener ini hanya boleh jalan di halaman ini (drop-zone unik di sini).
     // Tanpa guard, listener bocor & crash di halaman lain saat navigasi (null.addEventListener).
     if(!document.getElementById('drop-zone')) return;

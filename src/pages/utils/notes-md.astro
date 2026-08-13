@@ -100,7 +100,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script is:inline src="/vendor/dompurify/purify.min.js"></script>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const titleInput = document.getElementById('note-title') as HTMLInputElement;
     const area = document.getElementById('note-area') as HTMLTextAreaElement;
     const preview = document.getElementById('preview-area');

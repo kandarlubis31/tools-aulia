@@ -60,7 +60,10 @@ import DropZone from '../../components/DropZone.astro';
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     // Guard SPA leak: hanya jalan di halaman ini (csv-body unik). Tanpa guard,
     // listener bocor & crash di halaman lain saat navigasi (null pada elemen ini).
     if (!document.getElementById('csv-body')) return;

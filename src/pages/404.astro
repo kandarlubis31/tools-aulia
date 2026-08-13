@@ -48,7 +48,10 @@ const popularTools = tools.filter(t => t.popular).slice(0, 6);
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     document.getElementById('open-search-404')?.addEventListener('click', () => {
       document.getElementById('search-btn')?.click();
     });

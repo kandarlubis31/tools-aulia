@@ -60,7 +60,10 @@ import DropZone from '../../components/DropZone.astro';
 <script is:inline src="/vendor/exif-js/exif.min.js"></script>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input') as HTMLInputElement;
     const result = document.getElementById('result');

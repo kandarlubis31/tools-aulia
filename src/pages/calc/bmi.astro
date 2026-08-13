@@ -201,6 +201,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 
 <script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
   // Elements
   const metricBtn = document.getElementById('metric-btn');
   const imperialBtn = document.getElementById('imperial-btn');
@@ -231,7 +233,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   let bmiHistory = safeJSON('bmiHistory', []);
 
   // Initialize
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     renderHistory();
   });
 

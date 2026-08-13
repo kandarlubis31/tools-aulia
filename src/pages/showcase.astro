@@ -142,7 +142,10 @@ const toolsForJs = tools.map((t) => ({
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const section = document.getElementById('top-used-section');
     const grid = document.getElementById('top-used-grid');
     const dataEl = document.getElementById('showcase-tools-data');

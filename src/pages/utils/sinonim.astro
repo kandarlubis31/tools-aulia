@@ -151,8 +151,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
   import { debounce } from '../../composables/useDebounce';
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     // Guard SPA leak: listener ini hanya boleh jalan di halaman sinonim
     // (autocomplete-dropdown unik di sini). Tanpa guard, listener bocor & mengikat
     // #search-btn/#search-input header/landing di halaman lain (id collision) +

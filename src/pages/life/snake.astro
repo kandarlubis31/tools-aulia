@@ -37,7 +37,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d')!;
     const scoreDisplay = document.getElementById('score-display')!;

@@ -304,7 +304,10 @@ const categories = [
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
       const filterBtns = document.querySelectorAll('.filter-btn');
       const mobileFilters = document.querySelectorAll('.filter-btn-mobile');
       const searchInput = document.getElementById('search-input');

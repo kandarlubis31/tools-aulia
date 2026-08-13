@@ -34,7 +34,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load',()=>{
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load',()=>{if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const dropZone=document.getElementById('drop-zone')!,fileInput=document.getElementById('file-input') as HTMLInputElement;
     const fileInfo=document.getElementById('file-info')!,resultArea=document.getElementById('result-area')!;
     const previewImg=document.getElementById('preview-img') as HTMLImageElement,origSize=document.getElementById('orig-size')!,b64Size=document.getElementById('b64-size')!,b64Output=document.getElementById('b64-output') as HTMLTextAreaElement;

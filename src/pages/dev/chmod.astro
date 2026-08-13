@@ -92,7 +92,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
-    document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+    document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
       function calculateChmod() {
         const ownerR = (document.getElementById('owner-r') as HTMLInputElement).checked ? 4 : 0;
         const ownerW = (document.getElementById('owner-w') as HTMLInputElement).checked ? 2 : 0;
