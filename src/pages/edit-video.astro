@@ -1,6 +1,6 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ToolPageHeader from '../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Video Editor — Edit Video Online Tanpa Upload">
@@ -308,9 +308,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const w = blockWidth(c);
         const trans = c.transitionOut;
         parts.push(`
-          <div class="clip-block absolute top-1.5 bottom-1.5 rounded-lg border border-violet-300 dark:border-violet-700 bg-violet-500/15 hover:bg-violet-500/25 cursor-grab active:cursor-grabbing overflow-hidden select-none" data-id="${c.id}" data-index="${i}" style="left:${left}px;width:${w - 3}px">
-            <span class="trim-l absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize bg-black/10 hover:bg-black/25"></span>
-            <span class="trim-r absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize bg-black/10 hover:bg-black/25"></span>
+          <div class="clip-block absolute top-1.5 bottom-1.5 rounded-lg border border-violet-300 dark:border-violet-700 bg-violet-500/15 hover:bg-violet-500/25 cursor-grab active:cursor-grabbing overflow-hidden select-none touch-none" data-id="${c.id}" data-index="${i}" style="left:${left}px;width:${w - 3}px">
+            <span class="trim-l absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize bg-black/10 hover:bg-black/25 z-20 touch-none"></span>
+            <span class="trim-r absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize bg-black/10 hover:bg-black/25 z-20 touch-none"></span>
             <span class="block-label block truncate px-2.5 pt-1.5 text-2xs font-bold text-violet-700 dark:text-violet-200">${i + 1}. ${esc(c.name)}</span>
             <span class="block-dur block px-2.5 text-2xs text-violet-500/80 dark:text-violet-300/70">${fmtDur(outDur(c))}${c.speed !== 1 ? ` · ${c.speed}×` : ''}${trans !== 'none' ? ` · ${esc(trans)}` : ''}</span>
           </div>`);
@@ -337,13 +337,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           const srcTime = c.start + outOff * c.speed;
           activeClipId = c.id;
           previewVideo.src = c.url;
+          previewVideo.load();
           const seek = () => {
             try { previewVideo.currentTime = clamp(srcTime, 0, Math.max(0, previewVideo.duration - 0.05)); } catch {}
             previewVideo.play().catch(() => {});
           };
-          if (previewVideo.readyState >= 1) seek();
-          else previewVideo.addEventListener('loadedmetadata', seek, { once: true });
-          previewVideo.load();
+          previewVideo.addEventListener('loadedmetadata', seek, { once: true });
           return;
         }
         acc += d;
@@ -352,6 +351,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     // --- timeline interactions ---
     let dragState: any = null;
+    let trimRaf = 0;
 
     trackEl.addEventListener('pointerdown', (e) => {
       const target = e.target as HTMLElement;
@@ -393,7 +393,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const dxSec = ((e.clientX - dragState.startX) / PX_PER_SEC) * clip.speed;
         if (dragState.side === 'l') clip.start = clamp(dragState.origStart + dxSec, 0, clip.end - 0.1);
         else clip.end = clamp(dragState.origEnd + dxSec, clip.start + 0.1, clip.duration);
-        renderTimeline();
+        if (trimRaf) return;
+        trimRaf = requestAnimationFrame(() => { trimRaf = 0; renderTimeline(); });
       } else if (dragState.mode === 'reorder') {
         if (Math.abs(e.clientX - dragState.startX) > 6) dragState.moved = true;
         if (!dragState.moved) return;
@@ -426,6 +427,27 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         renderTimeline();
         renderClips();
       }
+    });
+
+    function cancelDrag() {
+      if (!dragState) return;
+      if (trimRaf) { cancelAnimationFrame(trimRaf); trimRaf = 0; }
+      if (dragState.mode === 'trim') {
+        const clip = findClip(dragState.clipId);
+        if (clip) { clip.start = dragState.origStart; clip.end = dragState.origEnd; }
+        renderClips();
+      } else if (dragState.mode === 'reorder') {
+        if (dragState.ghost) dragState.ghost.remove();
+        renderTimeline();
+      }
+      dragState = null;
+    }
+
+    // pointercancel (touch: browser mengambil alih gesture) + lostpointercapture
+    // (safety net) → jangan biarkan dragState nyangkut (biang "handle freeze").
+    trackEl.addEventListener('pointercancel', cancelDrag);
+    trackEl.addEventListener('lostpointercapture', () => {
+      if (dragState) cancelDrag();
     });
 
     function createReorderGhost(): HTMLElement {
@@ -556,13 +578,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       previewSection.classList.remove('hidden');
       activeClipId = id;
       previewVideo.src = c.url;
+      previewVideo.load();
       const seek = () => {
         try { previewVideo.currentTime = clamp(c.start, 0, Math.max(0, previewVideo.duration - 0.05)); } catch {}
         previewVideo.play().catch(() => {});
       };
-      if (previewVideo.readyState >= 1) seek();
-      else previewVideo.addEventListener('loadedmetadata', seek, { once: true });
-      previewVideo.load();
+      previewVideo.addEventListener('loadedmetadata', seek, { once: true });
     }
 
     // --- list interactions ---
@@ -754,6 +775,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       return parts.join(';');
     }
 
+    async function probeHasAudio(f: FFmpeg, name: string): Promise<boolean> {
+      try {
+        const ret = await f.ffprobe(['-v', 'error', '-select_streams', 'a', '-show_entries', 'stream=codec_type', '-of', 'csv=p=0', name, '-o', 'probe.txt']);
+        if (ret !== 0) return true;
+        const data = (await f.readFile('probe.txt', 'utf8')) as unknown;
+        await f.deleteFile('probe.txt').catch(() => {});
+        return String(data).trim().length > 0;
+      } catch {
+        return true;
+      }
+    }
+
     // --- ffmpeg ---
     function ensureFfmpeg(): Promise<FFmpeg> {
       if (ffmpeg) return Promise.resolve(ffmpeg);
@@ -806,35 +839,49 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const dims = fitDims(first.width, first.height);
         const tw = dims.w, th = dims.h;
         const segNames: string[] = [];
+        const inNames: string[] = [];
+        const hasAudio: boolean[] = [];
 
         if (wmText.trim()) {
           await f.writeFile('/font.ttf', await fetchFile('/vendor/ffmpeg/font.ttf'));
           await f.writeFile('/wm.txt', wmText.trim());
         }
 
+        // Pass 1: tulis input + probe audio (biar concat/xfade nggak ketemu stream campur).
+        for (let i = 0; i < total; i++) {
+          const c = clips[i];
+          const ext = (c.name.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp4';
+          const inName = `in_${i}.${ext}`;
+          inNames.push(inName);
+          await f.writeFile(inName, await fetchFile(c.file));
+          hasAudio.push(c.muted ? false : await probeHasAudio(f, inName));
+        }
+        const allHaveAudio = hasAudio.every(Boolean);
+        if (!allHaveAudio) {
+          toast(t('editor.no_audio', 'Ada klip tanpa audio → hasil digabung tanpa audio'), 'info');
+        }
+
+        // Pass 2: normalize tiap klip ke H.264/AAC yang identik.
         for (let i = 0; i < total; i++) {
           const c = clips[i];
           progSegIndex = i;
           setProgress(i / total, `${t('editor.processing', 'Memproses klip')} ${i + 1}/${total}`);
 
-          const ext = (c.name.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp4';
-          const inName = `in_${i}.${ext}`;
+          const inName = inNames[i];
           const segName = `seg_${i}.mp4`;
-
-          await f.writeFile(inName, await fetchFile(c.file));
           const dur = (c.end - c.start).toFixed(3);
           const args = [
             '-ss', c.start.toFixed(3), '-t', dur, '-i', inName,
-            '-vf', buildVf(c, tw, th),
+            '-vf', buildVf(c, tw, th), '-r', '30',
             '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p',
           ];
-          if (c.muted) {
-            args.push('-an');
-          } else {
+          if (allHaveAudio) {
             args.push('-map', '0:a:0?');
             const af = buildAf(c);
             if (af) args.push('-af', af);
             args.push('-c:a', 'aac', '-b:a', '128k', '-ar', '44100', '-ac', '2');
+          } else {
+            args.push('-an');
           }
           args.push('-movflags', '+faststart', segName);
 
@@ -845,7 +892,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         }
 
         const anyTransition = clips.some((c) => c.transitionOut !== 'none');
-        const allHaveAudio = clips.every((c) => !c.muted);
 
         if (anyTransition && total >= 2) {
           progMode = 'concat';
@@ -858,7 +904,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             mapArgs.push('-map', `[a${total - 1}]`);
           } else {
             mapArgs.push('-an');
-            toast(t('editor.no_audio_trans', 'Transisi aktif tapi ada klip tanpa audio → output tanpa audio'), 'info');
           }
           const xargs = [...inputs, '-filter_complex', fc, ...mapArgs, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p'];
           if (allHaveAudio) xargs.push('-c:a', 'aac', '-b:a', '128k', '-ar', '44100', '-ac', '2');
