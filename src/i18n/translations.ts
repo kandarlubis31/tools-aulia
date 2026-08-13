@@ -2669,7 +2669,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'editor.clips': { id: 'Klip', en: 'Clips' },
   'editor.clip_count': { id: 'klip', en: 'clips' },
   'editor.preview': { id: 'Preview', en: 'Preview' },
-  'editor.preview_hint': { id: 'Preview menampilkan klip sumber. Hasil edit final terlihat setelah export.', en: 'Preview shows the source clip. The final edit is visible after export.' },
+  'editor.preview_hint': { id: 'Preview real-time menampilkan hasil edit (trim/crop/transisi). Audio hanya ikut saat export.', en: 'Real-time preview shows the edited result (trim/crop/transition). Audio is added on export.' },
   'editor.export': { id: 'Export MP4', en: 'Export MP4' },
   'editor.note': { id: 'FFmpeg berjalan di browser (~32MB, dimuat sekali saat export pertama). File tidak pernah di-upload.', en: 'FFmpeg runs in-browser (~32MB, loaded once on first export). Files are never uploaded.' },
   'editor.start': { id: 'Mulai', en: 'Start' },

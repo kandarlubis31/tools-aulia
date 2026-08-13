@@ -80,8 +80,14 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
       <!-- Preview -->
       <div id="preview-section" class="hidden card-base p-5">
         <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200 mb-3" data-i18n="editor.preview">Preview</h2>
-        <video id="preview-video" controls playsinline class="w-full max-h-72 rounded-lg bg-black"></video>
-        <p class="text-2xs text-matte-400 mt-2" data-i18n="editor.preview_hint">Preview menampilkan klip sumber. Hasil edit final terlihat setelah export.</p>
+        <div class="relative">
+          <canvas id="preview-canvas" class="w-full rounded-lg bg-black"></canvas>
+          <button id="preview-toggle" type="button" class="absolute bottom-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-violet-500/90 text-white text-sm grid place-items-center shadow-lg hover:bg-violet-600 transition-colors" title="Play/Pause">▶</button>
+        </div>
+        <div class="flex items-center justify-between mt-2">
+          <span id="preview-time" class="text-2xs font-mono text-matte-400">0:00 / 0:00</span>
+        </div>
+        <p class="text-2xs text-matte-400 mt-1" data-i18n="editor.preview_hint">Preview real-time menampilkan hasil edit (trim/crop/transisi). Audio hanya ikut saat export.</p>
       </div>
 
       <!-- Export -->
@@ -104,6 +110,8 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
 <script>
   import { FFmpeg } from '@ffmpeg/ffmpeg';
   import { fetchFile } from '@ffmpeg/util';
+  import { createCompositor, createVideoElementSource } from '../composables/useVideoCompositor';
+  import type { CompositorClip, WatermarkSpec, VideoCompositor } from '../composables/useVideoCompositor';
 
   const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
@@ -126,7 +134,9 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
     const wmPosSelect = document.getElementById('wm-pos') as HTMLSelectElement;
     const wmSizeInput = document.getElementById('wm-size') as HTMLInputElement;
     const previewSection = document.getElementById('preview-section')!;
-    const previewVideo = document.getElementById('preview-video') as HTMLVideoElement;
+    const previewCanvas = document.getElementById('preview-canvas') as HTMLCanvasElement;
+    const previewToggle = document.getElementById('preview-toggle') as HTMLButtonElement;
+    const previewTime = document.getElementById('preview-time')!;
     const exportBtn = document.getElementById('export-btn') as HTMLButtonElement;
     const progressWrap = document.getElementById('progress-wrap')!;
     const progressBar = document.getElementById('progress-bar')!;
@@ -216,6 +226,11 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
     let transitionDuration = 0.8;
     let activeClipId: number | null = null;
 
+    let compositor: VideoCompositor | null = null;
+    const previewVideos = new Map<number, HTMLVideoElement>();
+    let outW = 1280;
+    let outH = 720;
+
     let progMode: 'seg' | 'concat' = 'seg';
     let progSegIndex = 0;
     let progSegTotal = 1;
@@ -234,6 +249,90 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
     }
     function totalPx() {
       return clips.reduce((s, c) => s + blockWidth(c), 0) + 24;
+    }
+
+    // --- compositor (real-time canvas preview) ---
+    function outputDims() {
+      const first = clips[0];
+      if (first) {
+        const d = fitDims(first.width, first.height);
+        return { w: d.w, h: d.h };
+      }
+      return { w: 1280, h: 720 };
+    }
+
+    function wmToSpec(): WatermarkSpec | null {
+      if (!wmText.trim()) return null;
+      return {
+        text: wmText.trim(),
+        position: wmPos as WatermarkSpec['position'],
+        size: wmSize,
+        color: 'rgba(255,255,255,0.9)',
+      };
+    }
+
+    function ensureCompositor(): VideoCompositor {
+      const d = outputDims();
+      if (!compositor || outW !== d.w || outH !== d.h) {
+        const t = compositor ? compositor.getCurrentTime() : 0;
+        outW = d.w;
+        outH = d.h;
+        compositor = createCompositor(previewCanvas, { width: outW, height: outH, transitionDuration });
+        compositor.onTimeUpdate = (ct) => {
+          updatePlayhead(ct);
+          updatePreviewTime(ct);
+          if (ct >= compositor!.getDuration() - 0.001) setPreviewPlaying(false);
+        };
+        void compositor.seek(Math.min(t, compositor.getDuration()));
+      }
+      return compositor;
+    }
+
+    function videoForClip(c: Clip): HTMLVideoElement {
+      let v = previewVideos.get(c.id);
+      if (!v) {
+        v = document.createElement('video');
+        v.src = c.url;
+        v.muted = true;
+        v.preload = 'auto';
+        previewVideos.set(c.id, v);
+      }
+      return v;
+    }
+
+    function syncCompositor() {
+      const comp = ensureCompositor();
+      const list: CompositorClip[] = clips.map((c) => ({
+        id: c.id,
+        source: createVideoElementSource(videoForClip(c), c.width, c.height),
+        srcIn: c.start,
+        srcOut: c.end,
+        speed: c.speed,
+        rotation: c.rotate,
+        crop: c.crop as CompositorClip['crop'],
+        opacity: 1,
+        transitionOut: c.transitionOut as CompositorClip['transitionOut'],
+      }));
+      comp.setTimeline(list);
+      comp.setWatermark(wmToSpec());
+      const live = new Set(clips.map((c) => c.id));
+      previewVideos.forEach((v, id) => {
+        if (!live.has(id)) { v.src = ''; previewVideos.delete(id); }
+      });
+      updatePreviewTime(comp.getCurrentTime());
+    }
+
+    function syncWatermark() {
+      compositor?.setWatermark(wmToSpec());
+    }
+
+    function updatePreviewTime(t: number) {
+      const d = compositor?.getDuration() ?? 0;
+      previewTime.textContent = `${fmtDur(t)} / ${fmtDur(d)}`;
+    }
+
+    function setPreviewPlaying(p: boolean) {
+      previewToggle.textContent = p ? '⏸' : '▶';
     }
 
     // --- meta loading ---
@@ -328,25 +427,11 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
     }
 
     function seekSequence(seqTime: number) {
-      let acc = 0;
-      for (let i = 0; i < clips.length; i++) {
-        const c = clips[i];
-        const d = outDur(c);
-        if (seqTime < acc + d || i === clips.length - 1) {
-          const outOff = clamp(seqTime - acc, 0, d - 0.01);
-          const srcTime = c.start + outOff * c.speed;
-          activeClipId = c.id;
-          previewVideo.src = c.url;
-          previewVideo.load();
-          const seek = () => {
-            try { previewVideo.currentTime = clamp(srcTime, 0, Math.max(0, previewVideo.duration - 0.05)); } catch {}
-            previewVideo.play().catch(() => {});
-          };
-          previewVideo.addEventListener('loadedmetadata', seek, { once: true });
-          return;
-        }
-        acc += d;
-      }
+      const comp = ensureCompositor();
+      comp.pause();
+      setPreviewPlaying(false);
+      void comp.seek(seqTime);
+      updatePlayhead(seqTime);
     }
 
     // --- timeline interactions ---
@@ -573,17 +658,18 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
     }
 
     function previewClip(id: number) {
-      const c = findClip(id);
-      if (!c) return;
+      const idx = clips.findIndex((c) => c.id === id);
+      if (idx === -1) return;
       previewSection.classList.remove('hidden');
       activeClipId = id;
-      previewVideo.src = c.url;
-      previewVideo.load();
-      const seek = () => {
-        try { previewVideo.currentTime = clamp(c.start, 0, Math.max(0, previewVideo.duration - 0.05)); } catch {}
-        previewVideo.play().catch(() => {});
-      };
-      previewVideo.addEventListener('loadedmetadata', seek, { once: true });
+      syncCompositor();
+      let t = 0;
+      for (let j = 0; j < idx; j++) t += outDur(clips[j]);
+      const comp = ensureCompositor();
+      void comp.seek(t).then(() => {
+        comp.play();
+        setPreviewPlaying(true);
+      });
     }
 
     // --- list interactions ---
@@ -598,12 +684,13 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
       if (idx === -1) return;
 
       if (action === 'preview') previewClip(id);
-      else if (action === 'up') { if (idx > 0) { [clips[idx - 1], clips[idx]] = [clips[idx], clips[idx - 1]]; renderClips(); } }
-      else if (action === 'down') { if (idx < clips.length - 1) { [clips[idx + 1], clips[idx]] = [clips[idx], clips[idx + 1]]; renderClips(); } }
+      else if (action === 'up') { if (idx > 0) { [clips[idx - 1], clips[idx]] = [clips[idx], clips[idx - 1]]; renderClips(); syncCompositor(); } }
+      else if (action === 'down') { if (idx < clips.length - 1) { [clips[idx + 1], clips[idx]] = [clips[idx], clips[idx + 1]]; renderClips(); syncCompositor(); } }
       else if (action === 'remove') {
         URL.revokeObjectURL(clips[idx].url);
         clips.splice(idx, 1);
         renderClips();
+        syncCompositor();
         if (clips.length) previewClip(clips[Math.max(0, idx - 1)].id);
       } else if (action === 'split') {
         const input = card.querySelector('input[data-field="split-at"]') as HTMLInputElement;
@@ -637,6 +724,7 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
         if (label) label.textContent = clip.volume + '%';
       }
       renderTimeline();
+      syncCompositor();
     });
 
     clipsList.addEventListener('change', (e) => {
@@ -659,6 +747,7 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
         meta.textContent = `${fmtDur(clip.duration)} · ${clip.width || '?'}×${clip.height || '?'}${clip.speed !== 1 ? ` · ${clip.speed}×` : ''}${clip.muted ? ' · 🔇' : ''}`;
       }
       renderTimeline();
+      syncCompositor();
     });
 
     function splitClip(id: number, at: number) {
@@ -673,25 +762,12 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
       const right: Clip = { ...c, id: nextId++, start: at };
       clips.splice(i, 1, left, right);
       renderClips();
+      syncCompositor();
       toast(t('editor.splitted', 'Klip di-split jadi 2'), 'success');
     }
 
-    // --- preview playhead sync ---
-    previewVideo.addEventListener('timeupdate', () => {
-      if (activeClipId == null) return;
-      const idx = clips.findIndex((c) => c.id === activeClipId);
-      if (idx === -1) return;
-      const c = clips[idx];
-      const srcTime = previewVideo.currentTime;
-      if (srcTime >= c.end - 0.05) {
-        previewVideo.pause();
-        return;
-      }
-      const outOff = Math.max(0, (srcTime - c.start) / c.speed);
-      let acc = 0;
-      for (let j = 0; j < idx; j++) acc += outDur(clips[j]);
-      updatePlayhead(acc + outOff);
-    });
+    // Playhead & timecode kini dikendalikan canvas compositor (syncCompositor →
+    // compositor.onTimeUpdate), bukan lagi <video> timeupdate.
 
     // --- ffmpeg filter builders ---
     function atempoChain(speed: number): string {
@@ -953,15 +1029,29 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
     });
     exportBtn.addEventListener('click', doExport);
 
-    wmTextInput.addEventListener('input', () => { wmText = wmTextInput.value; });
-    wmPosSelect.addEventListener('change', () => { wmPos = wmPosSelect.value; });
+    previewToggle.addEventListener('click', () => {
+      if (!compositor) syncCompositor();
+      const comp = ensureCompositor();
+      if (comp.playing) {
+        comp.pause();
+        setPreviewPlaying(false);
+      } else {
+        comp.play();
+        setPreviewPlaying(true);
+      }
+    });
+
+    wmTextInput.addEventListener('input', () => { wmText = wmTextInput.value; syncWatermark(); });
+    wmPosSelect.addEventListener('change', () => { wmPos = wmPosSelect.value; syncWatermark(); });
     wmSizeInput.addEventListener('input', () => {
       const v = parseInt(wmSizeInput.value);
       wmSize = isNaN(v) ? 32 : Math.max(10, Math.min(120, v));
+      syncWatermark();
     });
     transitionDurInput.addEventListener('change', () => {
       const v = parseFloat(transitionDurInput.value);
       transitionDuration = isNaN(v) ? 0.8 : Math.max(0.2, Math.min(2, v));
+      compositor?.setTransitionDuration(transitionDuration);
     });
 
     // initial state
