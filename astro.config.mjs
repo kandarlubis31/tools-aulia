@@ -139,6 +139,17 @@ export default defineConfig({
             expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 },
             cacheableResponse: { statuses: [0, 200] }
           }
+        },
+        // --- Self-hosted FFmpeg core (video-editor: wasm ~32MB). ---
+        // NOT precached (over 25MB limit) — cached on first use → offline-capable.
+        {
+          urlPattern: /\/vendor\/ffmpeg\//,
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'ffmpeg-core',
+            expiration: { maxEntries: 5, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            cacheableResponse: { statuses: [0, 200] }
+          }
         }
       ]
     },

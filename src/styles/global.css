@@ -50,6 +50,15 @@
   }
 }
 
+/* ========== MOBILE/TOUCH: bintang favorit selalu terlihat ========== */
+/* ToolCard memakai `opacity-0 group-hover:opacity-100` (muncul saat hover). Di
+   perangkat tanpa hover bintang gak pernah terlihat → user touch gak bisa
+   favorit (padahal tombolnya tetap clickable & gak kelihatan). Tampilkan
+   permanen di perangkat tanpa kemampuan hover. */
+@media (hover: none) {
+  .fav-star { opacity: 1; }
+}
+
 /* ========== SELF-HOSTED FONTS (woff2 variable — no Google Fonts) ========== */
 @font-face {
   font-family: 'Inter';

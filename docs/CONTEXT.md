@@ -1,6 +1,6 @@
 # Project Context — ToolsAulia
 
-> **Last updated:** August 12, 2026 (Batch 11: +10 tools, 168 total)
+> **Last updated:** August 13, 2026 (Video Editor Phase 1 — FFmpeg.wasm client-side)
 > **Stack:** Astro 5 · Tailwind CSS · TypeScript · 100% client-side (zero server processing)
 > **PWA:** Service Worker + Workbox precache · offline-first
 > **i18n:** Indonesian-first + English toggle (localStorage)
@@ -19,7 +19,7 @@
 | **Utils** | 19 | wa-builder, qr, jokes, brainstorm, pomodoro, todo, word-counter, prabowo-countdown, paste-to-md, stopwatch, lorem, motivation, sinonim, notes-md, decision-wheel, expense-tracker, wordle-id, habit-tracker, qr-scanner |
 | **Text** | 13 | typing-test, text-to-speech, summarizer, readability, fancy, emoji, speech-to-text, lang-detect, anagram, morse, rot13, random-text, to-pdf |
 | **Data** | 10 | csv-editor, xlsx-viewer, yaml-json, ical, fake-data, xml-formatter, vcard, barcode, geojson, barcode-reader |
-| **Media** | 10 | audio-recorder, waveform, audio-trimmer, metronome, tone-generator, white-noise, screen-recorder, scale-ref, video-to-gif, beat-maker |
+| **Media** | 16 | audio-recorder, waveform, audio-trimmer, metronome, tone-generator, white-noise, screen-recorder, scale-ref, video-to-gif, beat-maker, media-info, audio-viz, video-thumb, audio-eq, audio-convert, video-editor |
 | **Network** | 11 | http-builder, rest-client, dns-lookup, speed-test, latency, websocket, http-headers, ua-parser, port-ref, whois, ssl |
 | **File** | 2 | csv-json, pdf-to-md |
 | **Life** | 4 | mood-tracker, certificate, snake, magic-8ball |
@@ -113,6 +113,7 @@ Hero (compact: 8px padding, inline stats, no buttons)
 7. **Minimal ZIP builder** — Inline ZIP for PDF-to-Word (no JSZip dependency)
 8. **Permissions-Policy** — Microphone access granted for audio tools
 9. **Performance-first homepage** — No JS-driven animations on card grid, CSS-only hover effects
+10. **Video editing (FFmpeg)** — `@ffmpeg/ffmpeg` + `@ffmpeg/core` 0.12.9 self-hosted at `public/vendor/ffmpeg/` (ESM core + 32MB wasm + `font.ttf` buat drawtext). Wasm & font TIDAK di-precache — runtime-cached (`ffmpeg-core`) setelah pemakaian pertama. CSP `media-src 'self' blob: data:` untuk preview playback. Single-threaded core, re-encode ke H.264/AAC (maks 720p) biar concat-safe. Filter per-klip: `transpose` (rotasi), `crop` (center aspect), `scale/pad`, `drawtext` (watermark), `setpts`+`atempo` (speed), `volume`/`-an` (volume/mute). Transisi antar klip via `xfade` (video) + `acrossfade` (audio) chain di `filter_complex`.
 
 ---
 
@@ -141,6 +142,9 @@ Hero (compact: 8px padding, inline stats, no buttons)
 - **227 tools** — 12 kategori, 331 precache entries, `/showcase` (Top 20) + `/changelog` + `/rss.xml` pages
 - **Pagination:** 36 tools per page — smooth UX untuk 227 tools
 - **UI/UX Optimization:** ✅ SELESAI (Aug 2026) — compact hero, dense grid, hover lift, no tilt JS
+- **Video Editor (Phase 1):** ✅ — `/media/video-editor` (FFmpeg.wasm client-side): import multi-klip, trim/split, reorder, merge, export MP4. Self-hosted core di `public/vendor/ffmpeg/` + runtime-cache SW.
+- **Video Editor (Phase 2):** ✅ — efek per-klip: speed (0.25–4×), volume/mute, rotasi (0/90/180/270), crop (center aspect preset), + watermark teks global (drawtext, font self-host).
+- **Video Editor (Phase 3):** ✅ — timeline horizontal (single track): blok ∝ durasi, drag-reorder, edge-trim, playhead + click-to-seek; transisi antar klip (fade/fadeblack/slide/wipe) via `xfade`+`acrossfade`. Full multi-track NLE (layer video/audio/teks + keyframes + preview real-time) masih di luar scope ffmpeg.wasm batch-encode.
 
 ---
 
