@@ -52,8 +52,36 @@ import DropZone from '../../components/DropZone.astro';
 </BaseLayout>
 
 <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script is:inline>
+  // Fallback multi-CDN (pola qrious): kalau xlsx dari cdnjs gagal/blokir, otomatis
+  // ambil dari jsdelivr → unpkg. Full page load pakai document.write sinkron
+  // (parser masih aktif → global dijamin ada sebelum module script jalan),
+  // navigasi SPA pakai injeksi dinamis. Guard di handler tetap jadi jaring pengaman.
+  (function () {
+    if (typeof window.XLSX !== 'undefined') return;
+    var FALLBACKS = [
+      'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+      'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
+    ];
+    var i = 0;
+    function tryNext() {
+      if (typeof window.XLSX !== 'undefined') return;
+      if (i >= FALLBACKS.length) return;
+      var s = document.createElement('script');
+      s.src = FALLBACKS[i++];
+      s.onerror = function () { if (s.parentNode) s.remove(); tryNext(); };
+      document.head.appendChild(s);
+    }
+    if (document.readyState === 'loading') {
+      document.write('<script src="' + FALLBACKS[0] + '"><\/script>');
+    } else {
+      tryNext();
+    }
+  })();
+</script>
 
 <script>
+  import { loadCdnLib } from '../../composables/useCdnLib';
   document.addEventListener('astro:page-load', () => {
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input') as HTMLInputElement;
@@ -81,6 +109,13 @@ import DropZone from '../../components/DropZone.astro';
       if (!f) return;
       if (f.size > 20 * 1024 * 1024) { showToast('File maksimal 20 MB', 'error'); return; }
       try {
+        // Jaring pengaman: kalau cdnjs + fallback inline semua gagal, coba CDN
+        // cadangan sekali lagi lewat loadCdnLib (kasih pesan jelas kalau gak bisa).
+        const xlsxReady = await loadCdnLib('XLSX', [
+          'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+          'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
+        ]);
+        if (!xlsxReady) { showToast('Gagal memuat library Excel (XLSX). Cek koneksi internet.', 'error'); return; }
         const buf = await f.arrayBuffer();
         wb = (window as any).XLSX.read(buf, { type: 'array' });
         if (!wb.SheetNames.length) { showToast('Tidak ada sheet', 'error'); return; }

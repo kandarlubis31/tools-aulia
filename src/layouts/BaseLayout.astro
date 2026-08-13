@@ -1277,7 +1277,7 @@ if (isPdfRoot) {
     import { usePdfDropZone } from '../composables/usePdfDropZone';
     import { loadPdf, renderPageToCanvas, renderAllPagesToCanvases } from '../composables/usePdfRenderer';
     import { downloadBlob, downloadBytes } from '../composables/usePdfDownload';
-    import { waitForCdnLib } from '../composables/useCdnLib';
+    import { waitForCdnLib, loadCdnLib } from '../composables/useCdnLib';
     // i18n dictionary (210KB) is lazy-loaded on demand (English only) so it no
     // longer bloats the eager bundle — this was the old ~195KB "main.js".
     let i18nModPromise = null;
@@ -1304,6 +1304,7 @@ if (isPdfRoot) {
     window.downloadBlob = downloadBlob;
     window.downloadBytes = downloadBytes;
     window.waitForCdnLib = waitForCdnLib;
+    window.loadCdnLib = loadCdnLib;
 
     // Auto-generated id→en dictionary (populated lazily with the translations module)
     let dynamicPhrases = {};

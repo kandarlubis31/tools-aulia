@@ -236,7 +236,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     convertBtn.innerHTML = window._tToast ? window._tToast('⏳ Loading library...') : '⏳ Loading library...';
     convertBtn.disabled = true;
 
-    const cdnReady = await window.waitForCdnLib('html2pdf');
+    // Multi-CDN fallback: cdnjs (primer) → jsdelivr → unpkg — pola sama seperti
+    // qrious. Kalau semua gagal, kasih toast yang jelas.
+    const cdnReady = await window.loadCdnLib('html2pdf', [
+      'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+      'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
+      'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
+    ]);
     if (!cdnReady) {
       convertBtn.innerHTML = _convertOriginalHTML;
       convertBtn.disabled = false;
