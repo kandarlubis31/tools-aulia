@@ -200,6 +200,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
   import { debounce } from '../../composables/useDebounce';
   // --- 1. DATABASES (Expanded) ---
   
@@ -836,7 +838,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }, { once: true });
 
   // Init
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
       updateModeUI();
       renderFavorites();
       updateStatsDisplay();

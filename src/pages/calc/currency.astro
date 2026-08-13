@@ -140,7 +140,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script is:inline>
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     
     const amountEl = document.getElementById('amount');
     const fromEl = document.getElementById('from-currency');

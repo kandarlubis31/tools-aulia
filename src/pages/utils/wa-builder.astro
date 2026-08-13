@@ -268,7 +268,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.head.insertAdjacentHTML('beforeend', tplStyles);
 
   // LOGIC
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     
     // Selectors
     const phoneInput = document.getElementById('phone');

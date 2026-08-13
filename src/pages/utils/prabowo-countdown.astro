@@ -344,6 +344,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
   const TARGET_DATE = new Date('2029-10-20T00:00:00+07:00').getTime();
   const START_DATE = new Date('2024-10-20T00:00:00+07:00').getTime();
   const TOTAL_TERM_MS = TARGET_DATE - START_DATE;
@@ -1121,7 +1123,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (e.code === 'ArrowLeft' && !isInput) { e.preventDefault(); navigateFact(-1); }
   };
 
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     preloadAudios();
     initBacksound();
     updateCountdown();

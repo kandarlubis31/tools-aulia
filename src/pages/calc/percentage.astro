@@ -139,6 +139,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
   // Elements
   const p1X = document.getElementById('p1-x');
   const p1Y = document.getElementById('p1-y');
@@ -170,7 +172,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   let calculationHistory = safeJSON('percentageHistory', []);
 
   // Initialize
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     renderHistory();
   });
 

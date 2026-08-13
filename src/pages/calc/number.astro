@@ -94,7 +94,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
   const dec = document.getElementById('inp-dec') as HTMLInputElement;
   const bin = document.getElementById('inp-bin') as HTMLInputElement;
   const hex = document.getElementById('inp-hex') as HTMLInputElement;

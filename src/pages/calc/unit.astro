@@ -138,6 +138,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
   // Data Satuan & Faktor Konversi
   // FIX: Menambahkan tanda kutip pada key yang mengandung simbol spesial
   const units = {
@@ -272,7 +274,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const comparisonTbody = document.getElementById('comparison-tbody');
 
   // Initialize
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     populateSelects();
     renderHistory();
     renderFavorites();

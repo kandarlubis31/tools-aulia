@@ -303,7 +303,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script is:inline>
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     // Elements
     const codeInput = document.getElementById('code-input');
     const widthInput = document.getElementById('width-input');

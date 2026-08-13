@@ -35,7 +35,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load',()=>{
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load',()=>{if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const codeInput=document.getElementById('code-input') as HTMLTextAreaElement;
     const themeSelect=document.getElementById('theme-select') as HTMLSelectElement;
     const padInput=document.getElementById('pad-input') as HTMLInputElement;

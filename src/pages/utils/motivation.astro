@@ -162,6 +162,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
   // --- 1. LOCAL DATABASE (OFFLINE MODE) ---
   const localDB = [
     { text: "Talk is cheap. Show me the code.", author: "Linus Torvalds", tag: "coding" },
@@ -598,7 +600,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
   }, { once: true });
 
-  document.addEventListener('astro:page-load', () => {
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
       updateModeUI();
       renderFavorites();
       applySettings();

@@ -49,7 +49,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const inputArea = document.getElementById('input-area') as HTMLTextAreaElement;
     const outputArea = document.getElementById('output-area');
     const formatBtn = document.getElementById('format-btn');

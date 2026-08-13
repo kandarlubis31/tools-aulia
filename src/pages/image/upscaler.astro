@@ -37,9 +37,15 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
   import { sharpenPixels } from '../../composables/useImageWorker';
 
-  document.addEventListener('astro:page-load',()=>{
+  document.addEventListener('astro:page-load',()=>{if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
+    // Guard SPA leak: hanya jalan di halaman ini (orig-canvas unik di upscaler).
+    // Tanpa guard, listener bocor & crash di halaman lain (dropZone null → addEventListener).
+    if(!document.getElementById('orig-canvas')) return;
     const dropZone=document.getElementById('drop-zone')!,fileInput=document.getElementById('file-input') as HTMLInputElement;
     const fileName=document.getElementById('file-name')!,scaleVal=document.getElementById('scale-val')!;
     const scaleSlider=document.getElementById('scale-slider') as HTMLInputElement;

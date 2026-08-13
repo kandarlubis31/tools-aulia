@@ -40,7 +40,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
-    document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+    document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
       let algorithm = 'SHA-256';
 
       // Algorithm buttons

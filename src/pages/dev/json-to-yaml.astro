@@ -58,7 +58,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script is:inline src="/vendor/js-yaml/js-yaml.min.js"></script>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const toYamlBtn = document.getElementById('to-yaml-btn');
     const toJsonBtn = document.getElementById('to-json-btn');
     const convertBtn = document.getElementById('convert-btn');

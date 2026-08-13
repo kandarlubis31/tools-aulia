@@ -73,7 +73,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const freqDisplay = document.getElementById('freq-display')!;
     const noteLabel = document.getElementById('note-label')!;
     const freqSlider = document.getElementById('freq-slider') as HTMLInputElement;

@@ -48,7 +48,10 @@ line break untuk paragraf baru."
 </BaseLayout>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
     const textInput = document.getElementById('text-input') as HTMLTextAreaElement;
     const sizeInput = document.getElementById('size-input') as HTMLInputElement;
     const marginInput = document.getElementById('margin-input') as HTMLInputElement;
