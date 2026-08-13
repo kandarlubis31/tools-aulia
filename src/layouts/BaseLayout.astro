@@ -204,17 +204,16 @@ if (isPdfRoot) {
     // ClientRouter: stopImmediatePropagation() mencegah listener popstate Astro
     // berjalan saat entry modal di-pop → back tutup modal TANPA navigasi.
     window.addEventListener('popstate', function (e) {
-      if (window.__searchModalOpen || window.__searchPendingPop) {
+      if (window.__searchModalOpen) {
         window.__searchModalOpen = false;
-        window.__searchPendingPop = false;
         var m = document.getElementById('search-modal');
         var i = document.getElementById('search-modal-input');
         if (m) m.classList.add('hidden');
         if (i) { i.value = ''; i.blur(); }
         e.stopImmediatePropagation();
       } else if (history.state && history.state.__searchOpen) {
-        // Entry modal yang "mengendap" (dibuka via hasil pencarian → skipHistory):
-        // saat back/forward mendarat di entry-nya dengan modal tertutup, strip flag
+        // Entry modal yang "mengendap" (mis. navigasi terjadi saat modal masih
+        // terbuka): saat back/forward mendarat di entry-nya, strip flag
         // __searchOpen supaya entry berperilaku seperti halaman normal — mencegah
         // keanehan arah back/forward dan phantom state di navigasi berikutnya.
         var st = Object.assign({}, history.state);
@@ -246,7 +245,6 @@ if (isPdfRoot) {
         var m = document.getElementById('search-modal');
         if (m) m.classList.add('hidden');
         window.__searchModalOpen = false;
-        window.__searchPendingPop = false;
       }
     });
     // SPA navigation: tutup modal sebelum DOM di-swap — modal tidak pernah
@@ -255,7 +253,14 @@ if (isPdfRoot) {
       var m = document.getElementById('search-modal');
       if (m) m.classList.add('hidden');
       window.__searchModalOpen = false;
-      window.__searchPendingPop = false;
+    });
+    // Defense-in-depth: kalau swap selesai namun modal masih terbuka (mis.
+    // transisi view-transition macet/ter-interrupt → snapshot modal membeku di
+    // layar dan klik lolos ke card di belakangnya), paksa tutup + reset state.
+    document.addEventListener('astro:after-swap', function () {
+      var m = document.getElementById('search-modal');
+      if (m) m.classList.add('hidden');
+      window.__searchModalOpen = false;
     });
   </script>
   
@@ -968,7 +973,6 @@ if (isPdfRoot) {
       // leak (navigasi dengan modal terbuka) tidak membuat back ter-swallow oleh
       // head blocker.
       window.__searchModalOpen = false;
-      window.__searchPendingPop = false;
 
       const searchBtn = document.getElementById('search-btn');
       const searchModal = document.getElementById('search-modal');
@@ -1001,26 +1005,25 @@ if (isPdfRoot) {
           );
         }
       };
-      const closeSearchModal = (skipHistory) => {
+      const closeSearchModal = () => {
         const modal = document.getElementById('search-modal');
         const input = document.getElementById('search-modal-input');
         const btn = document.getElementById('search-btn');
         if (modal) modal.classList.add('hidden');
         if (input) { input.value = ''; input.blur(); }
         if (btn) btn.setAttribute('aria-expanded', 'false');
-        if (window.__searchModalOpen) {
-          window.__searchModalOpen = false;
-          // Pop entry modal dari history. Head blocker (sebelum ClientRouter) baca
-          // __searchPendingPop → stopImmediatePropagation → router Astro TIDAK
-          // navigasi → close eksplisit (X / Tutup / backdrop / Esc) bersih, tanpa
-          // re-render phantom.
-          // skipHistory: close karena klik hasil pencarian — router Astro sedang
-          // navigasi paralel; history.back() di sini race dengan pushState Astro dan
-          // abort transisi (bug lama "modal kebuka lagi").
-          if (!skipHistory && history.state && history.state.__searchOpen) {
-            window.__searchPendingPop = true;
-            history.back();
-          }
+        window.__searchModalOpen = false;
+        // Bersihkan flag __searchOpen dari entry modal via history.replaceState —
+        // TANPA history.back(). replaceState TIDAK memicu popstate/navigasi, jadi
+        // close eksplisit (X / Tutup / backdrop / Esc) maupun klik hasil pencarian
+        // tidak pernah race dengan pushState/router Astro (akar bug lama: transisi
+        // aborted, snapshot modal membeku, navigasi phantom). Android back tetap
+        // aman: entry modal tetap di-push saat open, dan back ditelan head blocker
+        // (stopImmediatePropagation) saat modal masih terbuka.
+        if (history.state && history.state.__searchOpen) {
+          const st = Object.assign({}, history.state);
+          delete st.__searchOpen;
+          history.replaceState(st, '');
         }
       };
 
@@ -1227,7 +1230,7 @@ if (isPdfRoot) {
       if (searchResultsEl && !searchResultsEl.dataset.hasCloseListener) {
         searchResultsEl.dataset.hasCloseListener = 'true';
         searchResultsEl.addEventListener('click', function (e) {
-          if (e.target && e.target.closest && e.target.closest('a')) closeSearchModal(true);
+          if (e.target && e.target.closest && e.target.closest('a')) closeSearchModal();
         });
       }
 

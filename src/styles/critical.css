@@ -181,12 +181,34 @@ h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-seri
 #scroll-progress-bar { height: 100%; width: 0%; background: var(--accent-blue); transition: width 50ms linear; }
 
 /* ---- Display ---- */
-.hidden { display: none; }
+/* NOTE: `.hidden` HARUS dideklarasikan SETELAH utility display lain (`.flex`,
+   `.grid`, `.block`). Tailwind menerbitkan urutan ini (hidden paling akhir) supaya
+   elemen yang membawa KEDUA class (`hidden` + `flex`) tetap tersembunyi. Urutan
+   terbalik di sini adalah akar bug "popup search gak bisa diclose": `flex`
+   menang, jadi `classList.add('hidden')` tidak berpengaruh. */
 .block { display: block; }
 .inline-flex { display: inline-flex; }
 .flex { display: flex; }
 .grid { display: grid; }
+.hidden { display: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0; }
+
+/* ---- Modals: hidden WAJIB selalu menang (defense-in-depth) ----
+   Modal hanya men-toggle class `hidden` (class `flex` permanen). Aturan ber-ID ini
+   menjamin `display:none` berlaku apapun urutan class-nya, jadi modal tidak pernah
+   "nyangkut terbuka". Elemen lain ber-pola `hidden flex` (mis. #empty-state) sudah
+   tertangani oleh reorder `.hidden` di atas. */
+#search-modal.hidden,
+#feedback-modal.hidden,
+#pwa-custom-modal.hidden { display: none !important; }
+
+/* Search modal — layout kritis sebelum full Tailwind load (async via media="print").
+   Tanpa ini, saat CSS belum selesai load modal tampil sebagai overlay TRANSPARAN
+   tanpa z-index (backdrop hilang) → terlihat seperti "popup" yang tidak bisa
+   ditutup dan klik lolos ke konten di belakangnya. */
+#search-modal { z-index: 100; align-items: flex-start; padding: 5rem 1rem 0; background: rgb(0 0 0 / 0.5); }
+#search-modal > div { width: 100%; max-width: 42rem; background: #ffffff; border-radius: 0.75rem; }
+.dark #search-modal > div { background: var(--surface-elevated); }
 
 /* ---- Position ---- */
 .fixed { position: fixed; }
