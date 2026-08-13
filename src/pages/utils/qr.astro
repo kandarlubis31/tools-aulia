@@ -5,6 +5,26 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <BaseLayout pageTitle="QR Code Generator">
   <script is:inline src="/vendor/qrious.min.js"></script>
+  <script is:inline>
+    // Fallback: kalau vendor lokal (/vendor/qrious.min.js) gagal load (404/network),
+    // ambil otomatis dari CDN. Full page load → document.write sinkron (parser masih
+    // aktif) → QRious dijamin ada SEBELUM module script (deferred) jalan. Navigasi SPA
+    // → injeksi dinamis; module script punya waitForQRious() sendiri buat nunggu siap.
+    (function () {
+      if (typeof window.QRious !== 'undefined') return;
+      var CDN_URL = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
+      if (document.readyState === 'loading') {
+        document.write('<script src="' + CDN_URL + '"><\/script>');
+      } else {
+        var s = document.createElement('script');
+        s.src = CDN_URL;
+        s.onerror = function () {
+          if (s.parentNode) s.remove();
+        };
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
   
   <div class="max-w-6xl mx-auto px-4 min-h-[60vh]">
         <ToolPageHeader
@@ -351,7 +371,21 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   // Elemen & handler di-bind ulang tiap navigasi SPA (DOM di-swap oleh
   // ClientRouter → refs top-level jadi stale). Guard via dataset.qrBound.
-  function init() {
+
+  // Tunggu library QR (vendor lokal gagal → fallback CDN) sampai tersedia.
+  function waitForQRious(timeoutMs = 8000) {
+    return new Promise((resolve) => {
+      const start = Date.now();
+      const tick = () => {
+        if (typeof QRious !== 'undefined') return resolve(true);
+        if (Date.now() - start > timeoutMs) return resolve(false);
+        setTimeout(tick, 50);
+      };
+      tick();
+    });
+  }
+
+  async function init() {
     const canvas = document.getElementById('qr-code') as HTMLCanvasElement | null;
     if (!canvas || canvas.dataset.qrBound === 'true') return;
     canvas.dataset.qrBound = 'true';
@@ -430,7 +464,21 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     return true;
   }
   
-  // QR Code instance (local — bound ke canvas DOM saat ini)
+  // QR Code instance (local — bound ke canvas DOM saat ini).
+  // Kalau vendor lokal gagal & fallback CDN masih loading (navigasi SPA),
+  // tunggu sampai library siap sebelum instantiate.
+  const qrLibReady = await waitForQRious();
+  if (!qrLibReady) {
+    // CDN pun gagal — matikan export + toast, jangan crash diam-diam.
+    ['download-png-btn', 'download-jpg-btn', 'copy-btn', 'share-btn'].forEach(id => {
+      const b = document.getElementById(id);
+      if (b) b.disabled = true;
+    });
+    const hint = document.getElementById('export-hint');
+    if (hint) hint.classList.remove('hidden');
+    window.showToast?.(window._tToast ? window._tToast('Gagal memuat library QR — coba muat ulang halaman.') : 'Gagal memuat library QR — coba muat ulang halaman.', 'error');
+    return;
+  }
   let qr = new QRious({
     element: canvas,
     value: 'https://paklubis.my.id',
