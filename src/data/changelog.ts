@@ -24,6 +24,27 @@ export interface ChangelogEntry {
 export const changelogEntries: ChangelogEntry[] = [
   {
     date: '2026-08-13',
+    version: 'v2.10',
+    title: 'Anti Stale Cache — SW Auto-Reload + QR Reliability',
+    titleEn: 'Anti Stale Cache — SW Auto-Reload + QR Reliability',
+    desc: 'Service worker langsung aktif & auto-reload saat ada deploy baru — user tidak pernah terjebak cache lama lagi.',
+    descEn: 'Service worker claims & auto-reloads on new deploys — users never get stuck on stale cache again.',
+    items: [
+      '🧹 SW skipWaiting + clientsClaim eksplisit: versi baru langsung aktif & menguasai halaman yang sudah terbuka (sebelumnya cuma berlaku saat navigasi baru — biang keladi "bug hantu" dari cache lama)',
+      '🔄 Listener controllerchange: toast "Versi baru tersedia" + auto-reload 1× (aman di install pertama, tab background tidak ikut reload)',
+      '📱 QR Generator: fix bug SPA navigation — tombol tipe/color/download mati setelah navigasi balik (binding elemen dipindah ke astro:page-load)',
+      '🔧 QR Generator: fix logo bolong putih saat diperkecil / logo nyangkut saat dihapus + qrious di-vendor self-hosted (offline-first, tanpa CDN)',
+    ],
+    itemsEn: [
+      '🧹 Explicit SW skipWaiting + clientsClaim: new versions activate & claim already-open pages (previously only applied on fresh navigation — the root of "ghost bugs" from stale cache)',
+      '🔄 controllerchange listener: "New version available" toast + auto-reload once (safe on first install, background tabs skip reload)',
+      '📱 QR Generator: fixed SPA navigation bug — type/color/download buttons dead after navigating back (element binding moved to astro:page-load)',
+      '🔧 QR Generator: fixed white-hole logo when shrinking / stale logo when removed + qrious vendored self-hosted (offline-first, no CDN)',
+    ],
+    tags: ['fix', 'perf', 'ux'],
+  },
+  {
+    date: '2026-08-13',
     version: 'v2.9',
     title: 'Performa & LCP — Critical CSS, Lazy-Render, Self-Host Font',
     titleEn: 'Performance & LCP — Critical CSS, Lazy-Render, Self-Host Font',
