@@ -22,7 +22,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <div class="relative flex-1">
           <input 
             type="text" 
-            id="search-input" 
+            id="syn-search-input" 
             placeholder="Masukkan kata, misal: kardinalitas, rumah, baik..." 
             class="w-full pl-9 pr-3 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 text-sm text-matte-800 dark:text-white transition-all duration-150"
             autocomplete="off"
@@ -35,7 +35,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <div id="autocomplete-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto custom-scrollbar animate-fade-in-down"></div>
         </div>
         <button 
-          id="search-btn"
+          id="syn-search-btn"
           class="px-5 py-2.5 bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold text-sm rounded-lg hover:opacity-90 transition-all duration-150 shrink-0"
           data-i18n="sinonim.cari"
         >
@@ -153,8 +153,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
   import { debounce } from '../../composables/useDebounce';
   document.addEventListener('astro:page-load', () => {
-    const searchInput = document.getElementById('search-input') as HTMLInputElement;
-    const searchBtn = document.getElementById('search-btn');
+    // Guard SPA leak: listener ini hanya boleh jalan di halaman sinonim
+    // (autocomplete-dropdown unik di sini). Tanpa guard, listener bocor & mengikat
+    // #search-btn/#search-input header/landing di halaman lain (id collision) +
+    // crash saat elemen halaman ini tidak ada (null.classList).
+    if(!document.getElementById('autocomplete-dropdown')) return;
+    const searchInput = document.getElementById('syn-search-input') as HTMLInputElement;
+    const searchBtn = document.getElementById('syn-search-btn');
     const loadingState = document.getElementById('loading-state');
     const errorState = document.getElementById('error-state');
     const errorMessage = document.getElementById('error-message');
@@ -340,8 +345,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <span class="ml-auto text-2xs text-matte-400">Cari sinonim</span>
         </button>
       `).join('');
-      
-      // Click handler — use event delegation instead
+    }
+
+    // Click handler autocomplete — daftarkan SEKALI (event delegation). Sebelumnya
+    // di-register ulang tiap renderSuggestions() → listener numpuk (memory leak).
+    if (autocompleteDropdown && !autocompleteDropdown.dataset.hasClick) {
+      autocompleteDropdown.dataset.hasClick = '1';
       autocompleteDropdown.addEventListener('click', (e: MouseEvent) => {
         const item = (e.target as HTMLElement).closest('.autocomplete-item') as HTMLElement | null;
         if (!item) return;
@@ -871,6 +880,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     });
 
     // Close autocomplete on outside click
+    // Setiap kunjungan page-load menambah 1 _synClick + 1 page-leave(once) yang
+    // mencabutnya — seimbang, tidak numpuk lintas navigasi (fix leak listener).
     const _synClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (autocompleteDropdown && !target.closest('#autocomplete-dropdown') && target !== searchInput) {
@@ -878,7 +889,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       }
     };
     document.addEventListener('click', _synClick);
-    document.addEventListener('astro:page-leave', () => { document.removeEventListener('click', _synClick); }, { once: true });
+    const _synLeave = () => { document.removeEventListener('click', _synClick); };
+    document.addEventListener('astro:page-leave', _synLeave, { once: true });
 
     // Focus in - reopen suggestions if input has value
     searchInput?.addEventListener('focus', async () => {

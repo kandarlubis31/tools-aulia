@@ -24,6 +24,29 @@ export interface ChangelogEntry {
 export const changelogEntries: ChangelogEntry[] = [
   {
     date: '2026-08-13',
+    version: 'v2.12',
+    title: 'Search Modal Fix — Leak Listener + ID Collision + Toast Overlay',
+    titleEn: 'Search Modal Fix — Listener Leak + ID Collision + Toast Overlay',
+    desc: 'Audit tuntas bug "search gak bisa ditutup": listener halaman bocor lintas navigasi, id search-btn bentrok dengan header, dan toast error menutupi tombol Tutup di layar kecil.',
+    descEn: 'Full audit of the "search can\'t close" bug: page listeners leaking across SPA navigation, search-btn id colliding with the header, and error toasts covering the close button on small screens.',
+    items: [
+      '🧠 Akar masalah SPA: listener astro:page-load dari halaman yang pernah dikunjungi JALAN LAGI di semua halaman berikutnya — text-search/sinonim/port-ref/csv-editor crash di halaman lain (null.addEventListener) → toast error spam + behavior aneh',
+      '🆔 Fix ID collision: #search-btn/#search-input di PDF Text Search & Sinonim bentrok dengan header global (yang di-persist lintas navigasi) → tombol "Cari"/"🔍 Search" tool MATI + header search ter-hijack. Di-rename jadi id unik (ts-*/syn-*)',
+      '🛡️ Guard page-marker di 4 halaman: listener cuma jalan di halamannya sendiri — leak lintas navigasi berhenti total',
+      '📊 Fix leak listener sinonim: autocomplete click listener numpuk tiap render + document-click listener numpuk tiap kunjungan (biang keladi "ngelag banget" di HP low-end)',
+      '🧯 Toast ErrorBoundary z-[200] → z-[85]: sebelumnya menutupi tombol Tutup/X search modal (z-100) di layar kecil → search terasa "gak bisa ditutup". Body toast sekarang bisa di-tap untuk dismiss',
+    ],
+    itemsEn: [
+      '🧠 SPA root cause: astro:page-load listeners from previously visited pages RE-RUN on every subsequent page — text-search/sinonim/port-ref/csv-editor crash elsewhere (null.addEventListener) → error toast spam + weird behavior',
+      '🆔 ID collision fix: #search-btn/#search-input on PDF Text Search & Sinonim collided with the global header (persisted across navigation) → tool search buttons were DEAD + header search hijacked. Renamed to unique ids (ts-*/syn-*)',
+      '🛡️ Page-marker guards on 4 pages: listeners only run on their own page — cross-navigation leaks stopped',
+      '📊 Fixed sinonim listener leaks: autocomplete click listener stacked per render + document-click listener stacked per visit (the culprit behind "very laggy" on low-end phones)',
+      '🧯 ErrorBoundary toast z-[200] → z-[85]: it was covering the search modal close button (z-100) on small screens → search felt "uncloseable". Toast body now tap-to-dismiss',
+    ],
+    tags: ['fix', 'perf', 'ux'],
+  },
+  {
+    date: '2026-08-13',
     version: 'v2.11',
     title: 'QR Generator Resilience — CDN Fallback',
     titleEn: 'QR Generator Resilience — CDN Fallback',
