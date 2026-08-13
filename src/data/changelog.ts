@@ -24,6 +24,23 @@ export interface ChangelogEntry {
 export const changelogEntries: ChangelogEntry[] = [
   {
     date: '2026-08-13',
+    version: 'v2.11',
+    title: 'QR Generator Resilience — CDN Fallback',
+    titleEn: 'QR Generator Resilience — CDN Fallback',
+    desc: 'Kalau vendor qrious lokal gagal load, QR generator otomatis ambil dari CDN — tool tidak pernah mati diam-diam.',
+    descEn: 'If the local qrious vendor fails to load, the QR generator automatically falls back to the CDN — the tool never dies silently.',
+    items: [
+      '🛡️ CDN fallback: kalau /vendor/qrious.min.js gagal load (404/network), qrious 4.0.2 otomatis dimuat dari cdnjs — sinkron saat full load (document.write), dinamis saat navigasi SPA',
+      '🧯 Graceful degradation: init() menunggu library sampai siap (maks 8 detik) — kalau CDN pun gagal, tombol export di-disable + toast error, bukan crash diam-diam',
+    ],
+    itemsEn: [
+      '🛡️ CDN fallback: if /vendor/qrious.min.js fails to load (404/network), qrious 4.0.2 auto-loads from cdnjs — synchronous on full load (document.write), dynamic on SPA navigation',
+      '🧯 Graceful degradation: init() waits for the library (max 8s) — if the CDN also fails, export buttons disable + error toast instead of a silent crash',
+    ],
+    tags: ['fix'],
+  },
+  {
+    date: '2026-08-13',
     version: 'v2.10',
     title: 'Anti Stale Cache — SW Auto-Reload + QR Reliability',
     titleEn: 'Anti Stale Cache — SW Auto-Reload + QR Reliability',
