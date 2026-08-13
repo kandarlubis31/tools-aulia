@@ -91,7 +91,7 @@ const categories = [
   </section>
 
   <!-- Bento + New Tools (two-column layout) -->
-  <section class="max-w-7xl mx-auto px-4 mb-6 animate-fade-in-up content-visibility-auto">
+  <section id="bento-section" class="max-w-7xl mx-auto px-4 mb-6 animate-fade-in-up content-visibility-auto">
     <div class="flex flex-col lg:flex-row gap-4">
       
       <!-- Left: Bento Grid -->
@@ -140,6 +140,19 @@ const categories = [
 
     </div>
   </section>
+
+  <script is:inline>
+    // No-FOUC: sembunyikan section intro (hero + bento) segera saat URL ber-query
+    // ?cat=<kategori>. Filter grid sendiri tetap client-side di script utama.
+    (function () {
+      var c = new URLSearchParams(window.location.search).get('cat');
+      if (!c || c === 'all') return;
+      var h = document.getElementById('hero-section');
+      var b = document.getElementById('bento-section');
+      if (h) h.classList.add('hidden');
+      if (b) b.classList.add('hidden');
+    })();
+  </script>
 
   <!-- Favorites Section -->
   <section id="favorites-section" class="max-w-7xl mx-auto px-4 mb-6 hidden">
@@ -237,6 +250,21 @@ const categories = [
     </div>
   </div>
 
+  <!-- Breadcrumb kategori (tampil saat filter kategori aktif) -->
+  <div id="category-breadcrumb" class="hidden max-w-7xl mx-auto px-4 pt-4">
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+      <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-xs font-medium text-matte-400 dark:text-matte-300 min-w-0">
+        <a href="/" class="hover:text-accent-blue transition-colors whitespace-nowrap" data-i18n="nav.home">Home</a>
+        <svg aria-hidden="true" class="w-3 h-3 text-matte-300 dark:text-matte-500 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <span id="category-breadcrumb-name" class="text-matte-700 dark:text-white font-semibold truncate">PDF</span>
+      </nav>
+      <button id="clear-category-btn" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-matte-500 dark:text-matte-300 bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 dark:hover:bg-surface-hover hover:text-accent-blue transition-colors whitespace-nowrap">
+        <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span data-i18n="index.show_all">Semua tools</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Tools Grid -->
   <div class="max-w-7xl mx-auto px-4 pt-4 pb-28 min-h-[50vh]">
     <div class="flex items-center justify-between mb-3">
@@ -326,6 +354,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const pageNumbers = document.getElementById('page-numbers');
       const favSection = document.getElementById('favorites-section');
       const favContainer = document.getElementById('favorite-tools');
+      const heroSection = document.getElementById('hero-section');
+      const bentoSection = document.getElementById('bento-section');
+      const categoryBreadcrumb = document.getElementById('category-breadcrumb');
+      const categoryBreadcrumbName = document.getElementById('category-breadcrumb-name');
+      const clearCategoryBtn = document.getElementById('clear-category-btn');
 
       const urlParams = new URLSearchParams(window.location.search);
       let currentFilter = urlParams.get('cat') || 'all'; 
@@ -663,8 +696,22 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         });
       }
 
+      function updateIntroVisibility(filterId) {
+        const isCategory = filterId !== 'all';
+        if (heroSection) heroSection.classList.toggle('hidden', isCategory);
+        if (bentoSection) bentoSection.classList.toggle('hidden', isCategory);
+        if (categoryBreadcrumb) {
+          categoryBreadcrumb.classList.toggle('hidden', !isCategory);
+          if (isCategory && categoryBreadcrumbName) {
+            const activeBtn = Array.from(filterBtns).find(b => b.getAttribute('data-filter') === filterId);
+            categoryBreadcrumbName.textContent = activeBtn ? activeBtn.textContent.trim() : filterId;
+          }
+        }
+      }
+
       function setActiveFilter(filterId) {
         currentFilter = filterId;
+        updateIntroVisibility(filterId);
         const newUrl = new URL(window.location.href);
         if (filterId === 'all') newUrl.searchParams.delete('cat');
         else newUrl.searchParams.set('cat', filterId);
@@ -705,6 +752,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
             if(id) setActiveFilter(id);
         });
       });
+
+      clearCategoryBtn?.addEventListener('click', () => setActiveFilter('all'));
 
       sortSelect?.addEventListener('change', (e) => {
          currentSort = e.target.value;

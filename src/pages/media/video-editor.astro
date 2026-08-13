@@ -1,0 +1,925 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Video Editor — Edit Video Online Tanpa Upload">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Video Editor"
+      titleKey="header.video_editor"
+      desc="Gabung, potong & susun klip video jadi satu. 100% di browser tanpa upload."
+      descKey="header.video_editor_desc"
+      icon='<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/>'
+      gradient="from-violet-500 to-fuchsia-600"
+    />
+
+    <div class="animate-fade-in space-y-4">
+      <!-- Import zone -->
+      <div class="card-base p-5">
+        <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 text-center hover:border-violet-400 transition-colors cursor-pointer">
+          <input type="file" id="file-input" accept="video/*,.mp4,.webm,.mov,.m4v,.mkv,.avi" multiple class="hidden" />
+          <svg class="w-12 h-12 mx-auto mb-3 text-matte-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p class="text-sm font-bold text-matte-500 dark:text-matte-300" data-i18n="editor.upload">Upload file video</p>
+          <p class="text-2xs text-matte-400 mt-1" data-i18n="editor.upload_hint">MP4, WebM, MOV — bisa pilih banyak (maks 150MB/file)</p>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div id="timeline-section" class="hidden card-base p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200" data-i18n="editor.timeline">Timeline</h2>
+          <div class="flex items-center gap-1.5 text-2xs text-matte-400">
+            <span class="font-bold" data-i18n="editor.transition">Transisi</span>
+            <input id="transition-duration" type="number" value="0.8" min="0.2" max="2" step="0.1" class="w-16 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-violet-500/40" />
+            <span>s</span>
+          </div>
+        </div>
+        <div id="timeline" class="relative overflow-x-auto rounded-xl border border-matte-200 dark:border-matte-700 bg-matte-50/50 dark:bg-surface-elevated/40">
+          <div id="timeline-track" class="relative h-16" style="min-width:100%"></div>
+          <div id="playhead" class="absolute top-0 bottom-0 w-px bg-rose-500 pointer-events-none" style="left:0"></div>
+        </div>
+        <p class="text-2xs text-matte-400 mt-2" data-i18n="editor.timeline_hint">Seret blok untuk urutkan, tarik tepi untuk trim, klik untuk preview. Klik penanda ⧉ untuk ganti transisi antar klip.</p>
+      </div>
+
+      <!-- Clips list -->
+      <div id="clips-section" class="hidden card-base p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200" data-i18n="editor.clips">Detail Klip</h2>
+          <span id="clip-count" class="text-2xs text-matte-400"></span>
+        </div>
+        <div id="clips-list" class="space-y-2"></div>
+      </div>
+
+      <!-- Watermark -->
+      <div id="watermark-section" class="hidden card-base p-5">
+        <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200 mb-3" data-i18n="editor.watermark_title">Watermark teks (opsional)</h2>
+        <div class="flex flex-wrap gap-2.5 items-end">
+          <div class="flex flex-col gap-1 flex-1 min-w-[180px]">
+            <label class="text-2xs font-bold text-matte-400" data-i18n="editor.watermark_text">Teks</label>
+            <input id="wm-text" type="text" maxlength="60" placeholder="cth. @ToolsAulia" class="px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-violet-500/40" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-2xs font-bold text-matte-400" data-i18n="editor.watermark_pos">Posisi</label>
+            <select id="wm-pos" class="px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-violet-500/40">
+              <option value="top-left" data-i18n="editor.pos_top_left">Atas-kiri</option>
+              <option value="top-right" data-i18n="editor.pos_top_right">Atas-kanan</option>
+              <option value="bottom-left" data-i18n="editor.pos_bottom_left">Bawah-kiri</option>
+              <option value="bottom-right" selected data-i18n="editor.pos_bottom_right">Bawah-kanan</option>
+              <option value="center" data-i18n="editor.pos_center">Tengah</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-2xs font-bold text-matte-400" data-i18n="editor.watermark_size">Ukuran</label>
+            <input id="wm-size" type="number" value="32" min="10" max="120" class="w-20 px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-violet-500/40" />
+          </div>
+        </div>
+        <p class="text-2xs text-matte-400 mt-2" data-i18n="editor.watermark_hint">Ditambahkan ke semua klip saat export.</p>
+      </div>
+
+      <!-- Preview -->
+      <div id="preview-section" class="hidden card-base p-5">
+        <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200 mb-3" data-i18n="editor.preview">Preview</h2>
+        <video id="preview-video" controls playsinline class="w-full max-h-72 rounded-lg bg-black"></video>
+        <p class="text-2xs text-matte-400 mt-2" data-i18n="editor.preview_hint">Preview menampilkan klip sumber. Hasil edit final terlihat setelah export.</p>
+      </div>
+
+      <!-- Export -->
+      <div class="card-base p-5 text-center">
+        <button id="export-btn" disabled class="gradient-brand px-6 py-3 rounded-lg text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed">
+          🎬 <span data-i18n="editor.export">Export MP4</span>
+        </button>
+        <div id="progress-wrap" class="hidden mt-4">
+          <div class="w-full h-2 bg-matte-100 dark:bg-surface-elevated rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-violet-500 to-fuchsia-600 transition-all duration-200" style="width:0%"></div>
+          </div>
+          <p id="progress-text" class="text-2xs text-matte-400 mt-1.5"></p>
+        </div>
+        <p class="text-xs text-matte-400 mt-3" data-i18n="editor.note">FFmpeg berjalan di browser (~32MB, dimuat sekali saat export pertama). File tidak pernah di-upload.</p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { FFmpeg } from '@ffmpeg/ffmpeg';
+  import { fetchFile } from '@ffmpeg/util';
+
+  const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
+    // --- DOM refs ---
+    const dropZone = document.getElementById('drop-zone')!;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const timelineSection = document.getElementById('timeline-section')!;
+    const timelineEl = document.getElementById('timeline')!;
+    const trackEl = document.getElementById('timeline-track')!;
+    const playheadEl = document.getElementById('playhead')!;
+    const transitionDurInput = document.getElementById('transition-duration') as HTMLInputElement;
+    const clipsSection = document.getElementById('clips-section')!;
+    const clipsList = document.getElementById('clips-list')!;
+    const clipCount = document.getElementById('clip-count')!;
+    const watermarkSection = document.getElementById('watermark-section')!;
+    const wmTextInput = document.getElementById('wm-text') as HTMLInputElement;
+    const wmPosSelect = document.getElementById('wm-pos') as HTMLSelectElement;
+    const wmSizeInput = document.getElementById('wm-size') as HTMLInputElement;
+    const previewSection = document.getElementById('preview-section')!;
+    const previewVideo = document.getElementById('preview-video') as HTMLVideoElement;
+    const exportBtn = document.getElementById('export-btn') as HTMLButtonElement;
+    const progressWrap = document.getElementById('progress-wrap')!;
+    const progressBar = document.getElementById('progress-bar')!;
+    const progressText = document.getElementById('progress-text')!;
+
+    // --- helpers ---
+    const t = (key: string, fallback: string) =>
+      (window as any).i18n?.t ? (window as any).i18n.t(key, fallback) : fallback;
+    const toast = (msg: string, type = 'info') => (window as any).showToast?.(msg, type);
+
+    const esc = (s: string) => String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    function fmtDur(s: number) {
+      if (!isFinite(s) || s < 0) return '0:00';
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${String(sec).padStart(2, '0')}`;
+    }
+
+    function clamp(v: number, lo: number, hi: number) {
+      return Math.max(lo, Math.min(hi, v));
+    }
+
+    function fitDims(w: number, h: number) {
+      const maxW = 1280, maxH = 720;
+      const scale = Math.min(1, maxW / (w || 1), maxH / (h || 1));
+      const ew = Math.max(2, Math.floor(((w || 1280) * scale) / 2) * 2);
+      const eh = Math.max(2, Math.floor(((h || 720) * scale) / 2) * 2);
+      return { w: ew, h: eh };
+    }
+
+    function setProgress(p: number, text: string) {
+      const pct = Math.max(0, Math.min(100, Math.round(p * 100)));
+      progressBar.style.width = pct + '%';
+      progressText.textContent = `${text} ${pct}%`;
+    }
+
+    function downloadBlob(blob: Blob, name: string) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }
+
+    // --- state ---
+    interface Clip {
+      id: number;
+      file: File;
+      name: string;
+      url: string;
+      duration: number;
+      width: number;
+      height: number;
+      start: number;
+      end: number;
+      speed: number;
+      volume: number;
+      muted: boolean;
+      rotate: number;
+      crop: string;
+      transitionOut: string; // 'none' | 'fade' | 'fadeblack' | 'slideleft' | ...
+    }
+
+    const SPEEDS = [0.25, 0.5, 1, 1.5, 2, 4];
+    const CROPS = ['none', '1:1', '16:9', '9:16', '4:5', '4:3', '3:2'];
+    const TRANSITIONS = ['none', 'fade', 'fadeblack', 'slideleft', 'slideright', 'wipeleft', 'wiperight'];
+    const PX_PER_SEC = 64;
+
+    let clips: Clip[] = [];
+    let nextId = 1;
+    let ffmpeg: FFmpeg | null = null;
+    let ffmpegLoading: Promise<FFmpeg> | null = null;
+    let exporting = false;
+
+    let wmText = '';
+    let wmPos = 'bottom-right';
+    let wmSize = 32;
+    let transitionDuration = 0.8;
+    let activeClipId: number | null = null;
+
+    let progMode: 'seg' | 'concat' = 'seg';
+    let progSegIndex = 0;
+    let progSegTotal = 1;
+
+    // --- timeline geometry ---
+    function outDur(c: Clip) {
+      return Math.max(0.1, (c.end - c.start) / c.speed);
+    }
+    function blockWidth(c: Clip) {
+      return Math.max(28, outDur(c) * PX_PER_SEC);
+    }
+    function cumOffset(idx: number) {
+      let acc = 0;
+      for (let i = 0; i < idx; i++) acc += blockWidth(clips[i]);
+      return acc;
+    }
+    function totalPx() {
+      return clips.reduce((s, c) => s + blockWidth(c), 0) + 24;
+    }
+
+    // --- meta loading ---
+    function loadFileMeta(url: string): Promise<{ duration: number; width: number; height: number }> {
+      return new Promise((resolve, reject) => {
+        const v = document.createElement('video');
+        v.preload = 'metadata';
+        v.muted = true;
+        v.onloadedmetadata = () => resolve({ duration: v.duration || 0, width: v.videoWidth || 0, height: v.videoHeight || 0 });
+        v.onerror = () => reject(new Error('metadata gagal dibaca'));
+        v.src = url;
+      });
+    }
+
+    // --- add files ---
+    async function addFiles(files: FileList | File[]) {
+      const list = Array.from(files).filter((f) => f.type.startsWith('video/') || /\.(mp4|webm|mov|m4v|mkv|avi|ogg)$/i.test(f.name));
+      if (!list.length) {
+        toast(t('editor.no_video', 'Pilih file video (MP4/WebM/MOV dll)'), 'error');
+        return;
+      }
+      let added = 0;
+      for (const file of list) {
+        if (file.size > 150 * 1024 * 1024) {
+          toast(`${file.name}: ${t('editor.too_big', 'maks 150MB per file')}`, 'error');
+          continue;
+        }
+        const url = URL.createObjectURL(file);
+        try {
+          const meta = await loadFileMeta(url);
+          if (!meta.duration || meta.duration <= 0.1) {
+            toast(`${file.name}: ${t('editor.bad_video', 'video tidak terbaca')}`, 'error');
+            URL.revokeObjectURL(url);
+            continue;
+          }
+          clips.push({
+            id: nextId++,
+            file,
+            name: file.name,
+            url,
+            duration: meta.duration,
+            width: meta.width,
+            height: meta.height,
+            start: 0,
+            end: meta.duration,
+            speed: 1,
+            volume: 100,
+            muted: false,
+            rotate: 0,
+            crop: 'none',
+            transitionOut: 'none',
+          });
+          added++;
+        } catch {
+          toast(`${file.name}: ${t('editor.bad_video', 'video tidak terbaca')}`, 'error');
+          URL.revokeObjectURL(url);
+        }
+      }
+      if (added) {
+        renderClips();
+        previewClip(clips[clips.length - 1].id);
+      }
+    }
+
+    // --- timeline render ---
+    function renderTimeline() {
+      const has = clips.length > 0;
+      timelineSection.classList.toggle('hidden', !has);
+      let left = 0;
+      const parts: string[] = [];
+      clips.forEach((c, i) => {
+        const w = blockWidth(c);
+        const trans = c.transitionOut;
+        parts.push(`
+          <div class="clip-block absolute top-1.5 bottom-1.5 rounded-lg border border-violet-300 dark:border-violet-700 bg-violet-500/15 hover:bg-violet-500/25 cursor-grab active:cursor-grabbing overflow-hidden select-none" data-id="${c.id}" data-index="${i}" style="left:${left}px;width:${w - 3}px">
+            <span class="trim-l absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize bg-black/10 hover:bg-black/25"></span>
+            <span class="trim-r absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize bg-black/10 hover:bg-black/25"></span>
+            <span class="block-label block truncate px-2.5 pt-1.5 text-2xs font-bold text-violet-700 dark:text-violet-200">${i + 1}. ${esc(c.name)}</span>
+            <span class="block-dur block px-2.5 text-2xs text-violet-500/80 dark:text-violet-300/70">${fmtDur(outDur(c))}${c.speed !== 1 ? ` · ${c.speed}×` : ''}${trans !== 'none' ? ` · ${esc(trans)}` : ''}</span>
+          </div>`);
+        left += w;
+        if (i < clips.length - 1) {
+          parts.push(`<button type="button" class="trans-marker absolute top-0 bottom-0 z-10 w-5 -ml-2.5 grid place-items-center text-violet-500 hover:text-fuchsia-500" data-index="${i}" style="left:${left}px" title="${esc(t('editor.transition', 'Transisi'))}: ${esc(trans)}">${trans !== 'none' ? '⧉' : '+'}</button>`);
+        }
+      });
+      trackEl.innerHTML = parts.join('');
+      trackEl.style.width = totalPx() + 'px';
+    }
+
+    function updatePlayhead(seqTime: number) {
+      playheadEl.style.left = (seqTime * PX_PER_SEC) + 'px';
+    }
+
+    function seekSequence(seqTime: number) {
+      let acc = 0;
+      for (let i = 0; i < clips.length; i++) {
+        const c = clips[i];
+        const d = outDur(c);
+        if (seqTime < acc + d || i === clips.length - 1) {
+          const outOff = clamp(seqTime - acc, 0, d - 0.01);
+          const srcTime = c.start + outOff * c.speed;
+          activeClipId = c.id;
+          previewVideo.src = c.url;
+          const seek = () => {
+            try { previewVideo.currentTime = clamp(srcTime, 0, Math.max(0, previewVideo.duration - 0.05)); } catch {}
+            previewVideo.play().catch(() => {});
+          };
+          if (previewVideo.readyState >= 1) seek();
+          else previewVideo.addEventListener('loadedmetadata', seek, { once: true });
+          previewVideo.load();
+          return;
+        }
+        acc += d;
+      }
+    }
+
+    // --- timeline interactions ---
+    let dragState: any = null;
+
+    trackEl.addEventListener('pointerdown', (e) => {
+      const target = e.target as HTMLElement;
+      const marker = target.closest('.trans-marker') as HTMLElement | null;
+      if (marker) {
+        cycleTransition(Number(marker.dataset.index));
+        return;
+      }
+      const block = target.closest('.clip-block') as HTMLElement | null;
+      if (!block) {
+        // background click → seek
+        const rect = timelineEl.getBoundingClientRect();
+        const x = e.clientX - rect.left + timelineEl.scrollLeft;
+        seekSequence(clamp(x / PX_PER_SEC, 0, totalPx() / PX_PER_SEC));
+        return;
+      }
+      const clipId = Number(block.dataset.id);
+      const handle = target.closest('.trim-l, .trim-r') as HTMLElement | null;
+      e.preventDefault();
+      if (handle) {
+        const clip = findClip(clipId);
+        if (!clip) return;
+        dragState = {
+          mode: 'trim', clipId,
+          side: handle.classList.contains('trim-l') ? 'l' : 'r',
+          startX: e.clientX, origStart: clip.start, origEnd: clip.end,
+        };
+      } else {
+        dragState = { mode: 'reorder', clipId, startX: e.clientX, startIndex: clips.findIndex((c) => c.id === clipId), moved: false, ghost: null };
+      }
+      trackEl.setPointerCapture(e.pointerId);
+    });
+
+    trackEl.addEventListener('pointermove', (e) => {
+      if (!dragState) return;
+      if (dragState.mode === 'trim') {
+        const clip = findClip(dragState.clipId);
+        if (!clip) return;
+        const dxSec = ((e.clientX - dragState.startX) / PX_PER_SEC) * clip.speed;
+        if (dragState.side === 'l') clip.start = clamp(dragState.origStart + dxSec, 0, clip.end - 0.1);
+        else clip.end = clamp(dragState.origEnd + dxSec, clip.start + 0.1, clip.duration);
+        renderTimeline();
+      } else if (dragState.mode === 'reorder') {
+        if (Math.abs(e.clientX - dragState.startX) > 6) dragState.moved = true;
+        if (!dragState.moved) return;
+        if (!dragState.ghost) dragState.ghost = createReorderGhost();
+        const rect = timelineEl.getBoundingClientRect();
+        dragState.ghost.style.left = (e.clientX - rect.left + timelineEl.scrollLeft - dragState.ghost.offsetWidth / 2) + 'px';
+      }
+    });
+
+    trackEl.addEventListener('pointerup', () => {
+      if (!dragState) return;
+      if (dragState.mode === 'trim') {
+        dragState = null;
+        renderClips();
+      } else if (dragState.mode === 'reorder') {
+        if (dragState.ghost) {
+          const x = parseFloat(dragState.ghost.style.left) + dragState.ghost.offsetWidth / 2;
+          dragState.ghost.remove();
+          reorderClip(dragState.startIndex, dropIndexAt(x));
+        } else if (!dragState.moved) {
+          // plain click on a block → seek to its start
+          const idx = clips.findIndex((c) => c.id === dragState.clipId);
+          if (idx !== -1) {
+            let t = 0;
+            for (let j = 0; j < idx; j++) t += outDur(clips[j]);
+            seekSequence(t);
+          }
+        }
+        dragState = null;
+        renderTimeline();
+        renderClips();
+      }
+    });
+
+    function createReorderGhost(): HTMLElement {
+      const src = trackEl.querySelector(`.clip-block[data-id="${dragState.clipId}"]`) as HTMLElement;
+      const ghost = src.cloneNode(true) as HTMLElement;
+      ghost.classList.add('opacity-70', 'pointer-events-none', 'z-20', 'ring-2', 'ring-fuchsia-400');
+      ghost.style.top = '6px';
+      ghost.style.height = (src.offsetHeight) + 'px';
+      ghost.style.width = src.offsetWidth + 'px';
+      ghost.style.position = 'absolute';
+      timelineEl.appendChild(ghost);
+      return ghost;
+    }
+
+    function dropIndexAt(x: number) {
+      let count = 0;
+      for (let i = 0; i < clips.length; i++) {
+        if (x > cumOffset(i) + blockWidth(clips[i]) / 2) count++;
+      }
+      return clamp(count, 0, clips.length - 1);
+    }
+
+    function reorderClip(from: number, to: number) {
+      if (from === to) return;
+      const [c] = clips.splice(from, 1);
+      clips.splice(to, 0, c);
+    }
+
+    function cycleTransition(idx: number) {
+      const c = clips[idx];
+      if (!c) return;
+      const cur = TRANSITIONS.indexOf(c.transitionOut);
+      c.transitionOut = TRANSITIONS[(cur + 1) % TRANSITIONS.length];
+      renderTimeline();
+    }
+
+    // --- list render ---
+    function renderClips() {
+      const has = clips.length > 0;
+      clipsSection.classList.toggle('hidden', !has);
+      previewSection.classList.toggle('hidden', !has);
+      watermarkSection.classList.toggle('hidden', !has);
+      exportBtn.disabled = !has || exporting;
+
+      clipCount.textContent = has
+        ? `${clips.length} ${t('editor.clip_count', 'klip')} · ${fmtDur(totalDuration())}`
+        : '';
+
+      clipsList.innerHTML = clips.map((c) => {
+        const speedOpts = SPEEDS.map((s) => `<option value="${s}" ${c.speed === s ? 'selected' : ''}>${s}×</option>`).join('');
+        const cropOpts = CROPS.map((cr) => `<option value="${cr}" ${c.crop === cr ? 'selected' : ''}>${cr === 'none' ? esc(t('editor.crop_none', 'Tanpa')) : cr}</option>`).join('');
+        const rotOpts = [0, 90, 180, 270].map((r) => `<option value="${r}" ${c.rotate === r ? 'selected' : ''}>${r}°</option>`).join('');
+        const transOpts = TRANSITIONS.map((tr) => `<option value="${tr}" ${c.transitionOut === tr ? 'selected' : ''}>${tr === 'none' ? esc(t('editor.crop_none', 'Tanpa')) : tr}</option>`).join('');
+
+        return `
+        <div class="clip-card rounded-xl border border-matte-200 dark:border-matte-700 p-3 bg-matte-50/50 dark:bg-surface-elevated/40" data-id="${c.id}">
+          <div class="flex items-center gap-2">
+            <button data-action="preview" class="shrink-0 w-9 h-9 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-300 hover:bg-violet-500/20 transition-colors grid place-items-center" title="${esc(t('editor.preview_this', 'Preview klip ini'))}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+            </button>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-bold truncate text-matte-700 dark:text-matte-200">${esc(c.name)}</p>
+              <p class="text-2xs text-matte-400">${fmtDur(c.duration)} · ${c.width || '?'}×${c.height || '?'}${c.speed !== 1 ? ` · ${c.speed}×` : ''}${c.muted ? ' · 🔇' : ''}</p>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button data-action="up" class="w-8 h-8 rounded-lg text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated grid place-items-center" title="${esc(t('editor.move_up', 'Naik'))}">↑</button>
+              <button data-action="down" class="w-8 h-8 rounded-lg text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated grid place-items-center" title="${esc(t('editor.move_down', 'Turun'))}">↓</button>
+              <button data-action="remove" class="w-8 h-8 rounded-lg text-rose-500 hover:bg-rose-500/10 grid place-items-center" title="${esc(t('editor.remove', 'Hapus'))}">✕</button>
+            </div>
+          </div>
+          <div class="mt-2 flex flex-wrap items-center gap-2 text-2xs text-matte-400">
+            <label class="font-bold">${esc(t('editor.start', 'Mulai'))}</label>
+            <input data-field="start" type="number" step="0.1" min="0" max="${c.end.toFixed(2)}" value="${c.start.toFixed(2)}" class="w-20 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-violet-500/40" />
+            <label class="font-bold">${esc(t('editor.end', 'Akhir'))}</label>
+            <input data-field="end" type="number" step="0.1" min="${c.start.toFixed(2)}" max="${c.duration.toFixed(2)}" value="${c.end.toFixed(2)}" class="w-20 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-violet-500/40" />
+            <span>/ ${fmtDur(c.duration)}</span>
+          </div>
+          <div class="mt-2 flex items-center gap-2">
+            <input data-field="split-at" type="number" step="0.1" min="${c.start.toFixed(2)}" max="${c.end.toFixed(2)}" placeholder="${esc(t('editor.split_at', 'detik potong'))}" class="w-24 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-violet-500/40" />
+            <button data-action="split" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-500/10 text-violet-600 dark:text-violet-300 hover:bg-violet-500/20 transition-colors">✂️ ${esc(t('editor.split', 'Split'))}</button>
+          </div>
+          <details class="mt-2 rounded-lg border border-matte-200 dark:border-matte-700 bg-white/50 dark:bg-surface-elevated/30">
+            <summary class="px-2.5 py-1.5 text-2xs font-bold cursor-pointer text-matte-500 hover:text-matte-700 dark:hover:text-matte-300 select-none">⚙️ ${esc(t('editor.effects', 'Efek'))}</summary>
+            <div class="p-2.5 grid grid-cols-2 md:grid-cols-4 gap-2.5 text-2xs">
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-matte-400">${esc(t('editor.speed', 'Kecepatan'))}</label>
+                <select data-field="speed" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-violet-500/40">${speedOpts}</select>
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-matte-400">${esc(t('editor.volume', 'Volume'))}</label>
+                <div class="flex items-center gap-1.5">
+                  <input data-field="volume" type="range" min="0" max="200" value="${c.volume}" class="flex-1 accent-violet-500" />
+                  <span data-vol-label class="w-8 text-right font-mono">${c.volume}%</span>
+                </div>
+                <label class="flex items-center gap-1.5 cursor-pointer"><input data-field="muted" type="checkbox" ${c.muted ? 'checked' : ''} class="accent-violet-500" /> ${esc(t('editor.mute', 'Bisu'))}</label>
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-matte-400">${esc(t('editor.rotate', 'Rotasi'))}</label>
+                <select data-field="rotate" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-violet-500/40">${rotOpts}</select>
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-matte-400">${esc(t('editor.crop', 'Crop'))}</label>
+                <select data-field="crop" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-violet-500/40">${cropOpts}</select>
+              </div>
+            </div>
+            <div class="px-2.5 pb-2.5 flex flex-wrap items-center gap-2 text-2xs">
+              <label class="font-bold text-matte-400">${esc(t('editor.transition', 'Transisi ke klip berikutnya'))}</label>
+              <select data-field="transition" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-violet-500/40">${transOpts}</select>
+            </div>
+          </details>
+        </div>`;
+      }).join('');
+
+      renderTimeline();
+    }
+
+    function totalDuration() {
+      return clips.reduce((sum, c) => sum + Math.max(0, (c.end - c.start) / c.speed), 0);
+    }
+
+    function findClip(id: number) {
+      return clips.find((c) => c.id === id);
+    }
+
+    function previewClip(id: number) {
+      const c = findClip(id);
+      if (!c) return;
+      previewSection.classList.remove('hidden');
+      activeClipId = id;
+      previewVideo.src = c.url;
+      const seek = () => {
+        try { previewVideo.currentTime = clamp(c.start, 0, Math.max(0, previewVideo.duration - 0.05)); } catch {}
+        previewVideo.play().catch(() => {});
+      };
+      if (previewVideo.readyState >= 1) seek();
+      else previewVideo.addEventListener('loadedmetadata', seek, { once: true });
+      previewVideo.load();
+    }
+
+    // --- list interactions ---
+    clipsList.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest('button[data-action]') as HTMLButtonElement | null;
+      if (!btn) return;
+      const card = btn.closest('.clip-card') as HTMLElement | null;
+      if (!card) return;
+      const id = Number(card.dataset.id);
+      const action = btn.dataset.action;
+      const idx = clips.findIndex((c) => c.id === id);
+      if (idx === -1) return;
+
+      if (action === 'preview') previewClip(id);
+      else if (action === 'up') { if (idx > 0) { [clips[idx - 1], clips[idx]] = [clips[idx], clips[idx - 1]]; renderClips(); } }
+      else if (action === 'down') { if (idx < clips.length - 1) { [clips[idx + 1], clips[idx]] = [clips[idx], clips[idx + 1]]; renderClips(); } }
+      else if (action === 'remove') {
+        URL.revokeObjectURL(clips[idx].url);
+        clips.splice(idx, 1);
+        renderClips();
+        if (clips.length) previewClip(clips[Math.max(0, idx - 1)].id);
+      } else if (action === 'split') {
+        const input = card.querySelector('input[data-field="split-at"]') as HTMLInputElement;
+        const at = input && input.value !== '' ? parseFloat(input.value) : (clips[idx].start + clips[idx].end) / 2;
+        splitClip(id, at);
+      }
+    });
+
+    clipsList.addEventListener('input', (e) => {
+      const el = e.target as HTMLInputElement;
+      const field = el.dataset.field;
+      if (!field || field === 'split-at') return;
+      const card = el.closest('.clip-card') as HTMLElement | null;
+      if (!card) return;
+      const clip = findClip(Number(card.dataset.id));
+      if (!clip) return;
+
+      if (field === 'start') {
+        const val = parseFloat(el.value);
+        if (isNaN(val)) return;
+        clip.start = Math.max(0, Math.min(val, clip.end - 0.1));
+        el.value = clip.start.toFixed(2);
+      } else if (field === 'end') {
+        const val = parseFloat(el.value);
+        if (isNaN(val)) return;
+        clip.end = Math.min(clip.duration, Math.max(val, clip.start + 0.1));
+        el.value = clip.end.toFixed(2);
+      } else if (field === 'volume') {
+        clip.volume = Math.max(0, Math.min(200, Math.round(parseFloat(el.value) || 0)));
+        const label = card.querySelector('[data-vol-label]');
+        if (label) label.textContent = clip.volume + '%';
+      }
+      renderTimeline();
+    });
+
+    clipsList.addEventListener('change', (e) => {
+      const el = e.target as HTMLInputElement | HTMLSelectElement;
+      const field = el.dataset.field;
+      if (!field) return;
+      const card = el.closest('.clip-card') as HTMLElement | null;
+      if (!card) return;
+      const clip = findClip(Number(card.dataset.id));
+      if (!clip) return;
+
+      if (field === 'speed') clip.speed = parseFloat((el as HTMLSelectElement).value) || 1;
+      else if (field === 'rotate') clip.rotate = parseInt((el as HTMLSelectElement).value) || 0;
+      else if (field === 'crop') clip.crop = (el as HTMLSelectElement).value;
+      else if (field === 'muted') clip.muted = (el as HTMLInputElement).checked;
+      else if (field === 'transition') clip.transitionOut = (el as HTMLSelectElement).value;
+
+      const meta = card.querySelector('.clip-card > div:first-child .text-2xs');
+      if (meta) {
+        meta.textContent = `${fmtDur(clip.duration)} · ${clip.width || '?'}×${clip.height || '?'}${clip.speed !== 1 ? ` · ${clip.speed}×` : ''}${clip.muted ? ' · 🔇' : ''}`;
+      }
+      renderTimeline();
+    });
+
+    function splitClip(id: number, at: number) {
+      const i = clips.findIndex((c) => c.id === id);
+      if (i === -1) return;
+      const c = clips[i];
+      if (!isFinite(at) || at <= c.start + 0.1 || at >= c.end - 0.1) {
+        toast(t('editor.split_invalid', 'Titik split harus di dalam rentang klip'), 'error');
+        return;
+      }
+      const left: Clip = { ...c, id: nextId++, end: at, transitionOut: 'none' };
+      const right: Clip = { ...c, id: nextId++, start: at };
+      clips.splice(i, 1, left, right);
+      renderClips();
+      toast(t('editor.splitted', 'Klip di-split jadi 2'), 'success');
+    }
+
+    // --- preview playhead sync ---
+    previewVideo.addEventListener('timeupdate', () => {
+      if (activeClipId == null) return;
+      const idx = clips.findIndex((c) => c.id === activeClipId);
+      if (idx === -1) return;
+      const c = clips[idx];
+      const srcTime = previewVideo.currentTime;
+      if (srcTime >= c.end - 0.05) {
+        previewVideo.pause();
+        return;
+      }
+      const outOff = Math.max(0, (srcTime - c.start) / c.speed);
+      let acc = 0;
+      for (let j = 0; j < idx; j++) acc += outDur(clips[j]);
+      updatePlayhead(acc + outOff);
+    });
+
+    // --- ffmpeg filter builders ---
+    function atempoChain(speed: number): string {
+      if (speed === 1) return '';
+      const parts: string[] = [];
+      let s = speed;
+      while (s > 2.001) { parts.push('atempo=2.0'); s /= 2; }
+      while (s < 0.499) { parts.push('atempo=0.5'); s /= 0.5; }
+      if (Math.abs(s - 1) > 0.001) parts.push(`atempo=${s.toFixed(4)}`);
+      return parts.join(',');
+    }
+
+    function buildDrawtext(): string {
+      const size = Math.max(10, Math.min(120, wmSize || 32));
+      let x = '16', y = '16';
+      if (wmPos === 'top-right') { x = 'w-text_w-16'; y = '16'; }
+      else if (wmPos === 'bottom-left') { x = '16'; y = 'h-text_h-16'; }
+      else if (wmPos === 'bottom-right') { x = 'w-text_w-16'; y = 'h-text_h-16'; }
+      else if (wmPos === 'center') { x = '(w-text_w)/2'; y = '(h-text_h)/2'; }
+      return `drawtext=textfile=/wm.txt:fontfile=/font.ttf:fontsize=${size}:fontcolor=white@0.9:borderw=2:bordercolor=black@0.6:x=${x}:y=${y}`;
+    }
+
+    function buildVf(c: Clip, tw: number, th: number): string {
+      const parts: string[] = [];
+      if (c.rotate === 90) parts.push('transpose=1');
+      else if (c.rotate === 180) parts.push('hflip,vflip');
+      else if (c.rotate === 270) parts.push('transpose=2');
+
+      if (c.crop && c.crop !== 'none') {
+        const [cw, ch] = c.crop.split(':').map(Number);
+        if (cw > 0 && ch > 0) {
+          const ar = (cw / ch).toFixed(4);
+          parts.push(`crop='min(iw,ih*${ar})':'min(ih,iw/${ar})':(iw-ow)/2:(ih-oh)/2`);
+        }
+      }
+
+      parts.push(`scale=${tw}:${th}:force_original_aspect_ratio=decrease,pad=${tw}:${th}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1`);
+
+      if (wmText.trim()) parts.push(buildDrawtext());
+      if (c.speed !== 1) parts.push(`setpts=${(1 / c.speed).toFixed(4)}*PTS`);
+      parts.push('fps=30');
+
+      return parts.join(',');
+    }
+
+    function buildAf(c: Clip): string {
+      const parts: string[] = [];
+      const at = atempoChain(c.speed);
+      if (at) parts.push(at);
+      if (c.volume !== 100) parts.push(`volume=${(c.volume / 100).toFixed(3)}`);
+      return parts.join(',');
+    }
+
+    function buildXfadeFilter(): string {
+      const N = clips.length;
+      const parts: string[] = [];
+      let prev = '0:v';
+      let acc = outDur(clips[0]);
+      for (let i = 1; i < N; i++) {
+        const trans = clips[i - 1].transitionOut;
+        const d = trans !== 'none' ? transitionDuration : 0.02;
+        const type = trans !== 'none' ? trans : 'fade';
+        const offset = Math.max(0, acc - d).toFixed(3);
+        parts.push(`[${prev}][${i}:v]xfade=transition=${type}:duration=${d.toFixed(2)}:offset=${offset}[v${i}]`);
+        prev = `v${i}`;
+        acc = acc + outDur(clips[i]) - d;
+      }
+      return parts.join(';');
+    }
+
+    function buildAcrossfadeFilter(): string {
+      const N = clips.length;
+      const parts: string[] = [];
+      let prev = '0:a';
+      for (let i = 1; i < N; i++) {
+        const trans = clips[i - 1].transitionOut;
+        const d = trans !== 'none' ? transitionDuration : 0.02;
+        parts.push(`[${prev}][${i}:a]acrossfade=d=${d.toFixed(2)}[a${i}]`);
+        prev = `a${i}`;
+      }
+      return parts.join(';');
+    }
+
+    // --- ffmpeg ---
+    function ensureFfmpeg(): Promise<FFmpeg> {
+      if (ffmpeg) return Promise.resolve(ffmpeg);
+      if (!ffmpegLoading) {
+        ffmpegLoading = (async () => {
+          const f = new FFmpeg();
+          f.on('progress', ({ progress }: { progress: number }) => {
+            const p = typeof progress === 'number' && isFinite(progress) ? progress : 0;
+            if (progMode === 'seg') {
+              setProgress((progSegIndex + p) / progSegTotal, `${t('editor.processing', 'Memproses klip')} ${progSegIndex + 1}/${progSegTotal}`);
+            } else if (progMode === 'concat') {
+              setProgress(0.9 + p * 0.1, t('editor.merging', 'Menggabungkan'));
+            }
+          });
+          await f.load({
+            coreURL: '/vendor/ffmpeg/ffmpeg-core.js',
+            wasmURL: '/vendor/ffmpeg/ffmpeg-core.wasm',
+          });
+          ffmpeg = f;
+          return f;
+        })();
+      }
+      return ffmpegLoading;
+    }
+
+    // --- export ---
+    async function doExport() {
+      if (exporting) return;
+      if (clips.length === 0) {
+        toast(t('editor.empty', 'Tambahkan klip dulu'), 'error');
+        return;
+      }
+      if (clips.some((c) => c.end - c.start <= 0.1)) {
+        toast(t('editor.invalid_trim', 'Ada klip dengan durasi terlalu pendek (< 0.1 detik)'), 'error');
+        return;
+      }
+
+      exporting = true;
+      exportBtn.disabled = true;
+      progressWrap.classList.remove('hidden');
+      progMode = 'seg';
+      setProgress(0, t('editor.loading', 'Memuat FFmpeg core (~32MB)…'));
+
+      try {
+        const f = await ensureFfmpeg();
+        const total = clips.length;
+        progSegTotal = total;
+
+        const first = clips[0];
+        const dims = fitDims(first.width, first.height);
+        const tw = dims.w, th = dims.h;
+        const segNames: string[] = [];
+
+        if (wmText.trim()) {
+          await f.writeFile('/font.ttf', await fetchFile('/vendor/ffmpeg/font.ttf'));
+          await f.writeFile('/wm.txt', wmText.trim());
+        }
+
+        for (let i = 0; i < total; i++) {
+          const c = clips[i];
+          progSegIndex = i;
+          setProgress(i / total, `${t('editor.processing', 'Memproses klip')} ${i + 1}/${total}`);
+
+          const ext = (c.name.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp4';
+          const inName = `in_${i}.${ext}`;
+          const segName = `seg_${i}.mp4`;
+
+          await f.writeFile(inName, await fetchFile(c.file));
+          const dur = (c.end - c.start).toFixed(3);
+          const args = [
+            '-ss', c.start.toFixed(3), '-t', dur, '-i', inName,
+            '-vf', buildVf(c, tw, th),
+            '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p',
+          ];
+          if (c.muted) {
+            args.push('-an');
+          } else {
+            args.push('-map', '0:a:0?');
+            const af = buildAf(c);
+            if (af) args.push('-af', af);
+            args.push('-c:a', 'aac', '-b:a', '128k', '-ar', '44100', '-ac', '2');
+          }
+          args.push('-movflags', '+faststart', segName);
+
+          const ret = await f.exec(args);
+          await f.deleteFile(inName).catch(() => {});
+          if (ret !== 0) throw new Error(`${t('editor.seg_fail', 'Gagal memproses klip')} ${i + 1}`);
+          segNames.push(segName);
+        }
+
+        const anyTransition = clips.some((c) => c.transitionOut !== 'none');
+        const allHaveAudio = clips.every((c) => !c.muted);
+
+        if (anyTransition && total >= 2) {
+          progMode = 'concat';
+          setProgress(0.9, t('editor.merging', 'Menerapkan transisi'));
+          const inputs = segNames.flatMap((n) => ['-i', n]);
+          let fc = buildXfadeFilter();
+          const mapArgs = ['-map', `[v${total - 1}]`];
+          if (allHaveAudio) {
+            fc += ';' + buildAcrossfadeFilter();
+            mapArgs.push('-map', `[a${total - 1}]`);
+          } else {
+            mapArgs.push('-an');
+            toast(t('editor.no_audio_trans', 'Transisi aktif tapi ada klip tanpa audio → output tanpa audio'), 'info');
+          }
+          const xargs = [...inputs, '-filter_complex', fc, ...mapArgs, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p'];
+          if (allHaveAudio) xargs.push('-c:a', 'aac', '-b:a', '128k', '-ar', '44100', '-ac', '2');
+          xargs.push('-movflags', '+faststart', 'final.mp4');
+          const ret = await f.exec(xargs);
+          if (ret !== 0) throw new Error(t('editor.concat_fail', 'Gagal menerapkan transisi'));
+        } else {
+          progMode = 'concat';
+          setProgress(0.9, t('editor.merging', 'Menggabungkan'));
+          const list = segNames.map((n) => `file '/${n}'`).join('\n');
+          await f.writeFile('list.txt', list);
+          const cret = await f.exec(['-f', 'concat', '-safe', '0', '-i', 'list.txt', '-c', 'copy', 'final.mp4']);
+          if (cret !== 0) throw new Error(t('editor.concat_fail', 'Gagal menggabungkan klip'));
+        }
+
+        setProgress(1, t('editor.done', 'Selesai'));
+        const data = (await f.readFile('final.mp4')) as Uint8Array;
+        const blob = new Blob([data], { type: 'video/mp4' });
+        downloadBlob(blob, 'video-editor.mp4');
+
+        await Promise.all(segNames.map((n) => f.deleteFile(n).catch(() => {})));
+        await f.deleteFile('list.txt').catch(() => {});
+        await f.deleteFile('final.mp4').catch(() => {});
+
+        toast(t('editor.exported', 'Video berhasil di-export!'), 'success');
+      } catch (err: any) {
+        console.error('[video-editor] export failed:', err);
+        toast(`${t('editor.failed', 'Export gagal')}: ${err?.message || ''}`, 'error');
+      } finally {
+        exporting = false;
+        exportBtn.disabled = clips.length === 0;
+      }
+    }
+
+    // --- wire up ---
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-violet-400'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-violet-400'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-violet-400');
+      if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files?.length) addFiles(fileInput.files);
+      fileInput.value = '';
+    });
+    exportBtn.addEventListener('click', doExport);
+
+    wmTextInput.addEventListener('input', () => { wmText = wmTextInput.value; });
+    wmPosSelect.addEventListener('change', () => { wmPos = wmPosSelect.value; });
+    wmSizeInput.addEventListener('input', () => {
+      const v = parseInt(wmSizeInput.value);
+      wmSize = isNaN(v) ? 32 : Math.max(10, Math.min(120, v));
+    });
+    transitionDurInput.addEventListener('change', () => {
+      const v = parseFloat(transitionDurInput.value);
+      transitionDuration = isNaN(v) ? 0.8 : Math.max(0.2, Math.min(2, v));
+    });
+
+    // initial state
+    renderClips();
+  });
+</script>

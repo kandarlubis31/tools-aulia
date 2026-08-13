@@ -24,6 +24,29 @@ export interface ChangelogEntry {
 export const changelogEntries: ChangelogEntry[] = [
   {
     date: '2026-08-13',
+    version: 'v2.15',
+    title: 'Video Editor — Edit Video di Browser (FFmpeg, Tanpa Upload)',
+    titleEn: 'Video Editor — Edit Video in the Browser (FFmpeg, No Upload)',
+    desc: 'Tool editor video 100% client-side pakai FFmpeg WebAssembly: gabung, potong & susun klip, efek, transisi, dan watermark — semua diproses di browser tanpa upload.',
+    descEn: 'A 100% client-side video editor powered by FFmpeg WebAssembly: merge, cut & arrange clips, effects, transitions, and watermark — all processed in-browser with no upload.',
+    items: [
+      '🎬 Editor video baru di /media/video-editor — import multi-klip, trim/split, reorder, merge, export MP4',
+      '⚙️ Efek per-klip: kecepatan (0.25–4×), volume/mute, rotasi (0–270°), crop rasio, + watermark teks',
+      '📊 Timeline horizontal: drag-reorder, edge-trim, playhead + click-to-seek ala editor video',
+      '🎞️ Transisi antar klip (fade, fadeblack, slide, wipe) via xfade + acrossfade',
+      '📦 FFmpeg core self-host (32MB) — runtime-cache PWA, offline-capable setelah pemakaian pertama',
+    ],
+    itemsEn: [
+      '🎬 New video editor at /media/video-editor — import multiple clips, trim/split, reorder, merge, export MP4',
+      '⚙️ Per-clip effects: speed (0.25–4×), volume/mute, rotate (0–270°), aspect crop, + text watermark',
+      '📊 Horizontal timeline: drag-reorder, edge-trim, playhead + click-to-seek like a real editor',
+      '🎞️ Transitions between clips (fade, fadeblack, slide, wipe) via xfade + acrossfade',
+      '📦 Self-hosted FFmpeg core (32MB) — PWA runtime cache, offline-capable after first use',
+    ],
+    tags: ['feat', 'ux'],
+  },
+  {
+    date: '2026-08-13',
     version: 'v2.14',
     title: 'Offline Page Self-Heal — Tidak Lagi Salah Bilang "Kamu Lagi Offline"',
     titleEn: 'Offline Page Self-Heal — No More False "You Are Offline"',
