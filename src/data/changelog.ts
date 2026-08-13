@@ -24,6 +24,25 @@ export interface ChangelogEntry {
 export const changelogEntries: ChangelogEntry[] = [
   {
     date: '2026-08-13',
+    version: 'v2.14',
+    title: 'Offline Page Self-Heal — Tidak Lagi Salah Bilang "Kamu Lagi Offline"',
+    titleEn: 'Offline Page Self-Heal — No More False "You Are Offline"',
+    desc: 'Halaman offline sekarang mendeteksi kalau koneksi aktif tapi masih disajikan oleh service worker lama (cache stale) — otomatis unregister SW + bersihkan cache + reload ke halaman asli. Tidak ada lagi loop reload dan pesan offline palsu saat online.',
+    descEn: 'The offline page now detects when you are online but still being served by an old (stale-cache) service worker — it automatically unregisters the SW, clears caches, and reloads the real page. No more reload loops or false offline messages while online.',
+    items: [
+      '🔧 Self-heal: online + muncul halaman offline → unregister service worker lama + bersihkan cache + redirect ke halaman asli (SW baru terdaftar otomatis)',
+      '🛡️ Guard anti-loop: buka /offline manual tidak reload berulang, cuma tampilkan status',
+      '➕ Trailing slash otomatis untuk URL tanpa slash — cocok dengan precache SW baru',
+    ],
+    itemsEn: [
+      'Self-heal: online + offline page shown → unregister old service worker + clear caches + redirect to the real page (new SW auto-registers)',
+      'Anti-loop guard: manually opening /offline does not reload repeatedly, just shows status',
+      'Automatic trailing slash for no-slash URLs — matches the new SW precache',
+    ],
+    tags: ['fix', 'pwa'],
+  },
+  {
+    date: '2026-08-13',
     version: 'v2.13',
     title: 'Search Modal — Close yang Dijamin Jalan (Defense-in-Depth)',
     titleEn: 'Search Modal — Guaranteed Close (Defense-in-Depth)',

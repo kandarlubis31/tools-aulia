@@ -115,18 +115,18 @@
     <div class="card">
       <h3>🛠️ Tools yang Tersedia Offline</h3>
       <div class="tools">
-        <a href="/pdf" class="tool">PDF Tools</a>
-        <a href="/image/editor" class="tool">Photo Editor</a>
-        <a href="/image/remove-bg" class="tool">Remove BG</a>
-        <a href="/utils/qr" class="tool">QR Generator</a>
-        <a href="/utils/pomodoro" class="tool">Pomodoro</a>
-        <a href="/utils/todo" class="tool">Todo List</a>
-        <a href="/utils/stopwatch" class="tool">Stopwatch</a>
-        <a href="/security/password" class="tool">Password Gen</a>
-        <a href="/security/uuid" class="tool">UUID Gen</a>
-        <a href="/dev/base64" class="tool">Base64</a>
-        <a href="/dev/json" class="tool">JSON Tool</a>
-        <a href="/calc/bmi" class="tool">BMI Calc</a>
+        <a href="/pdf/" class="tool">PDF Tools</a>
+        <a href="/image/editor/" class="tool">Photo Editor</a>
+        <a href="/image/remove-bg/" class="tool">Remove BG</a>
+        <a href="/utils/qr/" class="tool">QR Generator</a>
+        <a href="/utils/pomodoro/" class="tool">Pomodoro</a>
+        <a href="/utils/todo/" class="tool">Todo List</a>
+        <a href="/utils/stopwatch/" class="tool">Stopwatch</a>
+        <a href="/security/password/" class="tool">Password Gen</a>
+        <a href="/security/uuid/" class="tool">UUID Gen</a>
+        <a href="/dev/base64/" class="tool">Base64</a>
+        <a href="/dev/json/" class="tool">JSON Tool</a>
+        <a href="/calc/bmi/" class="tool">BMI Calc</a>
       </div>
     </div>
 
@@ -146,23 +146,53 @@
   </div>
 
   <script is:inline>
-    // Auto-check connectivity every 5 seconds and auto-reload when back online
-    function updateStatus() {
+    // ── Self-heal: kalau halaman OFFLINE ini muncul padahal kita ONLINE, berarti
+    // service worker yang nyajain (SW lama/stale dengan precache format lama, atau
+    // URL tanpa trailing slash yang tidak match precache). Reload biasa hanya akan
+    // di-intercept SW yang sama → loop. Solusi: hapus SW + bersihkan cache, lalu
+    // reload → browser fetch langsung dari server → halaman asli (SW baru akan
+    // terdaftar ulang otomatis oleh BaseLayout). ──
+    function selfHeal() {
       const dot = document.getElementById('status-dot');
       const label = document.getElementById('status-label');
-      if (navigator.onLine) {
-        dot.style.background = '#22c55e';
-        label.textContent = 'Koneksi terdeteksi! Memuat ulang...';
-        setTimeout(() => location.reload(), 500);
-      } else {
+      if (!navigator.onLine) {
         dot.style.background = '#ef4444';
         label.textContent = 'Offline — menunggu koneksi...';
+        return;
       }
+      // Dikunjungi langsung (URL /offline di address bar) — jangan self-heal,
+      // nanti loop reload ke path yang sama.
+      if (location.pathname.replace(/\/+$/, '') === '/offline') {
+        dot.style.background = '#22c55e';
+        label.textContent = 'Online — halaman ini sengaja dibuka manual.';
+        return;
+      }
+      if (window.__offlineHealing) return;
+      window.__offlineHealing = true;
+      dot.style.background = '#f59e0b';
+      label.textContent = 'Koneksi aktif — memperbaiki cache service worker...';
+      const jobs = [];
+      if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+        jobs.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
+          return Promise.all(regs.map(function (r) { return r.unregister(); }));
+        }).catch(function () {}));
+      }
+      if (window.caches && caches.keys) {
+        jobs.push(caches.keys().then(function (names) {
+          return Promise.all(names.map(function (n) { return caches.delete(n); }));
+        }).catch(function () {}));
+      }
+      Promise.all(jobs).then(function () {
+        // Tambah trailing slash kalau belum ada → cocok dengan precache SW baru.
+        var p = location.pathname;
+        var next = (p && !p.endsWith('/') && p !== '/') ? p + '/' : p;
+        next = next + location.search + location.hash;
+        location.replace(next || '/');
+      });
     }
-    updateStatus();
-    window.addEventListener('online', updateStatus);
-    window.addEventListener('offline', updateStatus);
-    setInterval(updateStatus, 5000);
+    selfHeal();
+    // Fallback: cek ulang setiap 5 detik (misal koneksi benar-benar mati baru nyala).
+    setInterval(selfHeal, 5000);
   </script>
 </body>
 </html>
