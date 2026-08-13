@@ -994,15 +994,21 @@ if (isPdfRoot) {
         });
       }
       
-      if (closeSearch) closeSearch.addEventListener('click', () => closeSearchModal());
+      if (closeSearch && !closeSearch.dataset.hasListener) {
+        closeSearch.dataset.hasListener = 'true';
+        closeSearch.addEventListener('click', () => closeSearchModal());
+      }
       const searchCancel = document.getElementById('search-cancel');
       if (searchCancel && !searchCancel.dataset.hasListener) {
         searchCancel.dataset.hasListener = 'true';
         searchCancel.addEventListener('click', () => closeSearchModal());
       }
-      if (searchModal) searchModal.addEventListener('click', (e) => {
-        if (e.target === searchModal) closeSearchModal();
-      });
+      if (searchModal && !searchModal.dataset.hasListener) {
+        searchModal.dataset.hasListener = 'true';
+        searchModal.addEventListener('click', (e) => {
+          if (e.target === searchModal) closeSearchModal();
+        });
+      }
       // Guard: register keyboard shortcuts only once (prevent SPA navigation leak)
       if (!window._shortcutsRegistered) {
         window._shortcutsRegistered = true;
@@ -1228,7 +1234,10 @@ if (isPdfRoot) {
 
         const toast = document.createElement('div');
         toast.id = 'error-boundary-toast';
-        toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] bg-rose-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-sm font-medium animate-fade-in-up max-w-lg';
+        // z-[85]: DI BAWAH search-modal (z-100) & feedback-modal (z-110) — sebelumnya
+        // z-[200] menutupi tombol Tutup/X modal di layar kecil → search "gak bisa
+        // ditutup" padahal yang kena tap adalah toast ini.
+        toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[85] bg-rose-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-sm font-medium animate-fade-in-up max-w-lg';
         toast.innerHTML = `
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span class="flex-1">${message}</span>
@@ -1244,6 +1253,12 @@ if (isPdfRoot) {
         });
         document.getElementById('error-dismiss-btn')?.addEventListener('click', () => {
           toast.remove();
+        });
+        // Klik body toast (bukan tombol) → dismiss juga, biar cepat hilang
+        // dan tidak menghalangi interaksi di bawahnya.
+        toast.addEventListener('click', function (e) {
+          var t = e.target;
+          if (t && t.closest && !t.closest('#error-reload-btn') && !t.closest('#error-dismiss-btn')) toast.remove();
         });
 
         // Auto-dismiss after 15s

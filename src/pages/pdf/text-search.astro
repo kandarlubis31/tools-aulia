@@ -19,8 +19,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
 
       <div class="flex gap-2 mb-4">
-        <input id="search-input" type="text" placeholder="Kata kunci…" class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm outline-none focus:ring-2 focus:ring-cyan-500/40" />
-        <button id="search-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">🔍 Search</button>
+        <input id="ts-search-input" type="text" placeholder="Kata kunci…" class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm outline-none focus:ring-2 focus:ring-cyan-500/40" />
+        <button id="ts-search-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">🔍 Search</button>
       </div>
 
       <div id="results-area" class="text-left">
@@ -32,9 +32,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <script>
   document.addEventListener('astro:page-load',()=>{
+    // Guard SPA leak: listener ini hanya boleh jalan di halaman ini (drop-zone unik di sini).
+    // Tanpa guard, listener bocor & crash di halaman lain saat navigasi (null.addEventListener).
+    if(!document.getElementById('drop-zone')) return;
     const dropZone=document.getElementById('drop-zone')!,fileInput=document.getElementById('file-input') as HTMLInputElement;
-    const fileName=document.getElementById('file-name')!,searchInput=document.getElementById('search-input') as HTMLInputElement;
-    const searchBtn=document.getElementById('search-btn') as HTMLButtonElement;
+    const fileName=document.getElementById('file-name')!,searchInput=document.getElementById('ts-search-input') as HTMLInputElement;
+    const searchBtn=document.getElementById('ts-search-btn') as HTMLButtonElement;
     const resultsArea=document.getElementById('results-area')!;
     let pdfDoc:any=null;
 

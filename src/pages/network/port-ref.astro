@@ -46,6 +46,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <script>
   document.addEventListener('astro:page-load', () => {
+    // Guard SPA leak: hanya jalan di halaman ini (port-tbody unik). Tanpa guard,
+    // listener bocor & crash di halaman lain saat navigasi (null pada tbody).
+    if (!document.getElementById('port-tbody')) return;
     const searchInput = document.getElementById('search-input') as HTMLInputElement;
     const tbody = document.getElementById('port-tbody')!;
     const resultCount = document.getElementById('result-count')!;
