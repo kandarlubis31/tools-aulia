@@ -280,7 +280,21 @@ if (isPdfRoot) {
             document.addEventListener('visibilitychange', onVis);
           }
         });
-        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(function (reg) {
+            // Update check agresif: cek sw.js baru 5s setelah load & setiap tab
+            // kembali aktif. Tanpa ini, browser cuma cek saat navigasi penuh —
+            // tab yang lama dibiarkan terbuka bisa kejebak versi lama berhari-hari
+            // (biang keladi "bug sudah difix tapi masih muncul" dari cache lama).
+            // autoUpdate (skipWaiting) + controllerchange handler di atas yang
+            // melakukan reload saat versi baru siap.
+            var checkUpdate = function () { try { reg.update(); } catch (e) {} };
+            window.setTimeout(checkUpdate, 5000);
+            document.addEventListener('visibilitychange', function () {
+              if (document.visibilityState === 'visible') checkUpdate();
+            });
+          })
+          .catch(function () {});
       };
       if ('requestIdleCallback' in window) {
         window.requestIdleCallback(register, { timeout: 4000 });
