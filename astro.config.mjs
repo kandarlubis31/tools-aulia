@@ -39,7 +39,7 @@ export default defineConfig({
       skipWaiting: true,
       clientsClaim: true,
       globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
-      globIgnores: ["**/404.html", "**/404/index.html", "**/og/*.png", "**/_astro/index.*.js"], // OG: social-only | index.*.js: Vite shared chunks (dynamic import) — skip precache (~6MB saved)
+      globIgnores: ["**/404.html", "**/404/index.html", "**/og/*.png", "**/_astro/index.*.js", "**/editor/**"], // OG: social-only | index.*.js: Vite shared chunks — skip precache | editor: app standalone (bundle 5MB + aset 60MB) punya SW sendiri
       // manifestTransforms custom → GANTI transform bawaan @vite-pwa/astro.
       // Transform bawaan mengubah 'pdf/annotate/index.html' → 'pdf/annotate' (tanpa
       // slash) yang TIDAK PERNAH cocok dengan navigasi Astro directory-format

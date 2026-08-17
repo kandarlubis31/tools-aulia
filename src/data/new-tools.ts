@@ -7,6 +7,8 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  '/utils/nama-generator',
+  '/editor',
   '/edit-video',
   // ---- Batch 12 (10 tools: Quick Wins P1) ----
   '/pdf/bates',

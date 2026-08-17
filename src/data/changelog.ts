@@ -23,6 +23,52 @@ export interface ChangelogEntry {
 
 export const changelogEntries: ChangelogEntry[] = [
   {
+    date: '2026-08-18',
+    version: 'v2.17',
+    title: 'Nama Generator Indonesia — 11 Suku dengan Marga & Gelar Khas',
+    titleEn: 'Indonesian Name Generator — 11 Ethnic Groups with Surnames & Titles',
+    desc: 'Generate nama Indonesia autentik dari 11 suku: Jawa, Sunda, Batak, Minang, Betawi, Bali, Melayu, Tionghoa, Arab, Ambon & Papua — lengkap dengan marga, gelar adat, patronimik, dan urutan lahir khas budaya.',
+    descEn: 'Generate authentic Indonesian names from 11 ethnic groups: Javanese, Sundanese, Batak, Minangkabau, Betawi, Balinese, Malay, Chinese-Indonesian, Arab, Ambon & Papua — complete with surnames, traditional titles, patronymics, and birth-order names.',
+    items: [
+      '👤 Nama khas 11 suku Indonesia — kurasi autentik per etnis, bukan random acak',
+      '🏷️ Marga/klan: Batak (Siregar, Hutapea), Tionghoa (Liem, Tan, Wijaya), Ambon & Papua',
+      '👑 Gelar adat: Sutan/Datuk (Minang), I Gusti/Dewa/Cokorda (Bali)',
+      '👶 Urutan lahir Bali (Wayan/Made/Nyoman/Ketut) + patronimik bin/binti (Melayu/Arab)',
+      '⚙️ Filter gender, format 1–3 kata (min. 2 = valid KTP), 1/5/10 hasil, salin semua — 100% offline',
+    ],
+    itemsEn: [
+      '👤 Names from 11 Indonesian ethnic groups — authentically curated per ethnicity, not random',
+      '🏷️ Surnames/clans: Batak (Siregar, Hutapea), Chinese-Indonesian (Liem, Tan, Wijaya), Ambon & Papua',
+      '👑 Traditional titles: Sutan/Datuk (Minangkabau), I Gusti/Dewa/Cokorda (Bali)',
+      '👶 Balinese birth-order names (Wayan/Made/Nyoman/Ketut) + bin/binti patronymics (Malay/Arab)',
+      '⚙️ Gender filter, 1–3 word formats (min. 2 = KTP-valid), 1/5/10 results, copy all — 100% offline',
+    ],
+    tags: ['feat', 'utils'],
+  },
+  {
+    date: '2026-08-18',
+    version: 'v2.16',
+    title: 'Video Studio — Editor Video Lengkap ala CapCut di Browser',
+    titleEn: 'Video Studio — Full CapCut-Style Video Editor in the Browser',
+    desc: 'Editor video kelas produksi 100% di browser tanpa upload/akun: timeline multi-track, trim/split, efek & filter, teks, audio, transisi, dan export hingga 4K — berbasis OmniClip (open source, MIT).',
+    descEn: 'A production-grade video editor that runs 100% in the browser with no upload or account: multi-track timeline, trim/split, effects & filters, text, audio, transitions, and export up to 4K — powered by OmniClip (open source, MIT).',
+    items: [
+      '🎬 Video Studio baru di /editor — timeline multi-track, trim/split, reorder, efek, teks, audio, transisi, export MP4 hingga 4K',
+      '⚡ Berbasis WebCodecs + WebGL/PixiJS (GPU) — editing mulus tanpa server, preview real-time',
+      '🔒 100% client-side: tanpa upload, tanpa akun, data proyek tersimpan lokal (OPFS)',
+      '🧩 Integrasi OmniClip (MIT) — analytics di-strip, ffmpeg core self-host, credit ke repo asli',
+      '📱 Responsif untuk desktop & mobile, project manager + undo/redo bawaan',
+    ],
+    itemsEn: [
+      '🎬 New Video Studio at /editor — multi-track timeline, trim/split, reorder, effects, text, audio, transitions, MP4 export up to 4K',
+      '⚡ Powered by WebCodecs + WebGL/PixiJS (GPU) — smooth editing with no server, real-time preview',
+      '🔒 100% client-side: no upload, no account, project data stored locally (OPFS)',
+      '🧩 OmniClip (MIT) integration — analytics stripped, ffmpeg core self-hosted, credit to original repo',
+      '📱 Responsive for desktop & mobile, built-in project manager + undo/redo',
+    ],
+    tags: ['feat', 'media'],
+  },
+  {
     date: '2026-08-13',
     version: 'v2.15',
     title: 'Video Editor — Edit Video di Browser (FFmpeg, Tanpa Upload)',

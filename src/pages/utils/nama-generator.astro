@@ -1,0 +1,317 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Nama Generator Indonesia — Generate Nama Khas 11 Suku | ToolsAulia">
+  <div class="max-w-3xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Nama Generator Indonesia"
+      titleKey="header.nama_generator"
+      desc="Generate nama Indonesia khas 11 suku: Jawa, Sunda, Batak, Minang, Betawi, Bali, Melayu, Tionghoa, Arab, Ambon & Papua — lengkap dengan marga, gelar, dan patronimik khas budaya."
+      descKey="header.nama_generator_desc"
+      icon='<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
+      gradient="from-rose-500 to-orange-500"
+    />
+
+    <!-- Controls -->
+    <div class="card-base p-6 mb-5 animate-fade-in">
+      <!-- Etnis -->
+      <div class="mb-5">
+        <span class="section-title mb-2 block" data-i18n="ng.etnis">Etnis / Suku</span>
+        <div id="etnis-chips" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <div class="grid sm:grid-cols-3 gap-4 mb-5">
+        <!-- Gender -->
+        <div>
+          <span class="section-title mb-2 block" data-i18n="ng.gender">Jenis Kelamin</span>
+          <div class="flex rounded-xl overflow-hidden border border-matte-200 dark:border-surface-border text-xs font-semibold">
+            <button data-gender="m" class="seg-btn flex-1 py-2.5 px-2 transition-all" data-i18n="ng.male">Laki-laki</button>
+            <button data-gender="f" class="seg-btn flex-1 py-2.5 px-2 transition-all" data-i18n="ng.female">Perempuan</button>
+            <button data-gender="any" class="seg-btn flex-1 py-2.5 px-2 transition-all" data-i18n="ng.any">Acak</button>
+          </div>
+        </div>
+        <!-- Format -->
+        <div>
+          <span class="section-title mb-2 block" data-i18n="ng.format">Jumlah Kata</span>
+          <div class="flex rounded-xl overflow-hidden border border-matte-200 dark:border-surface-border text-xs font-semibold">
+            <button data-format="1" class="seg-btn flex-1 py-2.5 px-2 transition-all">1</button>
+            <button data-format="2" class="seg-btn flex-1 py-2.5 px-2 transition-all">2</button>
+            <button data-format="3" class="seg-btn flex-1 py-2.5 px-2 transition-all">3</button>
+          </div>
+          <p class="text-2xs text-matte-400 mt-1.5" data-i18n="ng.format_hint">Min. 2 kata = valid KTP (regulasi 2022)</p>
+        </div>
+        <!-- Jumlah -->
+        <div>
+          <span class="section-title mb-2 block" data-i18n="ng.count">Jumlah Nama</span>
+          <div class="flex rounded-xl overflow-hidden border border-matte-200 dark:border-surface-border text-xs font-semibold">
+            <button data-count="1" class="seg-btn flex-1 py-2.5 px-2 transition-all">1</button>
+            <button data-count="5" class="seg-btn flex-1 py-2.5 px-2 transition-all">5</button>
+            <button data-count="10" class="seg-btn flex-1 py-2.5 px-2 transition-all">10</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-matte-600 dark:text-matte-300">
+          <input type="checkbox" id="cultural-toggle" checked class="w-4 h-4 accent-rose-500" />
+          <span data-i18n="ng.cultural">Pakai marga/gelar/patronimik khas etnis</span>
+        </label>
+        <div class="flex-1"></div>
+        <button id="generate-btn" class="gradient-brand px-6 py-2.5 rounded-xl font-bold text-sm" data-i18n="ng.generate">⚡ Generate</button>
+        <button id="copy-all-btn" class="px-4 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all hidden" data-i18n="ng.copy_all">📋 Salin Semua</button>
+      </div>
+
+      <p id="etnis-note" class="mt-3 text-2xs text-matte-400 leading-relaxed"></p>
+    </div>
+
+    <!-- Results -->
+    <div class="card-base p-5 animate-fade-in">
+      <div class="flex items-center justify-between mb-3">
+        <span class="section-title" data-i18n="ng.result">Hasil</span>
+        <span id="result-info" class="text-2xs text-matte-400"></span>
+      </div>
+      <div id="result-list" class="flex flex-col gap-2 min-h-[60px]">
+        <p class="text-sm text-matte-400 py-6 text-center" data-i18n="ng.empty">Klik "Generate" untuk mulai — coba pilih etnis favoritmu 👆</p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+import { ethnicGroups, mixedNames, fatherNames } from '../../data/indonesian-names';
+
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
+  const etnisChips = document.getElementById('etnis-chips') as HTMLDivElement;
+  const etnisNote = document.getElementById('etnis-note') as HTMLParagraphElement;
+  const generateBtn = document.getElementById('generate-btn') as HTMLButtonElement;
+  const copyAllBtn = document.getElementById('copy-all-btn') as HTMLButtonElement;
+  const resultList = document.getElementById('result-list') as HTMLDivElement;
+  const resultInfo = document.getElementById('result-info') as HTMLSpanElement;
+  const culturalToggle = document.getElementById('cultural-toggle') as HTMLInputElement;
+
+  // ---- state ----
+  let selectedEtnis = 'any';
+  let gender: 'm' | 'f' | 'any' = 'any';
+  let format = 2;
+  let count = 5;
+  let currentResults: { name: string; group: string }[] = [];
+
+  // ---- helpers ----
+  const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+  const pickDistinct = (arr: string[], used: Set<string>) => {
+    if (arr.length <= 1) return arr[0];
+    let n = pick(arr);
+    let guard = 0;
+    while (used.has(n) && guard++ < 15) n = pick(arr);
+    used.add(n);
+    return n;
+  };
+
+  // ---- etnis chips ----
+  function renderChips() {
+    const groups = [{ id: 'any', name: '🎲 Campuran', nameEn: 'Mixed', emoji: '' }, ...ethnicGroups];
+    etnisChips.innerHTML = groups.map(g => `
+      <button data-etnis="${g.id}" class="px-3 py-2 rounded-xl text-xs font-semibold transition-all border
+        ${g.id === selectedEtnis
+          ? 'bg-rose-500 text-white border-rose-500 shadow-sm'
+          : 'bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 border-transparent hover:bg-matte-200 dark:hover:bg-surface-elevated'}">
+        ${g.id === 'any' ? '🎲 Campuran' : `${g.emoji} ${g.name}`}
+      </button>`).join('');
+    etnisChips.querySelectorAll('[data-etnis]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedEtnis = (btn as HTMLElement).dataset.etnis!;
+        renderChips();
+        updateNote();
+      });
+    });
+    updateNote();
+  }
+
+  function updateNote() {
+    if (selectedEtnis === 'any') {
+      etnisNote.textContent = 'Mode Campuran: nama diambil acak dari semua suku. 🎲';
+      return;
+    }
+    const g = ethnicGroups.find(x => x.id === selectedEtnis)!;
+    etnisNote.textContent = `${g.emoji} ${g.note}`;
+  }
+
+  // ---- generation ----
+  function givenPool(g: (typeof ethnicGroups)[number], gend: 'm' | 'f'): string[] {
+    return gend === 'm' ? g.male : g.female;
+  }
+
+  function generateOne(): { name: string; group: string } {
+    const gend = gender === 'any' ? (Math.random() < 0.5 ? 'm' : 'f') : gender;
+    const g = selectedEtnis === 'any'
+      ? null
+      : ethnicGroups.find(x => x.id === selectedEtnis)!;
+    const useCultural = culturalToggle.checked;
+
+    let parts: string[] = [];
+    let groupLabel: string;
+
+    if (!g) {
+      // mixed mode
+      const pool = gend === 'm' ? mixedNames.male : mixedNames.female;
+      parts = [pick(pool)];
+      if (format >= 2) parts.push(pickDistinct(pool, new Set(parts)));
+      if (format >= 3) parts.push(pickDistinct(pool, new Set(parts)));
+      groupLabel = 'Campuran';
+    } else {
+      groupLabel = g.name;
+      const pool = givenPool(g, gend);
+      const used = new Set<string>();
+      const given = () => pickDistinct(pool, used);
+
+      const withPatronymic = (useCultural && g.patronymic);
+      const titles = useCultural ? (g.titles ? (gend === 'm' ? g.titles.male : (g.titles.female ?? g.titles.male)) : null) : null;
+      const surnames = useCultural ? g.surnames : undefined;
+      const birthOrder = useCultural ? g.birthOrder : undefined;
+
+      if (format === 1) {
+        parts = [given()];
+      } else if (format === 2) {
+        if (g.id === 'batak' || g.id === 'ambon' || g.id === 'papua') {
+          parts = surnames ? [given(), pick(surnames)] : [given(), given()];
+        } else if (g.id === 'minang' && titles) {
+          parts = [pick(titles), given()];
+        } else if (g.id === 'bali') {
+          parts = [gend === 'm' ? 'I' : 'Ni', given()];
+        } else if (g.id === 'tionghoa') {
+          parts = surnames ? [pick(surnames), given()] : [given(), given()];
+        } else if (withPatronymic) {
+          parts = [given(), gend === 'm' ? 'bin' : 'binti', pick(fatherNames)];
+        } else {
+          parts = [given(), given()];
+        }
+      } else {
+        // format 3
+        if (g.id === 'batak' || g.id === 'ambon' || g.id === 'papua') {
+          parts = surnames ? [given(), given(), pick(surnames)] : [given(), given(), given()];
+        } else if (g.id === 'minang' && titles) {
+          parts = [pick(titles), given(), given()];
+        } else if (g.id === 'bali') {
+          const givenNonBirth = pool.filter(n => !(birthOrder ?? []).includes(n));
+          parts = [gend === 'm' ? 'I' : 'Ni', birthOrder ? pick(birthOrder) : given(), pickDistinct(givenNonBirth, new Set())];
+        } else if (g.id === 'tionghoa') {
+          parts = surnames ? [pick(surnames), given(), given()] : [given(), given(), given()];
+        } else if (withPatronymic) {
+          parts = [given(), given(), gend === 'm' ? 'bin' : 'binti', pick(fatherNames)];
+        } else {
+          // jawa: [given] [given] [surname]; others: 3 given names
+          if (surnames && g.id !== 'sunda' && g.id !== 'betawi') {
+            parts = [given(), given(), pick(surnames)];
+          } else {
+            parts = [given(), given(), given()];
+          }
+        }
+      }
+    }
+
+    return { name: parts.join(' '), group: groupLabel };
+  }
+
+  function generate() {
+    const results: { name: string; group: string }[] = [];
+    const seen = new Set<string>();
+    let guard = 0;
+    while (results.length < count && guard++ < 200) {
+      const r = generateOne();
+      if (seen.has(r.name)) continue;
+      seen.add(r.name);
+      results.push(r);
+    }
+    currentResults = results;
+    renderResults();
+  }
+
+  function renderResults() {
+    if (!currentResults.length) return;
+    copyAllBtn.classList.remove('hidden');
+    resultInfo.textContent = `${currentResults.length} nama`;
+    resultList.innerHTML = currentResults.map((r, i) => `
+      <div class="flex items-center gap-3 p-3 rounded-xl bg-matte-100 dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all group">
+        <span class="w-6 text-center text-xs font-bold text-matte-300">${i + 1}</span>
+        <span class="flex-1 font-semibold text-sm text-matte-800 dark:text-white">${r.name}</span>
+        <span class="text-2xs px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 font-medium shrink-0">${r.group}</span>
+        <button class="copy-one p-1.5 rounded-lg text-matte-400 hover:text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-all shrink-0" title="Salin" data-name="${r.name}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+        </button>
+      </div>`).join('');
+
+    resultList.querySelectorAll('.copy-one').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = (btn as HTMLElement).dataset.name!;
+        navigator.clipboard.writeText(name).then(() => {
+          const orig = btn.innerHTML;
+          btn.innerHTML = '✓';
+          setTimeout(() => { btn.innerHTML = orig; }, 1200);
+        });
+      });
+    });
+  }
+
+  // ---- segmented buttons ----
+  function initSegments() {
+    document.querySelectorAll('[data-gender]').forEach(b => {
+      b.addEventListener('click', () => {
+        gender = (b as HTMLElement).dataset.gender as 'm' | 'f' | 'any';
+        document.querySelectorAll('[data-gender]').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+    document.querySelectorAll('[data-format]').forEach(b => {
+      b.addEventListener('click', () => {
+        format = Number((b as HTMLElement).dataset.format);
+        document.querySelectorAll('[data-format]').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+    document.querySelectorAll('[data-count]').forEach(b => {
+      b.addEventListener('click', () => {
+        count = Number((b as HTMLElement).dataset.count);
+        document.querySelectorAll('[data-count]').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+    document.querySelector<HTMLButtonElement>('[data-gender="any"]')?.classList.add('active');
+    document.querySelector<HTMLButtonElement>('[data-format="2"]')?.classList.add('active');
+    document.querySelector<HTMLButtonElement>('[data-count="5"]')?.classList.add('active');
+  }
+
+  // ---- events ----
+  generateBtn.addEventListener('click', generate);
+  copyAllBtn.addEventListener('click', () => {
+    const text = currentResults.map(r => r.name).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = copyAllBtn.innerHTML;
+      copyAllBtn.innerHTML = '✅ Tersalin!';
+      setTimeout(() => { copyAllBtn.innerHTML = orig; }, 1500);
+    });
+  });
+
+  renderChips();
+  initSegments();
+});
+</script>
+
+<style>
+  .seg-btn {
+    background: var(--matte-100);
+    color: var(--matte-500);
+  }
+  .dark .seg-btn {
+    background: var(--surface-hover);
+    color: var(--matte-300);
+  }
+  .seg-btn.active {
+    background: #f43f5e;
+    color: #fff;
+  }
+</style>

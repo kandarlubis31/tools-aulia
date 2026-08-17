@@ -72,22 +72,57 @@ export interface FrameSource {
   getFrame(t: number): Promise<Frame>;
 }
 
-export interface CompositorClip {
+/** A time window + speed + transition for a clip on the timeline (video & audio share this). */
+export interface TimelineSegment {
   id: string | number;
-  source: FrameSource;
   /** Source in/out points (seconds). The clip only plays this window. */
   srcIn: number;
   srcOut: number;
   /** Playback speed. Output duration = (srcOut - srcIn) / speed. */
   speed: number;
+  /** Transition applied INTO the next clip. */
+  transitionOut: TransitionType;
+}
+
+export interface TimelineLayoutItem {
+  segment: TimelineSegment;
+  /** Timeline start (sec). */
+  start: number;
+  /** Timeline end (sec). */
+  end: number;
+}
+
+/**
+ * Lay segments out sequentially, overlapping by `transitionDuration` wherever a
+ * segment has a transition into the next. Shared by the video compositor and the
+ * audio engine so their clocks stay perfectly in sync.
+ */
+export function computeTimelineLayout(
+  segments: TimelineSegment[],
+  transitionDuration: number
+): TimelineLayoutItem[] {
+  const layout: TimelineLayoutItem[] = [];
+  let cursor = 0;
+  for (let i = 0; i < segments.length; i++) {
+    const s = segments[i];
+    const outDur = Math.max(0.001, (s.srcOut - s.srcIn) / Math.max(0.01, s.speed));
+    const prev = i > 0 ? layout[i - 1] : null;
+    const start =
+      prev && prev.segment.transitionOut !== 'none' ? prev.end - transitionDuration : cursor;
+    layout.push({ segment: s, start, end: start + outDur });
+    cursor = start + outDur;
+  }
+  return layout;
+}
+
+export interface CompositorClip extends TimelineSegment {
+  source: FrameSource;
   /** Rotation in degrees, one of 0/90/180/270. */
   rotation: number;
   /** Center-crop to a target aspect ratio ('none' = keep full frame). */
   crop: CropRatio;
   /** Uniform opacity 0..1. */
   opacity: number;
-  /** Transition applied INTO the next clip. */
-  transitionOut: TransitionType;
 }
 
 export interface WatermarkSpec {
@@ -104,12 +139,6 @@ export interface CompositorOptions {
   /** Transition overlap (seconds) when a transition is active. Default 0.8. */
   transitionDuration?: number;
   watermark?: WatermarkSpec | null;
-}
-
-interface LaidClip {
-  clip: CompositorClip;
-  start: number; // timeline start (sec)
-  end: number; // timeline end (sec)
 }
 
 interface ClipDrawOpts {
@@ -150,7 +179,7 @@ export function createCompositor(
   canvas.height = height;
 
   let clips: CompositorClip[] = [];
-  let layout: LaidClip[] = [];
+  let layout: TimelineLayoutItem[] = [];
   let duration = 0;
   let watermark: WatermarkSpec | null = options.watermark ?? null;
   let currentTime = 0;
@@ -166,19 +195,7 @@ export function createCompositor(
   let pendingTime: number | null = null;
 
   function computeLayout(): void {
-    layout = [];
-    let cursor = 0;
-    for (let i = 0; i < clips.length; i++) {
-      const c = clips[i];
-      const outDur = Math.max(0.001, (c.srcOut - c.srcIn) / Math.max(0.01, c.speed));
-      const prev = i > 0 ? layout[i - 1] : null;
-      const start =
-        prev && prev.clip.transitionOut !== 'none'
-          ? prev.end - transitionDuration
-          : cursor;
-      layout.push({ clip: c, start, end: start + outDur });
-      cursor = start + outDur;
-    }
+    layout = computeTimelineLayout(clips, transitionDuration);
     duration = layout.length ? layout[layout.length - 1].end : 0;
   }
 
@@ -199,8 +216,8 @@ export function createCompositor(
   }
 
   /** Center-crop `frame` to `cropRatio`, contain-fit onto canvas, then rotate. */
-  async function drawClip(laid: LaidClip, srcT: number, opts: ClipDrawOpts): Promise<void> {
-    const c = laid.clip;
+  async function drawClip(laid: TimelineLayoutItem, srcT: number, opts: ClipDrawOpts): Promise<void> {
+    const c = laid.segment as CompositorClip;
     const frame = await c.source.getFrame(srcT);
     try {
       const cropRatio = c.crop === 'none' ? null : CROP_RATIOS[c.crop as Exclude<CropRatio, 'none'>];
@@ -246,8 +263,8 @@ export function createCompositor(
   }
 
   /** Compute alpha/slide/clip for a clip given its (in/out) transition state. */
-  function transitionFor(i: number, laid: LaidClip, t: number): ClipDrawOpts {
-    const c = laid.clip;
+  function transitionFor(i: number, laid: TimelineLayoutItem, t: number): ClipDrawOpts {
+    const c = laid.segment as CompositorClip;
     let alpha = clamp01(c.opacity);
     let dx = 0;
     let clip: [number, number] | null = null;
@@ -352,7 +369,7 @@ export function createCompositor(
     for (let i = 0; i < layout.length; i++) {
       const laid = layout[i];
       if (t < laid.start || t >= laid.end) continue;
-      const srcT = laid.clip.srcIn + (t - laid.start) * laid.clip.speed;
+      const srcT = clips[i].srcIn + (t - laid.start) * clips[i].speed;
       await drawClip(laid, srcT, transitionFor(i, laid, t));
     }
 
