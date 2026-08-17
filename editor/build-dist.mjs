@@ -132,27 +132,37 @@ console.log(`clean ${OUT}`);
 await rm(OUT, { recursive: true, force: true });
 await mkdir(OUT, { recursive: true });
 
-// 1. index.html
+// 1. index.html — ABSOLUTE paths (/editor/...) so the app works whether the page is
+//    served at /editor or /editor/ (relative paths would resolve to the site root
+//    without a trailing slash → 404 + MIME errors, as seen in production).
 let html = await readFile(join(SRC, "index.html"), "utf-8");
 html = html
   .replace(/<script src="coi-serviceworker\.js"><\/script>\s*/g, "")
-  .replace('src="./main.js"', 'src="./main.bundle.min.js"')
-  .replace('src="/assets/icon3.png"', 'src="./assets/icon3.png"')
+  .replace('src="./main.js"', 'src="/editor/main.bundle.min.js"')
+  .replace('src="./importmap.json"', 'src="/editor/importmap.json"')
+  .replace('href="index.css?v=', 'href="/editor/index.css?v=')
+  .replace('href="index.css"', 'href="/editor/index.css"')
+  .replace('href="./assets/favicon-32x32.png"', 'href="/editor/assets/favicon-32x32.png"')
+  .replace('src="/assets/icon3.png"', 'src="/editor/assets/icon3.png"')
   .replace(/<title>omni-clip<\/title>/, "<title>Video Editor | ToolsAulia</title>")
   .replace(/<title>omniclip<\/title>/, "<title>Video Editor | ToolsAulia</title>");
 await writeFile(join(OUT, "index.html"), html);
 
-// 2. main.bundle.min.js — fix absolute /assets/ paths
+// 2. main.bundle.min.js — rewrite asset refs to ABSOLUTE /editor/assets/...
 let bundle = await readFile(join(SRC, "main.bundle.min.js"), "utf-8");
 bundle = bundle
-  .replace(/\$\{window\.location\.origin\}\/assets\/MediaInfoModule\.wasm/g, "./assets/MediaInfoModule.wasm")
-  .replace(/`\/assets\//g, "`./assets/")
-  .replace(/["']\/assets\//g, (m) => (m.startsWith('"') ? '"./assets/' : "'./assets/"));
+  .replace(/\$\{window\.location\.origin\}\/assets\/MediaInfoModule\.wasm/g, "/editor/assets/MediaInfoModule.wasm")
+  .replace(/`\/assets\//g, "`/editor/assets/")
+  .replace(/["']\/assets\//g, (m) => (m.startsWith('"') ? '"/editor/assets/' : "'/editor/assets/"));
 await writeFile(join(OUT, "main.bundle.min.js"), bundle);
 
-// 3. index.css
+// 3. index.css — absolute paths (url() resolves against the CSS file, but keep it
+//    consistent with the page so /editor vs /editor/ both work).
 let css = await readFile(join(SRC, "index.css"), "utf-8");
-css = css.replace(/\.\.\/assets\//g, "./assets/");
+css = css
+  .replace(/\.\.\/assets\//g, "/editor/assets/")
+  .replace(/\.\/assets\//g, "/editor/assets/")
+  .replace(/\.\/views\//g, "/editor/views/");
 await writeFile(join(OUT, "index.css"), css);
 
 // 4+5. closure + trimmed importmap
@@ -165,7 +175,7 @@ for (const [rel, abs] of closure) {
 }
 const trimmed = {};
 for (const key of usedImportMapKeys) {
-  trimmed[key] = importMap[key].replace("/node_modules/", "./node_modules/");
+  trimmed[key] = importMap[key].replace("/node_modules/", "/editor/node_modules/");
 }
 await writeFile(join(OUT, "importmap.json"), JSON.stringify({ imports: trimmed }, null, 2));
 
