@@ -87,7 +87,7 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
         <div class="flex items-center justify-between mt-2">
           <span id="preview-time" class="text-2xs font-mono text-matte-400">0:00 / 0:00</span>
         </div>
-        <p class="text-2xs text-matte-400 mt-1" data-i18n="editor.preview_hint">Preview real-time menampilkan hasil edit (trim/crop/transisi). Audio hanya ikut saat export.</p>
+        <p class="text-2xs text-matte-400 mt-1" data-i18n="editor.preview_hint">Preview real-time menampilkan hasil edit (trim/crop/transisi) + audio. Suara keluar saat di-play (bukan saat scrub).</p>
       </div>
 
       <!-- Export -->
@@ -101,7 +101,7 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
           </div>
           <p id="progress-text" class="text-2xs text-matte-400 mt-1.5"></p>
         </div>
-        <p class="text-xs text-matte-400 mt-3" data-i18n="editor.note">FFmpeg berjalan di browser (~32MB, dimuat sekali saat export pertama). File tidak pernah di-upload.</p>
+        <p class="text-xs text-matte-400 mt-3" data-i18n="editor.note">Export pakai WebCodecs GPU (cepat) + fallback FFmpeg di browser (~32MB). File tidak pernah di-upload.</p>
       </div>
     </div>
   </div>
@@ -111,7 +111,10 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
   import { FFmpeg } from '@ffmpeg/ffmpeg';
   import { fetchFile } from '@ffmpeg/util';
   import { createCompositor, createVideoElementSource } from '../composables/useVideoCompositor';
-  import type { CompositorClip, WatermarkSpec, VideoCompositor } from '../composables/useVideoCompositor';
+  import type { CompositorClip, FrameSource, WatermarkSpec, VideoCompositor } from '../composables/useVideoCompositor';
+  import { createAudioEngine, EXPORT_SAMPLE_RATE } from '../composables/useAudioEngine';
+  import type { AudioEngine } from '../composables/useAudioEngine';
+  import { supportsWebCodecs, createSequentialFrameSource, exportTimeline } from '../composables/useWebCodecsExporter';
 
   const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
@@ -227,7 +230,9 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
     let activeClipId: number | null = null;
 
     let compositor: VideoCompositor | null = null;
+    let audioEngine: AudioEngine | null = null;
     const previewVideos = new Map<number, HTMLVideoElement>();
+    const frameSources = new Map<number, FrameSource>();
     let outW = 1280;
     let outH = 720;
 
@@ -281,7 +286,10 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
         compositor.onTimeUpdate = (ct) => {
           updatePlayhead(ct);
           updatePreviewTime(ct);
-          if (ct >= compositor!.getDuration() - 0.001) setPreviewPlaying(false);
+          if (ct >= compositor!.getDuration() - 0.001) {
+            setPreviewPlaying(false);
+            audioEngine?.pause();
+          }
         };
         void compositor.seek(Math.min(t, compositor.getDuration()));
       }
@@ -300,25 +308,73 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
       return v;
     }
 
-    function syncCompositor() {
+    async function makeFrameSource(c: Clip): Promise<FrameSource> {
+      if (supportsWebCodecs()) {
+        try {
+          return await createSequentialFrameSource(c.file);
+        } catch {
+          return createVideoElementSource(videoForClip(c), c.width, c.height);
+        }
+      }
+      return createVideoElementSource(videoForClip(c), c.width, c.height);
+    }
+
+    async function frameSourceForClip(c: Clip): Promise<FrameSource> {
+      const cached = frameSources.get(c.id);
+      if (cached) return cached;
+      const src = await makeFrameSource(c);
+      frameSources.set(c.id, src);
+      return src;
+    }
+
+    // `fresh` isolates the export from the preview's cached (stateful) sources.
+    async function buildCompositorClips(fresh = false): Promise<CompositorClip[]> {
+      const list: CompositorClip[] = [];
+      for (const c of clips) {
+        list.push({
+          id: c.id,
+          source: fresh ? await makeFrameSource(c) : await frameSourceForClip(c),
+          srcIn: c.start,
+          srcOut: c.end,
+          speed: c.speed,
+          rotation: c.rotate,
+          crop: c.crop as CompositorClip['crop'],
+          opacity: 1,
+          transitionOut: c.transitionOut as CompositorClip['transitionOut'],
+        });
+      }
+      return list;
+    }
+
+    function syncAudioEngine() {
+      if (!audioEngine) audioEngine = createAudioEngine();
+      audioEngine.setClips(
+        clips.map((c) => ({
+          id: c.id,
+          file: c.file,
+          srcIn: c.start,
+          srcOut: c.end,
+          speed: c.speed,
+          volume: c.volume,
+          muted: c.muted,
+          transitionOut: c.transitionOut as CompositorClip['transitionOut'],
+        })),
+        transitionDuration
+      );
+    }
+
+    async function syncCompositor() {
       const comp = ensureCompositor();
-      const list: CompositorClip[] = clips.map((c) => ({
-        id: c.id,
-        source: createVideoElementSource(videoForClip(c), c.width, c.height),
-        srcIn: c.start,
-        srcOut: c.end,
-        speed: c.speed,
-        rotation: c.rotate,
-        crop: c.crop as CompositorClip['crop'],
-        opacity: 1,
-        transitionOut: c.transitionOut as CompositorClip['transitionOut'],
-      }));
-      comp.setTimeline(list);
+      comp.setTimeline(await buildCompositorClips());
       comp.setWatermark(wmToSpec());
       const live = new Set(clips.map((c) => c.id));
       previewVideos.forEach((v, id) => {
         if (!live.has(id)) { v.src = ''; previewVideos.delete(id); }
       });
+      frameSources.forEach((_, id) => {
+        if (!live.has(id)) frameSources.delete(id);
+      });
+      syncAudioEngine();
       updatePreviewTime(comp.getCurrentTime());
     }
 
@@ -431,6 +487,7 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
       comp.pause();
       setPreviewPlaying(false);
       void comp.seek(seqTime);
+      audioEngine?.seek(seqTime);
       updatePlayhead(seqTime);
     }
 
@@ -657,19 +714,19 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
       return clips.find((c) => c.id === id);
     }
 
-    function previewClip(id: number) {
+    async function previewClip(id: number) {
       const idx = clips.findIndex((c) => c.id === id);
       if (idx === -1) return;
       previewSection.classList.remove('hidden');
       activeClipId = id;
-      syncCompositor();
+      await syncCompositor();
       let t = 0;
       for (let j = 0; j < idx; j++) t += outDur(clips[j]);
       const comp = ensureCompositor();
-      void comp.seek(t).then(() => {
-        comp.play();
-        setPreviewPlaying(true);
-      });
+      await comp.seek(t);
+      comp.play();
+      setPreviewPlaying(true);
+      void audioEngine?.play(t);
     }
 
     // --- list interactions ---
@@ -889,6 +946,31 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
     }
 
     // --- export ---
+    async function doExportWebCodecs() {
+      const d = outputDims();
+      const offCanvas = new OffscreenCanvas(d.w, d.h);
+      const comp = createCompositor(offCanvas, { width: d.w, height: d.h, transitionDuration });
+      comp.setWatermark(wmToSpec());
+      comp.setTimeline(await buildCompositorClips(true));
+      const dur = comp.getDuration();
+      if (dur <= 0) throw new Error(t('editor.invalid_trim', 'durasi nol'));
+
+      syncAudioEngine();
+      const audioBuf = await audioEngine!.renderTimeline(EXPORT_SAMPLE_RATE);
+
+      const blob = await exportTimeline({
+        width: d.w,
+        height: d.h,
+        fps: 30,
+        duration: dur,
+        canvas: offCanvas,
+        renderFrame: (tt) => comp.renderFrame(tt),
+        audio: audioBuf,
+        onProgress: (p) => setProgress(p, t('editor.exporting_webcodecs', 'Mengekspor (WebCodecs GPU)')),
+      });
+      downloadBlob(blob, 'video-editor.mp4');
+    }
+
     async function doExport() {
       if (exporting) return;
       if (clips.length === 0) {
@@ -904,9 +986,25 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
       exportBtn.disabled = true;
       progressWrap.classList.remove('hidden');
       progMode = 'seg';
-      setProgress(0, t('editor.loading', 'Memuat FFmpeg core (~32MB)…'));
+      compositor?.pause();
+      audioEngine?.pause();
+      setPreviewPlaying(false);
 
       try {
+        // Fast path: WebCodecs (GPU) + Web Audio. Falls back to FFmpeg on any error.
+        if (supportsWebCodecs()) {
+          try {
+            setProgress(0, t('editor.exporting_webcodecs', 'Mengekspor (WebCodecs GPU)…'));
+            await doExportWebCodecs();
+            toast(t('editor.exported', 'Video berhasil di-export!'), 'success');
+            return;
+          } catch (err: any) {
+            console.warn('[video-editor] WebCodecs export failed, falling back to FFmpeg:', err);
+            toast(t('editor.webcodecs_fallback', 'Export GPU gagal — beralih ke FFmpeg'), 'info');
+          }
+        }
+
+        setProgress(0, t('editor.loading', 'Memuat FFmpeg core (~32MB)…'));
         const f = await ensureFfmpeg();
         const total = clips.length;
         progSegTotal = total;
@@ -1029,14 +1127,16 @@ import ToolPageHeader from '../components/ToolPageHeader.astro';
     });
     exportBtn.addEventListener('click', doExport);
 
-    previewToggle.addEventListener('click', () => {
-      if (!compositor) syncCompositor();
+    previewToggle.addEventListener('click', async () => {
+      if (!compositor) await syncCompositor();
       const comp = ensureCompositor();
       if (comp.playing) {
         comp.pause();
+        audioEngine?.pause();
         setPreviewPlaying(false);
       } else {
         comp.play();
+        void audioEngine?.play(comp.getCurrentTime());
         setPreviewPlaying(true);
       }
     });

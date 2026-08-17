@@ -1,6 +1,6 @@
 # Project Context — ToolsAulia
 
-> **Last updated:** August 13, 2026 (Video Editor Phase 1 — FFmpeg.wasm client-side)
+> **Last updated:** August 18, 2026 (Video Studio /editor — OmniClip integrated, CapCut-style editor)
 > **Stack:** Astro 5 · Tailwind CSS · TypeScript · 100% client-side (zero server processing)
 > **PWA:** Service Worker + Workbox precache · offline-first
 > **i18n:** Indonesian-first + English toggle (localStorage)
@@ -16,10 +16,10 @@
 | **Calc** | 18 | age, bmi, currency, number, percentage, unit, case, emi, compound-interest, timezone, scientific, date-diff, fraction, number-words, matrix, work-hours, bmr, random |
 | **Image** | 18 | color, compressor, converter, editor, html-to-img, remove-bg, watermark, cropper, batch-resizer, exif, ascii, meme, palette, collage, gif-maker, favicon, to-pdf, color-convert |
 | **Security** | 12 | password, hash, uuid, bcrypt, file-encrypt, cipher, totp, steganography, luhn, password-strength, hmac, token |
-| **Utils** | 19 | wa-builder, qr, jokes, brainstorm, pomodoro, todo, word-counter, prabowo-countdown, paste-to-md, stopwatch, lorem, motivation, sinonim, notes-md, decision-wheel, expense-tracker, wordle-id, habit-tracker, qr-scanner |
+| **Utils** | 20 | wa-builder, qr, jokes, brainstorm, pomodoro, todo, word-counter, prabowo-countdown, paste-to-md, stopwatch, lorem, motivation, sinonim, notes-md, decision-wheel, expense-tracker, wordle-id, habit-tracker, qr-scanner, nama-generator |
 | **Text** | 13 | typing-test, text-to-speech, summarizer, readability, fancy, emoji, speech-to-text, lang-detect, anagram, morse, rot13, random-text, to-pdf |
 | **Data** | 10 | csv-editor, xlsx-viewer, yaml-json, ical, fake-data, xml-formatter, vcard, barcode, geojson, barcode-reader |
-| **Media** | 16 | audio-recorder, waveform, audio-trimmer, metronome, tone-generator, white-noise, screen-recorder, scale-ref, video-to-gif, beat-maker, media-info, audio-viz, video-thumb, audio-eq, audio-convert, video-editor |
+| **Media** | 17 | audio-recorder, waveform, audio-trimmer, metronome, tone-generator, white-noise, screen-recorder, scale-ref, video-to-gif, beat-maker, media-info, audio-viz, video-thumb, audio-eq, audio-convert, video-editor, **video-studio** |
 | **Network** | 11 | http-builder, rest-client, dns-lookup, speed-test, latency, websocket, http-headers, ua-parser, port-ref, whois, ssl |
 | **File** | 2 | csv-json, pdf-to-md |
 | **Life** | 4 | mood-tracker, certificate, snake, magic-8ball |
@@ -113,7 +113,8 @@ Hero (compact: 8px padding, inline stats, no buttons)
 7. **Minimal ZIP builder** — Inline ZIP for PDF-to-Word (no JSZip dependency)
 8. **Permissions-Policy** — Microphone access granted for audio tools
 9. **Performance-first homepage** — No JS-driven animations on card grid, CSS-only hover effects
-10. **Video editing (FFmpeg)** — `@ffmpeg/ffmpeg` + `@ffmpeg/core` 0.12.9 self-hosted at `public/vendor/ffmpeg/` (ESM core + 32MB wasm + `font.ttf` buat drawtext). Wasm & font TIDAK di-precache — runtime-cached (`ffmpeg-core`) setelah pemakaian pertama. CSP `media-src 'self' blob: data:` untuk preview playback. Single-threaded core, re-encode ke H.264/AAC (maks 720p) biar concat-safe. Filter per-klip: `transpose` (rotasi), `crop` (center aspect), `scale/pad`, `drawtext` (watermark), `setpts`+`atempo` (speed), `volume`/`-an` (volume/mute). Transisi antar klip via `xfade` (video) + `acrossfade` (audio) chain di `filter_complex`.
+10. **Video editing (FFmpeg)** — `@ffmpeg/ffmpeg` + `@ffmpeg/core` 0.12.9 self-hosted at `public/vendor/ffmpeg/` (ESM core + 32MB wasm + `font.ttf` buat drawtext). Wasm & font TIDAK di-precache — runtime-cached (`ffmpeg-core`) setelah pemakaian pertama. CSP `media-src 'self' blob: data:` untuk preview playback. Single-threaded core, re-encode ke H.264/AAC (maks 720p) biar concat-safe. Filter per-klip: `transpose` (rotasi), `crop` (center aspect), `scale/pad`, `drawtext` (watermark), `setpts`+`atempo` (speed), `volume`/`-an` (volume/mute). Transisi antar klip via `xfade` (video) + `acrossfade` (audio) chain di `filter_complex`. Sekarang berperan sebagai **fallback export** (audio akurat + codec edge-case).
+11. **Video editing (real-time engine)** — Preview pakai Canvas 2D compositor (`useVideoCompositor.ts`, `computeTimelineLayout` shared video+audio) + WebCodecs sequential decode (`createSequentialFrameSource`, Mediabunny `VideoSampleSink.samples`) + Web Audio (`useAudioEngine.ts`: `decodeAudioData` per klip, preview via `AudioBufferSourceNode` + gain envelope crossfade, export render via `OfflineAudioContext`). Export utama = WebCodecs GPU (`exportTimeline` → `CanvasSource` + `AudioBufferSource` AAC → MP4), fallback FFmpeg. Semua 100% client-side, file tak di-upload.
 
 ---
 
@@ -145,6 +146,9 @@ Hero (compact: 8px padding, inline stats, no buttons)
 - **Video Editor (Phase 1):** ✅ — `/edit-video` (FFmpeg.wasm client-side): import multi-klip, trim/split, reorder, merge, export MP4. Self-hosted core di `public/vendor/ffmpeg/` + runtime-cache SW.
 - **Video Editor (Phase 2):** ✅ — efek per-klip: speed (0.25–4×), volume/mute, rotasi (0/90/180/270), crop (center aspect preset), + watermark teks global (drawtext, font self-host).
 - **Video Editor (Phase 3):** ✅ — timeline horizontal (single track): blok ∝ durasi, drag-reorder, edge-trim, playhead + click-to-seek; transisi antar klip (fade/fadeblack/slide/wipe) via `xfade`+`acrossfade`. Full multi-track NLE (layer video/audio/teks + keyframes + preview real-time) masih di luar scope ffmpeg.wasm batch-encode.
+- **Video Editor (Engine v2, real-time):** ✅ — preview real-time (Canvas compositor + transisi/efek) + **audio preview** (Web Audio, suara saat play) + **export WebCodecs GPU** (Mediabunny `CanvasSource`+`AudioBufferSource` → MP4) dengan fallback FFmpeg. 3 modul fondasi: `useVideoCompositor.ts` (compositor), `useAudioEngine.ts` (Web Audio preview+render), `useWebCodecsExporter.ts` (WebCodecs decode/encode/mux + `createSequentialFrameSource` streaming 60fps).
+- **Video Studio (`/editor`, OmniClip):** ✅ — editor video lengkap ala CapCut (multi-track timeline, trim/split, efek & filter, teks, audio, transisi, export hingga 4K) via **OmniClip** (MIT, opensource) yang di-vendor ke `omniclip/` + di-serve statis di `/editor`. PostHog analytics di-strip, ffmpeg core diarahkan ke self-host `/vendor/ffmpeg/`, coi-serviceworker dihapus (tidak butuh SAB). Build Windows: `patch-turtle.mjs` + `editor/build-dist.mjs` → `public/editor/`. SW ToolsAulia tidak precache `/editor` (app standalone).
+- **Nama Generator Indonesia (`/utils/nama-generator`):** ✅ — generate nama khas 11 suku (Jawa, Sunda, Batak, Minang, Betawi, Bali, Melayu, Tionghoa, Arab, Ambon, Papua) dengan marga (Batak/Tionghoa/Ambon/Papua), gelar (Sutan/Datuk, I Gusti/Dewa), patronimik bin/binti (Melayu/Arab), urutan lahir (Wayan/Made/Nyoman/Ketut), format 1–3 kata, filter gender, toggle budaya. Data kurasi di `src/data/indonesian-names.ts` (100% lokal, offline).
 
 ---
 

@@ -21,11 +21,13 @@ import {
   Input,
   Output,
   ALL_FORMATS,
+  AudioBufferSource,
   BlobSource,
   BufferTarget,
   CanvasSource,
   Mp4OutputFormat,
   Quality,
+  VideoSample,
   VideoSampleSink,
   EncodedPacketSink,
 } from 'mediabunny';
@@ -61,6 +63,72 @@ export async function createFrameSourceFromFile(file: Blob): Promise<FrameSource
         },
         close() {
           sample.close();
+        },
+      };
+    },
+  };
+}
+
+/**
+ * Frame-accurate, streaming `FrameSource` backed by WebCodecs sequential
+ * decoding. Unlike `createFrameSourceFromFile` (which seeks to a key packet and
+ * re-decodes on every call), this keeps ONE forward-moving decode stream and
+ * only re-seeks when time jumps *backwards*. This is what makes real-time
+ * playback (60fps, no jank) and fast export possible.
+ *
+ * Memory-bounded: at most one `VideoSample` is retained at a time; the previous
+ * frame is closed as soon as the next is pulled.
+ */
+export async function createSequentialFrameSource(file: Blob): Promise<FrameSource> {
+  if (!supportsWebCodecs()) throw new Error('Browser tidak mendukung WebCodecs');
+
+  const input = new Input({ formats: ALL_FORMATS, source: new BlobSource(file) });
+  const track = await input.getPrimaryVideoTrack();
+  if (!track) throw new Error('File tidak punya video track');
+  if (!(await track.canDecode())) throw new Error('Codec video tidak bisa didecode');
+
+  const sink = new VideoSampleSink(track);
+  const width = await track.getDisplayWidth();
+  const height = await track.getDisplayHeight();
+
+  let iterator: AsyncGenerator<VideoSample, void, unknown> | null = null;
+  let lastFrame: VideoSample | null = null;
+  let lastT = -1;
+
+  async function startAt(t: number): Promise<void> {
+    if (iterator) await iterator.return(undefined).catch(() => {});
+    if (lastFrame) {
+      lastFrame.close();
+      lastFrame = null;
+    }
+    iterator = sink.samples(Math.max(0, t - 0.25));
+  }
+
+  return {
+    width,
+    height,
+    async getFrame(t) {
+      if (!iterator || t < lastT) {
+        await startAt(t);
+      }
+      // Pull forward until we reach/pass `t` (sequential, each packet decoded once).
+      while (!lastFrame || lastFrame.timestamp < t) {
+        const { value, done } = await iterator!.next();
+        if (done || !value) break;
+        if (lastFrame) lastFrame.close();
+        lastFrame = value as VideoSample;
+      }
+      lastT = t;
+      if (!lastFrame) throw new Error('Frame tidak ditemukan');
+      const sample = lastFrame; // owned by this source (closed on reset/end)
+      return {
+        width: sample.displayWidth,
+        height: sample.displayHeight,
+        draw(ctx, sx, sy, sw, sh, dx, dy, dw, dh) {
+          sample.draw(ctx, sx, sy, sw, sh, dx, dy, dw, dh);
+        },
+        close() {
+          /* owned & reused by the source — do not close per draw */
         },
       };
     },
@@ -144,23 +212,29 @@ export interface ExportTimelineOptions {
   duration: number;
   quality?: ExportQuality;
   /**
-   * Draw the composited frame at time `t` (seconds) onto `canvas`.
-   * Tip: bind a `VideoCompositor` to this OffscreenCanvas and call
-   * `await compositor.renderFrame(t)` here.
+   * The canvas the compositor draws into. The caller owns it (usually an
+   * OffscreenCanvas bound to a `VideoCompositor`). Its size must match width/height.
    */
-  renderFrame: (t: number, canvas: OffscreenCanvas) => Promise<void>;
+  canvas: OffscreenCanvas;
+  /** Draw the composited frame at time `t` (seconds) onto `canvas`. */
+  renderFrame: (t: number) => Promise<void>;
+  /**
+   * Optional full-timeline audio buffer (see `AudioEngine.renderTimeline`).
+   * When provided, an AAC audio track is muxed into the MP4.
+   */
+  audio?: AudioBuffer | null;
   onProgress?: (progress: number) => void;
 }
 
 /**
  * Composite the timeline to an MP4 blob using WebCodecs hardware encoding +
- * Mediabunny's MP4 muxer. Runs fully on-device (GPU), no upload.
+ * Mediabunny's MP4 muxer (video + optional AAC audio). Runs fully on-device (GPU),
+ * no upload.
  */
 export async function exportTimeline(opts: ExportTimelineOptions): Promise<Blob> {
   if (!supportsWebCodecs()) throw new Error('Browser tidak mendukung WebCodecs');
 
-  const { width, height, fps, duration, quality = 'high' } = opts;
-  const canvas = new OffscreenCanvas(width, height);
+  const { width, height, fps, duration, quality = 'high', canvas } = opts;
 
   const output = new Output({
     format: new Mp4OutputFormat(),
@@ -171,12 +245,22 @@ export async function exportTimeline(opts: ExportTimelineOptions): Promise<Blob>
     quality: new Quality(quality),
   });
   output.addVideoTrack(videoSource);
+
+  let audioSource: AudioBufferSource | null = null;
+  if (opts.audio && opts.audio.length > 0) {
+    audioSource = new AudioBufferSource({ codec: 'aac', quality: new Quality(quality) });
+    output.addAudioTrack(audioSource);
+  }
   await output.start();
+
+  if (audioSource && opts.audio) {
+    await audioSource.add(opts.audio);
+  }
 
   const totalFrames = Math.max(1, Math.round(duration * fps));
   for (let f = 0; f <= totalFrames; f++) {
     const t = Math.min(duration, f / fps);
-    await opts.renderFrame(t, canvas);
+    await opts.renderFrame(t);
     // `add(timestamp, duration)` in seconds; awaited to respect encoder backpressure.
     await videoSource.add(t, 1 / fps);
     opts.onProgress?.(f / totalFrames);
