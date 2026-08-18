@@ -69,6 +69,10 @@ export default defineConfig({
         },
       ],
       navigateFallback: '/offline/',
+      // /editor → jangan intercept: app butuh COOP/COEP headers (COI) dari Vercel
+      // buat SharedArrayBuffer (ffprobe-wasm worker). Kalau SW serve /offline/
+      // tanpa header itu, self-heal malah nge-unregister SW + hapus SEMUA cache PWA.
+      navigateFallbackAllowlist: [/^(?!\/editor(?:$|\/))/],
       navigateFallbackDenylist: [/^\/api\/.*/],
       maximumFileSizeToCacheInBytes: 25 * 1024 * 1024, // 25 MB — headroom for kbbi-sinonim.json (9.4MB) + id-words.json (2.6MB) + AI models
       runtimeCaching: [

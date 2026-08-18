@@ -7,8 +7,9 @@
  *
  * What it does:
  *  1. Rewrites index.html   — use the rollup bundle (main.bundle.min.js), strip
- *     coi-serviceworker (nothing needs SharedArrayBuffer → avoids COEP/CORP
- *     breaking CDN libs), fix absolute /assets/ → relative, set title.
+ *     coi-serviceworker (COI di-handle header Vercel: ffprobe-wasm worker butuh
+ *     SharedArrayBuffer → COOP/COEP credentialless di vercel.json /editor(.*)),
+ *     fix absolute /assets/ → relative, set title.
  *  2. Rewrites main.bundle.min.js — /assets/ → ./assets/ (all URL string literals).
  *  3. Rewrites index.css — ../assets/ → ./assets/.
  *  4. Builds a trimmed importmap.json with only the packages the bundle imports
@@ -148,12 +149,23 @@ html = html
   .replace(/<title>omniclip<\/title>/, "<title>Video Editor | ToolsAulia</title>");
 await writeFile(join(OUT, "index.html"), html);
 
-// 2. main.bundle.min.js — rewrite asset refs to ABSOLUTE /editor/assets/...
+// 2. main.bundle.min.js — rewrite asset refs to ABSOLUTE /editor/assets/... + point
+//    the module-worker URLs at absolute /editor/ paths. Rollup does NOT rewrite
+//    `new Worker(new URL(...))` relative refs, so they'd resolve against the bundle
+//    location (/editor/main.bundle.min.js) and 404 (opfs-worker, decode/encode
+//    workers → editor fails to mount / export). We place the compiled workers from
+//    omniclip/x at the SAME relative layout under /editor/ (so their own relative
+//    imports keep resolving) and rewrite the refs here.
 let bundle = await readFile(join(SRC, "main.bundle.min.js"), "utf-8");
 bundle = bundle
   .replace(/\$\{window\.location\.origin\}\/assets\/MediaInfoModule\.wasm/g, "/editor/assets/MediaInfoModule.wasm")
   .replace(/`\/assets\//g, "`/editor/assets/")
-  .replace(/["']\/assets\//g, (m) => (m.startsWith('"') ? '"/editor/assets/' : "'/editor/assets/"));
+  .replace(/["']\/assets\//g, (m) => (m.startsWith('"') ? '"/editor/assets/' : "'/editor/assets/"))
+  .replaceAll('new URL("./decode_worker.js",import.meta.url)', 'new URL("/editor/context/controllers/video-export/parts/decode_worker.js",import.meta.url)')
+  .replaceAll('new URL("./encode_worker.js",import.meta.url)', 'new URL("/editor/context/controllers/video-export/parts/encode_worker.js",import.meta.url)')
+  .replaceAll('new URL("../../video-export/parts/decode_worker.js",import.meta.url)', 'new URL("/editor/context/controllers/video-export/parts/decode_worker.js",import.meta.url)')
+  .replaceAll('new URL("../../video-export/parts/encode_worker.js",import.meta.url)', 'new URL("/editor/context/controllers/video-export/parts/encode_worker.js",import.meta.url)')
+  .replaceAll('new URL("./opfs-worker.js",import.meta.url)', 'new URL("/editor/context/controllers/collaboration/parts/opfs-worker.js",import.meta.url)');
 await writeFile(join(OUT, "main.bundle.min.js"), bundle);
 
 // 3. index.css — absolute paths (url() resolves against the CSS file, but keep it
@@ -181,6 +193,22 @@ await writeFile(join(OUT, "importmap.json"), JSON.stringify({ imports: trimmed }
 
 // 6. assets
 await cp(join(SRC, "assets"), join(OUT, "assets"), { recursive: true });
+
+// 6b. video workers + their relative-import deps (see step 2). Mirror the omniclip/x
+//     layout so each worker's own `import ... from "./..."` keeps resolving.
+const WORKERS = [
+  "context/controllers/video-export/parts/decode_worker.js",
+  "context/controllers/video-export/parts/encode_worker.js",
+  "context/controllers/video-export/tools/BinaryAccumulator/tool.js",
+  "context/controllers/collaboration/parts/opfs-worker.js",
+  "context/controllers/collaboration/parts/opfs-manager.js",
+  "utils/wait.js",
+];
+for (const rel of WORKERS) {
+  const dest = join(OUT, rel);
+  await mkdir(dirname(dest), { recursive: true });
+  await cp(join(SRC, rel), dest);
+}
 
 // 7. auxiliary dirs referenced at runtime (tooltip styles.css via index.css @import)
 for (const dir of ["views", "tools", "icons"]) {
