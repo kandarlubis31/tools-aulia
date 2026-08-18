@@ -24,6 +24,27 @@ export interface ChangelogEntry {
 export const changelogEntries: ChangelogEntry[] = [
   {
     date: '2026-08-18',
+    version: 'v2.18',
+    title: 'Video Studio — Diperbaiki: Kini Stabil di Produksi',
+    titleEn: 'Video Studio — Fixed: Now Stable in Production',
+    desc: 'Serangkaian perbaikan agar Video Studio (/editor) benar-benar jalan di produksi: runtime module yang hilang ikut di-deploy, dukungan SharedArrayBuffer (Cross-Origin Isolation) untuk decoder video, worker-file editor lengkap, dan service worker tidak lagi mengganggu halaman editor.',
+    descEn: 'A series of fixes so Video Studio (/editor) actually works in production: missing runtime modules are now deployed, SharedArrayBuffer support (Cross-Origin Isolation) for the video decoder, complete editor worker files, and the service worker no longer interferes with the editor page.',
+    items: [
+      '🐛 Loading tidak lagi stuck — runtime module editor (43 file) yang sebelumnya tidak ikut ter-deploy sekarang lengkap',
+      '🧠 Decoder video (ffprobe) jalan — dukungan SharedArrayBuffer via Cross-Origin Isolation (COOP/COEP) + izin blob: di CSP',
+      '⚙️ Worker editor (OPFS storage + decode/encode video) tersedia di path yang benar — project bisa dibuat & disimpan lokal',
+      '🛡️ Service worker tidak lagi meng-intercept /editor — halaman editor selalu dimuat dari server',
+    ],
+    itemsEn: [
+      '🐛 Loading no longer stuck — the editor runtime modules (43 files) that were missing from the deploy are now complete',
+      '🧠 Video decoder (ffprobe) works — SharedArrayBuffer support via Cross-Origin Isolation (COOP/COEP) + blob: allowed in CSP',
+      '⚙️ Editor workers (OPFS storage + video decode/encode) available at correct paths — projects can be created & saved locally',
+      '🛡️ Service worker no longer intercepts /editor — the editor page always loads from the server',
+    ],
+    tags: ['fix', 'media'],
+  },
+  {
+    date: '2026-08-18',
     version: 'v2.17',
     title: 'Nama Generator Indonesia — 11 Suku dengan Marga & Gelar Khas',
     titleEn: 'Indonesian Name Generator — 11 Ethnic Groups with Surnames & Titles',
