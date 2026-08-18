@@ -1,0 +1,755 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Text Diagram to Image — Mermaid to PNG/JPEG">
+  <div class="max-w-7xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader
+      title="Text Diagram to Image"
+      titleKey="header.diagram_to_img"
+      desc="Konversi teks diagram (Mermaid syntax) ke gambar PNG atau JPEG. Flowchart, sequence, class, ER, Gantt, pie, mindmap — langsung di browser."
+      descKey="header.diagram_to_img_desc"
+      icon='<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>'
+      gradient="from-teal-500 to-emerald-600"
+    />
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in pb-20">
+      <!-- Left: Editor -->
+      <div class="space-y-4">
+        <div class="card-base p-6">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-bold text-matte-700 dark:text-white">📝 Editor</h2>
+            <div class="flex items-center gap-2">
+              <label for="diagram-type" class="sr-only">Diagram Type</label>
+              <select id="diagram-type" class="text-xs bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg px-2 py-1.5 text-matte-600 dark:text-matte-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                <optgroup label="Mermaid">
+                  <option value="flowchart">Flowchart</option>
+                  <option value="sequence">Sequence</option>
+                  <option value="class">Class</option>
+                  <option value="state">State</option>
+                  <option value="er">ER Diagram</option>
+                  <option value="gantt">Gantt</option>
+                  <option value="pie">Pie Chart</option>
+                  <option value="mindmap">Mindmap</option>
+                  <option value="gitgraph">Git Graph</option>
+                  <option value="architecture">Architecture</option>
+                  <option value="timeline">Timeline</option>
+                  <option value="block-beta">Block</option>
+                </optgroup>
+                <optgroup label="PlantUML">
+                  <option value="puml-sequence">PlantUML Sequence</option>
+                  <option value="puml-class">PlantUML Class</option>
+                  <option value="puml-activity">PlantUML Activity</option>
+                  <option value="puml-component">PlantUML Component</option>
+                  <option value="puml-state">PlantUML State</option>
+                  <option value="puml-usecase">PlantUML Use Case</option>
+                  <option value="puml-deployment">PlantUML Deployment</option>
+                </optgroup>
+              </select>
+              <button id="load-example-btn" class="text-xs font-semibold px-2.5 py-1.5 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-lg hover:bg-teal-200 dark:hover:bg-teal-900/50 transition-colors">
+                📋 Contoh
+              </button>
+            </div>
+          </div>
+          <textarea
+            id="diagram-input"
+            class="w-full h-[400px] p-4 bg-matte-50 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl font-mono text-sm leading-relaxed outline-none focus:border-teal-500 transition-colors resize-none text-matte-800 dark:text-matte-200"
+            spellcheck="false"
+            placeholder="Ketik diagram Mermaid atau PlantUML di sini...&#10;&#10;Contoh Mermaid:&#10;graph TD&#10;  A[Start] --> B{Decision}&#10;&#10;Contoh PlantUML:&#10;@startuml&#10;Alice -> Bob: Hello&#10;@enduml"
+          ></textarea>
+        </div>
+
+        <!-- Controls -->
+        <div class="card-base p-6">
+          <h3 class="text-sm font-bold text-matte-700 dark:text-white mb-3">⚙️ Pengaturan</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div>
+              <label for="diagram-theme" class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1">Theme</label>
+              <label for="diagram-theme" class="sr-only">Theme</label>
+              <select id="diagram-theme" class="w-full text-xs bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg px-2 py-1.5 text-matte-600 dark:text-matte-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                <option value="default">Default</option>
+                <option value="dark">Dark</option>
+                <option value="forest">Forest</option>
+                <option value="neutral">Neutral</option>
+                <option value="base">Base</option>
+              </select>
+            </div>
+            <div>
+              <label for="export-format" class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1">Format</label>
+              <label for="export-format" class="sr-only">Export Format</label>
+              <select id="export-format" class="w-full text-xs bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg px-2 py-1.5 text-matte-600 dark:text-matte-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="svg">SVG</option>
+              </select>
+            </div>
+            <div>
+              <label for="export-scale" class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1">Skala</label>
+              <label for="export-scale" class="sr-only">Export Scale</label>
+              <select id="export-scale" class="w-full text-xs bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg px-2 py-1.5 text-matte-600 dark:text-matte-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                <option value="1">1x</option>
+                <option value="2" selected>2x</option>
+                <option value="3">3x</option>
+                <option value="4">4x</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div>
+              <label for="bg-color" class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1">Background</label>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" id="bg-transparent" checked class="accent-teal-500" />
+                <label for="bg-transparent" class="text-xs text-matte-500 dark:text-matte-400">Transparan</label>
+              </div>
+            </div>
+            <div id="bg-color-wrapper" class="hidden">
+              <label for="bg-color" class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1">Warna BG</label>
+              <input type="color" id="bg-color" value="#ffffff" class="w-full h-8 rounded cursor-pointer border border-matte-200 dark:border-surface-border" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="grid grid-cols-2 gap-3">
+          <button id="download-btn" disabled class="px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+          <button id="copy-svg-btn" disabled class="px-6 py-3 bg-white dark:bg-surface-hover text-teal-600 dark:text-teal-400 font-bold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 border border-matte-200 dark:border-surface-border disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy SVG
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Preview -->
+      <div class="space-y-4">
+        <div class="card-base overflow-hidden">
+          <div class="bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-4 flex justify-between items-center">
+            <h2 class="text-white font-bold flex items-center gap-2">
+              <span>👁️</span> Live Preview
+            </h2>
+            <button id="refresh-btn" class="text-xs text-white/90 bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition-colors">
+              🔄 Refresh
+            </button>
+          </div>
+          <div id="preview-area" class="p-8 flex items-center justify-center min-h-[400px] bg-matte-50 dark:bg-surface-hover overflow-auto">
+            <div id="preview-empty" class="text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-3 text-matte-300 dark:text-matte-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <p class="text-sm text-matte-400 dark:text-matte-500">Ketik diagram di editor untuk preview</p>
+            </div>
+            <div id="preview-content" class="hidden w-full flex justify-center"></div>
+          </div>
+        </div>
+
+        <!-- Error display -->
+        <div id="error-box" class="hidden card-base p-4 border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20">
+          <div class="flex items-start gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500 mt-0.5 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <div>
+              <p class="text-sm font-bold text-red-600 dark:text-red-400">Syntax Error</p>
+              <pre id="error-text" class="text-xs text-red-500 dark:text-red-300 mt-1 whitespace-pre-wrap font-mono"></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="card-base p-4">
+          <details>
+            <summary class="text-sm font-bold text-matte-700 dark:text-white cursor-pointer select-none">💡 Panduan Singkat</summary>
+            <div class="mt-3 text-xs text-matte-500 dark:text-matte-400 space-y-2 leading-relaxed">
+              <p><strong>Flowchart:</strong> <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded">graph TD</code> atau <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded">graph LR</code></p>
+              <p><strong>Sequence:</strong> <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded">sequenceDiagram</code></p>
+              <p><strong>Class:</strong> <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded">classDiagram</code></p>
+              <p><strong>ER:</strong> <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded">erDiagram</code></p>
+              <p><strong>Gantt:</strong> <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded">gantt</code></p>
+              <p><strong>Pie:</strong> <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded">pie title Judul</code></p>
+              <p><strong>Mindmap:</strong> <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded">mindmap</code></p>
+              <p class="mt-2 text-matte-500 dark:text-matte-400 font-semibold">PlantUML:</p>
+              <p>Gunakan <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded">@startuml</code> ... <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded">@enduml</code></p>
+              <p>Dukung: Sequence, Class, Activity, Component, State, Use Case, Deployment</p>
+              <p class="text-matte-400 dark:text-matte-500 mt-2">Mermaid: <a href="https://mermaid.js.org/syntax/" target="blank" rel="noopener" class="text-teal-500 hover:underline">mermaid.js.org/syntax</a> | PlantUML: <a href="https://plantuml.com/sitemap" target="blank" rel="noopener" class="text-teal-500 hover:underline">plantuml.com</a></p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+</style>
+
+<script is:inline>
+  // CDN fallback pattern: try multiple CDN sources for mermaid
+  (function() {
+    var CDN_URLS = [
+      'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.16.1/mermaid.min.js',
+      'https://unpkg.com/mermaid@11/dist/mermaid.min.js'
+    ];
+
+    function loadScript(url) {
+      return new Promise(function(resolve) {
+        var s = document.createElement('script');
+        s.src = url;
+        s.onload = function() { resolve(true); };
+        s.onerror = function() { resolve(false); };
+        document.head.appendChild(s);
+      });
+    }
+
+    async function initMermaid() {
+      if (typeof mermaid !== 'undefined') return true;
+      for (var i = 0; i < CDN_URLS.length; i++) {
+        var ok = await loadScript(CDN_URLS[i]);
+        if (ok && typeof mermaid !== 'undefined') return true;
+      }
+      // Poll for global
+      for (var j = 0; j < 30; j++) {
+        if (typeof mermaid !== 'undefined') return true;
+        await new Promise(function(r) { setTimeout(r, 100); });
+      }
+      return false;
+    }
+
+    window.__diagramReady = initMermaid();
+  })();
+</script>
+
+<script>
+  (async function() {
+  // Wait for mermaid CDN to load, then set up the page
+  await window.__diagramReady;
+
+  if (typeof mermaid === 'undefined') {
+    window.showToast?.('Gagal memuat library Mermaid.js. Cek koneksi internet.', 'error');
+    return;
+  }
+
+  // Initialize mermaid with startOnLoad false
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: 'loose',
+    theme: 'default',
+    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+    sequence: { useMaxWidth: true, mirrorActors: false },
+    gantt: { useMaxWidth: true },
+    fontFamily: 'Inter, system-ui, sans-serif'
+  });
+
+  // Element refs
+  const input = document.getElementById('diagram-input');
+  const previewEmpty = document.getElementById('preview-empty');
+  const previewContent = document.getElementById('preview-content');
+  const errorBox = document.getElementById('error-box');
+  const errorText = document.getElementById('error-text');
+  const downloadBtn = document.getElementById('download-btn');
+  const copySvgBtn = document.getElementById('copy-svg-btn');
+  const refreshBtn = document.getElementById('refresh-btn');
+  const typeSelect = document.getElementById('diagram-type');
+  const themeSelect = document.getElementById('diagram-theme');
+  const formatSelect = document.getElementById('export-format');
+  const scaleSelect = document.getElementById('export-scale');
+  const bgTransparentCheckbox = document.getElementById('bg-transparent');
+  const bgColorWrapper = document.getElementById('bg-color-wrapper');
+  const bgColorInput = document.getElementById('bg-color');
+  const loadExampleBtn = document.getElementById('load-example-btn');
+
+  let currentSvgString = '';
+  let debounceTimer = null;
+
+  // Examples per type
+  const examples = {
+    flowchart: `graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[OK]
+    B -->|No| D[Cancel]
+    C --> E[End]
+    D --> E`,
+    sequence: `sequenceDiagram
+    participant U as User
+    participant S as Server
+    participant D as Database
+    U->>S: Login Request
+    S->>D: Query User
+    D-->>S: User Data
+    S-->>U: JWT Token`,
+    class: `classDiagram
+    class Animal {
+        +String name
+        +int age
+        +makeSound()
+    }
+    class Dog {
+        +fetch()
+    }
+    class Cat {
+        +purr()
+    }
+    Animal <|-- Dog
+    Animal <|-- Cat`,
+    state: `stateDiagram-v2
+    [*] --> Idle
+    Idle --> Processing : Submit
+    Processing --> Success : Done
+    Processing --> Error : Fail
+    Success --> Idle : Reset
+    Error --> Idle : Retry`,
+    er: `erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    PRODUCT ||--o{ LINE-ITEM : "ordered in"
+    CUSTOMER {
+        int id
+        string name
+        string email
+    }
+    ORDER {
+        int id
+        date created
+    }`,
+    gantt: `gantt
+    title Project Plan
+    dateFormat  YYYY-MM-DD
+    section Planning
+    Requirements :a1, 2024-01-01, 7d
+    Design       :a2, after a1, 5d
+    section Development
+    Frontend     :b1, after a2, 10d
+    Backend      :b2, after a2, 12d
+    section Testing
+    QA           :c1, after b2, 5d`,
+    pie: `pie title Tech Stack Distribution
+    "JavaScript" : 40
+    "Python" : 25
+    "Go" : 15
+    "Rust" : 10
+    "Other" : 10`,
+    mindmap: `mindmap
+  root((Project))
+    Frontend
+      React
+      Tailwind
+    Backend
+      Node.js
+      PostgreSQL
+    DevOps
+      Docker
+      CI/CD`,
+    gitgraph: `gitGraph
+    commit
+    commit
+    branch develop
+    checkout develop
+    commit
+    commit
+    checkout main
+    merge develop
+    commit`,
+    architecture: `architecture-beta
+    group api(cloud)[API]
+    service db(database)[Database] in api
+    service server(server)[Server] in api
+    service client(internet)[Client]
+    db:L -- R:server
+    client:L -- R:server`,
+    timeline: `timeline
+    title History of Web
+    1991 : HTML Created
+    1995 : JavaScript Born
+    2006 : jQuery Released
+    2010 : Node.js Started
+    2013 : React Launched
+    2020 : Deno Gained Traction`,
+    'block-beta': `block-beta
+    columns 3
+    a["Frontend"]:2 b["Backend"]
+    c["DB"] d["Cache"] e["Queue"]
+    a --> c
+    a --> d
+    b --> c
+    b --> e`,
+    // PlantUML examples
+    'puml-sequence': `@startuml
+Alice -> Bob: Hello Bob
+Bob --> Alice: Hi Alice
+Alice -> Bob: How are you?
+Bob --> Alice: I'm fine, thanks!
+@enduml`,
+    'puml-class': `@startuml
+class User {
+  -String name
+  -String email
+  +login()
+  +logout()
+}
+
+class Admin {
+  +manageUsers()
+  +configureSystem()
+}
+
+User <|-- Admin
+@enduml`,
+    'puml-activity': `@startuml
+start
+:Open Browser;
+:Enter URL;
+if (Page loads?) then (yes)
+  :Read Content;
+else (no)
+  :Show Error;
+endif
+stop
+@enduml`,
+    'puml-component': `@startuml
+package "Frontend" {
+  [React App]
+  [CSS]
+}
+
+package "Backend" {
+  [API Server]
+  [Database]
+}
+
+[React App] --> [API Server]
+[API Server] --> [Database]
+@enduml`,
+    'puml-state': `@startuml
+[*] --> Idle
+Idle --> Processing: Submit
+Processing --> Done: Success
+Processing --> Error: Fail
+Done --> Idle: Reset
+Error --> Idle: Retry
+@enduml`,
+    'puml-usecase': `@startuml
+left to right direction
+actor User
+actor Admin
+rectangle System {
+  usecase "Login" as UC1
+  usecase "Upload" as UC2
+  usecase "Manage" as UC3
+}
+User --> UC1
+User --> UC2
+Admin --> UC3
+@enduml`,
+    'puml-deployment': `@startuml
+node "Web Server" {
+  [Nginx]
+  [App]
+}
+node "DB Server" {
+  [PostgreSQL]
+}
+cloud "CDN" {
+  [CloudFront]
+}
+[CloudFront] --> [Nginx]
+[App] --> [PostgreSQL]
+@enduml`
+  };
+
+  // PlantUML encoding: deflate + base64 with custom alphabet
+  function encode64(data) {
+    let r = '';
+    for (let i = 0; i < data.length; i += 3) {
+      if (i + 2 === data.length) {
+        r += append3bytes(data.charCodeAt(i), data.charCodeAt(i + 1), 0);
+      } else if (i + 1 === data.length) {
+        r += append3bytes(data.charCodeAt(i), 0, 0);
+      } else {
+        r += append3bytes(data.charCodeAt(i), data.charCodeAt(i + 1), data.charCodeAt(i + 2));
+      }
+    }
+    return r;
+  }
+
+  function append3bytes(b1, b2, b3) {
+    const c1 = b1 >> 2;
+    const c2 = ((b1 & 0x3) << 4) | (b2 >> 4);
+    const c3 = ((b2 & 0xF) << 2) | (b3 >> 6);
+    const c4 = b3 & 0x3F;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    return chars[c1] + chars[c2] + chars[c3] + chars[c4];
+  }
+
+  function encodePlantUML(text) {
+    // Use TextEncoder to get UTF-8 bytes, then deflate using pako-like approach
+    // Since we can't load pako, use a simpler hex encoding for PlantUML
+    // PlantUML supports ~h hex encoding: ~h + hex string
+    let hex = '';
+    for (let i = 0; i < text.length; i++) {
+      hex += text.charCodeAt(i).toString(16).padStart(2, '0');
+    }
+    return hex;
+  }
+
+  function getPlantUMLUrl(text, format) {
+    const hex = encodePlantUML(text);
+    const base = 'https://www.plantuml.com/plantuml/' + format;
+    return base + '/~h' + hex;
+  }
+
+  function isPlantUMLType(type) {
+    return type.startsWith('puml-');
+  }
+
+  function showError(msg) {
+    errorBox.classList.remove('hidden');
+    errorText.textContent = msg;
+  }
+
+  function hideError() {
+    errorBox.classList.add('hidden');
+    errorText.textContent = '';
+  }
+
+  async function renderDiagram() {
+    const code = input.value.trim();
+    if (!code) {
+      previewEmpty.classList.remove('hidden');
+      previewContent.classList.add('hidden');
+      previewContent.innerHTML = '';
+      currentSvgString = '';
+      downloadBtn.disabled = true;
+      copySvgBtn.disabled = true;
+      hideError();
+      return;
+    }
+
+    hideError();
+
+    const currentType = typeSelect.value;
+
+    // PlantUML rendering via server API
+    if (isPlantUMLType(currentType)) {
+      try {
+        const fmt = formatSelect.value === 'svg' ? 'svg' : 'png';
+        const url = getPlantUMLUrl(code, fmt);
+
+        // Create image element for preview
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+
+        await new Promise((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('Gagal render PlantUML. Periksa syntax.'));
+          img.src = url;
+        });
+
+        // Store SVG string for copy (for PlantUML we store the image URL)
+        currentSvgString = url;
+        previewEmpty.classList.add('hidden');
+        previewContent.classList.remove('hidden');
+        previewContent.innerHTML = '';
+        previewContent.appendChild(img);
+        downloadBtn.disabled = false;
+        copySvgBtn.disabled = false;
+      } catch (err) {
+        showError(err.message || 'Gagal render PlantUML');
+        previewEmpty.classList.remove('hidden');
+        previewContent.classList.add('hidden');
+        previewContent.innerHTML = '';
+        currentSvgString = '';
+        downloadBtn.disabled = true;
+        copySvgBtn.disabled = true;
+      }
+      return;
+    }
+
+    // Mermaid rendering
+    try {
+      const id = 'diagram-' + Date.now();
+      const theme = themeSelect.value;
+      const isTransparent = document.getElementById('bg-transparent').checked;
+
+      const { svg } = await mermaid.render(id, code, {
+        theme: theme,
+        backgroundColor: isTransparent ? 'transparent' : (bgColorInput.value || '#ffffff')
+      });
+
+      currentSvgString = svg;
+      previewEmpty.classList.add('hidden');
+      previewContent.classList.remove('hidden');
+      previewContent.innerHTML = svg;
+      downloadBtn.disabled = false;
+      copySvgBtn.disabled = false;
+    } catch (err) {
+      // Mermaid throws on parse errors — extract the message
+      const msg = err.message || String(err);
+      // Clean up mermaid error artifacts
+      const cleaned = msg.replace(/Syntax error in text[\s\S]*$/m, '').trim() || msg;
+      showError(cleaned);
+      previewEmpty.classList.remove('hidden');
+      previewContent.classList.add('hidden');
+      previewContent.innerHTML = '';
+      currentSvgString = '';
+      downloadBtn.disabled = true;
+      copySvgBtn.disabled = true;
+    }
+  }
+
+  // Debounced render
+  function debouncedRender() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(renderDiagram, 600);
+  }
+
+  input.addEventListener('input', debouncedRender);
+  refreshBtn.addEventListener('click', renderDiagram);
+  themeSelect.addEventListener('change', renderDiagram);
+
+  // BG transparent toggle
+  bgTransparentCheckbox.addEventListener('change', () => {
+    bgColorWrapper.classList.toggle('hidden', bgTransparentCheckbox.checked);
+    renderDiagram();
+  });
+  bgColorInput.addEventListener('input', () => renderDiagram());
+
+  // Load example
+  loadExampleBtn.addEventListener('click', () => {
+    const type = typeSelect.value;
+    input.value = examples[type] || '';
+    renderDiagram();
+  });
+
+  // Type select → auto-load example
+  typeSelect.addEventListener('change', () => {
+    const type = typeSelect.value;
+    input.value = examples[type] || '';
+    renderDiagram();
+  });
+
+  // Export helpers
+  function svgToCanvas(svgStr, scale) {
+    return new Promise((resolve, reject) => {
+      const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth * scale;
+        canvas.height = img.naturalHeight * scale;
+        const ctx = canvas.getContext('2d');
+        // Fill background if not transparent
+        if (!bgTransparentCheckbox.checked) {
+          ctx.fillStyle = bgColorInput.value || '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        resolve(canvas);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Gagal render SVG ke canvas')); };
+      img.src = url;
+    });
+  }
+
+  // Download
+  downloadBtn.addEventListener('click', async () => {
+    if (!currentSvgString) return;
+    const format = formatSelect.value;
+    const scale = parseInt(scaleSelect.value) || 2;
+    const currentType = typeSelect.value;
+    const isPlant = isPlantUMLType(currentType);
+
+    // PlantUML: fetch image from server and download directly
+    if (isPlant) {
+      try {
+        downloadBtn.disabled = true;
+        downloadBtn.innerHTML = '⏳ Downloading...';
+        const fmt = format === 'svg' ? 'svg' : 'png';
+        const resp = await fetch(getPlantUMLUrl(input.value.trim(), fmt));
+        if (!resp.ok) throw new Error('Server PlantUML error: ' + resp.status);
+        const blob = await resp.blob();
+        const ext = fmt === 'svg' ? 'svg' : (format === 'jpeg' ? 'jpg' : 'png');
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `diagram-${Date.now()}.${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
+        window.showToast?.(`Diagram diunduh sebagai ${ext.toUpperCase()}!`, 'success');
+      } catch (err) {
+        window.showToast?.('Gagal download: ' + err.message, 'error');
+      } finally {
+        downloadBtn.disabled = false;
+        downloadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
+      }
+      return;
+    }
+
+    if (format === 'svg') {
+      const blob = new Blob([currentSvgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `diagram-${Date.now()}.svg`;
+      a.click();
+      URL.revokeObjectURL(url);
+      window.showToast?.('SVG diunduh!', 'success');
+      return;
+    }
+
+    try {
+      downloadBtn.disabled = true;
+      downloadBtn.innerHTML = '⏳ Rendering...';
+      const canvas = await svgToCanvas(currentSvgString, scale);
+      const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+      const quality = format === 'jpeg' ? 0.92 : undefined;
+      const ext = format === 'jpeg' ? 'jpg' : 'png';
+
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          window.showToast?.('Gagal membuat gambar.', 'error');
+          downloadBtn.disabled = false;
+          downloadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `diagram-${Date.now()}.${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
+        window.showToast?.(`Diagram diunduh sebagai ${ext.toUpperCase()}!`, 'success');
+        downloadBtn.disabled = false;
+        downloadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
+      }, mime, quality);
+    } catch (err) {
+      window.showToast?.('Gagal render: ' + err.message, 'error');
+      downloadBtn.disabled = false;
+      downloadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
+    }
+  });
+
+  // Copy SVG
+  copySvgBtn.addEventListener('click', async () => {
+    if (!currentSvgString) return;
+    try {
+      await navigator.clipboard.writeText(currentSvgString);
+      window.showToast?.('SVG disalin ke clipboard!', 'success');
+    } catch {
+      window.showToast?.('Gagal menyalin.', 'error');
+    }
+  });
+
+  // Load default example on page load
+  input.value = examples.flowchart;
+  await renderDiagram();
+  })();
+</script>
