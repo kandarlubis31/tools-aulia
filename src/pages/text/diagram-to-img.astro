@@ -8,7 +8,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <ToolPageHeader
       title="Text Diagram to Image"
       titleKey="header.diagram_to_img"
-      desc="Konversi teks diagram (Mermaid syntax) ke gambar PNG atau JPEG. Flowchart, sequence, class, ER, Gantt, pie, mindmap — langsung di browser."
+      desc="Konversi teks diagram (Mermaid & PlantUML syntax) ke gambar PNG atau JPEG. Flowchart, sequence, class, ER, Gantt, pie, mindmap — langsung di browser."
       descKey="header.diagram_to_img_desc"
       icon='<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>'
       gradient="from-teal-500 to-emerald-600"
@@ -66,7 +66,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
               <label for="diagram-theme" class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1">Theme</label>
-              <label for="diagram-theme" class="sr-only">Theme</label>
               <select id="diagram-theme" class="w-full text-xs bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg px-2 py-1.5 text-matte-600 dark:text-matte-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
                 <option value="default">Default</option>
                 <option value="dark">Dark</option>
@@ -77,7 +76,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             </div>
             <div>
               <label for="export-format" class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1">Format</label>
-              <label for="export-format" class="sr-only">Export Format</label>
               <select id="export-format" class="w-full text-xs bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg px-2 py-1.5 text-matte-600 dark:text-matte-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
                 <option value="png">PNG</option>
                 <option value="jpeg">JPEG</option>
@@ -86,7 +84,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             </div>
             <div>
               <label for="export-scale" class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1">Skala</label>
-              <label for="export-scale" class="sr-only">Export Scale</label>
               <select id="export-scale" class="w-full text-xs bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-lg px-2 py-1.5 text-matte-600 dark:text-matte-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
                 <option value="1">1x</option>
                 <option value="2" selected>2x</option>
@@ -184,6 +181,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     to { opacity: 1; transform: translateY(0); }
   }
   .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+  
+  /* Make sure generated SVG matches container visually */
+  #preview-content svg {
+    max-width: 100%;
+    height: auto;
+  }
 </style>
 
 <script is:inline>
@@ -484,19 +487,7 @@ cloud "CDN" {
     return chars[c1] + chars[c2] + chars[c3] + chars[c4];
   }
 
-  // PlantUML official encoding: deflate + custom base64
-  function encodePlantUML(text) {
-    // Get UTF-8 bytes
-    const encoder = new TextEncoder();
-    const utf8 = encoder.encode(text);
-    // Deflate compress via CompressionStream
-    return compressDeflate(utf8).then(function(compressed) {
-      return encode64(String.fromCharCode.apply(null, compressed));
-    });
-  }
-
   async function compressDeflate(data) {
-    // Use browser's built-in CompressionStream (modern browsers)
     if (typeof CompressionStream !== 'undefined') {
       const cs = new CompressionStream('deflate-raw');
       const writer = cs.writable.getWriter();
@@ -518,7 +509,6 @@ cloud "CDN" {
       }
       return result;
     }
-    // Fallback: hex encoding (works but produces longer URLs)
     return null;
   }
 
@@ -540,7 +530,6 @@ cloud "CDN" {
     return type.startsWith('puml-');
   }
 
-  // Auto-detect PlantUML from code content
   function detectIsPlantUML(code) {
     return code.includes('@startuml') || code.includes('@enduml');
   }
@@ -573,30 +562,19 @@ cloud "CDN" {
     const currentType = typeSelect.value;
     const isPlant = isPlantUMLType(currentType) || detectIsPlantUML(code);
 
-    // PlantUML rendering via server API
+    // PlantUML rendering (Fetching as SVG for uniform pipeline)
     if (isPlant) {
       try {
-        const fmt = formatSelect.value === 'svg' ? 'svg' : 'png';
-        const url = await getPlantUMLUrl(code, fmt);
+        const url = await getPlantUMLUrl(code, 'svg'); 
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('Gagal mendapatkan SVG dari server PlantUML');
+        
+        const svgText = await resp.text();
 
-        // Create image element for preview
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.style.maxWidth = '100%';
-        img.style.height = 'auto';
-
-        await new Promise((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error('Gagal render PlantUML. Periksa syntax.'));
-          img.src = url;
-        });
-
-        // Store SVG string for copy (for PlantUML we store the image URL)
-        currentSvgString = url;
+        currentSvgString = svgText;
         previewEmpty.classList.add('hidden');
         previewContent.classList.remove('hidden');
-        previewContent.innerHTML = '';
-        previewContent.appendChild(img);
+        previewContent.innerHTML = svgText;
         downloadBtn.disabled = false;
         copySvgBtn.disabled = false;
       } catch (err) {
@@ -629,9 +607,7 @@ cloud "CDN" {
       downloadBtn.disabled = false;
       copySvgBtn.disabled = false;
     } catch (err) {
-      // Mermaid throws on parse errors — extract the message
       const msg = err.message || String(err);
-      // Clean up mermaid error artifacts
       const cleaned = msg.replace(/Syntax error in text[\s\S]*$/m, '').trim() || msg;
       showError(cleaned);
       previewEmpty.classList.remove('hidden');
@@ -667,14 +643,14 @@ cloud "CDN" {
     renderDiagram();
   });
 
-  // Type select → auto-load example
+  // Type select auto-load example
   typeSelect.addEventListener('change', () => {
     const type = typeSelect.value;
     input.value = examples[type] || '';
     renderDiagram();
   });
 
-  // Export helpers
+  // Export helpers - works for both Mermaid and PlantUML now
   function svgToCanvas(svgStr, scale) {
     return new Promise((resolve, reject) => {
       const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
@@ -685,11 +661,13 @@ cloud "CDN" {
         canvas.width = img.naturalWidth * scale;
         canvas.height = img.naturalHeight * scale;
         const ctx = canvas.getContext('2d');
+        
         // Fill background if not transparent
         if (!bgTransparentCheckbox.checked) {
           ctx.fillStyle = bgColorInput.value || '#ffffff';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
+        
         ctx.scale(scale, scale);
         ctx.drawImage(img, 0, 0);
         URL.revokeObjectURL(url);
@@ -700,39 +678,11 @@ cloud "CDN" {
     });
   }
 
-  // Download
+  // Unified Download Pipeline
   downloadBtn.addEventListener('click', async () => {
     if (!currentSvgString) return;
     const format = formatSelect.value;
     const scale = parseInt(scaleSelect.value) || 2;
-    const currentType = typeSelect.value;
-    const isPlant = isPlantUMLType(currentType);
-
-    // PlantUML: fetch image from server and download directly
-    if (isPlant) {
-      try {
-        downloadBtn.disabled = true;
-        downloadBtn.innerHTML = '⏳ Downloading...';
-        const fmt = format === 'svg' ? 'svg' : 'png';
-        const resp = await fetch(await getPlantUMLUrl(input.value.trim(), fmt));
-        if (!resp.ok) throw new Error('Server PlantUML error: ' + resp.status);
-        const blob = await resp.blob();
-        const ext = fmt === 'svg' ? 'svg' : (format === 'jpeg' ? 'jpg' : 'png');
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `diagram-${Date.now()}.${ext}`;
-        a.click();
-        URL.revokeObjectURL(url);
-        window.showToast?.(`Diagram diunduh sebagai ${ext.toUpperCase()}!`, 'success');
-      } catch (err) {
-        window.showToast?.('Gagal download: ' + err.message, 'error');
-      } finally {
-        downloadBtn.disabled = false;
-        downloadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
-      }
-      return;
-    }
 
     if (format === 'svg') {
       const blob = new Blob([currentSvgString], { type: 'image/svg+xml' });
@@ -757,8 +707,6 @@ cloud "CDN" {
       canvas.toBlob((blob) => {
         if (!blob) {
           window.showToast?.('Gagal membuat gambar.', 'error');
-          downloadBtn.disabled = false;
-          downloadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
           return;
         }
         const url = URL.createObjectURL(blob);
@@ -768,11 +716,10 @@ cloud "CDN" {
         a.click();
         URL.revokeObjectURL(url);
         window.showToast?.(`Diagram diunduh sebagai ${ext.toUpperCase()}!`, 'success');
-        downloadBtn.disabled = false;
-        downloadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
       }, mime, quality);
     } catch (err) {
       window.showToast?.('Gagal render: ' + err.message, 'error');
+    } finally {
       downloadBtn.disabled = false;
       downloadBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
     }
