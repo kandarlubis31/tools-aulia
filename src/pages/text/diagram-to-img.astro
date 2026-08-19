@@ -236,17 +236,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     return;
   }
 
-  // Initialize mermaid with startOnLoad false
-  mermaid.initialize({
-    startOnLoad: false,
-    securityLevel: 'loose',
-    theme: 'default',
-    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
-    sequence: { useMaxWidth: true, mirrorActors: false },
-    gantt: { useMaxWidth: true },
-    fontFamily: 'Inter, system-ui, sans-serif'
-  });
-
   // Element refs
   const input = document.getElementById('diagram-input');
   const previewEmpty = document.getElementById('preview-empty');
@@ -575,6 +564,12 @@ cloud "CDN" {
         previewEmpty.classList.add('hidden');
         previewContent.classList.remove('hidden');
         previewContent.innerHTML = svgText;
+        
+        // Reset custom background for PlantUML preview
+        previewContent.style.backgroundColor = 'transparent';
+        previewContent.style.padding = '0';
+        previewContent.style.borderRadius = '0';
+
         downloadBtn.disabled = false;
         copySvgBtn.disabled = false;
       } catch (err) {
@@ -594,16 +589,29 @@ cloud "CDN" {
       const id = 'diagram-' + Date.now();
       const theme = themeSelect.value;
       const isTransparent = document.getElementById('bg-transparent').checked;
+      const bgColor = bgColorInput.value || '#ffffff';
 
-      const { svg } = await mermaid.render(id, code, {
+      // 1. Initialize Mermaid with selected theme
+      mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
         theme: theme,
-        backgroundColor: isTransparent ? 'transparent' : (bgColorInput.value || '#ffffff')
+        fontFamily: 'Inter, system-ui, sans-serif'
       });
+
+      // 2. Render with 2 arguments only (resolves createElementNS error)
+      const { svg } = await mermaid.render(id, code);
 
       currentSvgString = svg;
       previewEmpty.classList.add('hidden');
       previewContent.classList.remove('hidden');
       previewContent.innerHTML = svg;
+      
+      // 3. Set preview background visual
+      previewContent.style.backgroundColor = isTransparent ? 'transparent' : bgColor;
+      previewContent.style.padding = isTransparent ? '0' : '1.5rem';
+      previewContent.style.borderRadius = isTransparent ? '0' : '1rem';
+
       downloadBtn.disabled = false;
       copySvgBtn.disabled = false;
     } catch (err) {
