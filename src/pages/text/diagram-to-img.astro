@@ -484,25 +484,65 @@ cloud "CDN" {
     return chars[c1] + chars[c2] + chars[c3] + chars[c4];
   }
 
+  // PlantUML official encoding: deflate + custom base64
   function encodePlantUML(text) {
-    // Use TextEncoder to get UTF-8 bytes, then deflate using pako-like approach
-    // Since we can't load pako, use a simpler hex encoding for PlantUML
-    // PlantUML supports ~h hex encoding: ~h + hex string
+    // Get UTF-8 bytes
+    const encoder = new TextEncoder();
+    const utf8 = encoder.encode(text);
+    // Deflate compress via CompressionStream
+    return compressDeflate(utf8).then(function(compressed) {
+      return encode64(String.fromCharCode.apply(null, compressed));
+    });
+  }
+
+  async function compressDeflate(data) {
+    // Use browser's built-in CompressionStream (modern browsers)
+    if (typeof CompressionStream !== 'undefined') {
+      const cs = new CompressionStream('deflate-raw');
+      const writer = cs.writable.getWriter();
+      writer.write(data);
+      writer.close();
+      const reader = cs.readable.getReader();
+      const chunks = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+      const result = new Uint8Array(totalLength);
+      let offset = 0;
+      for (const chunk of chunks) {
+        result.set(chunk, offset);
+        offset += chunk.length;
+      }
+      return result;
+    }
+    // Fallback: hex encoding (works but produces longer URLs)
+    return null;
+  }
+
+  async function getPlantUMLUrl(text, format) {
+    const base = 'https://www.plantuml.com/plantuml/' + format;
+    const compressed = await compressDeflate(new TextEncoder().encode(text));
+    if (compressed) {
+      return base + '/~1' + encode64(String.fromCharCode.apply(null, compressed));
+    }
+    // Fallback: hex encoding
     let hex = '';
     for (let i = 0; i < text.length; i++) {
       hex += text.charCodeAt(i).toString(16).padStart(2, '0');
     }
-    return hex;
-  }
-
-  function getPlantUMLUrl(text, format) {
-    const hex = encodePlantUML(text);
-    const base = 'https://www.plantuml.com/plantuml/' + format;
     return base + '/~h' + hex;
   }
 
   function isPlantUMLType(type) {
     return type.startsWith('puml-');
+  }
+
+  // Auto-detect PlantUML from code content
+  function detectIsPlantUML(code) {
+    return code.includes('@startuml') || code.includes('@enduml');
   }
 
   function showError(msg) {
@@ -531,12 +571,13 @@ cloud "CDN" {
     hideError();
 
     const currentType = typeSelect.value;
+    const isPlant = isPlantUMLType(currentType) || detectIsPlantUML(code);
 
     // PlantUML rendering via server API
-    if (isPlantUMLType(currentType)) {
+    if (isPlant) {
       try {
         const fmt = formatSelect.value === 'svg' ? 'svg' : 'png';
-        const url = getPlantUMLUrl(code, fmt);
+        const url = await getPlantUMLUrl(code, fmt);
 
         // Create image element for preview
         const img = new Image();
@@ -673,7 +714,7 @@ cloud "CDN" {
         downloadBtn.disabled = true;
         downloadBtn.innerHTML = '⏳ Downloading...';
         const fmt = format === 'svg' ? 'svg' : 'png';
-        const resp = await fetch(getPlantUMLUrl(input.value.trim(), fmt));
+        const resp = await fetch(await getPlantUMLUrl(input.value.trim(), fmt));
         if (!resp.ok) throw new Error('Server PlantUML error: ' + resp.status);
         const blob = await resp.blob();
         const ext = fmt === 'svg' ? 'svg' : (format === 'jpeg' ? 'jpg' : 'png');
