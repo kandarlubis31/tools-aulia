@@ -135,7 +135,7 @@ Alice -> Bob: Hello
           <div class="mt-4 grid grid-cols-2 gap-3">
             <div>
               <label
-                for="bg-color"
+                for="bg-transparent"
                 class="block text-xs font-semibold text-matte-500 dark:text-matte-400 mb-1"
                 >Background</label
               >
@@ -405,55 +405,114 @@ Alice -> Bob: Hello
   }
 </style>
 
-<script is:inline>
-  // CDN fallback pattern: try multiple CDN sources for mermaid
-  (function () {
-    var CDN_URLS = [
-      "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js",
-      "https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.16.1/mermaid.min.js",
-      "https://unpkg.com/mermaid@11/dist/mermaid.min.js",
-    ];
-
-    function loadScript(url) {
-      return new Promise(function (resolve) {
-        var s = document.createElement("script");
-        s.src = url;
-        s.onload = function () {
-          resolve(true);
-        };
-        s.onerror = function () {
-          resolve(false);
-        };
-        document.head.appendChild(s);
-      });
-    }
-
-    async function initMermaid() {
-      if (typeof mermaid !== "undefined") return true;
-      for (var i = 0; i < CDN_URLS.length; i++) {
-        var ok = await loadScript(CDN_URLS[i]);
-        if (ok && typeof mermaid !== "undefined") return true;
-      }
-      // Poll for global
-      for (var j = 0; j < 30; j++) {
-        if (typeof mermaid !== "undefined") return true;
-        await new Promise(function (r) {
-          setTimeout(r, 100);
-        });
-      }
-      return false;
-    }
-
-    window.__diagramReady = initMermaid();
-  })();
-</script>
-
 <script>
-  (async function () {
-    // Wait for mermaid CDN to load, then set up the page
-    await window.__diagramReady;
+  import { onMount } from "astro";
 
-    if (typeof mermaid === "undefined") {
+  // CDN fallback pattern: try multiple CDN sources for mermaid
+  const CDN_URLS = [
+    "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.16.1/mermaid.min.js",
+    "https://unpkg.com/mermaid@11/dist/mermaid.min.js",
+  ];
+
+  function loadScript(url) {
+    return new Promise((resolve) => {
+      const s = document.createElement("script");
+      s.src = url;
+      s.onload = () => resolve(true);
+      s.onerror = () => resolve(false);
+      document.head.appendChild(s);
+    });
+  }
+
+  async function initMermaid() {
+    if (typeof mermaid !== "undefined") return true;
+    for (const url of CDN_URLS) {
+      const ok = await loadScript(url);
+      if (ok && typeof mermaid !== "undefined") return true;
+    }
+    // Poll for global
+    for (let j = 0; j < 30; j++) {
+      if (typeof mermaid !== "undefined") return true;
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    return false;
+  }
+
+  // PlantUML encoding: deflate + base64 with CUSTOM PlantUML alphabet
+  function encode64(data) {
+    let r = "";
+    for (let i = 0; i < data.length; i += 3) {
+      if (i + 2 === data.length) {
+        r += append3bytes(data[i], data[i + 1], 0);
+      } else if (i + 1 === data.length) {
+        r += append3bytes(data[i], 0, 0);
+      } else {
+        r += append3bytes(data[i], data[i + 1], data[i + 2]);
+      }
+    }
+    return r;
+  }
+
+  function append3bytes(b1, b2, b3) {
+    const c1 = b1 >> 2;
+    const c2 = ((b1 & 0x3) << 4) | (b2 >> 4);
+    const c3 = ((b2 & 0xf) << 2) | (b3 >> 6);
+    const c4 = b3 & 0x3f;
+    // PENTING: PlantUML pakai alfabet base64 khusus, bukan alfabet standar!
+    const chars =
+      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
+    return chars[c1] + chars[c2] + chars[c3] + chars[c4];
+  }
+
+  async function compressDeflate(data) {
+    if (typeof CompressionStream !== "undefined") {
+      // PENTING: PlantUML mewajibkan 'deflate' (ZLIB header), bukan 'deflate-raw'
+      const cs = new CompressionStream("deflate");
+      const writer = cs.writable.getWriter();
+      writer.write(data);
+      writer.close();
+      const reader = cs.readable.getReader();
+      const chunks = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+      const result = new Uint8Array(totalLength);
+      let offset = 0;
+      for (const chunk of chunks) {
+        result.set(chunk, offset);
+        offset += chunk.length;
+      }
+      return result;
+    }
+    return null;
+  }
+
+  async function getPlantUMLUrl(text, format) {
+    const base = "https://www.plantuml.com/plantuml/" + format;
+    const utf8 = new TextEncoder().encode(text);
+    const compressed = await compressDeflate(utf8);
+
+    if (compressed) {
+      return base + "/~1" + encode64(compressed);
+    }
+
+    // Fallback: hex encoding untuk UTF-8 murni (tanpa kompresi)
+    let hex = "";
+    for (let i = 0; i < utf8.length; i++) {
+      hex += utf8[i].toString(16).padStart(2, "0");
+    }
+    return base + "/~h" + hex;
+  }
+
+  onMount(async () => {
+    // Wait for mermaid CDN to load
+    const mermaidReady = await initMermaid();
+
+    if (!mermaidReady || typeof mermaid === "undefined") {
       window.showToast?.(
         "Gagal memuat library Mermaid.js. Cek koneksi internet.",
         "error",
@@ -677,79 +736,6 @@ cloud "CDN" {
 @enduml`,
     };
 
-    // PlantUML encoding: deflate + base64 with CUSTOM PlantUML alphabet
-    function encode64(data) {
-      let r = "";
-      for (let i = 0; i < data.length; i += 3) {
-        if (i + 2 === data.length) {
-          r += append3bytes(data[i], data[i + 1], 0);
-        } else if (i + 1 === data.length) {
-          r += append3bytes(data[i], 0, 0);
-        } else {
-          r += append3bytes(data[i], data[i + 1], data[i + 2]);
-        }
-      }
-      return r;
-    }
-
-    function append3bytes(b1, b2, b3) {
-      const c1 = b1 >> 2;
-      const c2 = ((b1 & 0x3) << 4) | (b2 >> 4);
-      const c3 = ((b2 & 0xf) << 2) | (b3 >> 6);
-      const c4 = b3 & 0x3f;
-      // PENTING: PlantUML pakai alfabet base64 khusus, bukan alfabet standar!
-      // Ini perbaikan utama mencegah adanya karakter + yang dianggap spasi oleh server.
-      const chars =
-        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
-      return chars[c1] + chars[c2] + chars[c3] + chars[c4];
-    }
-
-    async function compressDeflate(data) {
-      if (typeof CompressionStream !== "undefined") {
-        // PENTING: PlantUML mewajibkan 'deflate' (ZLIB header), bukan 'deflate-raw'
-        const cs = new CompressionStream("deflate");
-        const writer = cs.writable.getWriter();
-        writer.write(data);
-        writer.close();
-        const reader = cs.readable.getReader();
-        const chunks = [];
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
-        }
-        const totalLength = chunks.reduce(
-          (sum, chunk) => sum + chunk.length,
-          0,
-        );
-        const result = new Uint8Array(totalLength);
-        let offset = 0;
-        for (const chunk of chunks) {
-          result.set(chunk, offset);
-          offset += chunk.length;
-        }
-        return result;
-      }
-      return null;
-    }
-
-    async function getPlantUMLUrl(text, format) {
-      const base = "https://www.plantuml.com/plantuml/" + format;
-      const utf8 = new TextEncoder().encode(text);
-      const compressed = await compressDeflate(utf8);
-
-      if (compressed) {
-        return base + "/~1" + encode64(compressed);
-      }
-
-      // Fallback: hex encoding untuk UTF-8 murni (tanpa kompresi)
-      let hex = "";
-      for (let i = 0; i < utf8.length; i++) {
-        hex += utf8[i].toString(16).padStart(2, "0");
-      }
-      return base + "/~h" + hex;
-    }
-
     function isPlantUMLType(type) {
       return type.startsWith("puml-");
     }
@@ -796,7 +782,7 @@ cloud "CDN" {
 
           const svgText = await resp.text();
 
-          // Pengecekan manual kalau server balikin SVG error HUFFMAN/Syntax (biasanya berisi title "error")
+          // Pengecekan manual kalau server balikin SVG error
           if (
             svgText.includes("<text ") &&
             (svgText.toLowerCase().includes("syntax error") ||
@@ -841,7 +827,7 @@ cloud "CDN" {
         const isTransparent = document.getElementById("bg-transparent").checked;
         const bgColor = bgColorInput.value || "#ffffff";
 
-        // 1. Initialize Mermaid with selected theme
+        // Initialize Mermaid with selected theme
         mermaid.initialize({
           startOnLoad: false,
           securityLevel: "loose",
@@ -849,7 +835,7 @@ cloud "CDN" {
           fontFamily: "Inter, system-ui, sans-serif",
         });
 
-        // 2. Render with 2 arguments only (resolves createElementNS error)
+        // Render with 2 arguments only (resolves createElementNS error)
         const { svg } = await mermaid.render(id, code);
 
         currentSvgString = svg;
@@ -857,7 +843,7 @@ cloud "CDN" {
         previewContent.classList.remove("hidden");
         previewContent.innerHTML = svg;
 
-        // 3. Set preview background visual
+        // Set preview background visual
         previewContent.style.backgroundColor = isTransparent
           ? "transparent"
           : bgColor;
@@ -1013,5 +999,5 @@ cloud "CDN" {
     // Load default example on page load
     input.value = examples.flowchart;
     await renderDiagram();
-  })();
+  });
 </script>
