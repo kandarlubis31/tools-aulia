@@ -170,11 +170,11 @@ Alice -> Bob: Hello
         </div>
 
         <!-- Actions -->
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <button
             id="download-btn"
             disabled
-            class="px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -198,7 +198,7 @@ Alice -> Bob: Hello
           <button
             id="copy-svg-btn"
             disabled
-            class="px-6 py-3 bg-white dark:bg-surface-hover text-teal-600 dark:text-teal-400 font-bold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 border border-matte-200 dark:border-surface-border disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-3 bg-white dark:bg-surface-hover text-teal-600 dark:text-teal-400 font-bold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 border border-matte-200 dark:border-surface-border disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -217,6 +217,28 @@ Alice -> Bob: Hello
             >
             Copy SVG
           </button>
+          <button
+            id="copy-png-btn"
+            disabled
+            class="px-4 py-3 bg-white dark:bg-surface-hover text-teal-600 dark:text-teal-400 font-bold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 border border-matte-200 dark:border-surface-border disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><rect x="3" y="3" width="18" height="18" rx="2" ry="2"
+              ></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path
+                d="M21 15l-5-5L5 21"
+              ></path></svg
+            >
+            Copy Image
+          </button>
         </div>
       </div>
 
@@ -224,23 +246,52 @@ Alice -> Bob: Hello
       <div class="space-y-4">
         <div class="card-base overflow-hidden">
           <div
-            class="bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-4 flex justify-between items-center"
+            class="bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-4 flex justify-between items-center gap-3"
           >
-            <h2 class="text-white font-bold flex items-center gap-2">
+            <h2 class="text-white font-bold flex items-center gap-2 shrink-0">
               <span>👁️</span> Live Preview
             </h2>
-            <button
-              id="refresh-btn"
-              class="text-xs text-white/90 bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition-colors"
-            >
-              🔄 Refresh
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button
+                id="zoom-out-btn"
+                title="Zoom out"
+                class="w-7 h-7 flex items-center justify-center text-white/90 bg-white/20 hover:bg-white/30 rounded transition-colors text-sm font-bold"
+              >
+                −
+              </button>
+              <span
+                id="zoom-level"
+                class="text-xs text-white/90 min-w-[3.5rem] text-center select-none"
+                >100%</span
+              >
+              <button
+                id="zoom-in-btn"
+                title="Zoom in"
+                class="w-7 h-7 flex items-center justify-center text-white/90 bg-white/20 hover:bg-white/30 rounded transition-colors text-sm font-bold"
+              >
+                +
+              </button>
+              <button
+                id="zoom-fit-btn"
+                title="Fit to screen"
+                class="text-xs text-white/90 bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition-colors ml-1"
+              >
+                ⛶ Fit
+              </button>
+              <button
+                id="refresh-btn"
+                title="Render ulang"
+                class="text-xs text-white/90 bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition-colors"
+              >
+                🔄
+              </button>
+            </div>
           </div>
           <div
             id="preview-area"
-            class="p-8 flex items-center justify-center min-h-[400px] bg-matte-50 dark:bg-surface-hover overflow-auto"
+            class="relative p-8 flex items-center justify-center min-h-[400px] bg-matte-50 dark:bg-surface-hover overflow-hidden select-none"
           >
-            <div id="preview-empty" class="text-center">
+            <div id="preview-empty" class="text-center pointer-events-none">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="48"
@@ -260,7 +311,21 @@ Alice -> Bob: Hello
                 Ketik diagram di editor untuk preview
               </p>
             </div>
-            <div id="preview-content" class="hidden w-full flex justify-center">
+            <div
+              id="preview-loading"
+              class="hidden absolute inset-0 flex items-center justify-center bg-matte-50/70 dark:bg-surface-hover/70 z-10"
+            >
+              <div
+                class="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"
+              >
+              </div>
+            </div>
+            <div
+              id="preview-content"
+              class="hidden w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing"
+            >
+              <div id="zoom-wrapper" style="transform-origin: center center;">
+              </div>
             </div>
           </div>
         </div>
@@ -326,27 +391,32 @@ Alice -> Bob: Hello
               <p>
                 <strong>Class:</strong>
                 <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded"
-                  >classDiagram</code>
+                  >classDiagram</code
+                >
               </p>
               <p>
                 <strong>ER:</strong>
                 <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded"
-                  >erDiagram</code>
+                  >erDiagram</code
+                >
               </p>
               <p>
                 <strong>Gantt:</strong>
                 <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded"
-                  >gantt</code>
+                  >gantt</code
+                >
               </p>
               <p>
                 <strong>Pie:</strong>
                 <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded"
-                  >pie title Judul</code>
+                  >pie title Judul</code
+                >
               </p>
               <p>
                 <strong>Mindmap:</strong>
                 <code class="bg-matte-100 dark:bg-surface-hover px-1 rounded"
-                  >mindmap</code>
+                  >mindmap</code
+                >
               </p>
               <p class="mt-2 text-matte-500 dark:text-matte-400 font-semibold">
                 PlantUML:
@@ -357,11 +427,16 @@ Alice -> Bob: Hello
                   >@startuml</code
                 > ... <code
                   class="bg-matte-100 dark:bg-surface-hover px-1 rounded"
-                  >@enduml</code>
+                  >@enduml</code
+                >
               </p>
               <p>
                 Dukung: Sequence, Class, Activity, Component, State, Use Case,
                 Deployment
+              </p>
+              <p class="text-matte-400 dark:text-matte-500 mt-2">
+                Tips: scroll di area preview untuk zoom, klik-tahan untuk
+                geser (pan) — seperti draw.io.
               </p>
               <p class="text-matte-400 dark:text-matte-500 mt-2">
                 Mermaid: <a
@@ -373,7 +448,8 @@ Alice -> Bob: Hello
                   href="https://plantuml.com/sitemap"
                   target="blank"
                   rel="noopener"
-                  class="text-teal-500 hover:underline">plantuml.com</a>
+                  class="text-teal-500 hover:underline">plantuml.com</a
+                >
               </p>
             </div>
           </details>
@@ -399,14 +475,25 @@ Alice -> Bob: Hello
   }
 
   /* Make sure generated SVG matches container visually */
-  #preview-content svg {
-    max-width: 100%;
-    height: auto;
+  #zoom-wrapper svg {
+    max-width: none;
+    display: block;
+  }
+
+  #zoom-wrapper {
+    transition: transform 0.05s linear;
   }
 </style>
 
 <script>
-  import { onMount } from "astro";
+  // NOTE: Astro tidak punya export `onMount` dari paket "astro" — itu bug utama
+  // di versi sebelumnya yang bikin seluruh script gagal dieksekusi.
+  // Script inline Astro otomatis dibundle sebagai <script type="module">,
+  // dan module script secara default berperilaku seperti `defer`
+  // (baru jalan setelah HTML selesai di-parse), jadi kita cukup panggil
+  // fungsi init langsung tanpa wrapper tambahan.
+
+  const STORAGE_KEY = "diagram-to-image:last-state";
 
   // CDN fallback pattern: try multiple CDN sources for mermaid
   const CDN_URLS = [
@@ -415,8 +502,8 @@ Alice -> Bob: Hello
     "https://unpkg.com/mermaid@11/dist/mermaid.min.js",
   ];
 
-  function loadScript(url) {
-    return new Promise((resolve) => {
+  function loadScript(url: string) {
+    return new Promise<boolean>((resolve) => {
       const s = document.createElement("script");
       s.src = url;
       s.onload = () => resolve(true);
@@ -426,13 +513,16 @@ Alice -> Bob: Hello
   }
 
   async function initMermaid() {
+    // @ts-ignore - mermaid is loaded globally from CDN
     if (typeof mermaid !== "undefined") return true;
     for (const url of CDN_URLS) {
       const ok = await loadScript(url);
+      // @ts-ignore
       if (ok && typeof mermaid !== "undefined") return true;
     }
-    // Poll for global
+    // Poll for global in case script finished loading slightly late
     for (let j = 0; j < 30; j++) {
+      // @ts-ignore
       if (typeof mermaid !== "undefined") return true;
       await new Promise((r) => setTimeout(r, 100));
     }
@@ -440,7 +530,7 @@ Alice -> Bob: Hello
   }
 
   // PlantUML encoding: deflate + base64 with CUSTOM PlantUML alphabet
-  function encode64(data) {
+  function encode64(data: Uint8Array) {
     let r = "";
     for (let i = 0; i < data.length; i += 3) {
       if (i + 2 === data.length) {
@@ -454,7 +544,7 @@ Alice -> Bob: Hello
     return r;
   }
 
-  function append3bytes(b1, b2, b3) {
+  function append3bytes(b1: number, b2: number, b3: number) {
     const c1 = b1 >> 2;
     const c2 = ((b1 & 0x3) << 4) | (b2 >> 4);
     const c3 = ((b2 & 0xf) << 2) | (b3 >> 6);
@@ -465,7 +555,7 @@ Alice -> Bob: Hello
     return chars[c1] + chars[c2] + chars[c3] + chars[c4];
   }
 
-  async function compressDeflate(data) {
+  async function compressDeflate(data: Uint8Array) {
     if (typeof CompressionStream !== "undefined") {
       // PENTING: PlantUML mewajibkan 'deflate' (ZLIB header), bukan 'deflate-raw'
       const cs = new CompressionStream("deflate");
@@ -473,7 +563,7 @@ Alice -> Bob: Hello
       writer.write(data);
       writer.close();
       const reader = cs.readable.getReader();
-      const chunks = [];
+      const chunks: Uint8Array[] = [];
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -491,7 +581,7 @@ Alice -> Bob: Hello
     return null;
   }
 
-  async function getPlantUMLUrl(text, format) {
+  async function getPlantUMLUrl(text: string, format: string) {
     const base = "https://www.plantuml.com/plantuml/" + format;
     const utf8 = new TextEncoder().encode(text);
     const compressed = await compressDeflate(utf8);
@@ -508,41 +598,219 @@ Alice -> Bob: Hello
     return base + "/~h" + hex;
   }
 
-  onMount(async () => {
-    // Wait for mermaid CDN to load
-    const mermaidReady = await initMermaid();
+  // Pastikan SVG punya width/height eksplisit agar rasterisasi ke <canvas>
+  // konsisten di semua browser (beberapa browser gagal membaca dimensi
+  // dari viewBox saja ketika SVG dimuat lewat elemen <img>).
+  function ensureSvgDimensions(svgStr: string) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgStr, "image/svg+xml");
+    const svgEl = doc.documentElement;
+    if (svgEl.nodeName !== "svg") return svgStr;
 
-    if (!mermaidReady || typeof mermaid === "undefined") {
-      window.showToast?.(
-        "Gagal memuat library Mermaid.js. Cek koneksi internet.",
-        "error",
-      );
-      return;
+    const hasWidth = svgEl.hasAttribute("width");
+    const hasHeight = svgEl.hasAttribute("height");
+    if (hasWidth && hasHeight) return svgStr;
+
+    const viewBox = svgEl.getAttribute("viewBox");
+    if (viewBox) {
+      const parts = viewBox.trim().split(/\s+/).map(Number);
+      if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
+        if (!hasWidth) svgEl.setAttribute("width", String(parts[2]));
+        if (!hasHeight) svgEl.setAttribute("height", String(parts[3]));
+        return new XMLSerializer().serializeToString(svgEl);
+      }
     }
+    return svgStr;
+  }
 
+  function getSvgDimensions(svgStr: string) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgStr, "image/svg+xml");
+    const svgEl = doc.documentElement;
+    const widthAttr = svgEl.getAttribute("width");
+    const heightAttr = svgEl.getAttribute("height");
+    let w = widthAttr ? parseFloat(widthAttr) : NaN;
+    let h = heightAttr ? parseFloat(heightAttr) : NaN;
+    if (!w || !h) {
+      const viewBox = svgEl.getAttribute("viewBox");
+      if (viewBox) {
+        const parts = viewBox.trim().split(/\s+/).map(Number);
+        if (parts.length === 4) {
+          w = parts[2];
+          h = parts[3];
+        }
+      }
+    }
+    return { width: w || 800, height: h || 600 };
+  }
+
+  function init() {
+    initMermaid().then((mermaidReady) => {
+      // @ts-ignore
+      if (!mermaidReady || typeof mermaid === "undefined") {
+        // @ts-ignore
+        window.showToast?.(
+          "Gagal memuat library Mermaid.js. Cek koneksi internet.",
+          "error",
+        );
+        return;
+      }
+      setup();
+    });
+  }
+
+  function setup() {
     // Element refs
-    const input = document.getElementById("diagram-input");
-    const previewEmpty = document.getElementById("preview-empty");
-    const previewContent = document.getElementById("preview-content");
-    const errorBox = document.getElementById("error-box");
-    const errorText = document.getElementById("error-text");
-    const downloadBtn = document.getElementById("download-btn");
-    const copySvgBtn = document.getElementById("copy-svg-btn");
-    const refreshBtn = document.getElementById("refresh-btn");
-    const typeSelect = document.getElementById("diagram-type");
-    const themeSelect = document.getElementById("diagram-theme");
-    const formatSelect = document.getElementById("export-format");
-    const scaleSelect = document.getElementById("export-scale");
-    const bgTransparentCheckbox = document.getElementById("bg-transparent");
-    const bgColorWrapper = document.getElementById("bg-color-wrapper");
-    const bgColorInput = document.getElementById("bg-color");
-    const loadExampleBtn = document.getElementById("load-example-btn");
+    const input = document.getElementById(
+      "diagram-input",
+    ) as HTMLTextAreaElement;
+    const previewArea = document.getElementById(
+      "preview-area",
+    ) as HTMLDivElement;
+    const previewEmpty = document.getElementById(
+      "preview-empty",
+    ) as HTMLDivElement;
+    const previewLoading = document.getElementById(
+      "preview-loading",
+    ) as HTMLDivElement;
+    const previewContent = document.getElementById(
+      "preview-content",
+    ) as HTMLDivElement;
+    const zoomWrapper = document.getElementById(
+      "zoom-wrapper",
+    ) as HTMLDivElement;
+    const errorBox = document.getElementById("error-box") as HTMLDivElement;
+    const errorText = document.getElementById("error-text") as HTMLElement;
+    const downloadBtn = document.getElementById(
+      "download-btn",
+    ) as HTMLButtonElement;
+    const copySvgBtn = document.getElementById(
+      "copy-svg-btn",
+    ) as HTMLButtonElement;
+    const copyPngBtn = document.getElementById(
+      "copy-png-btn",
+    ) as HTMLButtonElement;
+    const refreshBtn = document.getElementById(
+      "refresh-btn",
+    ) as HTMLButtonElement;
+    const typeSelect = document.getElementById(
+      "diagram-type",
+    ) as HTMLSelectElement;
+    const themeSelect = document.getElementById(
+      "diagram-theme",
+    ) as HTMLSelectElement;
+    const formatSelect = document.getElementById(
+      "export-format",
+    ) as HTMLSelectElement;
+    const scaleSelect = document.getElementById(
+      "export-scale",
+    ) as HTMLSelectElement;
+    const bgTransparentCheckbox = document.getElementById(
+      "bg-transparent",
+    ) as HTMLInputElement;
+    const bgColorWrapper = document.getElementById(
+      "bg-color-wrapper",
+    ) as HTMLDivElement;
+    const bgColorInput = document.getElementById(
+      "bg-color",
+    ) as HTMLInputElement;
+    const loadExampleBtn = document.getElementById(
+      "load-example-btn",
+    ) as HTMLButtonElement;
+    const zoomInBtn = document.getElementById(
+      "zoom-in-btn",
+    ) as HTMLButtonElement;
+    const zoomOutBtn = document.getElementById(
+      "zoom-out-btn",
+    ) as HTMLButtonElement;
+    const zoomFitBtn = document.getElementById(
+      "zoom-fit-btn",
+    ) as HTMLButtonElement;
+    const zoomLevelLabel = document.getElementById(
+      "zoom-level",
+    ) as HTMLSpanElement;
 
     let currentSvgString = "";
-    let debounceTimer = null;
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    // --- Zoom & Pan state (mirip draw.io) ---
+    let zoom = 1;
+    let panX = 0;
+    let panY = 0;
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+
+    function applyTransform() {
+      zoomWrapper.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+      zoomLevelLabel.textContent = `${Math.round(zoom * 100)}%`;
+    }
+
+    function resetZoom() {
+      zoom = 1;
+      panX = 0;
+      panY = 0;
+      applyTransform();
+    }
+
+    function fitToScreen() {
+      const svgEl = zoomWrapper.querySelector("svg");
+      if (!svgEl) return;
+      const dims = getSvgDimensions(currentSvgString);
+      const containerW = previewArea.clientWidth - 32;
+      const containerH = previewArea.clientHeight - 32;
+      if (!dims.width || !dims.height) return;
+      const scale = Math.min(
+        containerW / dims.width,
+        containerH / dims.height,
+        1.5,
+      );
+      zoom = Math.max(scale, 0.1);
+      panX = 0;
+      panY = 0;
+      applyTransform();
+    }
+
+    previewArea.addEventListener(
+      "wheel",
+      (e) => {
+        if (!currentSvgString) return;
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        zoom = Math.min(Math.max(zoom + delta, 0.2), 5);
+        applyTransform();
+      },
+      { passive: false },
+    );
+
+    previewContent.addEventListener("mousedown", (e) => {
+      if (!currentSvgString) return;
+      isPanning = true;
+      panStartX = e.clientX - panX;
+      panStartY = e.clientY - panY;
+    });
+    window.addEventListener("mousemove", (e) => {
+      if (!isPanning) return;
+      panX = e.clientX - panStartX;
+      panY = e.clientY - panStartY;
+      applyTransform();
+    });
+    window.addEventListener("mouseup", () => {
+      isPanning = false;
+    });
+
+    zoomInBtn.addEventListener("click", () => {
+      zoom = Math.min(zoom + 0.2, 5);
+      applyTransform();
+    });
+    zoomOutBtn.addEventListener("click", () => {
+      zoom = Math.max(zoom - 0.2, 0.2);
+      applyTransform();
+    });
+    zoomFitBtn.addEventListener("click", fitToScreen);
 
     // Examples per type
-    const examples = {
+    const examples: Record<string, string> = {
       flowchart: `graph TD
     A[Start] --> B{Decision}
     B -->|Yes| C[OK]
@@ -736,15 +1004,15 @@ cloud "CDN" {
 @enduml`,
     };
 
-    function isPlantUMLType(type) {
+    function isPlantUMLType(type: string) {
       return type.startsWith("puml-");
     }
 
-    function detectIsPlantUML(code) {
+    function detectIsPlantUML(code: string) {
       return code.includes("@startuml") || code.includes("@enduml");
     }
 
-    function showError(msg) {
+    function showError(msg: string) {
       errorBox.classList.remove("hidden");
       errorText.textContent = msg;
     }
@@ -754,15 +1022,54 @@ cloud "CDN" {
       errorText.textContent = "";
     }
 
+    function setLoading(isLoading: boolean) {
+      previewLoading.classList.toggle("hidden", !isLoading);
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            code: input.value,
+            type: typeSelect.value,
+            theme: themeSelect.value,
+          }),
+        );
+      } catch {
+        // localStorage bisa gagal (mode privat/kuota penuh) — abaikan saja
+      }
+    }
+
+    function restoreState(): boolean {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const state = JSON.parse(raw);
+        if (typeof state.code === "string" && state.code.trim()) {
+          input.value = state.code;
+          if (state.type) typeSelect.value = state.type;
+          if (state.theme) themeSelect.value = state.theme;
+          return true;
+        }
+      } catch {
+        // data korup — abaikan, pakai default
+      }
+      return false;
+    }
+
     async function renderDiagram() {
       const code = input.value.trim();
+      saveState();
+
       if (!code) {
         previewEmpty.classList.remove("hidden");
         previewContent.classList.add("hidden");
-        previewContent.innerHTML = "";
+        zoomWrapper.innerHTML = "";
         currentSvgString = "";
         downloadBtn.disabled = true;
         copySvgBtn.disabled = true;
+        copyPngBtn.disabled = true;
         hideError();
         return;
       }
@@ -774,6 +1081,7 @@ cloud "CDN" {
 
       // PlantUML rendering (Fetching as SVG for uniform pipeline)
       if (isPlant) {
+        setLoading(true);
         try {
           const url = await getPlantUMLUrl(code, "svg");
           const resp = await fetch(url);
@@ -791,31 +1099,35 @@ cloud "CDN" {
             throw new Error("Syntax Error di dalam kode PlantUML kamu.");
           }
 
-          currentSvgString = svgText;
+          currentSvgString = ensureSvgDimensions(svgText);
           previewEmpty.classList.add("hidden");
           previewContent.classList.remove("hidden");
-          previewContent.innerHTML = svgText;
+          zoomWrapper.innerHTML = currentSvgString;
 
           // Reset custom background for PlantUML preview
-          const isTransparent =
-            document.getElementById("bg-transparent").checked;
+          const isTransparent = bgTransparentCheckbox.checked;
           const bgColor = bgColorInput.value || "#ffffff";
-          previewContent.style.backgroundColor = isTransparent
+          zoomWrapper.style.backgroundColor = isTransparent
             ? "transparent"
             : bgColor;
-          previewContent.style.padding = isTransparent ? "0" : "1.5rem";
-          previewContent.style.borderRadius = isTransparent ? "0" : "1rem";
+          zoomWrapper.style.padding = isTransparent ? "0" : "1.5rem";
+          zoomWrapper.style.borderRadius = isTransparent ? "0" : "1rem";
 
           downloadBtn.disabled = false;
           copySvgBtn.disabled = false;
-        } catch (err) {
+          copyPngBtn.disabled = false;
+          requestAnimationFrame(fitToScreen);
+        } catch (err: any) {
           showError(err.message || "Gagal render PlantUML");
           previewEmpty.classList.remove("hidden");
           previewContent.classList.add("hidden");
-          previewContent.innerHTML = "";
+          zoomWrapper.innerHTML = "";
           currentSvgString = "";
           downloadBtn.disabled = true;
           copySvgBtn.disabled = true;
+          copyPngBtn.disabled = true;
+        } finally {
+          setLoading(false);
         }
         return;
       }
@@ -824,10 +1136,11 @@ cloud "CDN" {
       try {
         const id = "diagram-" + Date.now();
         const theme = themeSelect.value;
-        const isTransparent = document.getElementById("bg-transparent").checked;
+        const isTransparent = bgTransparentCheckbox.checked;
         const bgColor = bgColorInput.value || "#ffffff";
 
         // Initialize Mermaid with selected theme
+        // @ts-ignore
         mermaid.initialize({
           startOnLoad: false,
           securityLevel: "loose",
@@ -836,39 +1149,43 @@ cloud "CDN" {
         });
 
         // Render with 2 arguments only (resolves createElementNS error)
+        // @ts-ignore
         const { svg } = await mermaid.render(id, code);
 
-        currentSvgString = svg;
+        currentSvgString = ensureSvgDimensions(svg);
         previewEmpty.classList.add("hidden");
         previewContent.classList.remove("hidden");
-        previewContent.innerHTML = svg;
+        zoomWrapper.innerHTML = currentSvgString;
 
         // Set preview background visual
-        previewContent.style.backgroundColor = isTransparent
+        zoomWrapper.style.backgroundColor = isTransparent
           ? "transparent"
           : bgColor;
-        previewContent.style.padding = isTransparent ? "0" : "1.5rem";
-        previewContent.style.borderRadius = isTransparent ? "0" : "1rem";
+        zoomWrapper.style.padding = isTransparent ? "0" : "1.5rem";
+        zoomWrapper.style.borderRadius = isTransparent ? "0" : "1rem";
 
         downloadBtn.disabled = false;
         copySvgBtn.disabled = false;
-      } catch (err) {
+        copyPngBtn.disabled = false;
+        requestAnimationFrame(fitToScreen);
+      } catch (err: any) {
         const msg = err.message || String(err);
         const cleaned =
           msg.replace(/Syntax error in text[\s\S]*$/m, "").trim() || msg;
         showError(cleaned);
         previewEmpty.classList.remove("hidden");
         previewContent.classList.add("hidden");
-        previewContent.innerHTML = "";
+        zoomWrapper.innerHTML = "";
         currentSvgString = "";
         downloadBtn.disabled = true;
         copySvgBtn.disabled = true;
+        copyPngBtn.disabled = true;
       }
     }
 
     // Debounced render
     function debouncedRender() {
-      clearTimeout(debounceTimer);
+      if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(renderDiagram, 600);
     }
 
@@ -898,8 +1215,9 @@ cloud "CDN" {
     });
 
     // Export helpers - works for both Mermaid and PlantUML now
-    function svgToCanvas(svgStr, scale) {
+    function svgToCanvas(svgStr: string, scale: number): Promise<HTMLCanvasElement> {
       return new Promise((resolve, reject) => {
+        const dims = getSvgDimensions(svgStr);
         const blob = new Blob([svgStr], {
           type: "image/svg+xml;charset=utf-8",
         });
@@ -907,9 +1225,16 @@ cloud "CDN" {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth * scale;
-          canvas.height = img.naturalHeight * scale;
+          const w = img.naturalWidth || dims.width;
+          const h = img.naturalHeight || dims.height;
+          canvas.width = Math.round(w * scale);
+          canvas.height = Math.round(h * scale);
           const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            URL.revokeObjectURL(url);
+            reject(new Error("Canvas context tidak tersedia"));
+            return;
+          }
 
           // Fill background if not transparent
           if (!bgTransparentCheckbox.checked) {
@@ -918,7 +1243,7 @@ cloud "CDN" {
           }
 
           ctx.scale(scale, scale);
-          ctx.drawImage(img, 0, 0);
+          ctx.drawImage(img, 0, 0, w, h);
           URL.revokeObjectURL(url);
           resolve(canvas);
         };
@@ -927,6 +1252,20 @@ cloud "CDN" {
           reject(new Error("Gagal render SVG ke canvas"));
         };
         img.src = url;
+      });
+    }
+
+    function canvasToBlob(
+      canvas: HTMLCanvasElement,
+      mime: string,
+      quality?: number,
+    ): Promise<Blob> {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("Gagal membuat gambar"))),
+          mime,
+          quality,
+        );
       });
     }
 
@@ -944,10 +1283,12 @@ cloud "CDN" {
         a.download = `diagram-${Date.now()}.svg`;
         a.click();
         URL.revokeObjectURL(url);
+        // @ts-ignore
         window.showToast?.("SVG diunduh!", "success");
         return;
       }
 
+      const originalHtml = downloadBtn.innerHTML;
       try {
         downloadBtn.disabled = true;
         downloadBtn.innerHTML = "⏳ Rendering...";
@@ -955,49 +1296,92 @@ cloud "CDN" {
         const mime = format === "jpeg" ? "image/jpeg" : "image/png";
         const quality = format === "jpeg" ? 0.92 : undefined;
         const ext = format === "jpeg" ? "jpg" : "png";
+        const blob = await canvasToBlob(canvas, mime, quality);
 
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              window.showToast?.("Gagal membuat gambar.", "error");
-              return;
-            }
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `diagram-${Date.now()}.${ext}`;
-            a.click();
-            URL.revokeObjectURL(url);
-            window.showToast?.(
-              `Diagram diunduh sebagai ${ext.toUpperCase()}!`,
-              "success",
-            );
-          },
-          mime,
-          quality,
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `diagram-${Date.now()}.${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
+        // @ts-ignore
+        window.showToast?.(
+          `Diagram diunduh sebagai ${ext.toUpperCase()}!`,
+          "success",
         );
-      } catch (err) {
+      } catch (err: any) {
+        // @ts-ignore
         window.showToast?.("Gagal render: " + err.message, "error");
       } finally {
         downloadBtn.disabled = false;
-        downloadBtn.innerHTML =
-          '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
+        downloadBtn.innerHTML = originalHtml;
       }
     });
 
-    // Copy SVG
+    // Copy SVG (text)
     copySvgBtn.addEventListener("click", async () => {
       if (!currentSvgString) return;
       try {
         await navigator.clipboard.writeText(currentSvgString);
+        // @ts-ignore
         window.showToast?.("SVG disalin ke clipboard!", "success");
       } catch {
+        // @ts-ignore
         window.showToast?.("Gagal menyalin.", "error");
       }
     });
 
-    // Load default example on page load
-    input.value = examples.flowchart;
-    await renderDiagram();
-  });
+    // Copy as PNG image (langsung bisa di-paste, mirip draw.io Ctrl+C)
+    copyPngBtn.addEventListener("click", async () => {
+      if (!currentSvgString) return;
+      // @ts-ignore
+      if (typeof ClipboardItem === "undefined") {
+        // @ts-ignore
+        window.showToast?.(
+          "Browser ini tidak mendukung copy gambar ke clipboard.",
+          "error",
+        );
+        return;
+      }
+      const originalHtml = copyPngBtn.innerHTML;
+      try {
+        copyPngBtn.disabled = true;
+        copyPngBtn.innerHTML = "⏳";
+        const scale = parseInt(scaleSelect.value) || 2;
+        const canvas = await svgToCanvas(currentSvgString, scale);
+        const blob = await canvasToBlob(canvas, "image/png");
+        // @ts-ignore
+        await navigator.clipboard.write([
+          // @ts-ignore
+          new ClipboardItem({ "image/png": blob }),
+        ]);
+        // @ts-ignore
+        window.showToast?.("Gambar disalin ke clipboard!", "success");
+      } catch (err: any) {
+        // @ts-ignore
+        window.showToast?.("Gagal menyalin gambar: " + err.message, "error");
+      } finally {
+        copyPngBtn.disabled = false;
+        copyPngBtn.innerHTML = originalHtml;
+      }
+    });
+
+    // Refit saat ukuran jendela berubah
+    window.addEventListener("resize", () => {
+      if (currentSvgString) fitToScreen();
+    });
+
+    // Restore diagram terakhir (kalau ada), atau muat contoh default
+    const restored = restoreState();
+    if (!restored) {
+      input.value = examples.flowchart;
+    }
+    renderDiagram();
+  }
+
+  init();
+
+  // Dukungan Astro View Transitions (kalau proyek pakai <ClientRouter />):
+  // re-init setelah navigasi swap-DOM, supaya tool tetap jalan.
+  document.addEventListener("astro:page-load", init);
 </script>
