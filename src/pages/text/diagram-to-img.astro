@@ -698,6 +698,7 @@ cloud "CDN" {
       const c3 = ((b2 & 0xf) << 2) | (b3 >> 6);
       const c4 = b3 & 0x3f;
       // PENTING: PlantUML pakai alfabet base64 khusus, bukan alfabet standar!
+      // Ini perbaikan utama mencegah adanya karakter + yang dianggap spasi oleh server.
       const chars =
         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
       return chars[c1] + chars[c2] + chars[c3] + chars[c4];
@@ -705,7 +706,8 @@ cloud "CDN" {
 
     async function compressDeflate(data) {
       if (typeof CompressionStream !== "undefined") {
-        const cs = new CompressionStream("deflate-raw");
+        // PENTING: PlantUML mewajibkan 'deflate' (ZLIB header), bukan 'deflate-raw'
+        const cs = new CompressionStream("deflate");
         const writer = cs.writable.getWriter();
         writer.write(data);
         writer.close();
