@@ -4,73 +4,218 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
 <BaseLayout pageTitle="Grayscale PDF" pdfJs={true}>
-  <div class="max-w-5xl mx-auto px-4 min-h-[70vh]">
-        <ToolPageHeader
-      title="Grayscale PDF + Preview"
-      desc="Ubah PDF menjadi hitam putih (Efek Fotokopi). Atur kontras dan lihat hasilnya langsung."
+  <div class="max-w-6xl mx-auto px-4 min-h-[70vh]">
+    <ToolPageHeader
+      title="Grayscale PDF"
+      desc="Ubah PDF berwarna menjadi hitam putih dengan efek scanner. Atur kontras, noise, vignette, dan lainnya."
       icon='<circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/>'
-      gradient="from-slate-500 to-slate-700"
+      gradient="from-slate-500 to-zinc-700"
     />
 
-    <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-matte-300 dark:border-matte-600 rounded-3xl p-12 cursor-pointer hover:border-gray-500 hover:bg-gray-100 dark:hover:bg-matte-800/50 transition-all group text-center animate-on-scroll">
-      <div class="w-20 h-20 bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+    <!-- Upload Area -->
+    <div id="drop-zone" class="max-w-2xl mx-auto border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-2xl p-10 cursor-pointer hover:border-accent-blue hover:bg-matte-50 dark:hover:bg-surface-hover transition-all group text-center animate-on-scroll mb-8">
+      <div class="w-16 h-16 bg-matte-100 dark:bg-surface-elevated text-matte-400 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
       </div>
-      <h3 class="text-2xl font-bold text-matte-700 dark:text-matte-200 mb-2">Pilih PDF Warna</h3>
+      <h3 class="text-xl font-bold text-matte-700 dark:text-matte-200 mb-1">Pilih PDF Warna</h3>
+      <p class="text-sm text-matte-400">Drag & drop atau klik untuk memilih file (maks 50MB)</p>
       <input type="file" id="file-input" accept="application/pdf" class="hidden" />
     </div>
 
-    <div id="workspace" class="hidden grid grid-cols-1 lg:grid-cols-5 gap-8 pb-20 animate-fade-in">
-        
-        <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white dark:bg-matte-800 p-6 rounded-2xl border border-matte-200 dark:border-matte-700 shadow-lg sticky top-24">
-                <h3 id="filename" class="font-bold text-lg mb-4 truncate text-matte-700 dark:text-matte-200">filename.pdf</h3>
-                
-                <div class="space-y-5 mb-8">
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="text-sm font-bold text-matte-600 dark:text-matte-300">Kontras (Ketajaman)</label>
-                            <span id="contrast-val" class="text-sm font-mono text-blue-600 dark:text-blue-400">150%</span>
-                        </div>
-                        <input type="range" id="contrast" min="100" max="250" value="150" class="w-full h-2 bg-matte-200 dark:bg-matte-700 rounded-lg appearance-none cursor-pointer accent-gray-600 dark:accent-gray-400">
-                        <p class="text-xs text-matte-400 mt-1">Rekomendasi: 150% - 200% untuk teks yang jelas.</p>
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="text-sm font-bold text-matte-600 dark:text-matte-300">Kecerahan (Brightness)</label>
-                            <span id="brightness-val" class="text-sm font-mono text-blue-600 dark:text-blue-400">110%</span>
-                        </div>
-                        <input type="range" id="brightness" min="80" max="150" value="110" class="w-full h-2 bg-matte-200 dark:bg-matte-700 rounded-lg appearance-none cursor-pointer accent-gray-600 dark:accent-gray-400">
-                    </div>
-                </div>
+    <!-- Workspace -->
+    <div id="workspace" class="hidden animate-fade-in pb-20">
 
-                <button id="convert-btn" class="w-full bg-gray-800 hover:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
-                    Proses Semua Halaman
+      <!-- Top bar: filename + page info -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3 min-w-0">
+          <button id="back-btn" class="shrink-0 p-2 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors text-matte-400 hover:text-matte-700 dark:hover:text-matte-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          </button>
+          <div class="min-w-0">
+            <h3 id="filename" class="font-bold text-lg truncate text-matte-700 dark:text-matte-200">filename.pdf</h3>
+            <p id="page-info" class="text-xs text-matte-400"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- LEFT: Controls -->
+        <div class="lg:col-span-1 space-y-5">
+
+          <!-- Mode Preset -->
+          <div class="card-base p-5">
+            <h4 class="text-sm font-semibold text-matte-700 dark:text-white mb-3">Mode Scan</h4>
+            <div class="grid grid-cols-2 gap-2">
+              <button class="scan-mode-btn active" data-mode="document">📄 Dokumen</button>
+              <button class="scan-mode-btn" data-mode="photo">📸 Foto B&W</button>
+              <button class="scan-mode-btn" data-mode="receipt">🧾 Struk/Bon</button>
+              <button class="scan-mode-btn" data-mode="sketch">✏️ Sketsa</button>
+            </div>
+          </div>
+
+          <!-- Adjustments -->
+          <div class="card-base p-5 space-y-4">
+            <h4 class="text-sm font-semibold text-matte-700 dark:text-white">Pengaturan</h4>
+
+            <!-- Brightness -->
+            <div>
+              <label class="flex justify-between text-xs font-semibold text-matte-600 dark:text-matte-300 mb-1">
+                <span>Kecerahan</span>
+                <span id="brightness-val" class="font-mono text-accent-blue">110%</span>
+              </label>
+              <input type="range" id="brightness" min="50" max="200" value="110" class="slider" />
+            </div>
+
+            <!-- Contrast -->
+            <div>
+              <label class="flex justify-between text-xs font-semibold text-matte-600 dark:text-matte-300 mb-1">
+                <span>Kontras</span>
+                <span id="contrast-val" class="font-mono text-accent-blue">150%</span>
+              </label>
+              <input type="range" id="contrast" min="50" max="300" value="150" class="slider" />
+            </div>
+
+            <!-- Sharpness -->
+            <div>
+              <label class="flex justify-between text-xs font-semibold text-matte-600 dark:text-matte-300 mb-1">
+                <span>Ketajaman</span>
+                <span id="sharpness-val" class="font-mono text-accent-blue">0%</span>
+              </label>
+              <input type="range" id="sharpness" min="0" max="100" value="0" class="slider" />
+            </div>
+
+            <!-- Noise -->
+            <div>
+              <label class="flex justify-between text-xs font-semibold text-matte-600 dark:text-matte-300 mb-1">
+                <span>Noise / Grain</span>
+                <span id="noise-val" class="font-mono text-accent-blue">0</span>
+              </label>
+              <input type="range" id="noise" min="0" max="80" value="0" class="slider" />
+            </div>
+
+            <!-- Vignette -->
+            <div>
+              <label class="flex justify-between text-xs font-semibold text-matte-600 dark:text-matte-300 mb-1">
+                <span>Vignette (Gelap Tepi)</span>
+                <span id="vignette-val" class="font-mono text-accent-blue">0%</span>
+              </label>
+              <input type="range" id="vignette" min="0" max="100" value="0" class="slider" />
+            </div>
+
+            <!-- Threshold -->
+            <div>
+              <label class="flex justify-between text-xs font-semibold text-matte-600 dark:text-matte-300 mb-1">
+                <span>Threshold (Biner)</span>
+                <span id="threshold-val" class="font-mono text-accent-blue">0</span>
+              </label>
+              <input type="range" id="threshold" min="0" max="255" value="0" class="slider" />
+              <p class="text-[10px] text-matte-400 mt-0.5">0 = mati. Aktifkan untuk efek hitam-putih murni.</p>
+            </div>
+
+            <!-- Invert -->
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-matte-600 dark:text-matte-300">Invert Warna</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="invert" class="sr-only peer" />
+                <div class="w-9 h-5 bg-matte-200 dark:bg-surface-border peer-focus:ring-2 peer-focus:ring-accent-blue rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent-blue"></div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Page Range -->
+          <div class="card-base p-5">
+            <h4 class="text-sm font-semibold text-matte-700 dark:text-white mb-3">Halaman</h4>
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <button class="page-range-btn active" data-range="all">Semua</button>
+              <button class="page-range-btn" data-range="custom">Pilih Halaman</button>
+            </div>
+            <div id="page-range-input" class="hidden">
+              <input type="text" id="page-range" placeholder="Contoh: 1-3, 5, 7-10" class="w-full p-2.5 rounded-lg bg-matte-50 dark:bg-surface-hover border border-matte-200 dark:border-surface-border text-sm focus:border-accent-blue outline-none transition-all" />
+              <p class="text-[10px] text-matte-400 mt-1">Range: 1-3, 5, 7-10. Pisahkan dengan koma.</p>
+            </div>
+          </div>
+
+          <!-- Export Settings -->
+          <div class="card-base p-5">
+            <h4 class="text-sm font-semibold text-matte-700 dark:text-white mb-3">Export</h4>
+            <div class="space-y-3">
+              <!-- Render Scale -->
+              <div>
+                <label class="flex justify-between text-xs font-semibold text-matte-600 dark:text-matte-300 mb-1">
+                  <span>Kualitas Render</span>
+                  <span id="scale-val" class="font-mono text-accent-blue">1.5x</span>
+                </label>
+                <input type="range" id="render-scale" min="1" max="3" step="0.5" value="1.5" class="slider" />
+                <p class="text-[10px] text-matte-400 mt-0.5">1.5x recommended. 3x = kualitas tinggi, file besar.</p>
+              </div>
+              <!-- JPEG Quality -->
+              <div>
+                <label class="flex justify-between text-xs font-semibold text-matte-600 dark:text-matte-300 mb-1">
+                  <span>Kualitas JPEG</span>
+                  <span id="jpeg-quality-val" class="font-mono text-accent-blue">80%</span>
+                </label>
+                <input type="range" id="jpeg-quality" min="30" max="100" value="80" class="slider" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Convert Button -->
+          <button id="convert-btn" class="w-full bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-bold py-3 px-6 rounded-xl shadow-lg hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Proses & Download
+          </button>
+
+          <!-- Progress -->
+          <div id="progress-container" class="hidden card-base p-4">
+            <div class="w-full bg-matte-200 dark:bg-surface-border rounded-full h-2.5 mb-2 overflow-hidden">
+              <div id="progress-bar" class="bg-accent-blue h-2.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+            </div>
+            <p id="status-text" class="text-center text-xs text-matte-500 animate-pulse">Memproses...</p>
+          </div>
+        </div>
+
+        <!-- RIGHT: Preview -->
+        <div class="lg:col-span-2">
+          <div class="card-base p-5">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-sm font-semibold text-matte-700 dark:text-white">Live Preview</h4>
+              <div class="flex items-center gap-2">
+                <button id="prev-page-btn" class="p-1.5 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors text-matte-400 hover:text-matte-700 dark:hover:text-matte-200 disabled:opacity-30" disabled>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
                 </button>
-
-                <div id="progress-container" class="hidden mt-4">
-                    <div class="w-full bg-matte-200 dark:bg-matte-700 rounded-full h-3 mb-2 overflow-hidden">
-                        <div id="progress-bar" class="bg-blue-600 h-3 rounded-full transition-all duration-200" style="width: 0%"></div>
-                    </div>
-                    <p id="status-text" class="text-center text-xs text-matte-500 animate-pulse">Memproses...</p>
-                </div>
+                <span id="preview-page-num" class="text-xs font-mono text-matte-500 min-w-[60px] text-center">1 / 1</span>
+                <button id="next-page-btn" class="p-1.5 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors text-matte-400 hover:text-matte-700 dark:hover:text-matte-200 disabled:opacity-30" disabled>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </div>
             </div>
+            <div class="bg-matte-100 dark:bg-surface-hover rounded-xl p-3 flex items-center justify-center min-h-[500px] overflow-auto">
+              <div class="bg-white shadow-lg rounded overflow-hidden max-w-full">
+                <canvas id="preview-canvas" class="block max-w-full h-auto"></canvas>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="lg:col-span-3 flex flex-col items-center">
-            <div class="bg-matte-200 dark:bg-matte-900 p-4 rounded-xl border border-matte-300 dark:border-matte-700 shadow-inner w-full flex flex-col items-center min-h-[400px]">
-               <p class="text-xs text-matte-500 font-mono mb-2 self-start">Live Preview (Halaman 1)</p>
-               
-               <div class="relative shadow-2xl bg-white rounded-sm overflow-hidden max-w-full">
-                   <canvas id="preview-canvas" class="block max-w-full h-auto"></canvas>
-               </div>
-            </div>
-        </div>
-
+      </div>
     </div>
 
   </div>
 </BaseLayout>
+
+<style>
+  .scan-mode-btn, .page-range-btn {
+    @apply px-3 py-2 rounded-lg font-medium text-xs transition-all;
+    @apply bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover border border-transparent;
+  }
+  .scan-mode-btn.active, .page-range-btn.active {
+    @apply bg-matte-900 dark:bg-white text-white dark:text-matte-900 shadow-md;
+  }
+  .slider {
+    @apply w-full h-1.5 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-matte-500;
+  }
+</style>
 
 <script>
   let PDFDocument: any;
@@ -82,171 +227,420 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     return PDFDocument;
   }
 
-  const workspace = document.getElementById('workspace');
-  const filenameDisplay = document.getElementById('filename');
-  const convertBtn = document.getElementById('convert-btn');
-  
-  const progressBar = document.getElementById('progress-bar');
-  const progressContainer = document.getElementById('progress-container');
-  const statusText = document.getElementById('status-text');
-  
-  // Preview Elements
-  const previewCanvas = document.getElementById('preview-canvas');
+  // --- Mode Presets ---
+  const presets: Record<string, any> = {
+    document:  { brightness: 110, contrast: 150, sharpness: 0, noise: 0, vignette: 0, threshold: 0, invert: false },
+    photo:     { brightness: 105, contrast: 120, sharpness: 0, noise: 0, vignette: 0, threshold: 0, invert: false },
+    receipt:   { brightness: 120, contrast: 200, sharpness: 10, noise: 15, vignette: 10, threshold: 0, invert: false },
+    sketch:    { brightness: 130, contrast: 250, sharpness: 20, noise: 0, vignette: 0, threshold: 120, invert: false },
+  };
+
+  // --- DOM Refs ---
+  const workspace = document.getElementById('workspace') as HTMLDivElement;
+  const filenameDisplay = document.getElementById('filename') as HTMLHeadingElement;
+  const pageInfo = document.getElementById('page-info') as HTMLParagraphElement;
+  const convertBtn = document.getElementById('convert-btn') as HTMLButtonElement;
+  const backBtn = document.getElementById('back-btn') as HTMLButtonElement;
+  const progressBar = document.getElementById('progress-bar') as HTMLDivElement;
+  const progressContainer = document.getElementById('progress-container') as HTMLDivElement;
+  const statusText = document.getElementById('status-text') as HTMLParagraphElement;
+  const previewCanvas = document.getElementById('preview-canvas') as HTMLCanvasElement;
   const previewCtx = previewCanvas.getContext('2d');
-  if (!previewCtx) { window.showToast?.(window._tToast ? window._tToast('Gagal render preview grayscale') : 'Gagal render preview grayscale', 'error'); }
   const rawFirstPageCanvas = document.createElement('canvas');
-  
-  // Filters Inputs
-  const contrastInp = document.getElementById('contrast');
-  const brightInp = document.getElementById('brightness');
-  const contrastVal = document.getElementById('contrast-val');
-  const brightVal = document.getElementById('brightness-val');
+  const pageNumDisplay = document.getElementById('preview-page-num') as HTMLSpanElement;
+  const prevPageBtn = document.getElementById('prev-page-btn') as HTMLButtonElement;
+  const nextPageBtn = document.getElementById('next-page-btn') as HTMLButtonElement;
+  const pageRangeInput = document.getElementById('page-range-input') as HTMLDivElement;
 
-  let currentFile = null;
-  let pdfDocSource = null;
+  const brightnessInp = document.getElementById('brightness') as HTMLInputElement;
+  const contrastInp = document.getElementById('contrast') as HTMLInputElement;
+  const sharpnessInp = document.getElementById('sharpness') as HTMLInputElement;
+  const noiseInp = document.getElementById('noise') as HTMLInputElement;
+  const vignetteInp = document.getElementById('vignette') as HTMLInputElement;
+  const thresholdInp = document.getElementById('threshold') as HTMLInputElement;
+  const invertInp = document.getElementById('invert') as HTMLInputElement;
+  const renderScaleInp = document.getElementById('render-scale') as HTMLInputElement;
+  const jpegQualityInp = document.getElementById('jpeg-quality') as HTMLInputElement;
 
+  const brightnessVal = document.getElementById('brightness-val') as HTMLSpanElement;
+  const contrastVal = document.getElementById('contrast-val') as HTMLSpanElement;
+  const sharpnessVal = document.getElementById('sharpness-val') as HTMLSpanElement;
+  const noiseVal = document.getElementById('noise-val') as HTMLSpanElement;
+  const vignetteVal = document.getElementById('vignette-val') as HTMLSpanElement;
+  const thresholdVal = document.getElementById('threshold-val') as HTMLSpanElement;
+  const scaleVal = document.getElementById('scale-val') as HTMLSpanElement;
+  const jpegQualityVal = document.getElementById('jpeg-quality-val') as HTMLSpanElement;
+
+  let currentFile: File | null = null;
+  let pdfDocSource: any = null;
+  let totalPages = 0;
+  let previewPageNum = 1;
+  let processTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // --- Upload ---
   window.usePdfDropZone('drop-zone', 'file-input', {
-    maxSize: 25 * 1024 * 1024,
+    maxSize: 50 * 1024 * 1024,
     accentColor: 'gray',
-    onFile: async (file) => {
+    onFile: async (file: File) => {
       currentFile = file;
-      filenameDisplay.innerText = currentFile.name;
+      filenameDisplay.innerText = file.name;
       document.getElementById('drop-zone')!.classList.add('hidden');
       workspace.classList.remove('hidden');
-      await loadAndPreviewFirstPage(file);
+      previewPageNum = 1;
+      await loadPdf(file);
     },
   });
 
-  // Live Preview Update saat slider digeser
-  contrastInp.addEventListener('input', (e) => {
-      contrastVal.innerText = `${e.target.value}%`;
-      updatePreview();
-  });
-  brightInp.addEventListener('input', (e) => {
-      brightVal.innerText = `${e.target.value}%`;
-      updatePreview();
+  backBtn.addEventListener('click', () => {
+    workspace.classList.add('hidden');
+    document.getElementById('drop-zone')!.classList.remove('hidden');
+    currentFile = null;
+    pdfDocSource = null;
   });
 
-  // --- FUNGSI PREVIEW ---
-  async function loadAndPreviewFirstPage(file) {
-      const arrayBuffer = await file.arrayBuffer();
-      pdfDocSource = await pdfjsLib.getDocument(arrayBuffer).promise;
-      const page = await pdfDocSource.getPage(1);
-      
-      // Render dengan kualitas cukup untuk preview
-      const viewport = page.getViewport({ scale: 1.0 });
-      
-      // Siapkan canvas raw (sumber asli)
-      rawFirstPageCanvas.width = viewport.width;
-      rawFirstPageCanvas.height = viewport.height;
-      const rawCtx = rawFirstPageCanvas.getContext('2d');
-      if (!rawCtx) { window.showToast?.(window._tToast ? window._tToast('Gagal render halaman PDF') : 'Gagal render halaman PDF', 'error'); return; }
-
-      // Isi background putih sebelum render (hindari warna hitam di JPEG)
-      rawCtx.fillStyle = '#FFFFFF';
-      rawCtx.fillRect(0, 0, rawFirstPageCanvas.width, rawFirstPageCanvas.height);
-      
-      // Render halaman asli ke canvas raw
-      await page.render({ canvasContext: rawCtx, viewport: viewport }).promise;
-
-      // Siapkan canvas preview (yang terlihat)
-      previewCanvas.width = viewport.width;
-      previewCanvas.height = viewport.height;
-      
-      // Terapkan filter pertama kali
+  // --- Mode Presets ---
+  document.querySelectorAll('.scan-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.scan-mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const mode = (btn as HTMLElement).dataset.mode || 'document';
+      const p = presets[mode];
+      brightnessInp.value = p.brightness;
+      contrastInp.value = p.contrast;
+      sharpnessInp.value = p.sharpness;
+      noiseInp.value = p.noise;
+      vignetteInp.value = p.vignette;
+      thresholdInp.value = p.threshold;
+      invertInp.checked = p.invert;
+      updateLabels();
       updatePreview();
+    });
+  });
+
+  // --- Page Range ---
+  document.querySelectorAll('.page-range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.page-range-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const range = (btn as HTMLElement).dataset.range;
+      pageRangeInput.classList.toggle('hidden', range !== 'custom');
+    });
+  });
+
+  // --- Labels ---
+  function updateLabels() {
+    brightnessVal.textContent = `${brightnessInp.value}%`;
+    contrastVal.textContent = `${contrastInp.value}%`;
+    sharpnessVal.textContent = `${sharpnessInp.value}%`;
+    noiseVal.textContent = noiseInp.value;
+    vignetteVal.textContent = `${vignetteInp.value}%`;
+    thresholdVal.textContent = thresholdInp.value;
+    scaleVal.textContent = `${renderScaleInp.value}x`;
+    jpegQualityVal.textContent = `${jpegQualityInp.value}%`;
   }
 
+  // --- Slider Events ---
+  [brightnessInp, contrastInp, sharpnessInp, noiseInp, vignetteInp, thresholdInp, renderScaleInp, jpegQualityInp].forEach(el => {
+    el.addEventListener('input', () => {
+      updateLabels();
+      if (processTimer) clearTimeout(processTimer);
+      processTimer = setTimeout(() => updatePreview(), 80);
+    });
+  });
+  invertInp.addEventListener('change', () => updatePreview());
+
+  // --- Load PDF ---
+  async function loadPdf(file: File) {
+    const arrayBuffer = await file.arrayBuffer();
+    pdfDocSource = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    totalPages = pdfDocSource.numPages;
+    pageInfo.textContent = `${totalPages} halaman`;
+    updatePageNav();
+    await renderPreviewPage(previewPageNum);
+  }
+
+  // --- Page Navigation ---
+  function updatePageNav() {
+    pageNumDisplay.textContent = `${previewPageNum} / ${totalPages}`;
+    prevPageBtn.disabled = previewPageNum <= 1;
+    nextPageBtn.disabled = previewPageNum >= totalPages;
+  }
+
+  prevPageBtn.addEventListener('click', async () => {
+    if (previewPageNum > 1) {
+      previewPageNum--;
+      updatePageNav();
+      await renderPreviewPage(previewPageNum);
+    }
+  });
+
+  nextPageBtn.addEventListener('click', async () => {
+    if (previewPageNum < totalPages) {
+      previewPageNum++;
+      updatePageNav();
+      await renderPreviewPage(previewPageNum);
+    }
+  });
+
+  // --- Render Preview ---
+  async function renderPreviewPage(pageNum: number) {
+    if (!pdfDocSource) return;
+    const page = await pdfDocSource.getPage(pageNum);
+    const viewport = page.getViewport({ scale: 1.0 });
+
+    rawFirstPageCanvas.width = viewport.width;
+    rawFirstPageCanvas.height = viewport.height;
+    const rawCtx = rawFirstPageCanvas.getContext('2d')!;
+    rawCtx.fillStyle = '#FFFFFF';
+    rawCtx.fillRect(0, 0, rawFirstPageCanvas.width, rawFirstPageCanvas.height);
+    await page.render({ canvasContext: rawCtx, viewport: viewport }).promise;
+
+    previewCanvas.width = viewport.width;
+    previewCanvas.height = viewport.height;
+    updatePreview();
+  }
+
+  // --- Update Preview (with all effects) ---
   function updatePreview() {
-      if (!previewCtx) return;
-      // 1. Bersihkan canvas preview
-      previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-      
-      // 2. Set filter CSS pada context
-      const contrast = contrastInp.value;
-      const brightness = brightInp.value;
-      // Urutan filter penting: Grayscale dulu, baru Contrast/Brightness
-      previewCtx.filter = `grayscale(100%) contrast(${contrast}%) brightness(${brightness}%)`;
-      
-      // 3. Gambar dari canvas raw ke canvas preview dengan filter aktif
-      previewCtx.drawImage(rawFirstPageCanvas, 0, 0);
+    if (!previewCtx) return;
+    const w = previewCanvas.width;
+    const h = previewCanvas.height;
+    if (w === 0 || h === 0) return;
+
+    // 1. Draw raw with CSS filter (grayscale + contrast + brightness)
+    previewCtx.clearRect(0, 0, w, h);
+    previewCtx.filter = `grayscale(100%) contrast(${contrastInp.value}%) brightness(${brightnessInp.value}%)`;
+    previewCtx.drawImage(rawFirstPageCanvas, 0, 0);
+    previewCtx.filter = 'none';
+
+    // 2. Pixel-level effects: threshold, noise, vignette, invert, sharpen
+    const threshold = parseInt(thresholdInp.value);
+    const noiseAmt = parseInt(noiseInp.value);
+    const vignetteAmt = parseInt(vignetteInp.value);
+    const invert = invertInp.checked;
+    const sharpness = parseInt(sharpnessInp.value);
+
+    const needsPixelProcessing = threshold > 0 || noiseAmt > 0 || vignetteAmt > 0 || invert || sharpness > 0;
+    if (!needsPixelProcessing) return;
+
+    const imageData = previewCtx.getImageData(0, 0, w, h);
+    const data = imageData.data;
+
+    // Threshold
+    if (threshold > 0) {
+      for (let i = 0; i < data.length; i += 4) {
+        const val = data[i] >= threshold ? 255 : 0;
+        data[i] = val; data[i+1] = val; data[i+2] = val;
+      }
+    }
+
+    // Noise
+    if (noiseAmt > 0) {
+      for (let i = 0; i < data.length; i += 4) {
+        const n = (Math.random() - 0.5) * noiseAmt * 2.5;
+        data[i] = Math.max(0, Math.min(255, data[i] + n));
+        data[i+1] = Math.max(0, Math.min(255, data[i+1] + n));
+        data[i+2] = Math.max(0, Math.min(255, data[i+2] + n));
+      }
+    }
+
+    previewCtx.putImageData(imageData, 0, 0);
+
+    // Vignette
+    if (vignetteAmt > 0) {
+      const vigStrength = vignetteAmt / 100;
+      const gradient = previewCtx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.2, w/2, h/2, Math.max(w,h)*0.7);
+      gradient.addColorStop(0, 'rgba(0,0,0,0)');
+      gradient.addColorStop(1, `rgba(0,0,0,${vigStrength * 0.6})`);
+      previewCtx.fillStyle = gradient;
+      previewCtx.fillRect(0, 0, w, h);
+    }
+
+    // Invert
+    if (invert) {
+      const invData = previewCtx.getImageData(0, 0, w, h);
+      const d = invData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        d[i] = 255 - d[i]; d[i+1] = 255 - d[i+1]; d[i+2] = 255 - d[i+2];
+      }
+      previewCtx.putImageData(invData, 0, 0);
+    }
+
+    // Sharpen
+    if (sharpness > 0) {
+      const strength = sharpness / 100;
+      const srcData = previewCtx.getImageData(0, 0, w, h);
+      const src = srcData.data;
+      const dst = new Uint8ClampedArray(src);
+      for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+          const idx = (y * w + x) * 4;
+          for (let c = 0; c < 3; c++) {
+            const center = src[idx + c] * 5;
+            const neighbors = src[((y-1)*w+x)*4+c] + src[((y+1)*w+x)*4+c] + src[(y*w+x-1)*4+c] + src[(y*w+x+1)*4+c];
+            dst[idx + c] = Math.max(0, Math.min(255, src[idx + c] + (center - neighbors) * strength));
+          }
+        }
+      }
+      previewCtx.putImageData(new ImageData(dst, w, h), 0, 0);
+    }
   }
 
+  // --- Parse page range string ---
+  function parsePageRange(rangeStr: string, max: number): number[] {
+    const pages = new Set<number>();
+    const parts = rangeStr.split(',').map(s => s.trim()).filter(Boolean);
+    for (const part of parts) {
+      if (part.includes('-')) {
+        const [start, end] = part.split('-').map(Number);
+        for (let i = Math.max(1, start); i <= Math.min(max, end); i++) pages.add(i);
+      } else {
+        const n = parseInt(part);
+        if (n >= 1 && n <= max) pages.add(n);
+      }
+    }
+    return Array.from(pages).sort((a, b) => a - b);
+  }
 
-  // --- FUNGSI PROSES SEMUA HALAMAN (CONVERT) ---
+  // --- Process All Pages ---
   convertBtn.addEventListener('click', async () => {
     if (!currentFile || !pdfDocSource) return;
+
+    const activeRange = document.querySelector('.page-range-btn.active') as HTMLElement;
+    const isCustomRange = activeRange?.dataset.range === 'custom';
+    const rangeStr = (document.getElementById('page-range') as HTMLInputElement).value.trim();
+    const pagesToProcess = isCustomRange && rangeStr ? parsePageRange(rangeStr, totalPages) : Array.from({ length: totalPages }, (_, i) => i + 1);
+
+    if (pagesToProcess.length === 0) {
+      window.showToast?.('Tidak ada halaman yang dipilih.', 'error');
+      return;
+    }
 
     const restoreBtn = window.showButtonSpinner(convertBtn, 'Memproses...');
     progressContainer.classList.remove('hidden');
 
     try {
-      const totalPages = pdfDocSource.numPages;
+      const scale = parseFloat(renderScaleInp.value);
+      const jpegQuality = parseInt(jpegQualityInp.value) / 100;
       const newPdf = await (await _loadPdfLib()).create();
-
-      // Canvas sementara untuk pemrosesan
       const tempCanvas = document.createElement('canvas');
-      const tempCtx = tempCanvas.getContext('2d');
-      if (!tempCtx) { restoreBtn(); window.showToast?.(window._tToast ? window._tToast('Gagal render: context tidak tersedia') : 'Gagal render: context tidak tersedia', 'error'); return; }
+      const tempCtx = tempCanvas.getContext('2d')!;
 
-      for (let i = 1; i <= totalPages; i++) {
-        // Update Progress UI
-        const percent = Math.round((i / totalPages) * 100);
+      const brightness = parseInt(brightnessInp.value);
+      const contrast = parseInt(contrastInp.value);
+      const sharpness = parseInt(sharpnessInp.value);
+      const noiseAmt = parseInt(noiseInp.value);
+      const vignetteAmt = parseInt(vignetteInp.value);
+      const threshold = parseInt(thresholdInp.value);
+      const invert = invertInp.checked;
+
+      for (let idx = 0; idx < pagesToProcess.length; idx++) {
+        const pageNum = pagesToProcess[idx];
+        const percent = Math.round(((idx + 1) / pagesToProcess.length) * 100);
         progressBar.style.width = `${percent}%`;
-        statusText.innerText = `Me-render halaman ${i} dari ${totalPages} (Menerapkan filter)...`;
+        statusText.innerText = `Halaman ${pageNum} (${idx + 1}/${pagesToProcess.length})...`;
 
-        // 1. Render halaman asli dengan kualitas tinggi
-        const page = await pdfDocSource.getPage(i);
-        const viewport = page.getViewport({ scale: 1.5 }); // Scale 1.5 untuk hasil print bagus
-        
+        const page = await pdfDocSource.getPage(pageNum);
+        const viewport = page.getViewport({ scale });
         tempCanvas.width = viewport.width;
         tempCanvas.height = viewport.height;
 
-        // Isi background putih sebelum render (hindari warna hitam di JPEG)
         tempCtx.fillStyle = '#FFFFFF';
         tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        await page.render({ canvasContext: tempCtx, viewport }).promise;
 
-        // Render ke temp canvas
-        await page.render({ canvasContext: tempCtx, viewport: viewport }).promise;
-
-        // 2. Terapkan Filter (Teknik Composite)
-        // Kita gambar ulang canvas pada dirinya sendiri dengan filter aktif
-        const contrast = contrastInp.value;
-        const brightness = brightInp.value;
-        tempCtx.globalCompositeOperation = 'copy'; // Timpa konten lama
+        // Apply CSS filter: grayscale + contrast + brightness
+        tempCtx.globalCompositeOperation = 'copy';
         tempCtx.filter = `grayscale(100%) contrast(${contrast}%) brightness(${brightness}%)`;
         tempCtx.drawImage(tempCanvas, 0, 0);
-        tempCtx.filter = 'none'; // Reset filter
+        tempCtx.filter = 'none';
+        tempCtx.globalCompositeOperation = 'source-over';
 
-        // 3. Embed ke PDF baru
-        // Gunakan JPEG dengan kompresi 0.75 agar ukuran file tidak meledak
-        const imgData = tempCanvas.toDataURL('image/jpeg', 0.75);
+        // Pixel-level effects
+        const needsPixel = threshold > 0 || noiseAmt > 0 || vignetteAmt > 0 || invert || sharpness > 0;
+        if (needsPixel) {
+          const w = tempCanvas.width, h = tempCanvas.height;
+          const imageData = tempCtx.getImageData(0, 0, w, h);
+          const data = imageData.data;
+
+          if (threshold > 0) {
+            for (let i = 0; i < data.length; i += 4) {
+              const val = data[i] >= threshold ? 255 : 0;
+              data[i] = val; data[i+1] = val; data[i+2] = val;
+            }
+          }
+          if (noiseAmt > 0) {
+            for (let i = 0; i < data.length; i += 4) {
+              const n = (Math.random() - 0.5) * noiseAmt * 2.5;
+              data[i] = Math.max(0, Math.min(255, data[i] + n));
+              data[i+1] = Math.max(0, Math.min(255, data[i+1] + n));
+              data[i+2] = Math.max(0, Math.min(255, data[i+2] + n));
+            }
+          }
+          tempCtx.putImageData(imageData, 0, 0);
+
+          if (vignetteAmt > 0) {
+            const vigStrength = vignetteAmt / 100;
+            const gradient = tempCtx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.2, w/2, h/2, Math.max(w,h)*0.7);
+            gradient.addColorStop(0, 'rgba(0,0,0,0)');
+            gradient.addColorStop(1, `rgba(0,0,0,${vigStrength * 0.6})`);
+            tempCtx.fillStyle = gradient;
+            tempCtx.fillRect(0, 0, w, h);
+          }
+
+          if (invert) {
+            const invData = tempCtx.getImageData(0, 0, w, h);
+            const d = invData.data;
+            for (let i = 0; i < d.length; i += 4) {
+              d[i] = 255 - d[i]; d[i+1] = 255 - d[i+1]; d[i+2] = 255 - d[i+2];
+            }
+            tempCtx.putImageData(invData, 0, 0);
+          }
+
+          if (sharpness > 0) {
+            const strength = sharpness / 100;
+            const srcData = tempCtx.getImageData(0, 0, w, h);
+            const src = srcData.data;
+            const dst = new Uint8ClampedArray(src);
+            for (let y = 1; y < h - 1; y++) {
+              for (let x = 1; x < w - 1; x++) {
+                const idx = (y * w + x) * 4;
+                for (let c = 0; c < 3; c++) {
+                  const center = src[idx + c] * 5;
+                  const neighbors = src[((y-1)*w+x)*4+c] + src[((y+1)*w+x)*4+c] + src[(y*w+x-1)*4+c] + src[(y*w+x+1)*4+c];
+                  dst[idx + c] = Math.max(0, Math.min(255, src[idx + c] + (center - neighbors) * strength));
+                }
+              }
+            }
+            tempCtx.putImageData(new ImageData(dst, w, h), 0, 0);
+          }
+        }
+
+        // Embed to new PDF
+        const imgData = tempCanvas.toDataURL('image/jpeg', jpegQuality);
         const embeddedImage = await newPdf.embedJpg(imgData);
-        
         const newPage = newPdf.addPage([embeddedImage.width, embeddedImage.height]);
-        newPage.drawImage(embeddedImage, {
-            x: 0,
-            y: 0,
-            width: embeddedImage.width,
-            height: embeddedImage.height,
-        });
+        newPage.drawImage(embeddedImage, { x: 0, y: 0, width: embeddedImage.width, height: embeddedImage.height });
       }
 
-      statusText.innerText = window._tToast ? window._tToast("Menyusun file PDF akhir...") : "Menyusun file PDF akhir...";
+      statusText.innerText = 'Menyusun file PDF...';
       const pdfBytes = await newPdf.save();
       window.downloadBytes(pdfBytes, `grayscale-${currentFile.name}`);
-
-      window.showToast?.(window._tToast ? window._tToast("Berhasil! PDF Hitam Putih siap.") : "Berhasil! PDF Hitam Putih siap.", "success");
+      window.showToast?.('Berhasil! PDF Grayscale siap diunduh.', 'success');
 
     } catch (err) {
-      window.showToast?.(window._tToast ? window._tToast("Gagal memproses PDF. Coba file yang lebih kecil.") : "Gagal memproses PDF. Coba file yang lebih kecil.", "error");
+      console.error(err);
+      window.showToast?.('Gagal memproses PDF. Coba file yang lebih kecil.', 'error');
     } finally {
       restoreBtn();
-      statusText.innerText = window._tToast ? window._tToast("Selesai!") : "Selesai!";
+      statusText.innerText = 'Selesai!';
       setTimeout(() => {
-          progressContainer.classList.add('hidden');
-          progressBar.style.width = '0%';
+        progressContainer.classList.add('hidden');
+        progressBar.style.width = '0%';
       }, 2000);
     }
   });
+
+  // Init labels
+  updateLabels();
 </script>
