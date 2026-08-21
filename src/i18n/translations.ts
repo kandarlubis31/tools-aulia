@@ -296,6 +296,8 @@ export const translations: Record<string, { id: string; en: string }> = {
   'tool.pdf_password_desc': { id: 'Tambah atau hapus proteksi password PDF.', en: 'Add or remove PDF password protection.' },
   'tool.image_watermark': { id: 'Image Watermark', en: 'Image Watermark' },
   'tool.image_watermark_desc': { id: 'Tambah watermark teks/logo ke gambar.', en: 'Add text/logo watermark to images.' },
+  'tool.image_to_scan': { id: 'Image to Scanner', en: 'Image to Scanner' },
+  'tool.image_to_scan_desc': { id: 'Ubah gambar jadi hasil scan dokumen.', en: 'Convert images to scanned document look.' },
   'tool.jwt_decoder': { id: 'JWT Decoder', en: 'JWT Decoder' },
   'tool.jwt_decoder_desc': { id: 'Decode token JWT tanpa kirim data.', en: 'Decode JWT tokens without sending data.' },
   'tool.json_to_ts': { id: 'JSON to TS', en: 'JSON to TS' },

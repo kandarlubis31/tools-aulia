@@ -1,0 +1,625 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Image to Scanner">
+  <div class="max-w-6xl mx-auto px-4 min-h-[60vh]">
+    <ToolPageHeader
+      title="Image to Scanner"
+      desc="Ubah gambar menjadi hasil scan dokumen — grayscale, kontras tinggi, noise, dan efek scanner lainnya."
+      icon='<rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in pb-20">
+
+      <!-- LEFT: Controls -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Upload Area -->
+        <div class="card-base p-6">
+          <div id="drop-zone" class="border-2 border-dashed border-matte-200 dark:border-surface-border rounded-xl p-8 text-center cursor-pointer transition-all hover:border-accent-blue hover:bg-matte-50 dark:hover:bg-surface-hover">
+            <input type="file" id="file-input" accept="image/*" class="hidden" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-3 text-matte-300 dark:text-matte-500">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <p class="text-matte-500 dark:text-matte-300 font-medium mb-1">Seret & lepas gambar di sini</p>
+            <p class="text-sm text-matte-400 dark:text-matte-500">atau klik untuk memilih file (JPG, PNG, WebP)</p>
+          </div>
+
+          <!-- Original Preview -->
+          <div id="original-preview" class="hidden mt-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-semibold text-matte-700 dark:text-white">Gambar Asli</span>
+              <button id="clear-btn" class="text-xs text-red-400 hover:text-red-600 font-medium transition-colors">Hapus</button>
+            </div>
+            <div class="relative rounded-xl overflow-hidden bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border">
+              <img id="original-img" class="w-full h-auto max-h-80 object-contain" alt="Original" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Scanner Settings -->
+        <div class="card-base p-6">
+          <h3 class="text-sm font-semibold text-matte-700 dark:text-white mb-4">Pengaturan Scanner</h3>
+
+          <!-- Mode Preset -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2">Mode Scan</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button class="scan-mode-btn active" data-mode="document">Dokumen</button>
+              <button class="scan-mode-btn" data-mode="photo">Foto Hitam Putih</button>
+              <button class="scan-mode-btn" data-mode="receipt">Struk / Bon</button>
+              <button class="scan-mode-btn" data-mode="sketch">Sketsa / Drawing</button>
+            </div>
+          </div>
+
+          <!-- Brightness -->
+          <div class="mb-4">
+            <label class="flex justify-between text-sm font-semibold text-matte-700 dark:text-white mb-1">
+              <span>Kecerahan</span>
+              <span id="brightness-val" class="font-mono font-bold text-accent-blue">0</span>
+            </label>
+            <input type="range" id="brightness" min="-100" max="100" value="0" class="w-full h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-matte-500" />
+          </div>
+
+          <!-- Contrast -->
+          <div class="mb-4">
+            <label class="flex justify-between text-sm font-semibold text-matte-700 dark:text-white mb-1">
+              <span>Kontras</span>
+              <span id="contrast-val" class="font-mono font-bold text-accent-blue">30</span>
+            </label>
+            <input type="range" id="contrast" min="-100" max="100" value="30" class="w-full h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-matte-500" />
+          </div>
+
+          <!-- Sharpness (via contrast trick) -->
+          <div class="mb-4">
+            <label class="flex justify-between text-sm font-semibold text-matte-700 dark:text-white mb-1">
+              <span>Ketajaman</span>
+              <span id="sharpness-val" class="font-mono font-bold text-accent-blue">20</span>
+            </label>
+            <input type="range" id="sharpness" min="0" max="100" value="20" class="w-full h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-matte-500" />
+          </div>
+
+          <!-- Noise Amount -->
+          <div class="mb-4">
+            <label class="flex justify-between text-sm font-semibold text-matte-700 dark:text-white mb-1">
+              <span>Noise / Grain</span>
+              <span id="noise-val" class="font-mono font-bold text-accent-blue">15</span>
+            </label>
+            <input type="range" id="noise" min="0" max="80" value="15" class="w-full h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-matte-500" />
+          </div>
+
+          <!-- Vignette -->
+          <div class="mb-4">
+            <label class="flex justify-between text-sm font-semibold text-matte-700 dark:text-white mb-1">
+              <span>Vignette (Gelap di Tepi)</span>
+              <span id="vignette-val" class="font-mono font-bold text-accent-blue">30</span>
+            </label>
+            <input type="range" id="vignette" min="0" max="100" value="30" class="w-full h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-matte-500" />
+          </div>
+
+          <!-- Threshold (Biner) -->
+          <div class="mb-4">
+            <label class="flex justify-between text-sm font-semibold text-matte-700 dark:text-white mb-1">
+              <span>Threshold (Biner)</span>
+              <span id="threshold-val" class="font-mono font-bold text-accent-blue">0</span>
+            </label>
+            <input type="range" id="threshold" min="0" max="255" value="0" class="w-full h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-matte-500" />
+            <p class="mt-1 text-[10px] text-matte-400">0 = mati, aktifkan untuk efek dokumen hitam-putih murni.</p>
+          </div>
+
+          <!-- Invert -->
+          <div class="flex items-center gap-3 mb-4">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="invert" class="sr-only peer" />
+              <div class="w-10 h-5 bg-matte-200 dark:bg-surface-border peer-focus:ring-2 peer-focus:ring-accent-blue rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent-blue"></div>
+            </label>
+            <span class="text-sm font-semibold text-matte-700 dark:text-white">Invert Warna</span>
+          </div>
+
+          <!-- Rotate -->
+          <div class="mb-4">
+            <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2">Rotasi</label>
+            <div class="grid grid-cols-4 gap-2">
+              <button class="rotate-btn active" data-deg="0">0°</button>
+              <button class="rotate-btn" data-deg="90">90°</button>
+              <button class="rotate-btn" data-deg="180">180°</button>
+              <button class="rotate-btn" data-deg="270">270°</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Preview + Actions -->
+      <div class="space-y-6">
+        <!-- Scanned Preview -->
+        <div class="card-base p-6">
+          <h3 class="text-sm font-semibold text-matte-700 dark:text-white mb-4">Hasil Scan</h3>
+          <div class="flex flex-col items-center justify-center bg-matte-100 dark:bg-surface-hover p-4 rounded-xl">
+            <div id="scan-preview-container" class="bg-white p-2 rounded-xl shadow-lg transition-transform hover:scale-[1.02] duration-300 w-full flex items-center justify-center min-h-[200px]">
+              <p id="scan-placeholder" class="text-sm text-matte-400 font-medium">Upload gambar dulu bosku</p>
+              <canvas id="scan-canvas" class="hidden max-w-full h-auto"></canvas>
+            </div>
+            <p class="mt-3 text-sm text-matte-400 font-medium">Preview Hasil Scan</p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card-base p-6">
+          <h3 class="text-sm font-semibold text-matte-700 dark:text-white mb-4">Aksi</h3>
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <button id="download-png-btn" class="action-btn" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>PNG</span>
+              </button>
+              <button id="download-jpg-btn" class="action-btn" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>JPG</span>
+              </button>
+            </div>
+
+            <button id="copy-btn" class="action-btn w-full" disabled>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>Salin ke Clipboard</span>
+            </button>
+
+            <button id="share-btn" class="action-btn w-full" disabled>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+              <span>Bagikan</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="card-base p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-semibold text-matte-700 dark:text-white">Riwayat</h3>
+            <button id="clear-history-btn" class="text-xs text-matte-400 hover:text-red-500 transition-colors font-medium">Hapus Semua</button>
+          </div>
+          <div id="history-container" class="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+            <p class="text-sm text-matte-400 text-center py-4">Belum ada riwayat</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .scan-mode-btn, .rotate-btn {
+    @apply px-3 py-2 rounded-lg font-medium text-sm transition-all;
+    @apply bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover border border-transparent;
+  }
+  .scan-mode-btn.active, .rotate-btn.active {
+    @apply bg-matte-900 dark:bg-white text-white dark:text-matte-900 shadow-md;
+  }
+  .action-btn {
+    @apply bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold py-2.5 px-4 rounded-lg hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2;
+  }
+  .action-btn:disabled {
+    @apply opacity-40 cursor-not-allowed;
+  }
+  .action-btn:disabled:hover {
+    @apply opacity-40;
+  }
+  #drop-zone.dragover {
+    @apply border-accent-blue bg-accent-blue/5;
+  }
+  .history-item {
+    @apply flex items-center justify-between p-3 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border hover:bg-matte-200 dark:hover:bg-surface-elevated transition-colors cursor-pointer;
+  }
+</style>
+
+<script>
+  import { useLocalHistory } from '../../composables/useLocalHistory';
+  const scanHistoryManager = useLocalHistory('scanHistory', 10);
+  let scanHistory = scanHistoryManager.getAll();
+
+  let currentImage: HTMLImageElement | null = null;
+  let currentRotation = 0;
+  let currentMode = 'document';
+
+  // Mode presets: { contrast, brightness, sharpness, noise, vignette, threshold, invert }
+  const presets: Record<string, any> = {
+    document:  { contrast: 30, brightness: 0, sharpness: 20, noise: 15, vignette: 30, threshold: 0, invert: false },
+    photo:     { contrast: 20, brightness: 5, sharpness: 10, noise: 10, vignette: 20, threshold: 0, invert: false },
+    receipt:   { contrast: 50, brightness: 10, sharpness: 30, noise: 20, vignette: 15, threshold: 0, invert: false },
+    sketch:    { contrast: 60, brightness: 15, sharpness: 40, noise: 5,  vignette: 10, threshold: 120, invert: false },
+  };
+
+  function init() {
+    const dropZone = document.getElementById('drop-zone') as HTMLDivElement;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const originalPreview = document.getElementById('original-preview') as HTMLDivElement;
+    const originalImg = document.getElementById('original-img') as HTMLImageElement;
+    const clearBtn = document.getElementById('clear-btn') as HTMLButtonElement;
+    const canvas = document.getElementById('scan-canvas') as HTMLCanvasElement;
+    const scanPlaceholder = document.getElementById('scan-placeholder') as HTMLParagraphElement;
+    const downloadPngBtn = document.getElementById('download-png-btn') as HTMLButtonElement;
+    const downloadJpgBtn = document.getElementById('download-jpg-btn') as HTMLButtonElement;
+    const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
+    const shareBtn = document.getElementById('share-btn') as HTMLButtonElement;
+    const clearHistoryBtn = document.getElementById('clear-history-btn') as HTMLButtonElement;
+    const historyContainer = document.getElementById('history-container') as HTMLDivElement;
+
+    const brightnessSlider = document.getElementById('brightness') as HTMLInputElement;
+    const contrastSlider = document.getElementById('contrast') as HTMLInputElement;
+    const sharpnessSlider = document.getElementById('sharpness') as HTMLInputElement;
+    const noiseSlider = document.getElementById('noise') as HTMLInputElement;
+    const vignetteSlider = document.getElementById('vignette') as HTMLInputElement;
+    const thresholdSlider = document.getElementById('threshold') as HTMLInputElement;
+    const invertToggle = document.getElementById('invert') as HTMLInputElement;
+
+    const brightnessVal = document.getElementById('brightness-val') as HTMLSpanElement;
+    const contrastVal = document.getElementById('contrast-val') as HTMLSpanElement;
+    const sharpnessVal = document.getElementById('sharpness-val') as HTMLSpanElement;
+    const noiseVal = document.getElementById('noise-val') as HTMLSpanElement;
+    const vignetteVal = document.getElementById('vignette-val') as HTMLSpanElement;
+    const thresholdVal = document.getElementById('threshold-val') as HTMLSpanElement;
+
+    const exportBtns = [downloadPngBtn, downloadJpgBtn, copyBtn, shareBtn];
+
+    // --- File Upload ---
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const file = e.dataTransfer?.files?.[0];
+      if (file && file.type.startsWith('image/')) loadImage(file);
+    });
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (file) loadImage(file);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      currentImage = null;
+      fileInput.value = '';
+      originalPreview.classList.add('hidden');
+      scanPlaceholder.classList.remove('hidden');
+      canvas.classList.add('hidden');
+      exportBtns.forEach(b => (b as HTMLButtonElement).disabled = true);
+    });
+
+    function loadImage(file: File) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          currentImage = img;
+          originalImg.src = reader.result as string;
+          originalPreview.classList.remove('hidden');
+          exportBtns.forEach(b => (b as HTMLButtonElement).disabled = false);
+          processScan();
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // --- Scan Mode Presets ---
+    document.querySelectorAll('.scan-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.scan-mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = (btn as HTMLElement).dataset.mode || 'document';
+        const p = presets[currentMode];
+        brightnessSlider.value = String(p.brightness);
+        contrastSlider.value = String(p.contrast);
+        sharpnessSlider.value = String(p.sharpness);
+        noiseSlider.value = String(p.noise);
+        vignetteSlider.value = String(p.vignette);
+        thresholdSlider.value = String(p.threshold);
+        invertToggle.checked = p.invert;
+        updateLabels();
+        processScan();
+      });
+    });
+
+    // --- Rotation ---
+    document.querySelectorAll('.rotate-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.rotate-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentRotation = parseInt((btn as HTMLElement).dataset.deg || '0');
+        processScan();
+      });
+    });
+
+    // --- Sliders ---
+    function updateLabels() {
+      brightnessVal.textContent = brightnessSlider.value;
+      contrastVal.textContent = contrastSlider.value;
+      sharpnessVal.textContent = sharpnessSlider.value;
+      noiseVal.textContent = noiseSlider.value;
+      vignetteVal.textContent = vignetteSlider.value;
+      thresholdVal.textContent = thresholdSlider.value;
+    }
+
+    let processTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function scheduleProcess() {
+      updateLabels();
+      if (processTimer) clearTimeout(processTimer);
+      processTimer = setTimeout(() => processScan(), 50);
+    }
+
+    [brightnessSlider, contrastSlider, sharpnessSlider, noiseSlider, vignetteSlider, thresholdSlider].forEach(el => {
+      el.addEventListener('input', scheduleProcess);
+    });
+    invertToggle.addEventListener('change', scheduleProcess);
+
+    // --- Canvas Processing ---
+    function processScan() {
+      if (!currentImage) return;
+
+      const brightness = parseInt(brightnessSlider.value);
+      const contrast = parseInt(contrastSlider.value);
+      const sharpness = parseInt(sharpnessSlider.value);
+      const noiseAmt = parseInt(noiseSlider.value);
+      const vignetteAmt = parseInt(vignetteSlider.value);
+      const threshold = parseInt(thresholdSlider.value);
+      const invert = invertToggle.checked;
+
+      const img = currentImage;
+      const rotRad = (currentRotation * Math.PI) / 180;
+      const is90or270 = currentRotation === 90 || currentRotation === 270;
+
+      const w = is90or270 ? img.naturalHeight : img.naturalWidth;
+      const h = is90or270 ? img.naturalWidth : img.naturalHeight;
+
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d')!;
+      ctx.clearRect(0, 0, w, h);
+
+      // White background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.save();
+      ctx.translate(w / 2, h / 2);
+      ctx.rotate(rotRad);
+      ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+      ctx.restore();
+
+      // Get pixel data
+      const imageData = ctx.getImageData(0, 0, w, h);
+      const data = imageData.data;
+
+      // 1. Grayscale
+      for (let i = 0; i < data.length; i += 4) {
+        const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+        data[i] = gray;
+        data[i + 1] = gray;
+        data[i + 2] = gray;
+      }
+
+      // 2. Brightness + Contrast
+      const bFactor = brightness * 2.55; // -255 to 255
+      const cFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+      for (let i = 0; i < data.length; i += 4) {
+        let r = data[i] + bFactor;
+        let g = data[i + 1] + bFactor;
+        let b = data[i + 2] + bFactor;
+        r = cFactor * (r - 128) + 128;
+        g = cFactor * (g - 128) + 128;
+        b = cFactor * (b - 128) + 128;
+        data[i] = Math.max(0, Math.min(255, r));
+        data[i + 1] = Math.max(0, Math.min(255, g));
+        data[i + 2] = Math.max(0, Math.min(255, b));
+      }
+
+      // 3. Threshold (biner)
+      if (threshold > 0) {
+        for (let i = 0; i < data.length; i += 4) {
+          const val = data[i] >= threshold ? 255 : 0;
+          data[i] = val;
+          data[i + 1] = val;
+          data[i + 2] = val;
+        }
+      }
+
+      // 4. Noise / Grain
+      if (noiseAmt > 0) {
+        for (let i = 0; i < data.length; i += 4) {
+          const noise = (Math.random() - 0.5) * noiseAmt * 2.5;
+          data[i] = Math.max(0, Math.min(255, data[i] + noise));
+          data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise));
+          data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise));
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+
+      // 5. Vignette overlay
+      if (vignetteAmt > 0) {
+        const vigStrength = vignetteAmt / 100;
+        const gradient = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.2, w / 2, h / 2, Math.max(w, h) * 0.7);
+        gradient.addColorStop(0, `rgba(0,0,0,0)`);
+        gradient.addColorStop(1, `rgba(0,0,0,${vigStrength * 0.6})`);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // 6. Invert
+      if (invert) {
+        const invData = ctx.getImageData(0, 0, w, h);
+        const d = invData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          d[i] = 255 - d[i];
+          d[i + 1] = 255 - d[i + 1];
+          d[i + 2] = 255 - d[i + 2];
+        }
+        ctx.putImageData(invData, 0, 0);
+      }
+
+      // 7. Sharpen (unsharp mask approximation)
+      if (sharpness > 0) {
+        const strength = sharpness / 100;
+        const srcData = ctx.getImageData(0, 0, w, h);
+        const src = srcData.data;
+        const dst = new Uint8ClampedArray(src);
+
+        for (let y = 1; y < h - 1; y++) {
+          for (let x = 1; x < w - 1; x++) {
+            const idx = (y * w + x) * 4;
+            for (let c = 0; c < 3; c++) {
+              const center = src[idx + c] * 5;
+              const neighbors =
+                src[((y - 1) * w + x) * 4 + c] +
+                src[((y + 1) * w + x) * 4 + c] +
+                src[(y * w + x - 1) * 4 + c] +
+                src[(y * w + x + 1) * 4 + c];
+              const sharpened = center - neighbors;
+              dst[idx + c] = Math.max(0, Math.min(255, src[idx + c] + sharpened * strength));
+            }
+          }
+        }
+
+        const outData = new ImageData(dst, w, h);
+        ctx.putImageData(outData, 0, 0);
+      }
+
+      // Show canvas
+      scanPlaceholder.classList.add('hidden');
+      canvas.classList.remove('hidden');
+    }
+
+    // --- Export ---
+    downloadPngBtn.addEventListener('click', () => {
+      if (!currentImage) return;
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `scan-${Date.now()}.png`;
+        link.href = url;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        addToHistory('PNG');
+        window.showToast?.(window._tToast ? window._tToast('Hasil scan diunduh sebagai PNG!') : 'Hasil scan diunduh sebagai PNG!', 'success');
+      });
+    });
+
+    downloadJpgBtn.addEventListener('click', () => {
+      if (!currentImage) return;
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d')!;
+      tempCtx.fillStyle = '#ffffff';
+      tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+      tempCtx.drawImage(canvas, 0, 0);
+      const link = document.createElement('a');
+      link.download = `scan-${Date.now()}.jpg`;
+      link.href = tempCanvas.toDataURL('image/jpeg', 0.92);
+      link.click();
+      addToHistory('JPG');
+      window.showToast?.(window._tToast ? window._tToast('Hasil scan diunduh sebagai JPG!') : 'Hasil scan diunduh sebagai JPG!', 'success');
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      if (!currentImage) return;
+      try {
+        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+        if (blob) {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          window.showToast?.(window._tToast ? window._tToast('Hasil scan disalin ke clipboard!') : 'Hasil scan disalin ke clipboard!', 'success');
+        }
+      } catch {
+        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin ke clipboard') : 'Gagal menyalin ke clipboard', 'error');
+      }
+    });
+
+    shareBtn.addEventListener('click', async () => {
+      if (!currentImage) return;
+      if (!navigator.share || !navigator.canShare) {
+        window.showToast?.(window._tToast ? window._tToast('Browser tidak mendukung fitur berbagi') : 'Browser tidak mendukung fitur berbagi', 'error');
+        return;
+      }
+      try {
+        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+        if (!blob) return;
+        const file = new File([blob], 'scan-result.png', { type: 'image/png' });
+        if (!navigator.canShare({ files: [file] })) return;
+        await navigator.share({ title: 'Hasil Scan', text: 'Lihat hasil scan saya', files: [file] });
+      } catch {
+        window.showToast?.(window._tToast ? window._tToast('Gagal membagikan') : 'Gagal membagikan', 'error');
+      }
+    });
+
+    // --- History ---
+    function addToHistory(format: string) {
+      const item = {
+        id: Date.now(),
+        mode: currentMode,
+        format,
+        date: new Date().toLocaleString('id-ID'),
+        dataUrl: canvas.toDataURL()
+      };
+      scanHistory = scanHistoryManager.add(item);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      if (scanHistory.length === 0) {
+        historyContainer.innerHTML = '<p class="text-sm text-matte-400 text-center py-4">Belum ada riwayat</p>';
+        return;
+      }
+      historyContainer.innerHTML = scanHistory.map(item => `
+        <div class="history-item" data-id="${item.id}">
+          <div class="flex items-center gap-3">
+            <img src="${item.dataUrl}" alt="Scan" class="w-10 h-10 rounded border border-matte-200 dark:border-surface-border bg-white object-cover">
+            <div>
+              <p class="text-sm font-medium text-matte-700 dark:text-white uppercase">${item.mode} - ${item.format}</p>
+              <p class="text-[10px] text-matte-400">${item.date}</p>
+            </div>
+          </div>
+          <button class="text-matte-400 hover:text-accent-blue transition-colors p-1" title="Unduh">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </button>
+        </div>
+      `).join('');
+
+      historyContainer.querySelectorAll('.history-item button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = parseInt((btn.closest('.history-item') as HTMLElement).dataset.id || '0');
+          const item = scanHistory.find(h => h.id === id);
+          if (item) {
+            const link = document.createElement('a');
+            link.download = `scan-${item.mode}-${item.id}.${item.format.toLowerCase()}`;
+            link.href = item.dataUrl;
+            link.click();
+            window.showToast?.(window._tToast ? window._tToast('Hasil scan dari riwayat diunduh!') : 'Hasil scan dari riwayat diunduh!', 'success');
+          }
+        });
+      });
+    }
+
+    clearHistoryBtn.addEventListener('click', () => {
+      scanHistory = [];
+      scanHistoryManager.clear();
+      renderHistory();
+      window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus!') : 'Riwayat dihapus!', 'success');
+    });
+
+    renderHistory();
+  }
+
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>

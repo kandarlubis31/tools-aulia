@@ -7,6 +7,7 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  '/utils/image-to-scan',
   '/text/diagram-to-img',
   '/utils/nama-generator',
   '/editor',
