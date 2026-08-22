@@ -129,6 +129,10 @@ async function collectClosure() {
 }
 
 // --- main --------------------------------------------------------------------
+// Skip artefak build TypeScript/bundler + archive sampah — tidak dipakai runtime
+// browser (dulu 558 file .d.ts/.js.map ikut ter-deploy ke produksi).
+const SKIP_ARTIFACTS = (src) => !/\.(d\.ts|map|rar)$/.test(src);
+
 console.log(`clean ${OUT}`);
 await rm(OUT, { recursive: true, force: true });
 await mkdir(OUT, { recursive: true });
@@ -181,6 +185,7 @@ await writeFile(join(OUT, "index.css"), css);
 const closure = await collectClosure();
 console.log(`closure files: ${closure.size}`);
 for (const [rel, abs] of closure) {
+  if (!SKIP_ARTIFACTS(abs)) continue;
   const dest = join(OUT, "node_modules", rel);
   await mkdir(dirname(dest), { recursive: true });
   await cp(abs, dest);
@@ -191,8 +196,8 @@ for (const key of usedImportMapKeys) {
 }
 await writeFile(join(OUT, "importmap.json"), JSON.stringify({ imports: trimmed }, null, 2));
 
-// 6. assets
-await cp(join(SRC, "assets"), join(OUT, "assets"), { recursive: true });
+// 6. assets (filter artefak build: .d.ts/.map/.rar tidak ikut)
+await cp(join(SRC, "assets"), join(OUT, "assets"), { recursive: true, filter: SKIP_ARTIFACTS });
 
 // 6b. video workers + their relative-import deps (see step 2). Mirror the omniclip/x
 //     layout so each worker's own `import ... from "./..."` keeps resolving.
@@ -212,7 +217,7 @@ for (const rel of WORKERS) {
 
 // 7. auxiliary dirs referenced at runtime (tooltip styles.css via index.css @import)
 for (const dir of ["views", "tools", "icons"]) {
-  await cp(join(SRC, dir), join(OUT, dir), { recursive: true });
+  await cp(join(SRC, dir), join(OUT, dir), { recursive: true, filter: SKIP_ARTIFACTS });
 }
 
 // 8. favicon — upstream omniclip references ./assets/favicon-32x32.png but ships none;

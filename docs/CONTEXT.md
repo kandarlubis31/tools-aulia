@@ -1,35 +1,35 @@
 # Project Context — ToolsAulia
 
-> **Last updated:** August 18, 2026 (Video Studio /editor — produksi di-fix: COI headers + worker files + SW allowlist)
+> **Last updated:** August 23, 2026 (Sign to PNG baru · first-load smoothness fix · P0 deploy slimming · nama-generator & image-to-scan v2)
 > **Stack:** Astro 5 · Tailwind CSS · TypeScript · 100% client-side (zero server processing)
 > **PWA:** Service Worker + Workbox precache · offline-first
 > **i18n:** Indonesian-first + English toggle (localStorage)
 
 ---
 
-## Tool Categories (168 tools + PDF hub, 12 kategori)
+## Tool Categories (233 entries: 232 tools + PDF hub, 12 kategori)
 
 | Category | Tools | Key tools |
 |----------|-------|-----------|
-| **PDF** | 28+hub | compress, merge, split, sign, watermark, to-word, form-filler, redact, thumbnails, compare, booklet, to-excel, optimizer, repair |
-| **Dev** | 24 | base64, json, markdown, diff, timestamp, url, proxy, my-ip, cron, css-shadow, regex, json-yaml, sql, subnet, gradient, html-minifier, chmod, jwt, json-to-ts, color-harmony, contrast, grid, json-schema |
-| **Calc** | 18 | age, bmi, currency, number, percentage, unit, case, emi, compound-interest, timezone, scientific, date-diff, fraction, number-words, matrix, work-hours, bmr, random |
-| **Image** | 18 | color, compressor, converter, editor, html-to-img, remove-bg, watermark, cropper, batch-resizer, exif, ascii, meme, palette, collage, gif-maker, favicon, to-pdf, color-convert |
-| **Security** | 12 | password, hash, uuid, bcrypt, file-encrypt, cipher, totp, steganography, luhn, password-strength, hmac, token |
-| **Utils** | 20 | wa-builder, qr, jokes, brainstorm, pomodoro, todo, word-counter, prabowo-countdown, paste-to-md, stopwatch, lorem, motivation, sinonim, notes-md, decision-wheel, expense-tracker, wordle-id, habit-tracker, qr-scanner, nama-generator |
-| **Text** | 13 | typing-test, text-to-speech, summarizer, readability, fancy, emoji, speech-to-text, lang-detect, anagram, morse, rot13, random-text, to-pdf |
-| **Data** | 10 | csv-editor, xlsx-viewer, yaml-json, ical, fake-data, xml-formatter, vcard, barcode, geojson, barcode-reader |
+| **PDF** | 32+hub | compress, merge, split, sign, watermark, to-word, form-filler, redact, thumbnails, compare, booklet, to-excel, optimizer, repair |
+| **Dev** | 29 | base64, json, markdown, diff, timestamp, url, proxy, my-ip, cron, css-shadow, regex, json-yaml, sql, subnet, gradient, html-minifier, chmod, jwt, json-to-ts, color-harmony, contrast, grid, json-schema |
+| **Calc** | 23 | age, bmi, currency, number, percentage, unit, case, emi, compound-interest, timezone, scientific, date-diff, fraction, number-words, matrix, work-hours, bmr, random |
+| **Image** | 25 | color, compressor, converter, editor, html-to-img, remove-bg, watermark, cropper, batch-resizer, exif, ascii, meme, palette, collage, gif-maker, favicon, to-pdf, color-convert, image-to-scan, sign-to-png |
+| **Security** | 16 | password, hash, uuid, bcrypt, file-encrypt, cipher, totp, steganography, luhn, password-strength, hmac, token |
+| **Utils** | 25 | wa-builder, qr, jokes, brainstorm, pomodoro, todo, word-counter, prabowo-countdown, paste-to-md, stopwatch, lorem, motivation, sinonim, notes-md, decision-wheel, expense-tracker, wordle-id, habit-tracker, qr-scanner, nama-generator |
+| **Text** | 19 | typing-test, text-to-speech, summarizer, readability, fancy, emoji, speech-to-text, lang-detect, anagram, morse, rot13, random-text, to-pdf, diagram-to-img |
+| **Data** | 15 | csv-editor, xlsx-viewer, yaml-json, ical, fake-data, xml-formatter, vcard, barcode, geojson, barcode-reader |
 | **Media** | 17 | audio-recorder, waveform, audio-trimmer, metronome, tone-generator, white-noise, screen-recorder, scale-ref, video-to-gif, beat-maker, media-info, audio-viz, video-thumb, audio-eq, audio-convert, video-editor, **video-studio** |
-| **Network** | 11 | http-builder, rest-client, dns-lookup, speed-test, latency, websocket, http-headers, ua-parser, port-ref, whois, ssl |
-| **File** | 2 | csv-json, pdf-to-md |
-| **Life** | 4 | mood-tracker, certificate, snake, magic-8ball |
+| **Network** | 16 | http-builder, rest-client, dns-lookup, speed-test, latency, websocket, http-headers, ua-parser, port-ref, whois, ssl |
+| **File** | 7 | csv-json, pdf-to-md, zip-extractor, batch-convert, splitter, renamer, joiner |
+| **Life** | 8 | mood-tracker, certificate, snake, magic-8ball |
 
 ---
 
 ## Architecture
 
 ### Key Files
-- `src/data/tools.ts` — Tool registry (170 entries: 168 tools + PDF hub + 1 index)
+- `src/data/tools.ts` — Tool registry (233 entries: 232 tools + PDF hub)
 - `src/i18n/translations.ts` — All i18n keys (tool, header, UI) — ~2300+ lines
 - `src/layouts/BaseLayout.astro` — Global layout + nav + footer + i18n toggle
 - `src/pages/og/[slug].png.ts` — Build-time OG image generator (231 PNG statis via resvg-js, font TTF di `src/assets/fonts/`)
@@ -115,21 +115,25 @@ Hero (compact: 8px padding, inline stats, no buttons)
 9. **Performance-first homepage** — No JS-driven animations on card grid, CSS-only hover effects
 10. **Video editing (FFmpeg)** — `@ffmpeg/ffmpeg` + `@ffmpeg/core` 0.12.9 self-hosted at `public/vendor/ffmpeg/` (ESM core + 32MB wasm + `font.ttf` buat drawtext). Wasm & font TIDAK di-precache — runtime-cached (`ffmpeg-core`) setelah pemakaian pertama. CSP `media-src 'self' blob: data:` untuk preview playback. Single-threaded core, re-encode ke H.264/AAC (maks 720p) biar concat-safe. Filter per-klip: `transpose` (rotasi), `crop` (center aspect), `scale/pad`, `drawtext` (watermark), `setpts`+`atempo` (speed), `volume`/`-an` (volume/mute). Transisi antar klip via `xfade` (video) + `acrossfade` (audio) chain di `filter_complex`. Sekarang berperan sebagai **fallback export** (audio akurat + codec edge-case).
 11. **Video editing (real-time engine)** — Preview pakai Canvas 2D compositor (`useVideoCompositor.ts`, `computeTimelineLayout` shared video+audio) + WebCodecs sequential decode (`createSequentialFrameSource`, Mediabunny `VideoSampleSink.samples`) + Web Audio (`useAudioEngine.ts`: `decodeAudioData` per klip, preview via `AudioBufferSourceNode` + gain envelope crossfade, export render via `OfflineAudioContext`). Export utama = WebCodecs GPU (`exportTimeline` → `CanvasSource` + `AudioBufferSource` AAC → MP4), fallback FFmpeg. Semua 100% client-side, file tak di-upload.
+12. **CSS loading render-blocking** (Aug 2026) — Trik async `media="print" + onload` DIHAPUS: bikin first-load FOUC/restyle pop (halaman render pakai critical.css parsial lalu "pop" saat bundle 183KB datang). Sekarang `<link rel="stylesheet">` normal; critical.css inline tetap ada sebagai belt & suspenders.
+13. **Scroll reveal progressive enhancement** (Aug 2026) — `.animate-on-scroll` TIDAK di-hide CSS default. JS menambah `.reveal-pending` HANYA ke elemen below-fold; above-fold langsung final state. Konten tak pernah invisible menunggu module JS.
+14. **SPA init convention** (Aug 2026) — Semua tool page: init HANYA via `astro:page-load` + guard path (`const __xPage = location.pathname...; if (...) return;`). DILARANG bare `init()` di akhir module — astro:page-load fire juga saat load pertama → listener dobel (bug nyata di qr, diagram-to-img, image-to-scan lama).
+15. **localStorage riwayat = thumbnail** (Aug 2026) — Data gambar ke history WAJIB thumbnail ≤400px JPEG/PNG + try/catch quota (composable `useLocalHistory.add` tidak catch sendiri). DataURL full-res meledakkan kuota 5MB (bug lama image-to-scan & qr).
+16. **Deploy slimming P0** (Aug 2026) — `cl100k_base.*.js` (tokenizer ranks 1MB, dipakai paste-to-md saja) dikeluarkan dari precache → CacheFirst runtime cache `tiktoken-ranks`. Artefak build editor (.d.ts/.map, transitions.rar, landingpage1.png) dihapus dari repo + difilter di `build-dist.mjs` (SKIP_ARTIFACTS). ⚠️ JALANAN build-dist.mjs menghapus seluruh `public/editor/` lalu rebuild dari `omniclip/x/` — jangan dijalankan sembarangan.
 
 ---
 
 ## Testing
 
-- **Unit tests:** 43 tests (6 files) — vitest
-- **Guardrail:** `scripts/check-client-side.mjs` (client-side only) + `scripts/check-inline-scripts.mjs` (inline scripts murni JS) — keduanya jalan di `prebuild`
-- **Build:** `pnpm astro build` → Vercel adapter (~28-55s, 330 precache entries, ~33.2MB; was 32.9MB + 6.4MB dead gif removed)
-- **CI:** Vercel auto-deploy on push to main
+- **Unit tests:** 62 tests (9 files) — vitest
+- **Guardrail:** `scripts/check-client-side.mjs` (client-side only) + `scripts/check-inline-scripts.mjs` (inline scripts murni JS) + `scripts/check-critical-css.mjs` — ketiganya jalan di `prebuild`
+- **Build:** `pnpm astro build` → Vercel adapter (~100-120s; precache ~364 entries setelah cl100k_base dikeluarkan)
+- **CI:** Vercel auto-deploy on push to main; GitHub Actions (`ci.yml`) = astro check + vitest + build
 
 ---
 
 ## Plan Status
 
-- **Plan 100 Tools:** `docs/plan-new-tools.md` — ✅ COMPLETE (110 tools, 58 → 168)
 - **Plan 100 Tools:** `docs/plan-new-tools.md` — ✅ COMPLETE (110 tools, 58 → 168)
 - **Plan 59 Tools:** `docs/plan-59-tools.md` — 🎉 COMPLETE (59/59, 168 → 227)
 - **Plan Improve:** `docs/plan-improve.md` — ✅ COMPLETE (Batch A: UX, Batch B: Quality)
@@ -153,6 +157,12 @@ Hero (compact: 8px padding, inline stats, no buttons)
   - **`public/editor/node_modules/` WAJIB di-commit:** closure runtime (43 file) ke-ignore `.gitignore` global (`node_modules/` + `dist/`) → 404 produksi → stuck loading. Kedua pattern di-scope ke root (`/node_modules/`, `/dist/`). Kalau rebuild dist, jangan lupa commit ulang isi `public/editor/`.
   - **SW jangan intercept `/editor`:** `navigateFallbackAllowlist: [/^(?!\/editor(?:$|\/))/]` di `astro.config.mjs` — kalau SW serve `/offline/` (tanpa header COI) + self-heal, malah nge-hapus semua cache PWA tiap kunjungan.
 - **Nama Generator Indonesia (`/utils/nama-generator`):** ✅ — generate nama khas 11 suku (Jawa, Sunda, Batak, Minang, Betawi, Bali, Melayu, Tionghoa, Arab, Ambon, Papua) dengan marga (Batak/Tionghoa/Ambon/Papua), gelar (Sutan/Datuk, I Gusti/Dewa), patronimik bin/binti (Melayu/Arab), urutan lahir (Wayan/Made/Nyoman/Ketut), format 1–3 kata, filter gender, toggle budaya. Data kurasi di `src/data/indonesian-names.ts` (100% lokal, offline).
+- **First-Load Smoothness Fix (Aug 2026):** ✅ — Tailwind render-blocking normal (trik `media="print"` dihapus), hero/bento tanpa entrance animation, scroll-reveal progressive enhancement. Lihat Keputusan #12–13.
+- **Nama Generator v2 (Aug 23, 2026):** ✅ — fix catatan etnis mati (dup key `note`), dedupe pool nama, collision gelar Minang ("Puti Puti"); mode Campuran otentik (acak suku → pola adat aslinya); favorit ⭐ + riwayat generate + badge validitas KTP.
+- **Image to Scanner v2 (Aug 23, 2026):** ✅ — fix double-init & kuota riwayat (thumbnail JPEG); perf cap 2200px + loop pixel merged + grain stabil + spinner; fitur baru: multi-page PDF export (pdf-lib lazy), auto-enhance auto-levels, paste Ctrl+V, slider compare asli↔hasil, i18n penuh (`scan.*`).
+- **Sign to PNG — TOOL BARU (Aug 23, 2026):** ✅ — `/image/sign-to-png`: gambar TTD (pointer events, smoothing quadratic, undo per-stroke) atau upload foto TTD (hapus bg putih via baseline tepi + toleransi + feather), auto-trim bounding box, PNG transparan/putih, download & copy. Total kini **232 tools + hub**.
+- **Fix audit lintas tool (Aug 23, 2026):** ✅ — double-init `qr.astro` & `diagram-to-img.astro` dihapus (guard `__page`, lihat Keputusan #14); riwayat QR pakai thumbnail 400px (Keputusan #15).
+- **Deploy Slimming P0 (Aug 23, 2026):** ✅ — `cl100k_base` keluar dari precache (−1MB/install); `transitions.rar` + `landingpage1.png` dihapus; 182 artefak `.d.ts/.map` editor dibersihkan + difilter permanen di `build-dist.mjs`; safelist Tailwind mati dihapus. Sisa backlog P1/P2: dedup `search-tools-json` (~8MB), slim critical.css, kompres demo video editor, NotoEmoji variable font, i18n massal ±40 halaman.
 
 ---
 

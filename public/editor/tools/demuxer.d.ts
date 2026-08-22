@@ -1,1 +1,0 @@
-export declare function demuxer(file: File, encoderWorker: Worker, onConfig: (config: VideoDecoderConfig) => void, onChunk: (chunk: EncodedVideoChunk) => void, start?: number, end?: number): Promise<void>;

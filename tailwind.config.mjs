@@ -54,6 +54,5 @@ export default {
 		// usePdfDropZone composable generates these dynamically
 		{ pattern: /^border-(red|orange|emerald|blue|violet|cyan|gray|pink|indigo|sky|teal|amber|rose|green|yellow)-500$/ },
 		{ pattern: /^bg-(red|orange|emerald|blue|violet|cyan|gray|pink|indigo|sky|teal|amber|rose|green|yellow)-50$/ },
-		{ pattern: /^dark:bg-(red|orange|emerald|blue|violet|cyan|gray|pink|indigo|sky|teal|amber|rose|green|yellow)-900\/10$/ },
 	],
 }
