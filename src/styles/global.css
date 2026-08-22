@@ -172,19 +172,22 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 
-/* ========== SCROLL REVEAL (global, P3-3) ========== */
-/* Hidden hanya saat JS aktif (class .js di <html>) — no-JS tetap terlihat */
-.js .animate-on-scroll {
+/* ========== SCROLL REVEAL (global, P3-3) ==========
+   Progressive enhancement: elemen TIDAK pernah disembunyikan oleh CSS default.
+   JS yang menambahkan `.reveal-pending` HANYA ke elemen below-fold saat halaman
+   load → above-fold selalu terlihat instan (tanpa nunggu module JS), konten tak
+   pernah "hilang" lalu fade-in telat. `.is-visible` = state final animasi. */
+.js .animate-on-scroll.reveal-pending {
   opacity: 0;
   transform: translateY(16px);
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
-.js .animate-on-scroll.is-visible {
+.js .animate-on-scroll.reveal-pending.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
 @media (prefers-reduced-motion: reduce) {
-  .js .animate-on-scroll {
+  .js .animate-on-scroll.reveal-pending {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;

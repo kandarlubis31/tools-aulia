@@ -2681,6 +2681,8 @@ export const translations: Record<string, { id: string; en: string }> = {
   'ng.copy_all': { id: '📋 Salin Semua', en: '📋 Copy All' },
   'ng.result': { id: 'Hasil', en: 'Results' },
   'ng.empty': { id: 'Klik "Generate" untuk mulai — coba pilih etnis favoritmu 👆', en: 'Click "Generate" to start — try picking your favorite ethnicity 👆' },
+  'ng.favorites': { id: '⭐ Favorit Saya', en: '⭐ My Favorites' },
+  'ng.history': { id: '🕘 Riwayat Generate', en: '🕘 Generation History' },
   'tool.video_studio_desc': { id: 'Editor video lengkap ala CapCut — timeline multi-track, efek, teks & transisi.', en: 'Full CapCut-style video editor — multi-track timeline, effects, text & transitions.' },
   'header.video_studio': { id: 'Video Studio', en: 'Video Studio' },
   'header.video_studio_desc': { id: 'Editor video lengkap di browser — timeline multi-track, efek, teks, transisi. Tanpa upload, tanpa akun.', en: 'Full in-browser video editor — multi-track timeline, effects, text, transitions. No upload, no account.' },
