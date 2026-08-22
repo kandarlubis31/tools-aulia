@@ -1,6 +1,6 @@
 # Project Context — ToolsAulia
 
-> **Last updated:** August 23, 2026 (Sign to PNG baru · first-load smoothness fix · P0 deploy slimming · nama-generator & image-to-scan v2)
+> **Last updated:** August 23, 2026 (Sign to PNG baru · first-load smoothness fix · P0 deploy slimming · nama-generator & image-to-scan v2 · SW offline-routing fix · .gitignore audit)
 > **Stack:** Astro 5 · Tailwind CSS · TypeScript · 100% client-side (zero server processing)
 > **PWA:** Service Worker + Workbox precache · offline-first
 > **i18n:** Indonesian-first + English toggle (localStorage)
@@ -164,6 +164,8 @@ Hero (compact: 8px padding, inline stats, no buttons)
 - **Sign to PNG — TOOL BARU (Aug 23, 2026):** ✅ — `/image/sign-to-png`: gambar TTD (pointer events, smoothing quadratic, undo per-stroke) atau upload foto TTD (hapus bg putih via baseline tepi + toleransi + feather), auto-trim bounding box, PNG transparan/putih, download & copy. Total kini **232 tools + hub**.
 - **Fix audit lintas tool (Aug 23, 2026):** ✅ — double-init `qr.astro` & `diagram-to-img.astro` dihapus (guard `__page`, lihat Keputusan #14); riwayat QR pakai thumbnail 400px (Keputusan #15).
 - **Deploy Slimming P0 (Aug 23, 2026):** ✅ — `cl100k_base` keluar dari precache (−1MB/install); `transitions.rar` + `landingpage1.png` dihapus; 182 artefak `.d.ts/.map` editor dibersihkan + difilter permanen di `build-dist.mjs`; safelist Tailwind mati dihapus. Sisa backlog P1/P2: dedup `search-tools-json` (~8MB), slim critical.css, kompres demo video editor, NotoEmoji variable font, i18n massal ±40 halaman.
+- **SW Offline-Fallback Fix (Aug 23, 2026):** ✅ — bug "📡 Kamu Offline padahal online": navigasi ber-query (`/?cat=`) MISS precache → langsung halaman offline tanpa coba network, lalu self-heal nuke semua cache. Fix: `ignoreURLParametersMatching: [/.*/]` + self-heal hanya hapus cache precache. Lihat Keputusan #17.
+- **Audit .gitignore (Aug 23, 2026):** ✅ — negasi `.vscode/settings.json` diperbaiki (`.vscode/*` pattern), `.opencode/` di-ignore + untrack, `omniclip/package-lock.json` di-ignore. Closure `public/editor/node_modules` tetap aman ter-track (43 file).
 
 ---
 
