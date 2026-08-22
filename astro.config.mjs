@@ -68,6 +68,10 @@ export default defineConfig({
           return { manifest: entries, warnings: [] };
         },
       ],
+      // Query string (?cat=, ?from_cat=, dst) adalah UI state — abaikan saat
+      // matching precache. Tanpa ini, navigasi ke /?cat=dev MISS precache
+      // (manifest punya '/') dan jatuh ke halaman offline PADAHAL ONLINE.
+      ignoreURLParametersMatching: [/.*/],
       navigateFallback: '/offline/',
       // /editor → jangan intercept: app butuh COOP/COEP headers (COI) dari Vercel
       // buat SharedArrayBuffer (ffprobe-wasm worker). Kalau SW serve /offline/
@@ -76,6 +80,12 @@ export default defineConfig({
       navigateFallbackDenylist: [/^\/api\/.*/],
       maximumFileSizeToCacheInBytes: 25 * 1024 * 1024, // 25 MB — headroom for kbbi-sinonim.json (9.4MB) + id-words.json (2.6MB) + AI models
       runtimeCaching: [
+        // CATATAN: TIDAK ada route navigasi NetworkFirst di sini — template
+        // generateSW mendaftarkan NavigationRoute(navigateFallback) SEBELUM
+        // runtimeCaching, jadi route navigasi kustom tidak akan pernah ke-match
+        // (shadowed). Fallback offline tetap lewat navigateFallback; celah
+        // "online tapi dapat halaman offline" sudah ditutup oleh
+        // ignoreURLParametersMatching di atas (?cat= dll sekarang match '/').
         // --- Tokenizer ranks (paste-to-md): 1MB chunk, lazy-loaded — CacheFirst
         //     setelah pemakaian pertama (TIDAK di-precache, lihat globIgnores) ---
         {
