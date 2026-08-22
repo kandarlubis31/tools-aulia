@@ -142,7 +142,7 @@
     </div>
 
     <p id="status-text"><span id="status-dot"></span> <span id="status-label">Memeriksa koneksi...</span></p>
-    <p class="hint">🌐 Sambungkan internet untuk akses semua 227+ tools.</p>
+    <p class="hint">🌐 Sambungkan internet untuk akses semua 232+ tools.</p>
   </div>
 
   <script is:inline>
@@ -178,8 +178,13 @@
         }).catch(function () {}));
       }
       if (window.caches && caches.keys) {
+        // Hapus HANYA cache precache (workbox-*) — cache CDN/runtime
+        // (cdnjs-cache, jsdelivr-cache, api-cache, dst) dipertahankan supaya
+        // tools tetap usable setelah heal, tanpa download ulang dari nol.
         jobs.push(caches.keys().then(function (names) {
-          return Promise.all(names.map(function (n) { return caches.delete(n); }));
+          return Promise.all(names.map(function (n) {
+            return (/^workbox-precache/.test(n)) ? caches.delete(n) : Promise.resolve();
+          }));
         }).catch(function () {}));
       }
       Promise.all(jobs).then(function () {
