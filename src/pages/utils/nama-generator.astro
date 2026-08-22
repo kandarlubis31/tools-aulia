@@ -68,13 +68,37 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <!-- Results -->
     <div class="card-base p-5 animate-fade-in">
-      <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <span class="section-title" data-i18n="ng.result">Hasil</span>
-        <span id="result-info" class="text-2xs text-matte-400"></span>
+        <div class="flex items-center gap-2">
+          <span id="ktp-badge" class="hidden text-2xs font-bold px-2 py-0.5 rounded-full"></span>
+          <span id="result-info" class="text-2xs text-matte-400"></span>
+        </div>
       </div>
       <div id="result-list" class="flex flex-col gap-2 min-h-[60px]">
         <p class="text-sm text-matte-400 py-6 text-center" data-i18n="ng.empty">Klik "Generate" untuk mulai — coba pilih etnis favoritmu 👆</p>
       </div>
+    </div>
+
+    <!-- Favorites -->
+    <div id="fav-panel" class="card-base p-5 animate-fade-in hidden mt-5">
+      <div class="flex items-center justify-between mb-3">
+        <span class="section-title"><span data-i18n="ng.favorites">⭐ Favorit Saya</span> <span id="fav-count" class="text-matte-400 font-medium"></span></span>
+        <div class="flex items-center gap-1.5">
+          <button id="fav-copy-all" class="p-2 rounded-lg text-xs text-matte-400 hover:text-accent-blue hover:bg-matte-100 dark:hover:bg-surface-hover transition-all" title="Salin semua favorit" aria-label="Salin semua favorit">📋</button>
+          <button id="fav-clear" class="p-2 rounded-lg text-xs text-matte-400 hover:text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-all" title="Hapus semua favorit" aria-label="Hapus semua favorit">🗑️</button>
+        </div>
+      </div>
+      <div id="fav-list" class="flex flex-col gap-2"></div>
+    </div>
+
+    <!-- History -->
+    <div id="history-panel" class="card-base p-5 animate-fade-in hidden mt-5">
+      <div class="flex items-center justify-between mb-3">
+        <span class="section-title" data-i18n="ng.history">🕘 Riwayat Generate</span>
+        <button id="history-clear" class="p-2 rounded-lg text-xs text-matte-400 hover:text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-all" title="Hapus riwayat" aria-label="Hapus riwayat">🗑️</button>
+      </div>
+      <div id="history-list" class="flex flex-col gap-2"></div>
     </div>
   </div>
 </BaseLayout>
@@ -93,13 +117,39 @@ document.addEventListener('astro:page-load', () => {
   const resultList = document.getElementById('result-list') as HTMLDivElement;
   const resultInfo = document.getElementById('result-info') as HTMLSpanElement;
   const culturalToggle = document.getElementById('cultural-toggle') as HTMLInputElement;
+  const ktpBadge = document.getElementById('ktp-badge') as HTMLSpanElement;
+  const favPanel = document.getElementById('fav-panel') as HTMLDivElement;
+  const favList = document.getElementById('fav-list') as HTMLDivElement;
+  const favCount = document.getElementById('fav-count') as HTMLSpanElement;
+  const favCopyAllBtn = document.getElementById('fav-copy-all') as HTMLButtonElement;
+  const favClearBtn = document.getElementById('fav-clear') as HTMLButtonElement;
+  const historyPanel = document.getElementById('history-panel') as HTMLDivElement;
+  const historyList = document.getElementById('history-list') as HTMLDivElement;
+  const historyClearBtn = document.getElementById('history-clear') as HTMLButtonElement;
+
+  // ---- storage (favorit & riwayat persist di localStorage) ----
+  const FAV_KEY = 'ngFavorites';
+  const HISTORY_KEY = 'ngHistory';
+  type NameItem = { name: string; group: string };
+  type HistoryBatch = { ts: number; items: NameItem[] };
+  const readStore = <T>(key: string, fallback: T): T => {
+    try {
+      const v = JSON.parse(localStorage.getItem(key) || '');
+      return Array.isArray(v) ? v : fallback;
+    } catch { return fallback; }
+  };
+  const writeStore = (key: string, val: unknown) => {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch { /* private mode */ }
+  };
 
   // ---- state ----
   let selectedEtnis = 'any';
   let gender: 'm' | 'f' | 'any' = 'any';
   let format = 2;
   let count = 5;
-  let currentResults: { name: string; group: string }[] = [];
+  let currentResults: NameItem[] = [];
+  let favorites: NameItem[] = readStore<NameItem[]>(FAV_KEY, []);
+  let history: HistoryBatch[] = readStore<HistoryBatch[]>(HISTORY_KEY, []);
 
   // ---- helpers ----
   const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
@@ -142,79 +192,96 @@ document.addEventListener('astro:page-load', () => {
   }
 
   // ---- generation ----
-  function givenPool(g: (typeof ethnicGroups)[number], gend: 'm' | 'f'): string[] {
-    return gend === 'm' ? g.male : g.female;
-  }
 
-  function generateOne(): { name: string; group: string } {
-    const gend = gender === 'any' ? (Math.random() < 0.5 ? 'm' : 'f') : gender;
-    const g = selectedEtnis === 'any'
-      ? null
-      : ethnicGroups.find(x => x.id === selectedEtnis)!;
-    const useCultural = culturalToggle.checked;
+  // Pola penamaan per etnis (murni, tanpa akses DOM) — dipakai mode spesifik
+  // maupun Campuran otentik. Gelar/urutan lahir dimasukkan ke `used` supaya
+  // tidak mungkin bentrok dengan nama given (fix "Siti Siti" / "Puti Puti").
+  function buildNameParts(g: (typeof ethnicGroups)[number], gend: 'm' | 'f', fmt: number, useCultural: boolean): string[] {
+    const pool = gend === 'm' ? g.male : g.female;
+    const used = new Set<string>();
+    const given = () => pickDistinct(pool, used);
 
-    let parts: string[] = [];
-    let groupLabel: string;
+    const withPatronymic = useCultural && !!g.patronymic;
+    const titles = useCultural && g.titles ? (gend === 'm' ? g.titles.male : (g.titles.female ?? g.titles.male)) : null;
+    const surnames = useCultural ? g.surnames : undefined;
+    const birthOrder = useCultural ? g.birthOrder : undefined;
 
-    if (!g) {
-      // mixed mode
-      const pool = gend === 'm' ? mixedNames.male : mixedNames.female;
-      parts = [pick(pool)];
-      if (format >= 2) parts.push(pickDistinct(pool, new Set(parts)));
-      if (format >= 3) parts.push(pickDistinct(pool, new Set(parts)));
-      groupLabel = 'Campuran';
-    } else {
-      groupLabel = g.name;
-      const pool = givenPool(g, gend);
-      const used = new Set<string>();
-      const given = () => pickDistinct(pool, used);
-
-      const withPatronymic = (useCultural && g.patronymic);
-      const titles = useCultural ? (g.titles ? (gend === 'm' ? g.titles.male : (g.titles.female ?? g.titles.male)) : null) : null;
-      const surnames = useCultural ? g.surnames : undefined;
-      const birthOrder = useCultural ? g.birthOrder : undefined;
-
-      if (format === 1) {
-        parts = [given()];
-      } else if (format === 2) {
-        if (g.id === 'batak' || g.id === 'ambon' || g.id === 'papua') {
-          parts = surnames ? [given(), pick(surnames)] : [given(), given()];
-        } else if (g.id === 'minang' && titles) {
-          parts = [pick(titles), given()];
-        } else if (g.id === 'bali') {
-          parts = [gend === 'm' ? 'I' : 'Ni', given()];
-        } else if (g.id === 'tionghoa') {
-          parts = surnames ? [pick(surnames), given()] : [given(), given()];
-        } else if (withPatronymic) {
-          parts = [given(), gend === 'm' ? 'bin' : 'binti', pick(fatherNames)];
-        } else {
-          parts = [given(), given()];
-        }
-      } else {
-        // format 3
-        if (g.id === 'batak' || g.id === 'ambon' || g.id === 'papua') {
-          parts = surnames ? [given(), given(), pick(surnames)] : [given(), given(), given()];
-        } else if (g.id === 'minang' && titles) {
-          parts = [pick(titles), given(), given()];
-        } else if (g.id === 'bali') {
-          const givenNonBirth = pool.filter(n => !(birthOrder ?? []).includes(n));
-          parts = [gend === 'm' ? 'I' : 'Ni', birthOrder ? pick(birthOrder) : given(), pickDistinct(givenNonBirth, new Set())];
-        } else if (g.id === 'tionghoa') {
-          parts = surnames ? [pick(surnames), given(), given()] : [given(), given(), given()];
-        } else if (withPatronymic) {
-          parts = [given(), given(), gend === 'm' ? 'bin' : 'binti', pick(fatherNames)];
-        } else {
-          // jawa: [given] [given] [surname]; others: 3 given names
-          if (surnames && g.id !== 'sunda' && g.id !== 'betawi') {
-            parts = [given(), given(), pick(surnames)];
-          } else {
-            parts = [given(), given(), given()];
-          }
-        }
-      }
+    if (fmt === 1) {
+      return [given()];
     }
 
-    return { name: parts.join(' '), group: groupLabel };
+    if (fmt === 2) {
+      if (g.id === 'batak' || g.id === 'ambon' || g.id === 'papua') {
+        return surnames ? [given(), pick(surnames)] : [given(), given()];
+      }
+      if (g.id === 'minang' && titles) {
+        const t = pick(titles);
+        used.add(t);
+        return [t, given()];
+      }
+      if (g.id === 'bali') {
+        return [gend === 'm' ? 'I' : 'Ni', given()];
+      }
+      if (g.id === 'tionghoa') {
+        return surnames ? [pick(surnames), given()] : [given(), given()];
+      }
+      if (withPatronymic) {
+        return [given(), gend === 'm' ? 'bin' : 'binti', pick(fatherNames)];
+      }
+      return [given(), given()];
+    }
+
+    // format 3
+    if (g.id === 'batak' || g.id === 'ambon' || g.id === 'papua') {
+      return surnames ? [given(), given(), pick(surnames)] : [given(), given(), given()];
+    }
+    if (g.id === 'minang' && titles) {
+      const t = pick(titles);
+      used.add(t);
+      return [t, given(), given()];
+    }
+    if (g.id === 'bali') {
+      const order = birthOrder && birthOrder.length ? pick(birthOrder) : null;
+      if (order) used.add(order);
+      const givenNonBirth = pool.filter(n => !used.has(n));
+      return [gend === 'm' ? 'I' : 'Ni', order ?? given(), pickDistinct(givenNonBirth, used)];
+    }
+    if (g.id === 'tionghoa') {
+      return surnames ? [pick(surnames), given(), given()] : [given(), given(), given()];
+    }
+    if (withPatronymic) {
+      return [given(), given(), gend === 'm' ? 'bin' : 'binti', pick(fatherNames)];
+    }
+    // jawa & lainnya yang punya surname: [given] [given] [surname];
+    // sunda/betawi: 3 given names
+    if (surnames && g.id !== 'sunda' && g.id !== 'betawi') {
+      return [given(), given(), pick(surnames)];
+    }
+    return [given(), given(), given()];
+  }
+
+  function generateOne(): NameItem {
+    const gend = gender === 'any' ? (Math.random() < 0.5 ? 'm' : 'f') : gender;
+    const useCultural = culturalToggle.checked;
+
+    if (selectedEtnis === 'any') {
+      if (useCultural) {
+        // Campuran otentik: acak satu suku → jalankan pola aslinya
+        // (bisa "Wayan Gede Rai", "Sutan Fauzi Rizal", "Liem Kevin Michael").
+        const g = ethnicGroups[Math.floor(Math.random() * ethnicGroups.length)];
+        return { name: buildNameParts(g, gend, format, true).join(' '), group: g.name };
+      }
+      // Campuran santai: nama populer lintas suku tanpa pola adat.
+      const pool = gend === 'm' ? mixedNames.male : mixedNames.female;
+      const used = new Set<string>();
+      const parts = [pickDistinct(pool, used)];
+      if (format >= 2) parts.push(pickDistinct(pool, used));
+      if (format >= 3) parts.push(pickDistinct(pool, used));
+      return { name: parts.join(' '), group: 'Campuran' };
+    }
+
+    const g = ethnicGroups.find(x => x.id === selectedEtnis)!;
+    return { name: buildNameParts(g, gend, format, useCultural).join(' '), group: g.name };
   }
 
   function generate() {
@@ -228,33 +295,85 @@ document.addEventListener('astro:page-load', () => {
       results.push(r);
     }
     currentResults = results;
+    if (results.length) {
+      history.unshift({ ts: Date.now(), items: results.map(r => ({ ...r })) });
+      if (history.length > 10) history.length = 10;
+      writeStore(HISTORY_KEY, history);
+      renderHistory();
+    }
     renderResults();
+  }
+
+  const STAR_OUTLINE = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>';
+  const starSvg = (filled: boolean) =>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${STAR_OUTLINE}</svg>`;
+
+  function isFav(name: string): boolean {
+    return favorites.some(f => f.name === name);
+  }
+
+  function wordCount(name: string): number {
+    return name.trim().split(/\s+/).filter(Boolean).length;
+  }
+
+  function updateKtpBadge() {
+    if (!currentResults.length) {
+      ktpBadge.classList.add('hidden');
+      return;
+    }
+    const valid = currentResults.every(r => wordCount(r.name) >= 2);
+    ktpBadge.textContent = valid ? '✔ Valid KTP' : '⚠ Belum Valid KTP';
+    ktpBadge.className = `text-2xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
+      valid
+        ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
+        : 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
+    }`;
+  }
+
+  function bindCopyFeedback(btn: HTMLElement, copied: string) {
+    const orig = btn.innerHTML;
+    btn.innerHTML = copied;
+    setTimeout(() => { btn.innerHTML = orig; }, 1200);
+  }
+
+  function resultRowHtml(r: NameItem, i: number): string {
+    const faved = isFav(r.name);
+    return `
+      <div class="flex items-center gap-3 p-3 rounded-xl bg-matte-100 dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all group">
+        <span class="w-6 text-center text-xs font-bold text-matte-300">${i + 1}</span>
+        <span class="flex-1 font-semibold text-sm text-matte-800 dark:text-white">${r.name}</span>
+        <span class="text-2xs px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 font-medium shrink-0">${r.group}</span>
+        <button class="fav-toggle p-1.5 rounded-lg transition-all shrink-0 ${faved ? 'text-amber-500 hover:text-amber-600' : 'text-matte-300 dark:text-matte-500 hover:text-amber-500'} hover:bg-amber-100 dark:hover:bg-amber-900/30" title="${faved ? 'Hapus dari favorit' : 'Tambah ke favorit'}" data-name="${r.name}" data-group="${r.group}" aria-label="${faved ? 'Hapus dari favorit' : 'Tambah ke favorit'}">
+          ${starSvg(faved)}
+        </button>
+        <button class="copy-one p-1.5 rounded-lg text-matte-400 hover:text-accent-blue hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all shrink-0" title="Salin" data-name="${r.name}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+        </button>
+      </div>`;
+  }
+
+  function bindResultListEvents() {
+    resultList.querySelectorAll('.fav-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const el = btn as HTMLElement;
+        toggleFav(el.dataset.name!, el.dataset.group || '');
+      });
+    });
+    resultList.querySelectorAll('.copy-one').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = (btn as HTMLElement).dataset.name!;
+        navigator.clipboard.writeText(name).then(() => bindCopyFeedback(btn as HTMLElement, '✓'));
+      });
+    });
   }
 
   function renderResults() {
     if (!currentResults.length) return;
     copyAllBtn.classList.remove('hidden');
     resultInfo.textContent = `${currentResults.length} nama`;
-    resultList.innerHTML = currentResults.map((r, i) => `
-      <div class="flex items-center gap-3 p-3 rounded-xl bg-matte-100 dark:bg-surface-hover hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all group">
-        <span class="w-6 text-center text-xs font-bold text-matte-300">${i + 1}</span>
-        <span class="flex-1 font-semibold text-sm text-matte-800 dark:text-white">${r.name}</span>
-        <span class="text-2xs px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 font-medium shrink-0">${r.group}</span>
-        <button class="copy-one p-1.5 rounded-lg text-matte-400 hover:text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-all shrink-0" title="Salin" data-name="${r.name}">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-        </button>
-      </div>`).join('');
-
-    resultList.querySelectorAll('.copy-one').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const name = (btn as HTMLElement).dataset.name!;
-        navigator.clipboard.writeText(name).then(() => {
-          const orig = btn.innerHTML;
-          btn.innerHTML = '✓';
-          setTimeout(() => { btn.innerHTML = orig; }, 1200);
-        });
-      });
-    });
+    updateKtpBadge();
+    resultList.innerHTML = currentResults.map(resultRowHtml).join('');
+    bindResultListEvents();
   }
 
   // ---- segmented buttons ----
@@ -285,19 +404,94 @@ document.addEventListener('astro:page-load', () => {
     document.querySelector<HTMLButtonElement>('[data-count="5"]')?.classList.add('active');
   }
 
+  // ---- favorites ----
+  function toggleFav(name: string, group: string) {
+    const idx = favorites.findIndex(f => f.name === name);
+    if (idx >= 0) favorites.splice(idx, 1);
+    else favorites.push({ name, group });
+    writeStore(FAV_KEY, favorites);
+    renderResults();
+    renderFavs();
+  }
+
+  function renderFavs() {
+    favPanel.classList.toggle('hidden', favorites.length === 0);
+    favCount.textContent = favorites.length ? `(${favorites.length})` : '';
+    favList.innerHTML = favorites.map((f, i) => `
+      <div class="flex items-center gap-3 p-3 rounded-xl bg-matte-100 dark:bg-surface-hover transition-all">
+        <span class="w-6 text-center text-xs font-bold text-amber-500 shrink-0">${i + 1}</span>
+        <span class="flex-1 font-semibold text-sm text-matte-800 dark:text-white min-w-0 truncate">${f.name}</span>
+        <span class="text-2xs px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 font-medium shrink-0 hidden sm:inline">${f.group}</span>
+        <button class="fav-remove p-1.5 rounded-lg text-matte-400 hover:text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-all shrink-0" title="Hapus dari favorit" data-name="${f.name}" aria-label="Hapus dari favorit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`).join('');
+
+    favList.querySelectorAll('.fav-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const el = btn as HTMLElement;
+        toggleFav(el.dataset.name!, '');
+      });
+    });
+  }
+
+  // ---- history ----
+  function renderHistory() {
+    historyPanel.classList.toggle('hidden', history.length === 0);
+    if (!history.length) return;
+    historyList.innerHTML = history.map((b, i) => {
+      const time = new Date(b.ts).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const preview = b.items.slice(0, 3).map(x => x.name).join(', ') + (b.items.length > 3 ? ', …' : '');
+      return `
+        <div class="flex items-center gap-3 p-2.5 rounded-xl bg-matte-100 dark:bg-surface-hover transition-all">
+          <span class="text-2xs font-bold text-matte-400 tabular-nums shrink-0 w-11">${time}</span>
+          <span class="flex-1 min-w-0 truncate text-xs text-matte-600 dark:text-matte-300">${preview}</span>
+          <span class="text-2xs px-1.5 py-0.5 rounded-full bg-matte-200 dark:bg-surface-elevated text-matte-500 dark:text-matte-400 font-medium shrink-0">${b.items.length}</span>
+          <button class="hist-copy p-1.5 rounded-lg text-matte-400 hover:text-accent-blue hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all shrink-0" title="Salin semua nama di batch ini" data-idx="${i}" aria-label="Salin batch">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          </button>
+        </div>`;
+    }).join('');
+
+    historyList.querySelectorAll('.hist-copy').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const batch = history[Number((btn as HTMLElement).dataset.idx)];
+        if (!batch) return;
+        navigator.clipboard.writeText(batch.items.map(x => x.name).join('\n'))
+          .then(() => bindCopyFeedback(btn as HTMLElement, '✓'));
+      });
+    });
+  }
+
   // ---- events ----
   generateBtn.addEventListener('click', generate);
   copyAllBtn.addEventListener('click', () => {
     const text = currentResults.map(r => r.name).join('\n');
-    navigator.clipboard.writeText(text).then(() => {
-      const orig = copyAllBtn.innerHTML;
-      copyAllBtn.innerHTML = '✅ Tersalin!';
-      setTimeout(() => { copyAllBtn.innerHTML = orig; }, 1500);
-    });
+    navigator.clipboard.writeText(text).then(() => bindCopyFeedback(copyAllBtn, '✅ Tersalin!'));
+  });
+  favCopyAllBtn.addEventListener('click', () => {
+    if (!favorites.length) return;
+    navigator.clipboard.writeText(favorites.map(f => f.name).join('\n'))
+      .then(() => bindCopyFeedback(favCopyAllBtn, '✓'));
+  });
+  favClearBtn.addEventListener('click', () => {
+    if (!favorites.length || !confirm('Hapus semua favorit?')) return;
+    favorites = [];
+    writeStore(FAV_KEY, favorites);
+    renderResults();
+    renderFavs();
+  });
+  historyClearBtn.addEventListener('click', () => {
+    if (!history.length || !confirm('Hapus riwayat generate?')) return;
+    history = [];
+    writeStore(HISTORY_KEY, history);
+    renderHistory();
   });
 
   renderChips();
   initSegments();
+  renderFavs();
+  renderHistory();
 });
 </script>
 
