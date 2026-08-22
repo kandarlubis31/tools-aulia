@@ -1379,9 +1379,12 @@ cloud "CDN" {
     renderDiagram();
   }
 
-  init();
-
-  // Dukungan Astro View Transitions (kalau proyek pakai <ClientRouter />):
-  // re-init setelah navigasi swap-DOM, supaya tool tetap jalan.
-  document.addEventListener("astro:page-load", init);
+  // FIX double-init: init() TIDAK dipanggil manual — astro:page-load juga fire
+  // saat load pertama, jadi cukup sekali per kunjungan (dulu listener dobel).
+  // Guard path mencegah init ikut jalan saat navigasi ke halaman lain.
+  const __dgPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener("astro:page-load", () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __dgPage) return;
+    init();
+  });
 </script>

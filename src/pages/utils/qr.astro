@@ -939,6 +939,22 @@ END:VEVENT`;
   });
   
   // Add to History (via composable)
+  // Thumbnail PNG 400px (bukan dataURL penuh) — tetap scannable saat diunduh dari
+  // riwayat, tapi tidak menggerus kuota localStorage (~5MB).
+  function makeQrThumb(maxDim) {
+    try {
+      const scale = Math.min(1, maxDim / Math.max(canvas.width, canvas.height));
+      if (scale >= 1) return canvas.toDataURL('image/png');
+      const tc = document.createElement('canvas');
+      tc.width = Math.max(1, Math.round(canvas.width * scale));
+      tc.height = Math.max(1, Math.round(canvas.height * scale));
+      tc.getContext('2d').drawImage(canvas, 0, 0, tc.width, tc.height);
+      return tc.toDataURL('image/png');
+    } catch {
+      return canvas.toDataURL();
+    }
+  }
+
   function addToHistory(format) {
     const now = new Date();
     const historyItem = {
@@ -946,11 +962,15 @@ END:VEVENT`;
       type: currentQRType,
       format: format,
       date: now.toLocaleString('id-ID'),
-      dataUrl: canvas.toDataURL()
+      dataUrl: makeQrThumb(400)
     };
-    
-    const updated = qrHistoryManager.add(historyItem);
-    qrHistory = updated;
+
+    try {
+      const updated = qrHistoryManager.add(historyItem);
+      qrHistory = updated;
+    } catch {
+      window.showToast?.(window._tToast ? window._tToast('Riwayat gagal disimpan — penyimpanan penuh') : 'Riwayat gagal disimpan — penyimpanan penuh', 'error');
+    }
     renderHistory();
   }
   
@@ -996,6 +1016,12 @@ END:VEVENT`;
   // Debounce function (imported from composables)
   }
 
-  document.addEventListener('astro:page-load', init);
-  init();
+  // FIX double-init: dulu init() dipanggil manual + astro:page-load (yang juga
+  // fire saat load pertama) → semua listener terpasang DOBEL (generate proses 2×).
+  // Sekaligus guard path supaya init tidak ikut jalan saat astro:page-load halaman lain.
+  const __qrPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __qrPage) return;
+    init();
+  });
 </script>
