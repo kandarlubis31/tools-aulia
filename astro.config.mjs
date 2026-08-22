@@ -39,7 +39,7 @@ export default defineConfig({
       skipWaiting: true,
       clientsClaim: true,
       globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
-      globIgnores: ["**/404.html", "**/404/index.html", "**/og/*.png", "**/_astro/index.*.js", "**/editor/**"], // OG: social-only | index.*.js: Vite shared chunks — skip precache | editor: app standalone (bundle 5MB + aset 60MB) punya SW sendiri
+      globIgnores: ["**/404.html", "**/404/index.html", "**/og/*.png", "**/_astro/index.*.js", "**/_astro/cl100k_base.*.js", "**/editor/**"], // OG: social-only | index.*.js: Vite shared chunks — skip precache | cl100k_base: tokenizer ranks 1MB (dipakai paste-to-md saja) — runtime-cached, bukan precache | editor: app standalone (bundle 5MB + aset 60MB) punya SW sendiri
       // manifestTransforms custom → GANTI transform bawaan @vite-pwa/astro.
       // Transform bawaan mengubah 'pdf/annotate/index.html' → 'pdf/annotate' (tanpa
       // slash) yang TIDAK PERNAH cocok dengan navigasi Astro directory-format
@@ -76,6 +76,17 @@ export default defineConfig({
       navigateFallbackDenylist: [/^\/api\/.*/],
       maximumFileSizeToCacheInBytes: 25 * 1024 * 1024, // 25 MB — headroom for kbbi-sinonim.json (9.4MB) + id-words.json (2.6MB) + AI models
       runtimeCaching: [
+        // --- Tokenizer ranks (paste-to-md): 1MB chunk, lazy-loaded — CacheFirst
+        //     setelah pemakaian pertama (TIDAK di-precache, lihat globIgnores) ---
+        {
+          urlPattern: /\/_astro\/cl100k_base\..*\.js$/,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'tiktoken-ranks',
+            expiration: { maxEntries: 4, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            cacheableResponse: { statuses: [0, 200] }
+          }
+        },
         // --- CDN Libraries (long-lived, rarely change) ---
         {
           urlPattern: /^https:\/\/cdnjs\.cloudflare\.com\/.*/i,

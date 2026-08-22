@@ -34,11 +34,16 @@ ehthumbs.db
 Desktop.ini
 
 # IDE / Editor
+# NOTE: pola `dir/` + `!dir/file` TIDAK re-include (parent di-exclude dulu).
+# Pakai `dir/*` supaya negasi settings.json benar-benar bekerja.
 .idea/
-.vscode/
+.vscode/*
 !.vscode/settings.json   # shared formatter/tailwind settings — tracked
 *.swp
 *.swo
+
+# Agent workspace lokal (plan/opencode session) — tidak untuk repo
+.opencode/
 
 # TypeScript
 *.tsbuildinfo
@@ -66,6 +71,7 @@ omniclip/node_modules/
 omniclip/x/
 omniclip/dev-dist/
 omniclip/*.tmp
+omniclip/package-lock.json   # project pakai pnpm; lock npm-nya omniclip tidak di-track
 
 # Catatan: scripts/ sengaja TIDAK di-ignore — dev tooling (generate-assets,
 # migrate-headers, new-tool) ikut di-version-control biar tidak hilang.

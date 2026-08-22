@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**129+ Tools Developer & Produktivitas · 100% Client-Side · Gratis Selamanya**
+**232+ Tools Developer & Produktivitas · 100% Client-Side · Gratis Selamanya**
 
 [🇮🇩 Indonesia](#indonesia) · [🇬🇧 English](#english)
 
@@ -22,7 +22,7 @@
 
 ### Tentang
 
-**ToolsAulia** adalah koleksi 139+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
+**ToolsAulia** adalah koleksi 232+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
 
 ### ✨ Kenapa ToolsAulia?
 
@@ -31,19 +31,24 @@
 - 📱 **PWA Ready** — Install sebagai aplikasi di HP/laptop, akses offline.
 - 🌙 **Dark Mode** — Otomatis mengikuti sistem.
 - 🌍 **Bilingual** — Bahasa Indonesia & English (client-side i18n).
-- ♿ **Accessible** — Skip-to-content, 22+ aria-labels, keyboard shortcuts.
+- ♿ **Accessible** — Skip-to-content, aria-labels lengkap, keyboard shortcuts (`/` atau `Ctrl+K` cari).
 
 ### 🧰 Kategori Tools
 
 | Kategori | Jumlah | Highlight |
 |----------|--------|-----------|
-| **PDF Tools** | 16 | Merge, Split, Compress, Rotate, Sign, Watermark, Grayscale, Extract, Reorder, Delete, Page Numbers, PDF→JPG, JPG→PDF, HTML→PDF, PDF→PPT, Metadata |
-| **Image Tools** | 6 | Studio Editor, Compressor, Converter (PNG/JPG/WEBP), Color Picker, HTML→Image, Remove Background |
-| **Developer** | 10 | JSON, Base64, URL Encoder, Cron, Diff, Markdown, Timestamp, CSS Shadow, My IP, CORS Proxy |
-| **Calculator** | 6 | Currency (live rates), Age, BMI, Unit, Number Base, Percentage |
-| **Security** | 3 | Password, Hash (MD5/SHA), UUID Generator |
-| **Utility** | 13 | QR, WA Builder, Pomodoro, Todo, Stopwatch, Word Counter, Sinonim, Jokes, Brainstorm, Motivation, Lorem, Paste→MD, Prabowo Countdown |
-| **File** | 2 | CSV→JSON, PDF→Markdown |
+| **PDF** | 32 + hub | Merge, Split, Compress, Sign, Watermark, Redact, To-Word, To-Excel, Booklet, Compare, Repair |
+| **Dev** | 29 | JSON, Base64, Regex Tester, JWT, Cron, Diff, SQL Formatter, Subnet, JSON→TS, Grid |
+| **Image** | 25 | Studio Editor, Compressor, Remove BG (AI), Cropper, Sign to PNG, Image to Scanner, GIF Maker |
+| **Calc** | 23 | Currency (live rates), Age, BMI, EMI, Compound Interest, Matrix, Scientific, Timezone |
+| **Utils** | 25 | QR, WA Builder, Pomodoro, Todo, Nama Generator Indonesia, Wordle ID, Habit Tracker |
+| **Text** | 19 | Text-to-Speech, Speech-to-Text, Summarizer, Typing Test, Fancy, Morse, Readability |
+| **Media** | 17 | Video Studio (CapCut-style), Video Editor, Audio Recorder/Trimmer/EQ, Screen Recorder, Beat Maker |
+| **Security** | 16 | Password, Hash, UUID, Bcrypt, TOTP, File Encrypt, Steganography, Cipher |
+| **Network** | 16 | REST Client, HTTP Builder, Speed Test, DNS Lookup, WebSocket, Whois, SSL |
+| **Data** | 15 | CSV Editor, XLSX Viewer, iCal, Fake Data, Barcode (+reader), GeoJSON, vCard |
+| **Life** | 8 | Mood Tracker, Certificate, Snake, Magic 8-Ball |
+| **File** | 7 | CSV↔JSON, PDF→Markdown, Zip Extractor, Batch Convert, Splitter, Renamer |
 
 ### 🚀 Quick Start
 
@@ -76,17 +81,20 @@ pnpm build      # Production build
 ```
 tools-aulia/
 ├── src/
-│   ├── pages/          # 129+ tool pages (Astro)
+│   ├── pages/          # 230+ tool pages (Astro)
 │   ├── components/     # Shared UI components
-│   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading
+│   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading, usePdf*, useCdnLib
 │   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
-│   ├── data/           # tools.ts (139 tools metadata)
+│   ├── data/           # tools.ts (233 entries metadata), indonesian-names.ts
 │   ├── i18n/           # translations.ts
-│   └── styles/         # global.css
-├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json
+│   └── styles/         # global.css + critical.css (inline above-the-fold)
+├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json, vendor/, editor/
 ├── docs/
+│   ├── CONTEXT.md      # Project context & decision log
+│   ├── adr/            # Architecture Decision Records
 │   ├── agents/         # Agent config references
-│   └── archive/        # Old plans & architecture docs
+│   └── archive/        # Old plans & audits
+├── editor/             # OmniClip vendor build pipeline (build-dist.mjs)
 └── package.json
 ```
 
@@ -109,7 +117,7 @@ tools-aulia/
 
 ### About
 
-**ToolsAulia** is a collection of 129+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
+**ToolsAulia** is a collection of 232+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
 
 ### ✨ Why ToolsAulia?
 
@@ -124,13 +132,18 @@ tools-aulia/
 
 | Category | Count | Highlights |
 |----------|-------|------------|
-| **PDF Tools** | 16 | Merge, Split, Compress, Rotate, Sign, Watermark, Grayscale, Extract, Reorder, Delete, Page Numbers, PDF→JPG, JPG→PDF, HTML→PDF, PDF→PPT, Metadata |
-| **Image Tools** | 6 | Studio Editor, Compressor, Converter (PNG/JPG/WEBP), Color Picker, HTML→Image, Remove Background |
-| **Developer** | 10 | JSON, Base64, URL Encoder, Cron, Diff, Markdown, Timestamp, CSS Shadow, My IP, CORS Proxy |
-| **Calculator** | 6 | Currency (live rates), Age, BMI, Unit, Number Base, Percentage |
-| **Security** | 3 | Password, Hash (MD5/SHA), UUID Generator |
-| **Utility** | 13 | QR, WA Builder, Pomodoro, Todo, Stopwatch, Word Counter, Sinonim, Jokes, Brainstorm, Motivation, Lorem, Paste→MD, Prabowo Countdown |
-| **File** | 2 | CSV→JSON, PDF→Markdown |
+| **PDF** | 32 + hub | Merge, Split, Compress, Sign, Watermark, Redact, To-Word, To-Excel, Booklet, Compare, Repair |
+| **Dev** | 29 | JSON, Base64, Regex Tester, JWT, Cron, Diff, SQL Formatter, Subnet, JSON→TS, Grid |
+| **Image** | 25 | Studio Editor, Compressor, Remove BG (AI), Cropper, Sign to PNG, Image to Scanner, GIF Maker |
+| **Calc** | 23 | Currency (live rates), Age, BMI, EMI, Compound Interest, Matrix, Scientific, Timezone |
+| **Utils** | 25 | QR, WA Builder, Pomodoro, Todo, Indonesian Name Generator, Wordle ID, Habit Tracker |
+| **Text** | 19 | Text-to-Speech, Speech-to-Text, Summarizer, Typing Test, Fancy, Morse, Readability |
+| **Media** | 17 | Video Studio (CapCut-style), Video Editor, Audio Recorder/Trimmer/EQ, Screen Recorder, Beat Maker |
+| **Security** | 16 | Password, Hash, UUID, Bcrypt, TOTP, File Encrypt, Steganography, Cipher |
+| **Network** | 16 | REST Client, HTTP Builder, Speed Test, DNS Lookup, WebSocket, Whois, SSL |
+| **Data** | 15 | CSV Editor, XLSX Viewer, iCal, Fake Data, Barcode (+reader), GeoJSON, vCard |
+| **Life** | 8 | Mood Tracker, Certificate, Snake, Magic 8-Ball |
+| **File** | 7 | CSV↔JSON, PDF→Markdown, Zip Extractor, Batch Convert, Splitter, Renamer |
 
 ### 🚀 Quick Start
 
@@ -163,17 +176,20 @@ pnpm build      # Production build
 ```
 tools-aulia/
 ├── src/
-│   ├── pages/          # 129+ tool pages (Astro)
+│   ├── pages/          # 230+ tool pages (Astro)
 │   ├── components/     # Shared UI components
-│   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading
+│   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading, usePdf*, useCdnLib
 │   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
-│   ├── data/           # tools.ts (139 tools metadata)
+│   ├── data/           # tools.ts (233 entries metadata), indonesian-names.ts
 │   ├── i18n/           # translations.ts
-│   └── styles/         # global.css
-├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json
+│   └── styles/         # global.css + critical.css (inline above-the-fold)
+├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json, vendor/, editor/
 ├── docs/
+│   ├── CONTEXT.md      # Project context & decision log
+│   ├── adr/            # Architecture Decision Records
 │   ├── agents/         # Agent config references
-│   └── archive/        # Old plans & architecture docs
+│   └── archive/        # Old plans & audits
+├── editor/             # OmniClip vendor build pipeline (build-dist.mjs)
 └── package.json
 ```
 
