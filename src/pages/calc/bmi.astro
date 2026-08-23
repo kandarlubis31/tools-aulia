@@ -18,15 +18,15 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           
           <div class="flex justify-center mb-8">
             <div class="inline-flex p-1 bg-matte-100 dark:bg-matte-700 rounded-lg">
-              <button id="metric-btn" class="unit-btn px-6 py-2 rounded-md text-sm font-bold bg-white dark:bg-matte-600 shadow-sm text-teal-600 dark:text-teal-400 transition-all" data-i18n="label.metric">Metrik (kg/cm)</button>
-              <button id="imperial-btn" class="unit-btn px-6 py-2 rounded-md text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 dark:hover:text-matte-200 transition-all" data-i18n="label.imperial">Imperial (lbs/ft)</button>
+              <button id="metric-btn" aria-pressed="true" class="unit-btn px-6 py-2 rounded-md text-sm font-bold bg-white dark:bg-matte-600 shadow-sm text-teal-600 dark:text-teal-400 transition-all" data-i18n="label.metric">Metrik (kg/cm)</button>
+              <button id="imperial-btn" aria-pressed="false" class="unit-btn px-6 py-2 rounded-md text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 dark:hover:text-matte-200 transition-all" data-i18n="label.imperial">Imperial (lbs/ft)</button>
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             
             <div id="height-input-container">
-              <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.height">
+              <label for="height" class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.height">
                 Tinggi Badan <span class="metric-unit text-matte-400 font-normal">(cm)</span><span class="imperial-unit hidden text-matte-400 font-normal">(ft/in)</span>
               </label>
               
@@ -45,7 +45,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             </div>
             
             <div id="weight-input-container">
-              <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.weight">
+              <label for="weight" class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.weight">
                 Berat Badan <span class="metric-unit text-matte-400 font-normal">(kg)</span><span class="imperial-unit hidden text-matte-400 font-normal">(lbs)</span>
               </label>
               <div class="relative">
@@ -56,7 +56,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div>
-              <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.age">Usia</label>
+              <label for="age" class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.age">Usia</label>
               <input type="number" id="age" class="w-full p-3 rounded-xl bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-all" placeholder="25" min="2" max="120" data-i18n-attr="placeholder" data-i18n="ph.age" />
             </div>
             
@@ -64,11 +64,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
               <label class="block text-sm font-semibold text-matte-700 dark:text-white mb-2" data-i18n="label.gender">Jenis Kelamin</label>
               <div class="flex gap-4 pt-1">
                 <label class="flex items-center cursor-pointer group">
-                  <input type="radio" name="gender" value="male" class="w-5 h-5 text-teal-600 focus:ring-teal-500 border-gray-300" checked />
+                  <input type="radio" name="gender" value="male" class="w-5 h-5 text-teal-600 focus:ring-teal-500 border-matte-300 dark:border-surface-border" checked />
                   <span class="ml-2 text-sm font-medium text-matte-700 dark:text-white group-hover:text-teal-600 transition-colors" data-i18n="label.male">Pria</span>
                 </label>
                 <label class="flex items-center cursor-pointer group">
-                  <input type="radio" name="gender" value="female" class="w-5 h-5 text-teal-600 focus:ring-teal-500 border-gray-300" />
+                  <input type="radio" name="gender" value="female" class="w-5 h-5 text-teal-600 focus:ring-teal-500 border-matte-300 dark:border-surface-border" />
                   <span class="ml-2 text-sm font-medium text-matte-700 dark:text-white group-hover:text-teal-600 transition-colors" data-i18n="label.female">Wanita</span>
                 </label>
               </div>
@@ -90,9 +90,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
                   <div class="inline-block px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wider shadow-sm transition-colors" id="bmi-status">Normal</div>
                 </div>
 
-                <div class="mb-8 relative px-2">
+                <div class="mb-8 relative px-2" role="progressbar" aria-valuemin="10" aria-valuemax="40" aria-valuenow="0" aria-label="BMI scale" id="bmi-progress">
                   <div class="h-4 w-full bg-gradient-to-r from-blue-400 via-green-400 via-yellow-400 via-orange-400 to-red-500 rounded-full"></div>
-                  <div class="absolute top-5 left-0 w-full flex justify-between text-[10px] font-bold text-matte-400 px-1">
+                  <div class="absolute top-5 left-0 w-full flex justify-between text-[10px] font-bold text-matte-400 px-1" aria-hidden="true">
                       <span>16</span><span>18.5</span><span>25</span><span>30</span><span>35</span><span>40</span>
                   </div>
                   <div id="bmi-indicator" class="absolute -top-1 w-6 h-6 bg-white dark:bg-matte-800 border-4 border-matte-800 dark:border-white rounded-full shadow-lg transform -translate-x-1/2 transition-all duration-700" style="left: 0%"></div>
@@ -244,6 +244,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     
     // UI Update
     if (isMetric) {
+        metricBtn.setAttribute('aria-pressed', 'true');
+        imperialBtn.setAttribute('aria-pressed', 'false');
         metricBtn.classList.add('bg-white', 'dark:bg-matte-600', 'shadow-sm', 'text-teal-600', 'dark:text-teal-400');
         metricBtn.classList.remove('text-matte-500', 'hover:text-matte-700', 'dark:text-matte-400');
         imperialBtn.classList.remove('bg-white', 'dark:bg-matte-600', 'shadow-sm', 'text-teal-600', 'dark:text-teal-400');
@@ -267,6 +269,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         }
 
     } else {
+        imperialBtn.setAttribute('aria-pressed', 'true');
+        metricBtn.setAttribute('aria-pressed', 'false');
         imperialBtn.classList.add('bg-white', 'dark:bg-matte-600', 'shadow-sm', 'text-teal-600', 'dark:text-teal-400');
         imperialBtn.classList.remove('text-matte-500', 'hover:text-matte-700', 'dark:text-matte-400');
         metricBtn.classList.remove('bg-white', 'dark:bg-matte-600', 'shadow-sm', 'text-teal-600', 'dark:text-teal-400');
@@ -381,6 +385,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     bmiStatusEl.className = `inline-block px-5 py-2 rounded-full text-sm font-bold uppercase tracking-wider shadow-sm transition-colors ${color}`;
     
     bmiIndicatorEl.style.left = `${indicatorPosition}%`;
+    document.getElementById('bmi-progress')?.setAttribute('aria-valuenow', bmiFixed);
     
     idealWeightEl.textContent = `${minIdeal} - ${maxIdeal} ${isMetric ? 'kg' : 'lbs'}`;
     bmiCategoryEl.textContent = status;
