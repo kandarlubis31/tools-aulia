@@ -1,0 +1,37 @@
+---
+interface Props {
+  icon?: string;
+  title?: string;
+  titleKey?: string;
+  desc?: string;
+  descKey?: string;
+  actionLabel?: string;
+  actionKey?: string;
+}
+
+const {
+  icon = '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>',
+  title = 'Tidak ditemukan',
+  titleKey,
+  desc = 'Coba kata kunci lain atau reset filter.',
+  descKey,
+  actionLabel,
+  actionKey,
+} = Astro.props;
+---
+
+<div class="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+  <div class="w-16 h-16 bg-matte-100 dark:bg-matte-800 rounded-full flex items-center justify-center mb-4">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-matte-400"><g set:html={icon} /></svg>
+  </div>
+  <h3 class="text-base font-bold text-matte-800 dark:text-white mb-1" data-i18n={titleKey || undefined}>{title}</h3>
+  <p class="text-sm text-matte-500 max-w-xs mx-auto mb-4" data-i18n={descKey || undefined}>{desc}</p>
+  {actionLabel && (
+    <slot name="action">
+      <button class="px-5 py-2 bg-matte-900 dark:bg-white text-white dark:text-matte-900 rounded-full text-sm font-bold hover:scale-105 transition-transform" data-i18n={actionKey || undefined}>
+        {actionLabel}
+      </button>
+    </slot>
+  )}
+  <slot />
+</div>

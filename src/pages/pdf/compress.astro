@@ -19,7 +19,10 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
 
     <div 
       id="drop-zone"
-      class="max-w-2xl mx-auto border-3 border-dashed border-matte-300 dark:border-matte-600 rounded-3xl p-12 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-matte-800/50 transition-all group text-center animate-on-scroll"
+      role="button"
+      tabindex="0"
+      aria-label="Upload PDF — klik atau tekan Enter untuk memilih file"
+      class="max-w-2xl mx-auto border-3 border-dashed border-matte-300 dark:border-matte-600 rounded-3xl p-12 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-matte-800/50 transition-all group text-center animate-on-scroll focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 outline-none"
     >
       <div class="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6Z"/><path d="M10 12V2h4v10"/><path d="m14 2-4 4-4-4"/></svg>
@@ -29,7 +32,7 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
       <input type="file" id="file-input" accept="application/pdf" class="hidden" />
     </div>
 
-    <div id="controls-area" class="hidden max-w-2xl mx-auto mt-8 bg-white dark:bg-matte-800 p-8 rounded-2xl border border-matte-200 dark:border-matte-700 shadow-xl animate-fade-in">
+    <div id="controls-area" class="hidden max-w-2xl mx-auto mt-8 card-base p-8 shadow-xl animate-fade-in">
       
       <div class="flex items-center gap-4 mb-6">
         <div class="w-12 h-12 bg-red-100 text-red-500 rounded-lg flex items-center justify-center">
@@ -116,6 +119,13 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
     maxSize: 25 * 1024 * 1024,
     accentColor: 'emerald',
     onFile: handleFile,
+  });
+  // Keyboard: Enter / Space membuka file picker (a11y untuk drop zone)
+  dropZone?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      (document.getElementById('file-input') as HTMLInputElement)?.click();
+    }
   });
   document.addEventListener('astro:page-leave', () => cleanupDropZone(), { once: true });
 

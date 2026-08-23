@@ -1,0 +1,44 @@
+---
+import ToolPageHeader from './ToolPageHeader.astro';
+
+interface Props {
+  title: string;
+  desc?: string;
+  icon?: string;
+  gradient?: string;
+  titleKey?: string;
+  descKey?: string;
+  maxWidth?: '2xl' | '3xl' | '4xl' | '5xl' | '6xl';
+}
+
+const {
+  title,
+  desc = '',
+  icon = '',
+  gradient = 'from-sky-500 to-indigo-500',
+  titleKey,
+  descKey,
+  maxWidth = '5xl',
+} = Astro.props;
+
+const widthMap: Record<string, string> = {
+  '2xl': 'max-w-2xl',
+  '3xl': 'max-w-3xl',
+  '4xl': 'max-w-4xl',
+  '5xl': 'max-w-5xl',
+  '6xl': 'max-w-6xl',
+};
+const widthClass = widthMap[maxWidth] || widthMap['5xl'];
+---
+
+<div class={`${widthClass} mx-auto px-4 min-h-[60vh] pb-16`}>
+  <ToolPageHeader
+    title={title}
+    desc={desc}
+    icon={icon}
+    gradient={gradient}
+    titleKey={titleKey}
+    descKey={descKey}
+  />
+  <slot />
+</div>
