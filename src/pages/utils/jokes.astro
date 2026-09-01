@@ -287,7 +287,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         isOnline = false;
         localStorage.setItem('jokeMode', 'offline');
         updateModeUI();
-        window.showToast(window._tToast ? window._tToast('Mode otomatis beralih ke offline') : 'Mode otomatis beralih ke offline', 'warning');
+        window.showToast?.(window._tToast ? window._tToast('Mode otomatis beralih ke offline') : 'Mode otomatis beralih ke offline', 'warning');
       }
     }
   }
@@ -367,7 +367,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           // Fallback logic
           if (!jokeData) {
               jokeData = getLocalJoke(category);
-              if (isOnline) window.showToast(window._tToast ? window._tToast('Koneksi lambat, mengambil dari lokal.') : 'Koneksi lambat, mengambil dari lokal.', 'info');
+              if (isOnline) window.showToast?.(window._tToast ? window._tToast('Koneksi lambat, mengambil dari lokal.') : 'Koneksi lambat, mengambil dari lokal.', 'info');
           }
       } catch (e) {
           jokeData = getLocalJoke(category);
@@ -458,11 +458,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           isTranslated = false;
           translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
           translateBtn.classList.add('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
-          window.showToast(window._tToast ? window._tToast('Kembali ke bahasa asli') : 'Kembali ke bahasa asli', 'info');
+          window.showToast?.(window._tToast ? window._tToast('Kembali ke bahasa asli') : 'Kembali ke bahasa asli', 'info');
       } else {
           // TRANSLATE LOGIC
           if (!isOnline && !navigator.onLine) {
-              window.showToast(window._tToast ? window._tToast('Fitur translate butuh internet!') : 'Fitur translate butuh internet!', 'error');
+              window.showToast?.(window._tToast ? window._tToast('Fitur translate butuh internet!') : 'Fitur translate butuh internet!', 'error');
               return;
           }
 
@@ -503,12 +503,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
                   
                   translateBtn.classList.remove('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
                   translateBtn.classList.add('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
-                  window.showToast(window._tToast ? window._tToast('Berhasil diterjemahkan') : 'Berhasil diterjemahkan', 'success');
+                  window.showToast?.(window._tToast ? window._tToast('Berhasil diterjemahkan') : 'Berhasil diterjemahkan', 'success');
               } else {
                   throw new Error('Limit API');
               }
           } catch (e) {
-              window.showToast(window._tToast ? window._tToast('Gagal translate. Coba lagi.') : 'Gagal translate. Coba lagi.', 'error');
+              window.showToast?.(window._tToast ? window._tToast('Gagal translate. Coba lagi.') : 'Gagal translate. Coba lagi.', 'error');
           } finally {
               translateBtn.innerHTML = originalIcon;
               translateBtn.disabled = false;
@@ -549,10 +549,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           if(jokeToSave.type === 'single') return fav.joke !== jokeToSave.joke;
           return fav.setup !== jokeToSave.setup;
       });
-      window.showToast(window._tToast ? window._tToast('Dihapus dari favorit') : 'Dihapus dari favorit', 'info');
+      window.showToast?.(window._tToast ? window._tToast('Dihapus dari favorit') : 'Dihapus dari favorit', 'info');
     } else {
       favorites.push({...jokeToSave, id: Date.now()});
-      window.showToast(window._tToast ? window._tToast('Ditambahkan ke favorit') : 'Ditambahkan ke favorit', 'success');
+      window.showToast?.(window._tToast ? window._tToast('Ditambahkan ke favorit') : 'Ditambahkan ke favorit', 'success');
     }
     
     localStorage.setItem('favoriteJokes', JSON.stringify(favorites));
@@ -636,7 +636,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           text = `${currentJoke.setup}\n\n> ${currentJoke.delivery}`;
       }
       navigator.clipboard.writeText(text);
-      window.showToast(window._tToast ? window._tToast('Joke disalin!') : 'Joke disalin!', 'success');
+      window.showToast?.(window._tToast ? window._tToast('Joke disalin!') : 'Joke disalin!', 'success');
   });
 
   shareBtn.addEventListener('click', async () => {
@@ -660,12 +660,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           } catch (err) {
               if (err.name !== 'AbortError') {
                   navigator.clipboard.writeText(fullMessage);
-                  window.showToast(window._tToast ? window._tToast('Link & Joke disalin!') : 'Link & Joke disalin!', 'success');
+                  window.showToast?.(window._tToast ? window._tToast('Link & Joke disalin!') : 'Link & Joke disalin!', 'success');
               }
           }
       } else {
           navigator.clipboard.writeText(fullMessage);
-          window.showToast(window._tToast ? window._tToast('Link & Joke disalin!') : 'Link & Joke disalin!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('Link & Joke disalin!') : 'Link & Joke disalin!', 'success');
       }
   });
 
@@ -687,7 +687,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       localStorage.setItem('jokeSettings', JSON.stringify(settings));
       applySettings();
       settingsModal.classList.add('hidden');
-      window.showToast(window._tToast ? window._tToast('Pengaturan disimpan!') : 'Pengaturan disimpan!', 'success');
+      window.showToast?.(window._tToast ? window._tToast('Pengaturan disimpan!') : 'Pengaturan disimpan!', 'success');
   });
 
   clearFavoritesBtn.addEventListener('click', () => {
@@ -696,7 +696,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       localStorage.setItem('favoriteJokes', JSON.stringify(favorites));
       updateFavoriteButton();
       renderFavorites();
-      window.showToast(window._tToast ? window._tToast('Semua favorit dihapus') : 'Semua favorit dihapus', 'info');
+      window.showToast?.(window._tToast ? window._tToast('Semua favorit dihapus') : 'Semua favorit dihapus', 'info');
     }
   });
 

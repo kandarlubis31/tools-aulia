@@ -785,7 +785,7 @@ END:VEVENT`;
       // Add to history
       addToHistory('PNG');
       
-      window.showToast(window._tToast ? window._tToast('QR Code diunduh sebagai PNG!') : 'QR Code diunduh sebagai PNG!', 'success');
+      window.showToast?.(window._tToast ? window._tToast('QR Code diunduh sebagai PNG!') : 'QR Code diunduh sebagai PNG!', 'success');
     });
   });
   
@@ -815,7 +815,7 @@ END:VEVENT`;
     // Add to history
     addToHistory('JPG');
     
-    window.showToast(window._tToast ? window._tToast('QR Code diunduh sebagai JPG!') : 'QR Code diunduh sebagai JPG!', 'success');
+    window.showToast?.(window._tToast ? window._tToast('QR Code diunduh sebagai JPG!') : 'QR Code diunduh sebagai JPG!', 'success');
   });
   
   // Copy to Clipboard — pakai blob pre-generate biar clipboard.write() jalan
@@ -831,9 +831,9 @@ END:VEVENT`;
     }
     if (!ok) ok = await copyImageToClipboard(canvas);
     if (ok) {
-      window.showToast(window._tToast ? window._tToast('QR Code disalin ke clipboard!') : 'QR Code disalin ke clipboard!', 'success');
+      window.showToast?.(window._tToast ? window._tToast('QR Code disalin ke clipboard!') : 'QR Code disalin ke clipboard!', 'success');
     } else {
-      window.showToast(window._tToast ? window._tToast('Gagal menyalin ke clipboard (browser tidak mendukung)') : 'Gagal menyalin ke clipboard (browser tidak mendukung)', 'error');
+      window.showToast?.(window._tToast ? window._tToast('Gagal menyalin ke clipboard (browser tidak mendukung)') : 'Gagal menyalin ke clipboard (browser tidak mendukung)', 'error');
     }
   });
   
@@ -1007,7 +1007,7 @@ END:VEVENT`;
           link.download = `qrcode-${item.type}-${item.id}.${item.format.toLowerCase()}`;
           link.href = item.dataUrl;
           link.click();
-          window.showToast(window._tToast ? window._tToast('QR Code dari riwayat diunduh!') : 'QR Code dari riwayat diunduh!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('QR Code dari riwayat diunduh!') : 'QR Code dari riwayat diunduh!', 'success');
         }
       });
     });

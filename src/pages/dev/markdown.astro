@@ -66,11 +66,11 @@ Coba ketik sesuatu di sebelah kiri...`;
 
   btnCopyMd.addEventListener('click', () => {
     navigator.clipboard.writeText(editor.value);
-    window.showToast(window._tToast ? window._tToast('Markdown disalin!') : 'Markdown disalin!', 'success');
+    window.showToast?.(window._tToast ? window._tToast('Markdown disalin!') : 'Markdown disalin!', 'success');
   });
 
   btnCopyHtml.addEventListener('click', () => {
     navigator.clipboard.writeText(preview.textContent || '');
-    window.showToast(window._tToast ? window._tToast('HTML Code disalin!') : 'HTML Code disalin!', 'success');
+    window.showToast?.(window._tToast ? window._tToast('HTML Code disalin!') : 'HTML Code disalin!', 'success');
   });
 </script>

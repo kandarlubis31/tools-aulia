@@ -836,7 +836,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       if (ulSpeed === null) {
         // Fallback: estimate
         ulSpeed = estimateUploadSpeed(dlResult.speed, latencyResult?.avg || 50);
-        window.showToast(
+        window.showToast?.(
           window._tToast ? window._tToast('Upload real gagal. Gunakan estimasi.') : 'Upload real gagal. Gunakan estimasi.', 
           'warning'
         );
@@ -890,7 +890,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       });
 
       phaseEl.textContent = window._tToast ? window._tToast('Selesai!') : 'Selesai!';
-      window.showToast(
+      window.showToast?.(
         window._tToast ? window._tToast('Tes selesai! ' + dlResult.speed + ' Mbps download.') : 'Tes selesai! ' + dlResult.speed + ' Mbps download.', 
         'success'
       );
@@ -908,9 +908,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         document.getElementById('result-upload')!.textContent = estUl + ' Mbps (estimasi)';
         resultsGrid.classList.remove('opacity-0', 'max-h-0');
         resultsGrid.classList.add('opacity-100');
-        window.showToast(window._tToast ? window._tToast('Tes CDN gagal. Estimasi dari koneksi.') : 'Tes CDN gagal. Estimasi dari koneksi.', 'warning');
+        window.showToast?.(window._tToast ? window._tToast('Tes CDN gagal. Estimasi dari koneksi.') : 'Tes CDN gagal. Estimasi dari koneksi.', 'warning');
       } else {
-        window.showToast(window._tToast ? window._tToast('Gagal mengukur kecepatan. Coba lagi.') : 'Gagal mengukur kecepatan. Coba lagi.', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Gagal mengukur kecepatan. Coba lagi.') : 'Gagal mengukur kecepatan. Coba lagi.', 'error');
       }
       phaseEl.textContent = window._tToast ? window._tToast('Tes gagal') : 'Tes gagal';
     }
@@ -953,7 +953,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', fileName);
     linkElement.click();
-    window.showToast(
+    window.showToast?.(
       window._tToast ? window._tToast('Laporan berhasil disimpan!') : 'Laporan berhasil disimpan!', 
       'success'
     );
@@ -1244,7 +1244,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         if (!cached) {
           setText('ip-display', window._tToast ? window._tToast('Gagal memuat') : 'Gagal memuat');
         }
-        window.showToast(
+        window.showToast?.(
           window._tToast ? window._tToast('Gagal memuat detail jaringan. Coba lagi nanti.') : 'Gagal memuat detail jaringan. Coba lagi nanti.', 
           'error'
         );
@@ -1270,7 +1270,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           const ipText = document.getElementById('ip-display')?.innerText;
           if(ipText && !ipText.includes("Error") && !ipText.includes("Ngecek") && !ipText.includes("Gagal")) {
               navigator.clipboard.writeText(ipText);
-              window.showToast(
+              window.showToast?.(
                 window._tToast ? window._tToast('IP disalin!') : 'IP disalin!'
               );
           }
@@ -1281,7 +1281,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           const jsonCode = document.getElementById('json-code')?.innerText;
           if (jsonCode) {
             navigator.clipboard.writeText(jsonCode);
-            window.showToast(
+            window.showToast?.(
               window._tToast ? window._tToast('JSON disalin!') : 'JSON disalin!'
             );
           }
@@ -1305,7 +1305,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         try {
           localStorage.removeItem('myip_history');
           renderIPHistory();
-          window.showToast(
+          window.showToast?.(
             window._tToast ? window._tToast('Riwayat IP dibersihkan!') : 'Riwayat IP dibersihkan!'
           );
         } catch {}
@@ -1319,7 +1319,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const ip = row.getAttribute('data-ip');
         if (ip) {
           navigator.clipboard.writeText(ip);
-          window.showToast(
+          window.showToast?.(
             window._tToast ? window._tToast('IP ' + ip + ' disalin!') : 'IP ' + ip + ' disalin!'
           );
         }
@@ -1370,7 +1370,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         try {
           localStorage.removeItem('speed_test_history');
           renderSpeedHistory();
-          window.showToast(
+          window.showToast?.(
             window._tToast ? window._tToast('Riwayat tes dibersihkan!') : 'Riwayat tes dibersihkan!',
             'success'
           );

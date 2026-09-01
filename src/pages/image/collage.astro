@@ -98,7 +98,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
   
   document.getElementById('build').onclick = () => {
-    if (images.length < 2) return alert('Minimal 2 gambar');
+    if (images.length < 2) { window.showToast?.(window._tToast ? window._tToast('Minimal 2 gambar') : 'Minimal 2 gambar', 'error'); return; }
     const canvas = document.getElementById('collage-canvas');
     const ctx = canvas.getContext('2d');
     const gap = +document.getElementById('gap').value;

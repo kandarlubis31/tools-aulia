@@ -51,10 +51,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const type = document.getElementById('type').value;
     const unique = document.getElementById('unique').checked;
     const sort = document.getElementById('sort').checked;
-    if (min >= max) return alert('Minimum harus kurang dari Maximum');
+    if (min >= max) { window.showToast?.(window._tToast ? window._tToast('Minimum harus kurang dari Maximum') : 'Minimum harus kurang dari Maximum', 'error'); return; }
     let nums = [];
     const range = max - min + 1;
-    if (unique && count > range) return alert('Jumlah melebihi range untuk angka unik');
+    if (unique && count > range) { window.showToast?.(window._tToast ? window._tToast('Jumlah melebihi range untuk angka unik') : 'Jumlah melebihi range untuk angka unik', 'error'); return; }
     while (nums.length < count) {
       let n = Math.floor(Math.random() * range) + min;
       if (type === 'float') n = (Math.random() * (max - min) + min).toFixed(2);

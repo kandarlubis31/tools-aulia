@@ -66,7 +66,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     return centroids;
   }
   document.getElementById('extract').onclick = () => {
-    if (!imgData) return alert('Upload gambar dulu!');
+    if (!imgData) { window.showToast?.(window._tToast ? window._tToast('Upload gambar dulu!') : 'Upload gambar dulu!', 'error'); return; }
     const pixels = [];
     for (let i = 0; i < imgData.length; i += 4) {
       if (imgData[i+3] > 128) pixels.push([imgData[i], imgData[i+1], imgData[i+2]]);
