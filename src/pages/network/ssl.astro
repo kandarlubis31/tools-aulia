@@ -36,9 +36,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-const __page = (location.pathname.replace(/\\/+$/, '') || '/');
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\\/+$/, '') || '/') !== __page) return;
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
     const domainInput = document.getElementById('domain-input') as HTMLInputElement;
     const checkBtn = document.getElementById('check-btn') as HTMLButtonElement;
