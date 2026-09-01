@@ -281,7 +281,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           if (!quoteData) {
               quoteData = getLocalQuote(category);
               if (isOnline) {
-                  window.showToast(window._tToast ? window._tToast('Koneksi lambat, mengambil data lokal.') : 'Koneksi lambat, mengambil data lokal.', 'info');
+                  window.showToast?.(window._tToast ? window._tToast('Koneksi lambat, mengambil data lokal.') : 'Koneksi lambat, mengambil data lokal.', 'info');
               }
           }
 
@@ -355,11 +355,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           
           translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
           translateBtn.classList.add('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
-          window.showToast(window._tToast ? window._tToast('Kembali ke teks asli') : 'Kembali ke teks asli', 'info');
+          window.showToast?.(window._tToast ? window._tToast('Kembali ke teks asli') : 'Kembali ke teks asli', 'info');
       } else {
           // TRANSLATE LOGIC
           if (!isOnline && !navigator.onLine) {
-              window.showToast(window._tToast ? window._tToast('Fitur translate butuh internet!') : 'Fitur translate butuh internet!', 'error');
+              window.showToast?.(window._tToast ? window._tToast('Fitur translate butuh internet!') : 'Fitur translate butuh internet!', 'error');
               return;
           }
 
@@ -384,12 +384,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
                   
                   translateBtn.classList.remove('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
                   translateBtn.classList.add('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
-                  window.showToast(window._tToast ? window._tToast('Berhasil diterjemahkan') : 'Berhasil diterjemahkan', 'success');
+                  window.showToast?.(window._tToast ? window._tToast('Berhasil diterjemahkan') : 'Berhasil diterjemahkan', 'success');
               } else {
                   throw new Error('Limit API tercapai');
               }
           } catch (e) {
-              window.showToast(window._tToast ? window._tToast('Gagal menerjemahkan. Coba lagi nanti.') : 'Gagal menerjemahkan. Coba lagi nanti.', 'error');
+              window.showToast?.(window._tToast ? window._tToast('Gagal menerjemahkan. Coba lagi nanti.') : 'Gagal menerjemahkan. Coba lagi nanti.', 'error');
           } finally {
               translateBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>';
               translateBtn.disabled = false;
@@ -429,10 +429,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     
     if (isFavorite) {
       favorites = favorites.filter(fav => fav.text !== currentQuote.text);
-      window.showToast(window._tToast ? window._tToast('Dihapus dari favorit') : 'Dihapus dari favorit', 'info');
+      window.showToast?.(window._tToast ? window._tToast('Dihapus dari favorit') : 'Dihapus dari favorit', 'info');
     } else {
       favorites.push({...currentQuote, id: Date.now()});
-      window.showToast(window._tToast ? window._tToast('Ditambahkan ke favorit') : 'Ditambahkan ke favorit', 'success');
+      window.showToast?.(window._tToast ? window._tToast('Ditambahkan ke favorit') : 'Ditambahkan ke favorit', 'success');
     }
     localStorage.setItem('favoriteQuotes', JSON.stringify(favorites));
     updateFavoriteButton();
@@ -509,7 +509,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   copyBtn.addEventListener('click', () => {
       navigator.clipboard.writeText(`${quoteText.innerText} ${quoteAuthor.innerText}`);
-      window.showToast(window._tToast ? window._tToast('Quote disalin!') : 'Quote disalin!', 'success');
+      window.showToast?.(window._tToast ? window._tToast('Quote disalin!') : 'Quote disalin!', 'success');
   });
 
   shareBtn.addEventListener('click', async () => {
@@ -538,12 +538,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       navigator.clipboard.writeText(text).then(() => {
           const originalHTML = shareBtn.innerHTML;
           shareBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M20 6 9 17l-5-5"/></svg>';
-          window.showToast(window._tToast ? window._tToast('Teks & Link Website berhasil disalin!') : 'Teks & Link Website berhasil disalin!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('Teks & Link Website berhasil disalin!') : 'Teks & Link Website berhasil disalin!', 'success');
           setTimeout(() => {
               shareBtn.innerHTML = originalHTML;
           }, 2000);
       }).catch(err => {
-          window.showToast(window._tToast ? window._tToast('Gagal menyalin. Izin clipboard ditolak.') : 'Gagal menyalin. Izin clipboard ditolak.', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Gagal menyalin. Izin clipboard ditolak.') : 'Gagal menyalin. Izin clipboard ditolak.', 'error');
       });
   }
 
@@ -567,7 +567,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       localStorage.setItem('quoteSettings', JSON.stringify(settings));
       applySettings();
       settingsModal.classList.add('hidden');
-      window.showToast(window._tToast ? window._tToast('Pengaturan disimpan!') : 'Pengaturan disimpan!', 'success');
+      window.showToast?.(window._tToast ? window._tToast('Pengaturan disimpan!') : 'Pengaturan disimpan!', 'success');
   });
 
   clearFavoritesBtn.addEventListener('click', () => {
@@ -577,7 +577,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       localStorage.setItem('favoriteQuotes', JSON.stringify(favorites));
       updateFavoriteButton();
       renderFavorites();
-      window.showToast(window._tToast ? window._tToast('Semua favorit dihapus') : 'Semua favorit dihapus', 'info');
+      window.showToast?.(window._tToast ? window._tToast('Semua favorit dihapus') : 'Semua favorit dihapus', 'info');
     }
   });
 

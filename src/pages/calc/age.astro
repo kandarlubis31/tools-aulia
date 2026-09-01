@@ -482,7 +482,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     
     localStorage.setItem('ageHistory', JSON.stringify(history));
     renderAgeHistory();
-    window.showToast((window._tToast) ? window._tToast('Hasil berhasil disimpan!') : 'Hasil berhasil disimpan!', 'success');
+    window.showToast?.((window._tToast) ? window._tToast('Hasil berhasil disimpan!') : 'Hasil berhasil disimpan!', 'success');
   });
 
   shareBtn?.addEventListener('click', () => {
@@ -492,11 +492,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     if (navigator.share) {
       navigator.share({ title: 'Age Master', text: text }).catch(() => {
           navigator.clipboard.writeText(text);
-          window.showToast((window._tToast) ? window._tToast('Teks disalin ke clipboard!') : 'Teks disalin ke clipboard!', 'success');
+          window.showToast?.((window._tToast) ? window._tToast('Teks disalin ke clipboard!') : 'Teks disalin ke clipboard!', 'success');
       });
     } else {
       navigator.clipboard.writeText(text);
-      window.showToast((window._tToast) ? window._tToast('Teks disalin ke clipboard!') : 'Teks disalin ke clipboard!', 'success');
+      window.showToast?.((window._tToast) ? window._tToast('Teks disalin ke clipboard!') : 'Teks disalin ke clipboard!', 'success');
     }
   });
 
@@ -504,7 +504,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.getElementById('clear-age-history')?.addEventListener('click', () => {
     localStorage.removeItem('ageHistory');
     renderAgeHistory();
-    window.showToast((window._tToast) ? window._tToast('Riwayat dibersihkan!') : 'Riwayat dibersihkan!', 'success');
+    window.showToast?.((window._tToast) ? window._tToast('Riwayat dibersihkan!') : 'Riwayat dibersihkan!', 'success');
   });
 
   // Set Max Date Today

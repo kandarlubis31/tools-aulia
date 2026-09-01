@@ -177,7 +177,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const orig = copyBtn.innerHTML;
     copyBtn.innerHTML = '✅ Copied!';
     setTimeout(() => { copyBtn.innerHTML = orig; }, 1500);
-    window.showToast(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!', "success");
+    window.showToast?.(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!', "success");
   });
 
   clearBtn?.addEventListener('click', () => {

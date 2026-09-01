@@ -49,7 +49,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       video.srcObject = stream;
       video.classList.remove('hidden');
       video.play();
-    } catch(e) { alert('Kamera tidak tersedia: ' + e.message); }
+    } catch(e) { window.showToast?.(window._tToast ? window._tToast('Kamera tidak tersedia') : 'Kamera tidak tersedia', 'error'); }
   };
   document.getElementById('copy-result').onclick = () => {
     navigator.clipboard.writeText(document.getElementById('scan-text').textContent);

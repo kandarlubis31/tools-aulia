@@ -50,7 +50,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
   }
   document.getElementById('compare').onclick = async () => {
-    if (!pdfA || !pdfB) return alert('Upload kedua PDF dulu!');
+    if (!pdfA || !pdfB) { window.showToast?.(window._tToast ? window._tToast('Upload kedua PDF dulu!') : 'Upload kedua PDF dulu!', 'error'); return; }
     const container = document.getElementById('canvas-container');
     container.innerHTML = '';
     const maxPages = Math.max(pdfA.numPages, pdfB.numPages);

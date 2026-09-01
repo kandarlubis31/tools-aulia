@@ -161,7 +161,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   copyBtn?.addEventListener('click', () => {
     if (!output.value) return;
     navigator.clipboard.writeText(output.value);
-    window.showToast(window._tToast ? window._tToast('JSON disalin!') : 'JSON disalin!', 'success');
+    window.showToast?.(window._tToast ? window._tToast('JSON disalin!') : 'JSON disalin!', 'success');
   });
 
   clearBtn?.addEventListener('click', () => {

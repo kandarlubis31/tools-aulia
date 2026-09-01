@@ -511,7 +511,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const targetId = e.currentTarget.dataset.target;
         const target = document.getElementById(targetId) as HTMLInputElement;
         navigator.clipboard.writeText(target.value);
-        window.showToast(window._tToast ? window._tToast("Copied!") : "Copied!", "success");
+        window.showToast?.(window._tToast ? window._tToast("Copied!") : "Copied!", "success");
     });
   });
 </script>

@@ -30,7 +30,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
   }
   document.getElementById('process').onclick = async () => {
-    if (!pdfDoc) return alert('Upload PDF dulu!');
+    if (!pdfDoc) { window.showToast?.(window._tToast ? window._tToast('Upload PDF dulu!') : 'Upload PDF dulu!', 'error'); return; }
     const n = pdfDoc.numPages;
     const sheets = Math.ceil(n / 4);
     const bookletOrder = [];

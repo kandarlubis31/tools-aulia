@@ -168,7 +168,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         e.stopPropagation();
         const uuid = (btn as HTMLElement).dataset.uuid || '';
         navigator.clipboard.writeText(uuid);
-        window.showToast(window._tToast ? window._tToast('UUID disalin!') : 'UUID disalin!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('UUID disalin!') : 'UUID disalin!', 'success');
       });
     });
   }
@@ -178,7 +178,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   copyBtn?.addEventListener('click', () => {
     if(currentUuids.length === 0) return;
     navigator.clipboard.writeText(currentUuids.join('\n'));
-    window.showToast(window._tToast ? window._tToast("Semua UUID disalin!") : "Semua UUID disalin!", "success");
+    window.showToast?.(window._tToast ? window._tToast("Semua UUID disalin!") : "Semua UUID disalin!", "success");
   });
 
   // +/- buttons

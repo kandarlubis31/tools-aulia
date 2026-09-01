@@ -316,7 +316,7 @@ if (isPdfRoot) {
           if (reloaded || !navigator.serviceWorker.controller) return;
           reloaded = true;
           if (window.showToast) {
-            window.showToast(window._tToast ? window._tToast('Versi baru tersedia — memuat ulang...') : 'Versi baru tersedia — memuat ulang...', 'info');
+            window.showToast?.(window._tToast ? window._tToast('Versi baru tersedia — memuat ulang...') : 'Versi baru tersedia — memuat ulang...', 'info');
           }
           setTimeout(function () { window.location.reload(); }, 700);
         };
@@ -819,7 +819,7 @@ if (isPdfRoot) {
 
       window.installPWA = () => {
         if (!window.deferredPrompt) {
-            window.showToast(window._tToast ? window._tToast('Aplikasi mungkin sudah terinstall') : 'Aplikasi mungkin sudah terinstall', 'success');
+            window.showToast?.(window._tToast ? window._tToast('Aplikasi mungkin sudah terinstall') : 'Aplikasi mungkin sudah terinstall', 'success');
             return;
         }
         if (pwaModal) pwaModal.classList.remove('hidden');
@@ -896,7 +896,7 @@ if (isPdfRoot) {
         const indicator = document.getElementById('offline-indicator');
         if (!navigator.onLine) {
             if (indicator) indicator.classList.remove('hidden');
-            window.showToast(window._tToast ? window._tToast('Koneksi terputus.') : 'Koneksi terputus.', 'error');
+            window.showToast?.(window._tToast ? window._tToast('Koneksi terputus.') : 'Koneksi terputus.', 'error');
         } else {
             if(!(indicator && indicator.classList.contains('hidden'))) {
                 if (indicator) indicator.classList.add('hidden');
@@ -904,7 +904,7 @@ if (isPdfRoot) {
                 const msg = hasSW
                   ? (window._tToast ? window._tToast('📦 Kembali Online! Konten dari cache, data terbaru sedang dimuat...') : '📦 Kembali Online! Konten dari cache, data terbaru sedang dimuat...')
                   : (window._tToast ? window._tToast('Kembali Online!') : 'Kembali Online!');
-                window.showToast(msg, 'success');
+                window.showToast?.(msg, 'success');
             }
         }
       };
@@ -916,7 +916,7 @@ if (isPdfRoot) {
       if (!localStorage.getItem('_sw_cached') && navigator.serviceWorker) {
         navigator.serviceWorker.ready.then(() => {
           localStorage.setItem('_sw_cached', '1');
-          window.showToast(
+          window.showToast?.(
             window._tToast ? window._tToast('⚡ Siap untuk offline! ToolsAulia tetap bisa diakses tanpa internet.') : '⚡ Siap untuk offline! ToolsAulia tetap bisa diakses tanpa internet.',
             'success'
           );
@@ -1111,7 +1111,7 @@ if (isPdfRoot) {
           }
           if (e.key === '?' && !isInput) {
             e.preventDefault();
-            window.showToast(window._tToast ? window._tToast('⌨️ Shortcuts: / atau Ctrl+K = Cari, Ctrl+D = Ganti tema, Esc = Tutup') : '⌨️ Shortcuts: / atau Ctrl+K = Cari, Ctrl+D = Ganti tema, Esc = Tutup', 'info');
+            window.showToast?.(window._tToast ? window._tToast('⌨️ Shortcuts: / atau Ctrl+K = Cari, Ctrl+D = Ganti tema, Esc = Tutup') : '⌨️ Shortcuts: / atau Ctrl+K = Cari, Ctrl+D = Ganti tema, Esc = Tutup', 'info');
           }
           if (e.key === 'Escape') closeSearchModal();
         });
@@ -1388,8 +1388,8 @@ if (isPdfRoot) {
           if (t && t.closest && !t.closest('#error-reload-btn') && !t.closest('#error-dismiss-btn')) toast.remove();
         });
 
-        // Auto-dismiss after 15s
-        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 15000);
+        // Auto-dismiss after 30s
+        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 30000);
       };
 
       window.onerror = (msg, _source, _lineno, _colno, _error) => {

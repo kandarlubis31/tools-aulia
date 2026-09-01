@@ -89,6 +89,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   copyBtn.addEventListener('click', () => {
     if(!output.value) return;
     navigator.clipboard.writeText(output.value);
-    window.showToast(window._tToast ? window._tToast('URL disalin!') : 'URL disalin!', "success");
+    window.showToast?.(window._tToast ? window._tToast('URL disalin!') : 'URL disalin!', "success");
   });
 </script>

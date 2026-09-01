@@ -87,7 +87,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const targetInput = document.getElementById(targetId);
         if(targetInput.value) {
             navigator.clipboard.writeText(targetInput.value);
-            window.showToast(window._tToast ? window._tToast("Hash disalin!") : "Hash disalin!", "success");
+            window.showToast?.(window._tToast ? window._tToast("Hash disalin!") : "Hash disalin!", "success");
         }
     });
   });

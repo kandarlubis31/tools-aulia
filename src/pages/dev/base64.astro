@@ -203,7 +203,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   copyBtn?.addEventListener('click', () => {
     if(!output.value) return;
     navigator.clipboard.writeText(output.value);
-    window.showToast(window._tToast ? window._tToast('Hasil disalin!') : 'Hasil disalin!', 'success');
+    window.showToast?.(window._tToast ? window._tToast('Hasil disalin!') : 'Hasil disalin!', 'success');
   });
 
   // Download decoded file

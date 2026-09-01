@@ -481,7 +481,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           selectFrom.value = item.from.unit;
           selectTo.value = item.to.unit;
           convert();
-          window.showToast(window._tToast ? window._tToast('Riwayat diterapkan!') : 'Riwayat diterapkan!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('Riwayat diterapkan!') : 'Riwayat diterapkan!', 'success');
         }
       });
     });
@@ -498,7 +498,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     );
     
     if (exists) {
-      window.showToast(window._tToast ? window._tToast('Sudah ada di favorit!') : 'Sudah ada di favorit!', 'info');
+      window.showToast?.(window._tToast ? window._tToast('Sudah ada di favorit!') : 'Sudah ada di favorit!', 'info');
       return;
     }
     
@@ -514,7 +514,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     favorites.push(favoriteItem);
     localStorage.setItem('conversionFavorites', JSON.stringify(favorites));
     renderFavorites();
-    window.showToast(window._tToast ? window._tToast('Ditambahkan ke favorit!') : 'Ditambahkan ke favorit!', 'success');
+    window.showToast?.(window._tToast ? window._tToast('Ditambahkan ke favorit!') : 'Ditambahkan ke favorit!', 'success');
   }
 
   function renderFavorites() {
@@ -547,7 +547,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           selectFrom.value = fav.from;
           selectTo.value = fav.to;
           convert();
-          window.showToast(window._tToast ? window._tToast('Favorit diterapkan!') : 'Favorit diterapkan!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('Favorit diterapkan!') : 'Favorit diterapkan!', 'success');
         }
       });
     });
@@ -559,7 +559,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         favorites = favorites.filter(f => f.id !== id);
         localStorage.setItem('conversionFavorites', JSON.stringify(favorites));
         renderFavorites();
-        window.showToast(window._tToast ? window._tToast('Dihapus dari favorit') : 'Dihapus dari favorit', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Dihapus dari favorit') : 'Dihapus dari favorit', 'success');
       });
     });
   }
@@ -582,7 +582,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         selectFrom.value = item.dataset.from;
         selectTo.value = item.dataset.to;
         convert();
-        window.showToast(window._tToast ? window._tToast('Konversi umum diterapkan!') : 'Konversi umum diterapkan!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Konversi umum diterapkan!') : 'Konversi umum diterapkan!', 'success');
       });
     });
   }
@@ -620,7 +620,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     selectFrom.value = selectTo.value;
     selectTo.value = temp;
     convert();
-    window.showToast(window._tToast ? window._tToast('Satuan ditukar') : 'Satuan ditukar', 'success');
+    window.showToast?.(window._tToast ? window._tToast('Satuan ditukar') : 'Satuan ditukar', 'success');
   });
 
   reverseBtn.addEventListener('click', () => {
@@ -633,12 +633,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     selectTo.value = tempUnit;
     
     convert();
-    window.showToast(window._tToast ? window._tToast('Nilai dibalik') : 'Nilai dibalik', 'success');
+    window.showToast?.(window._tToast ? window._tToast('Nilai dibalik') : 'Nilai dibalik', 'success');
   });
 
   copyBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(outputVal.value);
-    window.showToast(window._tToast ? window._tToast('Hasil disalin!') : 'Hasil disalin!', 'success');
+    window.showToast?.(window._tToast ? window._tToast('Hasil disalin!') : 'Hasil disalin!', 'success');
   });
 
   addFavoriteBtn.addEventListener('click', addToFavorites);
@@ -647,7 +647,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     conversionHistory = [];
     localStorage.setItem('conversionHistory', JSON.stringify(conversionHistory));
     renderHistory();
-    window.showToast(window._tToast ? window._tToast('Riwayat dihapus') : 'Riwayat dihapus', 'success');
+    window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus') : 'Riwayat dihapus', 'success');
   });
 
   // Shortcuts

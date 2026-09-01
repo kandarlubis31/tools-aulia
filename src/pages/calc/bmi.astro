@@ -326,7 +326,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       hasError = true;
     }
     if (hasError) {
-      window.showToast(window._tToast ? window._tToast('Lengkapi data dengan benar!') : 'Lengkapi data dengan benar!', 'error');
+      window.showToast?.(window._tToast ? window._tToast('Lengkapi data dengan benar!') : 'Lengkapi data dengan benar!', 'error');
       return;
     }
     
@@ -424,7 +424,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     
     localStorage.setItem('bmiHistory', JSON.stringify(bmiHistory));
     renderHistory();
-    window.showToast(window._tToast ? window._tToast('Disimpan ke riwayat!') : 'Disimpan ke riwayat!', 'success');
+    window.showToast?.(window._tToast ? window._tToast('Disimpan ke riwayat!') : 'Disimpan ke riwayat!', 'success');
   });
 
   // Share Function
@@ -433,11 +433,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     if (navigator.share) {
         navigator.share({ title: 'Hasil BMI', text: text }).catch(() => {
             navigator.clipboard.writeText(text);
-            window.showToast(window._tToast ? window._tToast('Hasil disalin ke clipboard!') : 'Hasil disalin ke clipboard!', 'success');
+            window.showToast?.(window._tToast ? window._tToast('Hasil disalin ke clipboard!') : 'Hasil disalin ke clipboard!', 'success');
         });
     } else {
         navigator.clipboard.writeText(text);
-        window.showToast(window._tToast ? window._tToast('Hasil disalin ke clipboard!') : 'Hasil disalin ke clipboard!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Hasil disalin ke clipboard!') : 'Hasil disalin ke clipboard!', 'success');
     }
   });
 
@@ -471,7 +471,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     bmiHistory = bmiHistory.filter(i => i.id !== id);
     localStorage.setItem('bmiHistory', JSON.stringify(bmiHistory));
     renderHistory();
-    window.showToast(window._tToast ? window._tToast('Item dihapus') : 'Item dihapus', 'success');
+    window.showToast?.(window._tToast ? window._tToast('Item dihapus') : 'Item dihapus', 'success');
   };
 
   clearHistoryBtn.addEventListener('click', () => {
@@ -479,7 +479,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         bmiHistory = [];
         localStorage.setItem('bmiHistory', JSON.stringify(bmiHistory));
         renderHistory();
-        window.showToast(window._tToast ? window._tToast('Riwayat dibersihkan') : 'Riwayat dibersihkan', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Riwayat dibersihkan') : 'Riwayat dibersihkan', 'success');
     }
   });
 
