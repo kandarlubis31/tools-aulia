@@ -3,176 +3,1422 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
-<BaseLayout pageTitle="Beat Maker — Drum Machine Online">
-  <div class="max-w-lg mx-auto px-4 min-h-[60vh]">
+<BaseLayout pageTitle="Beat Maker — FL Studio Style Drum Machine">
+  <div class="max-w-5xl mx-auto px-4 min-h-[85vh] pb-20">
     <ToolPageHeader
       title="Beat Maker"
       titleKey="header.beat_maker"
-      desc="Drum machine sederhana: 4 beat × 4 track. WebAudio synth."
+      desc="Drum machine ala FL Studio: 16 step sequencer, 8 track, multi-kit, pattern manager, export WAV."
       descKey="header.beat_maker_desc"
       icon='<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'
       gradient="from-orange-500 to-red-600"
     />
 
-    <div class="animate-fade-in space-y-4">
-      <div class="card-base p-5">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-2">
-            <span class="text-2xs text-matte-400 font-bold">BPM:</span>
-            <input id="bpm-input" type="number" value="120" min="60" max="200" class="w-16 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono font-bold outline-none focus:ring-2 focus:ring-orange-500/40" />
-          </div>
-          <button id="play-btn" class="gradient-brand px-8 py-2.5 rounded-full text-sm font-bold">
-            ▶️ <span data-i18n="beat.play">Play</span>
+    <div class="animate-fade-in space-y-3">
+      <!-- Top Control Bar -->
+      <div class="card-base p-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Play/Stop -->
+          <button id="play-btn" class="gradient-brand px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 active:scale-95 transition-transform">
+            <span id="play-icon">&#9654;</span> <span id="play-text" data-i18n="beat.play">Play</span>
           </button>
-        </div>
 
-        <!-- Beat grid -->
-        <div id="grid" class="space-y-2 mb-4">
-          {[
-            { name: 'Kick', key: 'kick', freq: 60 },
-            { name: 'Snare', key: 'snare', freq: 200 },
-            { name: 'Hi-hat', key: 'hihat', freq: 8000 },
-            { name: 'Clap', key: 'clap', freq: 1000 },
-          ].map((track) => (
-            <div class="flex items-center gap-2">
-              <span class="w-16 text-2xs font-bold text-matte-400">{track.name}</span>
-              <div class="flex gap-1 flex-1">
-                {[0,1,2,3,4,5,6,7].map(step => (
-                  <button class="beat-cell w-full aspect-square rounded-md bg-matte-100 dark:bg-surface-elevated hover:bg-orange-200 dark:hover:bg-orange-900/30 transition-all active:scale-90" data-track={track.key} data-step={String(step)}></button>
-                ))}
-              </div>
-            </div>
-          ))}
+          <!-- BPM -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-2xs text-matte-400 font-bold">BPM</span>
+            <input id="bpm-input" type="number" value="120" min="40" max="300" class="w-14 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono font-bold outline-none focus:ring-2 focus:ring-orange-500/40 text-center" />
+            <input id="bpm-slider" type="range" min="40" max="300" value="120" class="w-20 h-1 accent-orange-500" />
+          </div>
+
+          <!-- Swing -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-2xs text-matte-400 font-bold">SWING</span>
+            <input id="swing-slider" type="range" min="0" max="100" value="0" class="w-16 h-1 accent-orange-500" />
+            <span id="swing-val" class="text-2xs font-mono text-matte-500 w-6">0%</span>
+          </div>
+
+          <!-- Kit Picker -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-2xs text-matte-400 font-bold">KIT</span>
+            <select id="kit-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none focus:ring-2 focus:ring-orange-500/40">
+              <option value="808">808</option>
+              <option value="909">909</option>
+              <option value="acoustic">Acoustic</option>
+              <option value="trap">Trap</option>
+            </select>
+          </div>
+
+          <!-- Preset Patterns -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-2xs text-matte-400 font-bold">PRESET</span>
+            <select id="preset-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none focus:ring-2 focus:ring-orange-500/40">
+              <option value="">— Load —</option>
+              <option value="hiphop">Hip-Hop</option>
+              <option value="techno">Techno</option>
+              <option value="house">House</option>
+              <option value="trap">Trap</option>
+              <option value="dnb">Drum & Bass</option>
+              <option value="reggaeton">Reggaeton</option>
+            </select>
+          </div>
+
+          <!-- Pattern -->
+          <div class="flex items-center gap-1">
+            <span class="text-2xs text-matte-400 font-bold">PTN</span>
+            <div id="pattern-btns" class="flex gap-0.5"></div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-1 ml-auto">
+            <button id="clear-btn" class="px-3 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:text-red-500 transition-colors" title="Clear Pattern">CLR</button>
+            <button id="copy-btn" class="px-3 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:text-blue-500 transition-colors" title="Copy Pattern">CPY</button>
+            <button id="paste-btn" class="px-3 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:text-green-500 transition-colors" title="Paste Pattern">PST</button>
+            <button id="export-btn" class="px-3 py-1.5 rounded-lg bg-orange-500 text-white text-2xs font-bold hover:bg-orange-600 transition-colors" title="Export WAV">WAV</button>
+          </div>
         </div>
       </div>
 
-      <p class="text-center text-2xs text-matte-400">
-        Klik kotak untuk aktifkan beat. 4 baris × 8 step. Play untuk dengar loop-nya!
-      </p>
+      <!-- Sequencer Grid -->
+      <div class="card-base p-4 overflow-x-auto">
+        <div class="min-w-[700px]">
+          <!-- Step Numbers -->
+          <div class="flex items-center mb-2">
+            <div class="w-44 shrink-0"></div>
+            <div class="flex gap-0 flex-1" id="step-numbers"></div>
+          </div>
+
+          <!-- Tracks -->
+          <div id="tracks-container" class="space-y-1"></div>
+        </div>
+      </div>
+
+      <!-- Keyboard Shortcuts -->
+      <div class="text-center">
+        <button id="shortcuts-toggle" class="text-2xs text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors underline decoration-dotted">
+          Keyboard Shortcuts
+        </button>
+        <div id="shortcuts-panel" class="hidden mt-2 card-base p-3 inline-block text-left">
+          <div class="grid grid-cols-2 gap-x-6 gap-y-1 text-2xs text-matte-500">
+            <span><kbd class="px-1 py-0.5 bg-matte-100 dark:bg-surface-elevated rounded font-mono">Space</kbd> Play / Stop</span>
+            <span><kbd class="px-1 py-0.5 bg-matte-100 dark:bg-surface-elevated rounded font-mono">1-8</kbd> Toggle track solo</span>
+            <span><kbd class="px-1 py-0.5 bg-matte-100 dark:bg-surface-elevated rounded font-mono">Q-P</kbd> Toggle step 1-16 (selected track)</span>
+            <span><kbd class="px-1 py-0.5 bg-matte-100 dark:bg-surface-elevated rounded font-mono">↑↓</kbd> Select track</span>
+            <span><kbd class="px-1 py-0.5 bg-matte-100 dark:bg-surface-elevated rounded font-mono">Ctrl+C</kbd> Copy pattern</span>
+            <span><kbd class="px-1 py-0.5 bg-matte-100 dark:bg-surface-elevated rounded font-mono">Ctrl+V</kbd> Paste pattern</span>
+            <span><kbd class="px-1 py-0.5 bg-matte-100 dark:bg-surface-elevated rounded font-mono">Ctrl+E</kbd> Export WAV</span>
+            <span><kbd class="px-1 py-0.5 bg-matte-100 dark:bg-surface-elevated rounded font-mono">Backspace</kbd> Clear pattern</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
-const __page = (location.pathname.replace(/\/+$/, '') || '/');
+const __page = (location.pathname.replace(/\\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\\/+$/, '') || '/') !== __page) return;
 
-    const bpmInput = document.getElementById('bpm-input') as HTMLInputElement;
-    const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
+// ════════════════════════════════════════════════════════════════
+// DATA STRUCTURES
+// ════════════════════════════════════════════════════════════════
 
-    let playing = false;
-    let currentStep = 0;
-    let timer: number | null = null;
-    let audioCtx: AudioContext | null = null;
-    const grid: Record<string, boolean[]> = { kick: [], snare: [], hihat: [], clap: [] };
+const STEPS = 16;
+const TRACK_DEFS = [
+  { id: 'kick',    name: 'Kick',    icon: '' },
+  { id: 'snare',   name: 'Snare',   icon: '' },
+  { id: 'chihat',  name: 'C.Hat',   icon: '' },
+  { id: 'ohihat',  name: 'O.Hat',   icon: '' },
+  { id: 'clap',    name: 'Clap',    icon: '' },
+  { id: 'tom',     name: 'Tom',     icon: '' },
+  { id: 'cymbal',  name: 'Cymbal',  icon: '' },
+  { id: 'perc',    name: 'Perc',    icon: '' },
+];
 
-    function getAudioCtx() {
-      if (!audioCtx) audioCtx = new AudioContext();
-      return audioCtx;
+const NUM_PATTERNS = 8;
+const PATTERN_NAMES = 'ABCDEFGH'.split('');
+
+interface TrackState {
+  volume: number;  // 0-1
+  pan: number;     // -1 to 1
+  solo: boolean;
+  mute: boolean;
+  steps: boolean[];
+  velocity: number[]; // 0-1 per step
+  chance: number[];   // 0.25, 0.5, 0.75, 1.0 per step (probability)
+}
+
+interface PatternState {
+  tracks: TrackState[];
+}
+
+function createEmptyTrack(): TrackState {
+  return {
+    volume: 0.8,
+    pan: 0,
+    solo: false,
+    mute: false,
+    steps: new Array(STEPS).fill(false),
+    velocity: new Array(STEPS).fill(1),
+    chance: new Array(STEPS).fill(1),
+  };
+}
+
+function createEmptyPattern(): PatternState {
+  return {
+    tracks: TRACK_DEFS.map(() => createEmptyTrack()),
+  };
+}
+
+// ════════════════════════════════════════════════════════════════
+// PRESET PATTERNS
+// ════════════════════════════════════════════════════════════════
+
+function makePresetTrack(on: number[], vel: number[] = [], chance: number[] = []): TrackState {
+  const steps = new Array(STEPS).fill(false);
+  const velocity = new Array(STEPS).fill(1);
+  const ch = new Array(STEPS).fill(1);
+  on.forEach(i => { steps[i] = true; });
+  vel.forEach((v, i) => { if (on[i] !== undefined) velocity[on[i]] = v; });
+  chance.forEach((c, i) => { if (on[i] !== undefined) ch[on[i]] = c; });
+  return { volume: 0.8, pan: 0, solo: false, mute: false, steps, velocity, chance: ch };
+}
+
+const PRESETS: Record<string, { name: string; bpm: number; swing: number; kit: string; tracks: number[][] }> = {
+  hiphop: {
+    name: 'Hip-Hop', bpm: 90, swing: 30, kit: '808',
+    tracks: [
+      [0, 4, 8, 12],                    // kick
+      [4, 12],                           // snare
+      [0, 2, 4, 6, 8, 10, 12, 14],      // chihat
+      [],                                // ohihat
+      [4, 12],                           // clap
+      [],                                // tom
+      [],                                // cymbal
+      [6, 14],                           // perc
+    ],
+  },
+  techno: {
+    name: 'Techno', bpm: 130, swing: 0, kit: '909',
+    tracks: [
+      [0, 4, 8, 12],                    // kick
+      [4, 12],                           // snare
+      [0, 2, 4, 6, 8, 10, 12, 14],      // chihat
+      [2, 6, 10, 14],                    // ohihat
+      [],                                // clap
+      [6, 14],                           // tom
+      [0, 8],                            // cymbal
+      [3, 7, 11, 15],                    // perc
+    ],
+  },
+  house: {
+    name: 'House', bpm: 124, swing: 0, kit: '909',
+    tracks: [
+      [0, 4, 8, 12],                    // kick
+      [4, 12],                           // snare
+      [0, 2, 4, 6, 8, 10, 12, 14],      // chihat
+      [2, 6, 10, 14],                    // ohihat
+      [],                                // clap
+      [],                                // tom
+      [],                                // cymbal
+      [0, 8],                            // perc
+    ],
+  },
+  trap: {
+    name: 'Trap', bpm: 140, swing: 15, kit: 'trap',
+    tracks: [
+      [0, 3, 4, 8, 11, 12],             // kick
+      [4, 12],                           // snare
+      [0, 2, 3, 4, 6, 8, 10, 11, 12, 14], // chihat (fast rolls)
+      [],                                // ohihat
+      [],                                // clap
+      [],                                // tom
+      [],                                // cymbal
+      [6, 14],                           // perc
+    ],
+  },
+  dnb: {
+    name: 'Drum & Bass', bpm: 174, swing: 0, kit: 'acoustic',
+    tracks: [
+      [0, 10],                           // kick
+      [4, 12],                           // snare
+      [0, 2, 4, 6, 8, 10, 12, 14],      // chihat
+      [2, 6, 10, 14],                    // ohihat
+      [],                                // clap
+      [],                                // tom
+      [0, 8],                            // cymbal
+      [3, 7, 11, 15],                    // perc
+    ],
+  },
+  reggaeton: {
+    name: 'Reggaeton', bpm: 95, swing: 0, kit: '808',
+    tracks: [
+      [0, 3, 4, 7, 8, 11, 12, 15],      // kick (dembow)
+      [4, 12],                           // snare
+      [0, 2, 4, 6, 8, 10, 12, 14],      // chihat
+      [],                                // ohihat
+      [4, 12],                           // clap
+      [],                                // tom
+      [],                                // cymbal
+      [2, 6, 10, 14],                    // perc
+    ],
+  },
+};
+
+function loadPreset(presetKey: string) {
+  const preset = PRESETS[presetKey];
+  if (!preset) return;
+
+  // Set BPM + swing + kit
+  bpmInput.value = String(preset.bpm);
+  bpmSlider.value = String(preset.bpm);
+  swingSlider.value = String(preset.swing);
+  swingVal.textContent = preset.swing + '%';
+  kitSelect.value = preset.kit;
+
+  // Build pattern
+  const pattern = createEmptyPattern();
+  preset.tracks.forEach((onSteps, trackIdx) => {
+    if (trackIdx >= pattern.tracks.length) return;
+    const track = pattern.tracks[trackIdx];
+    onSteps.forEach(step => { track.steps[step] = true; });
+    // Add slight velocity variation for hi-hats
+    if (TRACK_DEFS[trackIdx].id === 'chihat') {
+      onSteps.forEach(step => {
+        track.velocity[step] = step % 4 === 0 ? 1 : (0.7 + Math.random() * 0.3);
+      });
     }
+  });
 
-    function playSound(track: string) {
-      const ctx = getAudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
+  patterns[currentPattern] = pattern;
+  renderTracks();
+  (window as any).showToast?.(`Loaded: ${preset.name}`, 'success');
+}
 
-      switch (track) {
-        case 'kick':
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(150, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
-          gain.gain.setValueAtTime(0.6, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-          break;
-        case 'snare':
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(200, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.05);
-          gain.gain.setValueAtTime(0.3, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-          break;
-        case 'hihat':
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(8000, ctx.currentTime);
-          filter.type = 'highpass';
-          filter.frequency.setValueAtTime(7000, ctx.currentTime);
-          gain.gain.setValueAtTime(0.08, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-          break;
-        case 'clap':
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(1000, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.03);
-          gain.gain.setValueAtTime(0.15, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-          break;
+// ════════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════════
+
+let patterns: PatternState[] = Array.from({ length: NUM_PATTERNS }, createEmptyPattern);
+let currentPattern = 0;
+let selectedTrack = 0;
+let clipboard: PatternState | null = null;
+
+// Playback
+let playing = false;
+let currentStep = 0;
+let timer: number | null = null;
+let audioCtx: AudioContext | null = null;
+let masterGain: GainNode | null = null;
+
+// DOM refs
+const bpmInput = document.getElementById('bpm-input') as HTMLInputElement;
+const bpmSlider = document.getElementById('bpm-slider') as HTMLInputElement;
+const swingSlider = document.getElementById('swing-slider') as HTMLInputElement;
+const swingVal = document.getElementById('swing-val')!;
+const kitSelect = document.getElementById('kit-select') as HTMLSelectElement;
+const playBtn = document.getElementById('play-btn')!;
+const playIcon = document.getElementById('play-icon')!;
+const playText = document.getElementById('play-text')!;
+const tracksContainer = document.getElementById('tracks-container')!;
+const stepNumbers = document.getElementById('step-numbers')!;
+const patternBtns = document.getElementById('pattern-btns')!;
+const clearBtn = document.getElementById('clear-btn')!;
+const copyBtn = document.getElementById('copy-btn')!;
+const pasteBtn = document.getElementById('paste-btn')!;
+const exportBtn = document.getElementById('export-btn')!;
+const shortcutsToggle = document.getElementById('shortcuts-toggle')!;
+const shortcutsPanel = document.getElementById('shortcuts-panel')!;
+
+function getPattern(): PatternState { return patterns[currentPattern]; }
+function getTrack(): TrackState { return getPattern().tracks[selectedTrack]; }
+
+// ════════════════════════════════════════════════════════════════
+// DRUM KIT SYNTH ENGINE
+// ════════════════════════════════════════════════════════════════
+
+function getAudioCtx(): AudioContext {
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.7;
+    masterGain.connect(audioCtx.destination);
+  }
+  return audioCtx;
+}
+
+function playSound(trackId: string, velocity: number, pan: number, kit: string) {
+  const ctx = getAudioCtx();
+  if (!masterGain) return;
+  const t = ctx.currentTime;
+  const vel = Math.max(0.01, velocity);
+
+  // Pan node
+  const panner = ctx.createStereoPanner();
+  panner.pan.value = pan;
+
+  // Track gain (velocity + volume)
+  const gain = ctx.createGain();
+  gain.gain.value = vel;
+
+  panner.connect(gain);
+  gain.connect(masterGain);
+
+  const kits: Record<string, Record<string, () => void>> = {
+    '808': {
+      kick: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(160, t);
+        o.frequency.exponentialRampToValueAtTime(30, t + 0.15);
+        g.gain.setValueAtTime(1, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.5);
+      },
+      snare: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(250, t);
+        o.frequency.exponentialRampToValueAtTime(80, t + 0.05);
+        g.gain.setValueAtTime(0.6, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.15);
+        // Noise burst
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.1, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.4;
+        const ns = ctx.createBufferSource();
+        ns.buffer = buf;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(0.5, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        ns.connect(ng); ng.connect(panner);
+        ns.start(t); ns.stop(t + 0.1);
+      },
+      chihat: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource();
+        ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass'; f.frequency.value = 8000;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.4, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.05);
+      },
+      ohihat: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource();
+        ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass'; f.frequency.value = 6000;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.35, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.3);
+      },
+      clap: () => {
+        for (let j = 0; j < 3; j++) {
+          const buf = ctx.createBuffer(1, ctx.sampleRate * 0.02, ctx.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+          const ns = ctx.createBufferSource();
+          ns.buffer = buf;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.5, t + j * 0.01);
+          g.gain.exponentialRampToValueAtTime(0.001, t + j * 0.01 + 0.02);
+          ns.connect(g); g.connect(panner);
+          ns.start(t + j * 0.01); ns.stop(t + j * 0.01 + 0.02);
+        }
+      },
+      tom: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(200, t);
+        o.frequency.exponentialRampToValueAtTime(60, t + 0.2);
+        g.gain.setValueAtTime(0.7, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.3);
+      },
+      cymbal: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource();
+        ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'bandpass'; f.frequency.value = 5000; f.Q.value = 2;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.3, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.5);
+      },
+      perc: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'square';
+        o.frequency.setValueAtTime(800, t);
+        o.frequency.exponentialRampToValueAtTime(200, t + 0.03);
+        g.gain.setValueAtTime(0.3, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.08);
+      },
+    },
+    '909': {
+      kick: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(180, t);
+        o.frequency.exponentialRampToValueAtTime(40, t + 0.08);
+        g.gain.setValueAtTime(1, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.4);
+      },
+      snare: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(300, t);
+        o.frequency.exponentialRampToValueAtTime(120, t + 0.03);
+        g.gain.setValueAtTime(0.7, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.12);
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+        const ns = ctx.createBufferSource();
+        ns.buffer = buf;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(0.6, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+        ns.connect(ng); ng.connect(panner);
+        ns.start(t); ns.stop(t + 0.08);
+      },
+      chihat: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.04, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource();
+        ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass'; f.frequency.value = 9000;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.45, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.04);
+      },
+      ohihat: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.25, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource();
+        ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass'; f.frequency.value = 7000;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.4, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.25);
+      },
+      clap: () => {
+        for (let j = 0; j < 3; j++) {
+          const buf = ctx.createBuffer(1, ctx.sampleRate * 0.015, ctx.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+          const ns = ctx.createBufferSource();
+          ns.buffer = buf;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.5, t + j * 0.008);
+          g.gain.exponentialRampToValueAtTime(0.001, t + j * 0.008 + 0.015);
+          ns.connect(g); g.connect(panner);
+          ns.start(t + j * 0.008); ns.stop(t + j * 0.008 + 0.015);
+        }
+      },
+      tom: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(250, t);
+        o.frequency.exponentialRampToValueAtTime(70, t + 0.18);
+        g.gain.setValueAtTime(0.6, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.25);
+      },
+      cymbal: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.4, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource();
+        ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'bandpass'; f.frequency.value = 6000; f.Q.value = 1.5;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.35, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.4);
+      },
+      perc: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(600, t);
+        o.frequency.exponentialRampToValueAtTime(150, t + 0.04);
+        g.gain.setValueAtTime(0.25, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.06);
+      },
+    },
+    'acoustic': {
+      kick: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(120, t);
+        o.frequency.exponentialRampToValueAtTime(50, t + 0.12);
+        g.gain.setValueAtTime(0.9, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.35);
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.02, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.3;
+        const ns = ctx.createBufferSource(); ns.buffer = buf;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(0.5, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+        ns.connect(ng); ng.connect(panner);
+        ns.start(t); ns.stop(t + 0.02);
+      },
+      snare: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(180, t);
+        g.gain.setValueAtTime(0.5, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.12);
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource(); ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'bandpass'; f.frequency.value = 3000; f.Q.value = 1;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(0.5, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        ns.connect(f); f.connect(ng); ng.connect(panner);
+        ns.start(t); ns.stop(t + 0.15);
+      },
+      chihat: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.06, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource(); ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass'; f.frequency.value = 8000;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.35, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.06);
+      },
+      ohihat: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.35, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource(); ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass'; f.frequency.value = 6000;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.3, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.35);
+      },
+      clap: () => {
+        for (let j = 0; j < 4; j++) {
+          const buf = ctx.createBuffer(1, ctx.sampleRate * 0.01, ctx.sampleRate);
+          const d = buf.getChannelData(0);
+          for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+          const ns = ctx.createBufferSource(); ns.buffer = buf;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.4, t + j * 0.007);
+          g.gain.exponentialRampToValueAtTime(0.001, t + j * 0.007 + 0.01);
+          ns.connect(g); g.connect(panner);
+          ns.start(t + j * 0.007); ns.stop(t + j * 0.007 + 0.01);
+        }
+      },
+      tom: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(160, t);
+        o.frequency.exponentialRampToValueAtTime(60, t + 0.22);
+        g.gain.setValueAtTime(0.65, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.3);
+      },
+      cymbal: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.6, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource(); ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'bandpass'; f.frequency.value = 4000; f.Q.value = 2;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.25, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.6);
+      },
+      perc: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(1200, t);
+        o.frequency.exponentialRampToValueAtTime(400, t + 0.02);
+        g.gain.setValueAtTime(0.2, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.05);
+      },
+    },
+    'trap': {
+      kick: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(200, t);
+        o.frequency.exponentialRampToValueAtTime(25, t + 0.2);
+        g.gain.setValueAtTime(1, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.6);
+      },
+      snare: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(350, t);
+        o.frequency.exponentialRampToValueAtTime(100, t + 0.03);
+        g.gain.setValueAtTime(0.8, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.1);
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource(); ns.buffer = buf;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(0.7, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+        ns.connect(ng); ng.connect(panner);
+        ns.start(t); ns.stop(t + 0.08);
+      },
+      chihat: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.03, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource(); ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass'; f.frequency.value = 10000;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.5, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.03);
+      },
+      ohihat: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource(); ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass'; f.frequency.value = 8000;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.45, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.2);
+      },
+      clap: () => {
+        for (let j = 0; j < 3; j++) {
+          const buf = ctx.createBuffer(1, ctx.sampleRate * 0.012, ctx.sampleRate);
+          const d = buf.getChannelData(0);
+          for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+          const ns = ctx.createBufferSource(); ns.buffer = buf;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.6, t + j * 0.006);
+          g.gain.exponentialRampToValueAtTime(0.001, t + j * 0.006 + 0.012);
+          ns.connect(g); g.connect(panner);
+          ns.start(t + j * 0.006); ns.stop(t + j * 0.006 + 0.012);
+        }
+      },
+      tom: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(300, t);
+        o.frequency.exponentialRampToValueAtTime(50, t + 0.15);
+        g.gain.setValueAtTime(0.7, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.2);
+      },
+      cymbal: () => {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.45, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+        const ns = ctx.createBufferSource(); ns.buffer = buf;
+        const f = ctx.createBiquadFilter();
+        f.type = 'bandpass'; f.frequency.value = 7000; f.Q.value = 1.5;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.2, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+        ns.connect(f); f.connect(g); g.connect(panner);
+        ns.start(t); ns.stop(t + 0.45);
+      },
+      perc: () => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'square';
+        o.frequency.setValueAtTime(1500, t);
+        o.frequency.exponentialRampToValueAtTime(300, t + 0.015);
+        g.gain.setValueAtTime(0.15, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+        o.connect(g); g.connect(panner);
+        o.start(t); o.stop(t + 0.04);
+      },
+    },
+  };
+
+  const kitSounds = kits[kit] || kits['808'];
+  const soundFn = kitSounds[trackId];
+  if (soundFn) soundFn();
+}
+
+// ════════════════════════════════════════════════════════════════
+// UI RENDERING
+// ════════════════════════════════════════════════════════════════
+
+function renderStepNumbers() {
+  stepNumbers.innerHTML = '';
+  for (let i = 0; i < STEPS; i++) {
+    const el = document.createElement('div');
+    el.className = `flex-1 text-center text-2xs font-mono font-bold ${i % 4 === 0 ? 'text-orange-500' : 'text-matte-400'}`;
+    el.textContent = String(i + 1);
+    stepNumbers.appendChild(el);
+  }
+}
+
+function renderTracks() {
+  tracksContainer.innerHTML = '';
+  const pattern = getPattern();
+
+  TRACK_DEFS.forEach((def, idx) => {
+    const track = pattern.tracks[idx];
+    const isSelected = idx === selectedTrack;
+
+    const row = document.createElement('div');
+    row.className = `flex items-center gap-1 rounded-lg transition-all ${isSelected ? 'bg-orange-50 dark:bg-orange-900/10 ring-1 ring-orange-300 dark:ring-orange-700' : 'hover:bg-matte-50 dark:hover:bg-surface-hover'}`;
+    row.dataset.trackIdx = String(idx);
+
+    // Track info + controls
+    const trackInfo = document.createElement('div');
+    trackInfo.className = 'w-44 shrink-0 flex items-center gap-1.5 px-2 py-1.5';
+
+    // Select track on click
+    trackInfo.addEventListener('click', () => { selectedTrack = idx; renderTracks(); });
+
+    // Track name
+    const nameEl = document.createElement('span');
+    nameEl.className = `text-2xs font-bold ${isSelected ? 'text-orange-600 dark:text-orange-400' : 'text-matte-500'} w-12 truncate`;
+    nameEl.textContent = def.name;
+    trackInfo.appendChild(nameEl);
+
+    // Solo button
+    const soloBtn = document.createElement('button');
+    soloBtn.className = `w-5 h-5 rounded text-2xs font-bold transition-colors ${track.solo ? 'bg-yellow-400 text-white' : 'bg-matte-200 dark:bg-surface-elevated text-matte-400 hover:text-yellow-500'}`;
+    soloBtn.textContent = 'S';
+    soloBtn.title = 'Solo';
+    soloBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      track.solo = !track.solo;
+      if (track.solo) track.mute = false;
+      renderTracks();
+    });
+    trackInfo.appendChild(soloBtn);
+
+    // Mute button
+    const muteBtn = document.createElement('button');
+    muteBtn.className = `w-5 h-5 rounded text-2xs font-bold transition-colors ${track.mute ? 'bg-red-400 text-white' : 'bg-matte-200 dark:bg-surface-elevated text-matte-400 hover:text-red-500'}`;
+    muteBtn.textContent = 'M';
+    muteBtn.title = 'Mute';
+    muteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      track.mute = !track.mute;
+      if (track.mute) track.solo = false;
+      renderTracks();
+    });
+    trackInfo.appendChild(muteBtn);
+
+    // Volume slider
+    const volSlider = document.createElement('input');
+    volSlider.type = 'range';
+    volSlider.min = '0';
+    volSlider.max = '100';
+    volSlider.value = String(Math.round(track.volume * 100));
+    volSlider.className = 'w-12 h-1 accent-orange-500';
+    volSlider.title = `Volume: ${Math.round(track.volume * 100)}%`;
+    volSlider.addEventListener('input', (e) => {
+      e.stopPropagation();
+      track.volume = parseInt(volSlider.value) / 100;
+    });
+    trackInfo.appendChild(volSlider);
+
+    // Pan knob (simplified as small slider)
+    const panSlider = document.createElement('input');
+    panSlider.type = 'range';
+    panSlider.min = '-100';
+    panSlider.max = '100';
+    panSlider.value = String(Math.round(track.pan * 100));
+    panSlider.className = 'w-10 h-1 accent-blue-500';
+    panSlider.title = `Pan: ${track.pan === 0 ? 'C' : track.pan < 0 ? 'L' + Math.abs(track.pan * 100) : 'R' + track.pan * 100}`;
+    panSlider.addEventListener('input', (e) => {
+      e.stopPropagation();
+      track.pan = parseInt(panSlider.value) / 100;
+    });
+    trackInfo.appendChild(panSlider);
+
+    row.appendChild(trackInfo);
+
+    // Step grid
+    const gridRow = document.createElement('div');
+    gridRow.className = 'flex gap-0 flex-1';
+
+    for (let step = 0; step < STEPS; step++) {
+      const cell = document.createElement('button');
+      const isActive = track.steps[step];
+      const isBeatStart = step % 4 === 0;
+      const isCurrentStep = playing && step === currentStep;
+
+      // Determine cell visual state
+      const chance = track.chance[step];
+      const vel = track.velocity[step];
+      const isPartial = isActive && (chance < 1 || vel < 1);
+
+      cell.className = `flex-1 aspect-square rounded-sm transition-all active:scale-90 ${
+        isCurrentStep && isActive
+          ? 'bg-orange-400 dark:bg-orange-500 ring-2 ring-orange-300'
+          : isActive
+            ? isPartial
+              ? 'bg-orange-300/60 dark:bg-orange-700/60 border border-dashed border-orange-400 dark:border-orange-500 hover:bg-orange-400/70'
+              : 'bg-orange-400 dark:bg-orange-600 hover:bg-orange-500 dark:hover:bg-orange-500'
+            : isBeatStart
+              ? 'bg-matte-200 dark:bg-surface-elevated hover:bg-orange-200 dark:hover:bg-orange-900/30'
+              : 'bg-matte-100 dark:bg-matte-800 hover:bg-orange-200 dark:hover:bg-orange-900/30'
+      }`;
+      cell.dataset.trackIdx = String(idx);
+      cell.dataset.step = String(step);
+
+      // Velocity bar indicator (gradient from bottom)
+      if (isActive) {
+        const opacity = vel * (chance < 1 ? 0.7 : 1);
+        cell.style.background = `linear-gradient(to top, rgba(249,115,22,${opacity}) ${vel * 100}%, transparent ${vel * 100}%)`;
+      } else {
+        cell.style.background = '';
       }
 
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.4);
-    }
+      // Chance badge (tiny dot indicator)
+      if (isActive && chance < 1) {
+        const badge = document.createElement('span');
+        badge.className = 'absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full bg-yellow-400 border border-yellow-600';
+        badge.title = `Chance: ${Math.round(chance * 100)}%`;
+        cell.style.position = 'relative';
+        cell.appendChild(badge);
+      }
 
-    function highlightStep(step: number) {
-      document.querySelectorAll('.beat-cell').forEach(cell => {
-        const el = cell as HTMLElement;
-        const isActive = parseInt(el.dataset.step!) === step;
-        if (isActive && grid[el.dataset.track!]?.[step]) {
-          el.classList.add('ring-2', 'ring-orange-500');
-          setTimeout(() => el.classList.remove('ring-2', 'ring-orange-500'), 80);
-        }
-      });
-    }
-
-    function tick() {
-      Object.entries(grid).forEach(([track, steps]) => {
-        if (steps[currentStep]) playSound(track);
-      });
-      highlightStep(currentStep);
-      currentStep = (currentStep + 1) % 8;
-      const bpm = parseInt(bpmInput.value) || 120;
-      timer = window.setTimeout(tick, (60 / bpm) * 1000 / 2); // 8th notes
-    }
-
-    function start() {
-      if (playing) return;
-      playing = true;
-      currentStep = 0;
-      getAudioCtx().resume();
-      tick();
-      playBtn.innerHTML = '⏸️ <span data-i18n="beat.stop">Stop</span>';
-      (window as any).processI18n?.();
-    }
-
-    function stop() {
-      playing = false;
-      if (timer) { clearTimeout(timer); timer = null; }
-      playBtn.innerHTML = '▶️ <span data-i18n="beat.play">Play</span>';
-      (window as any).processI18n?.();
-    }
-
-    playBtn.addEventListener('click', () => playing ? stop() : start());
-
-    // Grid click handlers
-    document.querySelectorAll('.beat-cell').forEach(cell => {
-      cell.addEventListener('click', () => {
-        const el = cell as HTMLElement;
-        const track = el.dataset.track!;
-        const step = parseInt(el.dataset.step!);
-        if (!grid[track]) grid[track] = new Array(8).fill(false);
-        grid[track][step] = !grid[track][step];
-        if (grid[track][step]) {
-          el.classList.add('bg-orange-400', 'dark:bg-orange-600');
-          el.classList.remove('bg-matte-100', 'dark:bg-surface-elevated');
+      cell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (e.shiftKey) {
+          // Shift+Click: cycle CHANCE (probability)
+          if (!track.steps[step]) {
+            track.steps[step] = true;
+            track.chance[step] = 0.75;
+          } else {
+            // Cycle: 1.0 → 0.75 → 0.5 → 0.25 → 1.0
+            if (track.chance[step] >= 1) track.chance[step] = 0.75;
+            else if (track.chance[step] >= 0.75) track.chance[step] = 0.5;
+            else if (track.chance[step] >= 0.5) track.chance[step] = 0.25;
+            else track.chance[step] = 1;
+          }
         } else {
-          el.classList.remove('bg-orange-400', 'dark:bg-orange-600');
-          el.classList.add('bg-matte-100', 'dark:bg-surface-elevated');
+          // Normal click: toggle + cycle VELOCITY
+          track.steps[step] = !track.steps[step];
+          if (track.steps[step]) {
+            // Cycle velocity: 1.0 → 0.75 → 0.5 → 0.25 → 1.0
+            if (track.velocity[step] >= 1) track.velocity[step] = 0.75;
+            else if (track.velocity[step] >= 0.75) track.velocity[step] = 0.5;
+            else if (track.velocity[step] >= 0.5) track.velocity[step] = 0.25;
+            else track.velocity[step] = 1;
+          }
+        }
+        // Preview sound if step is on
+        if (track.steps[step]) {
+          playSound(def.id, track.velocity[step], track.pan, kitSelect.value);
+        }
+        renderTracks();
+      });
+
+      // Right-click to reset velocity + chance
+      cell.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (track.steps[step]) {
+          track.velocity[step] = 1;
+          track.chance[step] = 1;
+          renderTracks();
         }
       });
-    });
+
+      gridRow.appendChild(cell);
+    }
+
+    row.appendChild(gridRow);
+    tracksContainer.appendChild(row);
   });
+}
+
+function renderPatternBtns() {
+  patternBtns.innerHTML = '';
+  PATTERN_NAMES.forEach((name, idx) => {
+    const btn = document.createElement('button');
+    btn.className = `w-6 h-6 rounded text-2xs font-bold transition-colors ${
+      idx === currentPattern
+        ? 'bg-orange-500 text-white'
+        : 'bg-matte-200 dark:bg-surface-elevated text-matte-500 hover:bg-orange-200 dark:hover:bg-orange-900/30'
+    }`;
+    btn.textContent = name;
+    btn.addEventListener('click', () => {
+      currentPattern = idx;
+      renderAll();
+    });
+    patternBtns.appendChild(btn);
+  });
+}
+
+function renderAll() {
+  renderStepNumbers();
+  renderTracks();
+  renderPatternBtns();
+}
+
+// ════════════════════════════════════════════════════════════════
+// PLAYBACK ENGINE
+// ════════════════════════════════════════════════════════════════
+
+function tick() {
+  const pattern = getPattern();
+  const kit = kitSelect.value;
+  const swing = parseInt(swingSlider.value) / 100;
+
+  // Check if any track has solo enabled
+  const hasSolo = pattern.tracks.some(t => t.solo);
+
+  for (let i = 0; i < TRACK_DEFS.length; i++) {
+    const track = pattern.tracks[i];
+    const def = TRACK_DEFS[i];
+
+    if (track.steps[currentStep]) {
+      // Skip if muted (or if solo is active and this track isn't soloed)
+      if (track.mute || (hasSolo && !track.solo)) continue;
+      // Chance: probability of triggering this step
+      if (track.chance[currentStep] < 1 && Math.random() >= track.chance[currentStep]) continue;
+      playSound(def.id, track.velocity[currentStep], track.pan, kit);
+    }
+  }
+
+  // Highlight current step
+  highlightStep(currentStep);
+
+  // Advance
+  currentStep = (currentStep + 1) % STEPS;
+
+  // Calculate timing with swing
+  const bpm = parseInt(bpmInput.value) || 120;
+  let delay = (60 / bpm) * 1000 / 4; // 16th notes
+
+  // Apply swing to off-beats (odd steps)
+  if (currentStep % 2 === 1) {
+    delay *= (1 + swing * 0.5);
+  } else if (currentStep % 2 === 0 && swing > 0) {
+    delay *= (1 - swing * 0.25);
+  }
+
+  timer = window.setTimeout(tick, delay);
+}
+
+function highlightStep(step: number) {
+  document.querySelectorAll('[data-step]').forEach(cell => {
+    const el = cell as HTMLElement;
+    const s = parseInt(el.dataset.step!);
+    if (s === step) {
+      el.classList.add('ring-1', 'ring-orange-400', 'dark:ring-orange-500');
+    } else {
+      el.classList.remove('ring-1', 'ring-orange-400', 'dark:ring-orange-500');
+    }
+  });
+}
+
+function start() {
+  if (playing) return;
+  playing = true;
+  currentStep = 0;
+  getAudioCtx().resume();
+  tick();
+  playIcon.textContent = '\u23F8';
+  playText.textContent = 'Stop';
+}
+
+function stop() {
+  playing = false;
+  if (timer) { clearTimeout(timer); timer = null; }
+  playIcon.textContent = '\u25B6';
+  playText.textContent = 'Play';
+  // Clear highlights
+  document.querySelectorAll('[data-step]').forEach(el => {
+    el.classList.remove('ring-1', 'ring-orange-400', 'dark:ring-orange-500');
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// PATTERN OPERATIONS
+// ════════════════════════════════════════════════════════════════
+
+function clearPattern() {
+  patterns[currentPattern] = createEmptyPattern();
+  renderTracks();
+}
+
+function copyPattern() {
+  clipboard = JSON.parse(JSON.stringify(getPattern()));
+  (window as any).showToast?.('Pattern copied!', 'success');
+}
+
+function pastePattern() {
+  if (!clipboard) {
+    (window as any).showToast?.('Nothing to paste', 'error');
+    return;
+  }
+  patterns[currentPattern] = JSON.parse(JSON.stringify(clipboard));
+  renderTracks();
+  (window as any).showToast?.('Pattern pasted!', 'success');
+}
+
+// ════════════════════════════════════════════════════════════════
+// WAV EXPORT
+// ════════════════════════════════════════════════════════════════
+
+async function exportWAV() {
+  const bpm = parseInt(bpmInput.value) || 120;
+  const secondsPerStep = (60 / bpm) / 4;
+  const totalDuration = STEPS * secondsPerStep;
+  const sampleRate = 44100;
+  const offlineCtx = new OfflineAudioContext(2, sampleRate * totalDuration, sampleRate);
+
+  const offlineMaster = offlineCtx.createGain();
+  offlineMaster.gain.value = 0.7;
+  offlineMaster.connect(offlineCtx.destination);
+
+  const pattern = getPattern();
+  const kit = kitSelect.value;
+  const hasSolo = pattern.tracks.some(t => t.solo);
+
+  for (let step = 0; step < STEPS; step++) {
+    const time = step * secondsPerStep;
+
+    for (let i = 0; i < TRACK_DEFS.length; i++) {
+      const track = pattern.tracks[i];
+      const def = TRACK_DEFS[i];
+
+      if (!track.steps[step] || track.mute || (hasSolo && !track.solo)) continue;
+
+      const vel = track.velocity[step];
+      const pan = track.pan;
+
+      const panner = offlineCtx.createStereoPanner();
+      panner.pan.value = pan;
+      const gain = offlineCtx.createGain();
+      gain.gain.value = vel * track.volume;
+      panner.connect(gain);
+      gain.connect(offlineMaster);
+
+      // Render sound (simplified versions for offline)
+      const t = time;
+      switch (def.id) {
+        case 'kick': {
+          const o = offlineCtx.createOscillator();
+          const g = offlineCtx.createGain();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(160, t);
+          o.frequency.exponentialRampToValueAtTime(30, t + 0.15);
+          g.gain.setValueAtTime(1, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+          o.connect(g); g.connect(panner);
+          o.start(t); o.stop(t + 0.5);
+          break;
+        }
+        case 'snare': {
+          const o = offlineCtx.createOscillator();
+          const g = offlineCtx.createGain();
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(250, t);
+          o.frequency.exponentialRampToValueAtTime(80, t + 0.05);
+          g.gain.setValueAtTime(0.6, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+          o.connect(g); g.connect(panner);
+          o.start(t); o.stop(t + 0.15);
+          const buf = offlineCtx.createBuffer(1, sampleRate * 0.1, sampleRate);
+          const d = buf.getChannelData(0);
+          for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1) * 0.4;
+          const ns = offlineCtx.createBufferSource(); ns.buffer = buf;
+          const ng = offlineCtx.createGain();
+          ng.gain.setValueAtTime(0.5, t);
+          ng.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+          ns.connect(ng); ng.connect(panner);
+          ns.start(t); ns.stop(t + 0.1);
+          break;
+        }
+        case 'chihat': case 'ohihat': {
+          const dur = def.id === 'chihat' ? 0.05 : 0.3;
+          const buf = offlineCtx.createBuffer(1, sampleRate * dur, sampleRate);
+          const d = buf.getChannelData(0);
+          for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1);
+          const ns = offlineCtx.createBufferSource(); ns.buffer = buf;
+          const f = offlineCtx.createBiquadFilter();
+          f.type = 'highpass'; f.frequency.value = 8000;
+          const g = offlineCtx.createGain();
+          g.gain.setValueAtTime(0.4, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+          ns.connect(f); f.connect(g); g.connect(panner);
+          ns.start(t); ns.stop(t + dur);
+          break;
+        }
+        case 'clap': {
+          for (let j = 0; j < 3; j++) {
+            const buf = offlineCtx.createBuffer(1, sampleRate * 0.02, sampleRate);
+            const d = buf.getChannelData(0);
+            for (let k = 0; k < d.length; k++) d[k] = (Math.random() * 2 - 1);
+            const ns = offlineCtx.createBufferSource(); ns.buffer = buf;
+            const g = offlineCtx.createGain();
+            g.gain.setValueAtTime(0.5, t + j * 0.01);
+            g.gain.exponentialRampToValueAtTime(0.001, t + j * 0.01 + 0.02);
+            ns.connect(g); g.connect(panner);
+            ns.start(t + j * 0.01); ns.stop(t + j * 0.01 + 0.02);
+          }
+          break;
+        }
+        case 'tom': {
+          const o = offlineCtx.createOscillator();
+          const g = offlineCtx.createGain();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(200, t);
+          o.frequency.exponentialRampToValueAtTime(60, t + 0.2);
+          g.gain.setValueAtTime(0.7, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+          o.connect(g); g.connect(panner);
+          o.start(t); o.stop(t + 0.3);
+          break;
+        }
+        case 'cymbal': {
+          const buf = offlineCtx.createBuffer(1, sampleRate * 0.5, sampleRate);
+          const d = buf.getChannelData(0);
+          for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1);
+          const ns = offlineCtx.createBufferSource(); ns.buffer = buf;
+          const f = offlineCtx.createBiquadFilter();
+          f.type = 'bandpass'; f.frequency.value = 5000; f.Q.value = 2;
+          const g = offlineCtx.createGain();
+          g.gain.setValueAtTime(0.3, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+          ns.connect(f); f.connect(g); g.connect(panner);
+          ns.start(t); ns.stop(t + 0.5);
+          break;
+        }
+        case 'perc': {
+          const o = offlineCtx.createOscillator();
+          const g = offlineCtx.createGain();
+          o.type = 'square';
+          o.frequency.setValueAtTime(800, t);
+          o.frequency.exponentialRampToValueAtTime(200, t + 0.03);
+          g.gain.setValueAtTime(0.3, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+          o.connect(g); g.connect(panner);
+          o.start(t); o.stop(t + 0.08);
+          break;
+        }
+      }
+    }
+  }
+
+  (window as any).showToast?.('Rendering WAV...', 'info');
+
+  try {
+    const rendered = await offlineCtx.startRendering();
+    const wav = audioBufferToWav(rendered);
+    const blob = new Blob([wav], { type: 'audio/wav' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `beat-${PATTERN_NAMES[currentPattern]}-${bpm}bpm.wav`;
+    a.click();
+    URL.revokeObjectURL(url);
+    (window as any).showToast?.('WAV exported!', 'success');
+  } catch (err) {
+    (window as any).showToast?.('Export failed: ' + err, 'error');
+  }
+}
+
+function audioBufferToWav(buffer: AudioBuffer): ArrayBuffer {
+  const numChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const format = 1; // PCM
+  const bitDepth = 16;
+  const bytesPerSample = bitDepth / 8;
+  const blockAlign = numChannels * bytesPerSample;
+  const dataLength = buffer.length * blockAlign;
+  const headerLength = 44;
+  const totalLength = headerLength + dataLength;
+  const arrayBuffer = new ArrayBuffer(totalLength);
+  const view = new DataView(arrayBuffer);
+
+  function writeString(offset: number, str: string) {
+    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+  }
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, totalLength - 8, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, format, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitDepth, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataLength, true);
+
+  const channels: Float32Array[] = [];
+  for (let c = 0; c < numChannels; c++) channels.push(buffer.getChannelData(c));
+
+  let offset = 44;
+  for (let i = 0; i < buffer.length; i++) {
+    for (let c = 0; c < numChannels; c++) {
+      const sample = Math.max(-1, Math.min(1, channels[c][i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+
+  return arrayBuffer;
+}
+
+// ════════════════════════════════════════════════════════════════
+// EVENT BINDING
+// ════════════════════════════════════════════════════════════════
+
+// BPM sync
+bpmInput.addEventListener('input', () => { bpmSlider.value = bpmInput.value; });
+bpmSlider.addEventListener('input', () => { bpmInput.value = bpmSlider.value; });
+
+// Swing display
+swingSlider.addEventListener('input', () => { swingVal.textContent = swingSlider.value + '%'; });
+
+// Play/Stop
+playBtn.addEventListener('click', () => playing ? stop() : start());
+
+// Pattern operations
+clearBtn.addEventListener('click', clearPattern);
+copyBtn.addEventListener('click', copyPattern);
+pasteBtn.addEventListener('click', pastePattern);
+exportBtn.addEventListener('click', exportWAV);
+
+// Shortcuts panel toggle
+shortcutsToggle.addEventListener('click', () => {
+  shortcutsPanel.classList.toggle('hidden');
+});
+
+// Keyboard shortcuts
+function handleKeydown(e: KeyboardEvent) {
+  // Don't trigger if typing in input
+  if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'SELECT') return;
+
+  if (e.code === 'Space') {
+    e.preventDefault();
+    playing ? stop() : start();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    selectedTrack = (selectedTrack - 1 + TRACK_DEFS.length) % TRACK_DEFS.length;
+    renderTracks();
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    selectedTrack = (selectedTrack + 1) % TRACK_DEFS.length;
+    renderTracks();
+  } else if (e.key === 'Backspace') {
+    e.preventDefault();
+    clearPattern();
+  } else if (e.ctrlKey || e.metaKey) {
+    if (e.key === 'c') { e.preventDefault(); copyPattern(); }
+    else if (e.key === 'v') { e.preventDefault(); pastePattern(); }
+    else if (e.key === 'e') { e.preventDefault(); exportWAV(); }
+  } else if (e.key >= '1' && e.key <= '8') {
+    // Toggle solo for track 1-8
+    const idx = parseInt(e.key) - 1;
+    if (idx < TRACK_DEFS.length) {
+      const track = getPattern().tracks[idx];
+      track.solo = !track.solo;
+      if (track.solo) track.mute = false;
+      renderTracks();
+    }
+  }
+}
+
+document.addEventListener('keydown', handleKeydown);
+document.addEventListener('astro:page-leave', () => {
+  document.removeEventListener('keydown', handleKeydown);
+  stop();
+}, { once: true });
+
+// ════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════
+
+renderAll();
+
+}); // end astro:page-load
 </script>
