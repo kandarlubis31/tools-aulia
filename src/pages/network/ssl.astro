@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
-<BaseLayout pageTitle="SSL Checker — Cek Sertifikat SSL Domain Online">
+<BaseLayout pageTitle="SSL Checker - Cek Sertifikat SSL Domain Online">
   <div class="max-w-2xl mx-auto px-4 min-h-[60vh]">
     <ToolPageHeader
       title="SSL Checker"
@@ -20,7 +20,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           placeholder="google.com"
           class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono focus:ring-2 focus:ring-emerald-500/40 outline-none" />
         <button id="check-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">
-          🔒 <span data-i18n="ssl.check">Check SSL</span>
+          <span data-i18n="ssl.check">Check SSL</span>
         </button>
       </div>
 
@@ -30,15 +30,15 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     </div>
 
     <p class="text-center text-xs text-matte-400 mt-6" data-i18n="ssl.note">
-      ⚠️ SSL info diperoleh dengan fetch HEAD request. Hanya domain dengan CORS yang longgar bisa di-cek.
+      SSL info diperoleh dari Certificate Transparency logs (crt.sh).
     </p>
   </div>
 </BaseLayout>
 
 <script>
-const __page = (location.pathname.replace(/\/+$/, '') || '/');
+const __page = (location.pathname.replace(/\\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\\/+$/, '') || '/') !== __page) return;
 
     const domainInput = document.getElementById('domain-input') as HTMLInputElement;
     const checkBtn = document.getElementById('check-btn') as HTMLButtonElement;
@@ -52,90 +52,127 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       return Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
     }
 
+    function formatDate(d: Date): string {
+      return d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
     async function checkSSL() {
       let domain = domainInput.value.trim().toLowerCase();
-      if (!domain) { showToast('Masukkan domain', 'error'); return; }
+      if (!domain) { window.showToast?.('Masukkan domain', 'error'); return; }
       domain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
 
       checkBtn.disabled = true;
-      checkBtn.innerHTML = '⏳ …';
-      resultArea.innerHTML = '<p class="text-matte-400 text-center py-6 animate-pulse">Checking SSL…</p>';
+      checkBtn.innerHTML = '<span class="animate-pulse">Checking...</span>';
+      resultArea.innerHTML = '<p class="text-matte-400 text-center py-6 animate-pulse">Fetching SSL info dari crt.sh...</p>';
 
       try {
-        const url = `https://${domain}`;
-        const t0 = performance.now();
+        // Primary: crt.sh Certificate Transparency logs (CORS-friendly)
+        const ctRes = await fetch(`https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`, {
+          headers: { 'Accept': 'application/json' },
+        });
 
-        // Fetch the page — browser validates the cert, but we can't directly access cert info
-        // Instead, we check if HTTPS works and parse basic info
-        const res = await fetch(url, { method: 'HEAD', mode: 'cors', redirect: 'follow', cache: 'no-store' });
-        const elapsed = Math.round(performance.now() - t0);
+        if (!ctRes.ok) throw new Error('crt.sh returned ' + ctRes.status);
 
-        // We can inspect the TLS connection info indirectly
-        const isSecure = res.url.startsWith('https://');
-        const hasHSTS = res.headers.get('strict-transport-security') || '';
-        const maxAge = hasHSTS.match(/max-age=(\d+)/)?.[1];
+        const certs = await ctRes.json();
+        if (!certs || certs.length === 0) {
+          resultArea.innerHTML = `<div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-sm">
+            Tidak ditemukan sertifikat untuk <strong>${escHtml(domain)}</strong> di CT logs.
+          </div>`;
+          return;
+        }
 
-        // Check certificate transparency via response headers
-        const expectCT = res.headers.get('expect-ct') || '';
+        // Get the latest cert
+        const latest = certs[0];
+        const issuer = latest.issuer_name || 'Unknown';
+        const notBefore = latest.not_before ? new Date(latest.not_before) : null;
+        const notAfter = latest.not_after ? new Date(latest.not_after) : null;
+        const now = new Date();
+        const daysLeft = notAfter ? daysBetween(now, notAfter) : null;
 
-        let expiryEstimate = 'Tidak dapat dideteksi dari browser';
-        let daysLeft: number | null = null;
+        // Determine status
+        let statusText: string;
+        let statusClass: string;
+        if (daysLeft !== null && daysLeft < 0) {
+          statusText = 'EXPIRED';
+          statusClass = 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400';
+        } else if (daysLeft !== null && daysLeft < 30) {
+          statusText = 'Expiring Soon';
+          statusClass = 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400';
+        } else {
+          statusText = 'Valid';
+          statusClass = 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300';
+        }
 
-        // Try to get cert expiry from certificate-transparency logs
-        try {
-          const ctRes = await fetch(`https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`, {
-            headers: { 'Accept': 'application/json' },
-          });
-          if (ctRes.ok) {
-            const certs = await ctRes.json();
-            if (certs.length) {
-              const latest = certs[0];
-              if (latest.not_after) {
-                const expiry = new Date(latest.not_after);
-                const now = new Date();
-                daysLeft = daysBetween(now, expiry);
-                expiryEstimate = expiry.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
-              }
-            }
+        // Count unique subdomains in CT logs
+        const subdomains = new Set<string>();
+        certs.forEach((c: any) => {
+          if (c.name_value) {
+            c.name_value.split('\n').forEach((n: string) => subdomains.add(n.trim()));
           }
-        } catch { /* crt.sh might be blocked */ }
-
-        const sslValid = res.ok || res.status < 500;
-        let statusClass = sslValid ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300' : 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400';
-        let statusText = sslValid ? '✅ Valid' : '⚠️ Ada masalah';
+        });
 
         let html = '<div class="space-y-3">';
+
+        // Main info grid
         html += `<div class="grid grid-cols-2 gap-3">
-          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Domain</span><span class="font-bold font-mono text-sm">${escHtml(domain)}</span></div>
-          <div class="p-3 rounded-lg ${statusClass}"><span class="text-2xs opacity-70 block">SSL Status</span><span class="font-bold text-sm">${statusText}</span></div>
-          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Response</span><span class="font-bold text-sm">${res.status} · ${elapsed}ms</span></div>
-          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Expiry${daysLeft !== null ? ' (CT Log)' : ''}</span><span class="font-bold text-sm ${daysLeft !== null && daysLeft < 30 ? 'text-red-500' : daysLeft !== null && daysLeft < 90 ? 'text-amber-500' : ''}">${expiryEstimate}${daysLeft !== null ? ` · ${daysLeft} hari lagi` : ''}</span></div>
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated">
+            <span class="text-2xs text-matte-400 block">Domain</span>
+            <span class="font-bold font-mono text-sm">${escHtml(domain)}</span>
+          </div>
+          <div class="p-3 rounded-lg ${statusClass}">
+            <span class="text-2xs opacity-70 block">SSL Status</span>
+            <span class="font-bold text-sm">${statusText}</span>
+          </div>
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated">
+            <span class="text-2xs text-matte-400 block">Issuer</span>
+            <span class="font-bold text-sm text-xs">${escHtml(issuer)}</span>
+          </div>
+          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated">
+            <span class="text-2xs text-matte-400 block">CT Logs</span>
+            <span class="font-bold text-sm">${certs.length} entries</span>
+          </div>
         </div>`;
 
-        // Security headers
-        const secHeaders = [
-          { name: 'HSTS', value: hasHSTS ? `✅ max-age=${maxAge || '?'}s` : '❌ Tidak ada', ok: !!hasHSTS },
-          { name: 'Expect-CT', value: expectCT ? '✅ Ada' : '—', ok: !!expectCT },
-        ];
+        // Expiry details
+        if (notBefore || notAfter) {
+          html += `<div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <span class="text-2xs text-matte-400 block">Valid From</span>
+                <span class="font-bold text-sm">${notBefore ? formatDate(notBefore) : '-'}</span>
+              </div>
+              <div>
+                <span class="text-2xs text-matte-400 block">Expires</span>
+                <span class="font-bold text-sm ${daysLeft !== null && daysLeft < 30 ? 'text-red-500' : daysLeft !== null && daysLeft < 90 ? 'text-amber-500' : ''}">${notAfter ? formatDate(notAfter) : '-'}</span>
+              </div>
+            </div>
+            ${daysLeft !== null ? `<div class="mt-2 text-xs ${daysLeft < 0 ? 'text-red-500 font-bold' : daysLeft < 30 ? 'text-amber-500' : 'text-matte-500'}">${daysLeft < 0 ? `Expired ${Math.abs(daysLeft)} days ago` : `${daysLeft} days remaining`}</div>` : ''}
+          </div>`;
+        }
 
-        html += `<div class="grid grid-cols-2 gap-2 mt-3">`;
-        secHeaders.forEach(h => {
-          html += `<div class="p-2 rounded bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs ${h.ok ? 'text-emerald-500' : 'text-matte-400'}">${h.name}</span><span class="text-xs block font-mono">${escHtml(h.value)}</span></div>`;
-        });
-        html += '</div>';
+        // Subdomains found
+        if (subdomains.size > 0) {
+          const subArr = Array.from(subdomains).slice(0, 10);
+          html += `<div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated">
+            <span class="text-2xs text-matte-400 block mb-1">Subdomains (${subdomains.size} found)</span>
+            <div class="flex flex-wrap gap-1">
+              ${subArr.map(s => `<span class="text-2xs font-mono bg-matte-200 dark:bg-matte-700 px-1.5 py-0.5 rounded">${escHtml(s)}</span>`).join('')}
+              ${subdomains.size > 10 ? `<span class="text-2xs text-matte-400">+${subdomains.size - 10} more</span>` : ''}
+            </div>
+          </div>`;
+        }
 
         html += '</div>';
         resultArea.innerHTML = html;
+
       } catch (e: any) {
-        // The fetch itself might fail due to SSL issues or CORS
-        const isSSLErr = e.message?.includes('SSL') || e.message?.includes('certificate') || e.message?.includes('TLS');
-        resultArea.innerHTML = `<div class="p-4 rounded-lg ${isSSLErr ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'} text-sm">
-          ${isSSLErr ? '🔴 SSL Error — Sertifikat tidak valid atau expired.' : '⚠️ Tidak dapat mengecek SSL (kemungkinan CORS memblokir).'}
-          <br><br><span class="font-mono text-xs">${escHtml(e.message)}</span>
+        resultArea.innerHTML = `<div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
+          Gagal mengambil data SSL. Pastikan domain valid dan coba lagi.
+          <br><br><span class="font-mono text-xs">${escHtml(e.message || 'Unknown error')}</span>
         </div>`;
       } finally {
         checkBtn.disabled = false;
-        checkBtn.innerHTML = '🔒 <span data-i18n="ssl.check">Check SSL</span>';
+        checkBtn.innerHTML = '<span data-i18n="ssl.check">Check SSL</span>';
         (window as any).processI18n?.();
       }
     }
