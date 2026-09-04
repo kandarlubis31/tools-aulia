@@ -167,7 +167,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
 
       <!-- Right Preview Area -->
-      <div class="lg:col-span-2 flex flex-col items-center">
+      <div class="lg:col-span-2 flex flex-col items-center min-w-0">
         <!-- Page Navigation -->
         <div id="page-nav" class="hidden w-full flex items-center justify-between mb-3">
           <button id="prev-page" class="p-2 rounded-lg bg-matte-100 dark:bg-matte-700 hover:bg-matte-200 dark:hover:bg-matte-600 text-matte-600 dark:text-matte-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" disabled>
@@ -179,7 +179,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           </button>
         </div>
 
-        <div class="bg-matte-200 dark:bg-matte-900 p-4 rounded-xl border border-matte-300 dark:border-matte-700 shadow-inner w-full flex justify-center overflow-auto relative min-h-[500px]">
+        <div class="bg-matte-200 dark:bg-matte-900 p-4 rounded-xl border border-matte-300 dark:border-matte-700 shadow-inner w-full max-w-full flex justify-center overflow-auto relative min-h-[500px]">
            <!-- Loading overlay for page render (Bug #2) -->
            <div id="render-loading" class="hidden absolute inset-0 z-30 flex items-center justify-center bg-matte-200/80 dark:bg-matte-900/80 rounded-xl backdrop-blur-sm">
              <div class="flex flex-col items-center gap-2">
@@ -307,6 +307,24 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   // Bug #1: dragStartSnapshot declared here (before use in startDrag)
   let dragStartSnapshot: SigEntry[] | null = null;
 
+  // S-2: Selected signature for Delete-key removal (UX #9) + visual state
+  let selectedSigId: string | null = null;
+
+  function selectSignature(id: string | null) {
+    selectedSigId = id;
+    applySelectionUI();
+  }
+
+  function applySelectionUI() {
+    if (!previewContainer) return;
+    previewContainer.querySelectorAll('.sig-overlay-dynamic').forEach((el) => {
+      const overlayEl = el as HTMLElement;
+      const isSel = overlayEl.dataset.sigId === selectedSigId;
+      overlayEl.style.outline = isSel ? '2px solid #2563eb' : '';
+      overlayEl.style.outlineOffset = isSel ? '1px' : '';
+    });
+  }
+
   // Undo/Redo
   type HistoryEntry = { signatures: SigEntry[] };
   let undoStack: HistoryEntry[] = [];
@@ -328,6 +346,96 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   }
 
+  // S-1: Rasterize the "Stempel Tanggal" chip below a signature image so the date
+  // actually lands in the exported PDF. Layout is computed in display-pixel space
+  // (width = initial TTD width); internal upscale factor keeps big uploads crisp.
+  function composeDateStamp(srcDataUrl: string, displayWidth: number, dateText: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const src = new Image();
+      src.onload = () => {
+        try {
+          const W = Math.max(8, Math.round(displayWidth));
+          const F = Math.max(1, Math.min(4, src.naturalWidth / W));
+          const sigH = src.naturalHeight * (W / src.naturalWidth);
+          const gap = 6;
+          const padX = 6;
+          const padY = 2;
+          const family = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+
+          let fontSize = 9;
+          let mctx = document.createElement('canvas').getContext('2d')!;
+          mctx.font = `bold ${fontSize}px ${family}`;
+          let textW = mctx.measureText(dateText).width;
+          const maxTextW = Math.max(16, W - 2 * (padX + 2));
+          if (textW > maxTextW) {
+            fontSize = Math.max(6, fontSize * (maxTextW / textW));
+            mctx.font = `bold ${fontSize}px ${family}`;
+            textW = mctx.measureText(dateText).width;
+          }
+          const chipW = Math.min(textW + 2 * padX, W);
+          const chipH = Math.ceil(fontSize + 2 * padY + 1);
+          const H = Math.ceil(sigH + gap + chipH + 2);
+
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(W * F));
+          canvas.height = Math.max(1, Math.round(H * F));
+          const ctx = canvas.getContext('2d')!;
+          ctx.scale(F, F);
+          ctx.clearRect(0, 0, W, H);
+          ctx.drawImage(src, 0, 0, W, sigH);
+
+          const chipX = Math.max(1, (W - chipW) / 2);
+          const chipY = Math.ceil(sigH + gap);
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          roundRect(ctx, chipX, chipY, chipW, chipH, 4);
+          ctx.fill();
+          ctx.fillStyle = '#2563eb';
+          ctx.font = `bold ${fontSize}px ${family}`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(dateText, chipX + chipW / 2, chipY + chipH / 2 + 0.5);
+
+          resolve(canvas.toDataURL('image/png'));
+        } catch (err) {
+          reject(err);
+        }
+      };
+      src.onerror = () => reject(new Error('Signature image could not be loaded'));
+      src.src = srcDataUrl;
+    });
+  }
+
+  function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  // S-7: True when the draw pad holds no ink (fully transparent bitmap)
+  function isPadEmpty(): boolean {
+    if (!padCanvas || !padCtx) return true;
+    const data = padCtx.getImageData(0, 0, padCanvas.width, padCanvas.height).data;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] !== 0) return false;
+    }
+    return true;
+  }
+
+  function clearPad() {
+    if (!padReady || !padCanvas) return;
+    padCtx!.clearRect(0, 0, padCanvas.width, padCanvas.height);
+  }
+
+  // Code #17: i18n-safe toast helper (falls back to Indonesian until phrases load)
+  function _tt(msg: string): string {
+    return window._tToast ? window._tToast(msg) : msg;
+  }
+
   function cloneSigs(): SigEntry[] {
     return signatures.map(s => ({ ...s }));
   }
@@ -344,6 +452,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     redoStack.push({ signatures: cloneSigs() });
     const entry = undoStack.pop()!;
     signatures = entry.signatures;
+    if (selectedSigId && !signatures.some(s => s.id === selectedSigId)) selectSignature(null);
     renderAllOverlays();
     renderSigList();
     updateUndoRedoBtns();
@@ -354,6 +463,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     undoStack.push({ signatures: cloneSigs() });
     const entry = redoStack.pop()!;
     signatures = entry.signatures;
+    if (selectedSigId && !signatures.some(s => s.id === selectedSigId)) selectSignature(null);
     renderAllOverlays();
     renderSigList();
     updateUndoRedoBtns();
@@ -367,17 +477,24 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   undoBtn?.addEventListener('click', undo);
   redoBtn?.addEventListener('click', redo);
 
-  // Bug #4: Skip undo/redo when focus is in a text input
-  document.addEventListener('keydown', (e) => {
+  // Bug #4 + UX #9: Global keyboard shortcuts (undo/redo/Delete). Defined here
+  // but ATTACHED via attachGlobalListeners() → astro:page-leave cleanup, so SPA
+  // revisits don't stack duplicate listeners (was: one Ctrl+Z = N undos).
+  function onDocKeydown(e: KeyboardEvent) {
     const tag = (e.target as HTMLElement)?.tagName;
     const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target as HTMLElement)?.isContentEditable;
     if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-      if (!isInput) { e.preventDefault(); undo(); }
+      if (!isInput) { e.preventDefault(); undo(); return; }
     }
     if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
-      if (!isInput) { e.preventDefault(); redo(); }
+      if (!isInput) { e.preventDefault(); redo(); return; }
     }
-  });
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !isInput && selectedSigId) {
+      e.preventDefault();
+      removeSignature(selectedSigId);
+      selectSignature(null);
+    }
+  }
 
   // --- 4. TAB SWITCHING ---
   function switchTab(mode: string) {
@@ -401,17 +518,46 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   tabType?.addEventListener('click', () => switchTab('type'));
 
   // --- 5. DRAWING PAD ---
+  // S-6: Track CSS (logical) pad size so strokes survive a DPR-aware resize.
+  let padCssW = 0;
+  let padCssH = 0;
+
   function resizePad() {
     if (!padReady || !padCanvas) return;
     const parent = padCanvas.parentElement!;
-    padCanvas.width = parent.clientWidth;
-    padCanvas.height = parent.clientHeight;
+    const w = parent.clientWidth;
+    const h = parent.clientHeight;
+    if (!w || !h) return; // hidden/zero-size → never wipe existing strokes
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const bw = Math.max(1, Math.round(w * dpr));
+    const bh = Math.max(1, Math.round(h * dpr));
+    if (padCanvas.width === bw && padCanvas.height === bh) return;
+
+    // Preserve strokes across resize: canvas.width/height reset clears the bitmap
+    let snapshot: HTMLCanvasElement | null = null;
+    if (padCanvas.width > 0 && padCanvas.height > 0) {
+      snapshot = document.createElement('canvas');
+      snapshot.width = padCanvas.width;
+      snapshot.height = padCanvas.height;
+      snapshot.getContext('2d')!.drawImage(padCanvas, 0, 0);
+    }
+    const oldCssW = padCssW;
+    const oldCssH = padCssH;
+    padCssW = w;
+    padCssH = h;
+
+    padCanvas.width = bw;
+    padCanvas.height = bh;
+    padCtx!.setTransform(dpr, 0, 0, dpr, 0, 0); // drawing space stays in CSS px
     padCtx!.lineCap = 'round';
     padCtx!.lineJoin = 'round';
     padCtx!.strokeStyle = penColor;
     padCtx!.lineWidth = penWidth;
+    if (snapshot && oldCssW > 0 && oldCssH > 0) {
+      padCtx!.drawImage(snapshot, 0, 0, oldCssW, oldCssH);
+    }
   }
-  window.addEventListener('resize', resizePad);
 
   function getPos(e: any) {
     const rect = padCanvas.getBoundingClientRect();
@@ -445,10 +591,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     padCanvas?.addEventListener(ev, () => { isDrawing = false; });
   });
 
-  clearPadBtn?.addEventListener('click', () => {
-    if (!padReady || !padCanvas) return;
-    padCtx!.clearRect(0, 0, padCanvas.width, padCanvas.height);
-  });
+  clearPadBtn?.addEventListener('click', clearPad);
 
   colorBtns.forEach(btn => {
     btn.addEventListener('click', (e: any) => {
@@ -533,8 +676,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   applyTypeBtn?.addEventListener('click', () => {
     const text = typeText?.value.trim();
-    if (!text) { window.showToast?.('Ketik nama untuk tanda tangan!', 'error'); return; }
-    addSignature(renderTypeSignature(text, typeFontStyle, typeColor));
+    if (!text) { window.showToast?.(_tt('Ketik nama untuk tanda tangan!'), 'error'); return; }
+    void addSignature(renderTypeSignature(text, typeFontStyle, typeColor));
   });
 
   // --- 7. DATE STAMP TOGGLE ---
@@ -581,16 +724,28 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   });
 
   // --- 10. ADD / REMOVE SIGNATURES ---
-  function addSignature(dataUrl: string) {
-    pushHistory();
-    const id = genId();
+  async function addSignature(dataUrl: string) {
     const scalePct = parseInt(sigScale?.value || '100');
     const width = 150 * (scalePct / 100);
     const opacityPct = parseInt(sigOpacity?.value || '100');
     const targetPage = parseInt(pageSelect?.value || '0');
     const dateStamp = dateStampEnabled ? formatDateID(new Date()) : null;
 
-    signatures.push({ id, dataUrl, page: targetPage, xPercent: 0.5, yPercent: 0.5, width, opacity: opacityPct / 100, dateStamp });
+    // S-1: Bake the date chip into the image so it is part of the exported PDF
+    let finalUrl = dataUrl;
+    if (dateStamp) {
+      try {
+        finalUrl = await composeDateStamp(dataUrl, width, dateStamp);
+      } catch (err) {
+        console.error('Date stamp render failed:', err);
+        window.showToast?.(_tt('Gagal menambahkan stempel tanggal.'), 'error');
+        return;
+      }
+    }
+
+    pushHistory();
+    const id = genId();
+    signatures.push({ id, dataUrl: finalUrl, page: targetPage, xPercent: 0.5, yPercent: 0.5, width, opacity: opacityPct / 100, dateStamp });
 
     if (targetPage !== currentPageIndex) {
       currentPageIndex = targetPage;
@@ -600,11 +755,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       renderAllOverlays();
     }
     renderSigList();
-    window.showToast?.(`TTD ditambahkan ke Hal. ${targetPage + 1}! Geser untuk atur posisi.`, 'info');
+    window.showToast?.(_tt(`TTD ditambahkan ke Hal. ${targetPage + 1}! Geser untuk atur posisi.`), 'info');
   }
 
   function removeSignature(id: string) {
     pushHistory();
+    if (selectedSigId === id) selectSignature(null);
     signatures = signatures.filter(s => s.id !== id);
     renderAllOverlays();
     renderSigList();
@@ -706,13 +862,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       img.loading = 'lazy';
       overlay.appendChild(img);
 
-      // Date stamp
-      if (sig.dateStamp) {
-        const dateLabel = document.createElement('div');
-        dateLabel.className = 'absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-white/80 dark:bg-matte-800/80 px-1.5 py-0.5 rounded whitespace-nowrap pointer-events-none';
-        dateLabel.textContent = sig.dateStamp;
-        overlay.appendChild(dateLabel);
-      }
+      // S-1: Date stamp is baked into sig.dataUrl at add-time — no DOM label here,
+      // so the preview and the exported PDF are pixel-identical.
 
       // Remove button (Code #13: use shared SVG template)
       const removeBtn = document.createElement('button');
@@ -764,6 +915,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       previewContainer.appendChild(overlay);
     });
+    applySelectionUI();
   }
 
   // --- 13. DRAG LOGIC ---
@@ -771,6 +923,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     dragStartSnapshot = cloneSigs();
     activeDragId = id;
     interactionMode = 'drag';
+    selectSignature(id); // S-2: pointer-down selects the signature for Del-key removal
     e.preventDefault();
   }
 
@@ -895,46 +1048,61 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
 
   // Code #11: Only add listeners once, track state
+  function onDocMouseMove(e: MouseEvent) {
+    if (interactionMode === 'none' && !dragStartSnapshot) return;
+    onPointerMove(e);
+  }
+  function onDocTouchMove(e: TouchEvent) { onPointerMove(e); }
+  let refitTimer: number | undefined;
+  function onWindowResize() {
+    resizePad();
+    // S-11: Re-fit the open PDF after a window resize (debounced)
+    if (pdfDoc) {
+      if (refitTimer !== undefined) clearTimeout(refitTimer);
+      refitTimer = window.setTimeout(() => {
+        refitTimer = undefined;
+        void renderCurrentPage();
+      }, 150);
+    }
+  }
+  function onDocPointerDown(e: PointerEvent) {
+    // S-2: Clicking empty preview area clears the current signature selection
+    const target = e.target as HTMLElement | null;
+    if (interactionMode === 'none' && (!target || !target.closest('.sig-overlay-dynamic'))) {
+      selectSignature(null);
+    }
+  }
+
   function attachGlobalListeners() {
     if (listenersAttached) return;
     listenersAttached = true;
-    document.addEventListener('mousemove', (e) => {
-      if (interactionMode === 'none' && !dragStartSnapshot) return;
-      onPointerMove(e);
-    });
-    document.addEventListener('touchmove', (e) => { onPointerMove(e); }, { passive: false });
+    document.addEventListener('mousemove', onDocMouseMove);
+    document.addEventListener('touchmove', onDocTouchMove, { passive: false });
     document.addEventListener('mouseup', onMouseUpHandler);
     document.addEventListener('touchend', onTouchEndHandler);
+    // S-4: page-level listeners cleaned up on astro:page-leave so they don't
+    // accumulate across SPA visits (was: 1 Ctrl+Z → multiple undos per revisit)
+    document.addEventListener('keydown', onDocKeydown);
+    document.addEventListener('pointerdown', onDocPointerDown);
+    window.addEventListener('resize', onWindowResize);
   }
 
   function detachGlobalListeners() {
     if (!listenersAttached) return;
-    document.removeEventListener('mousemove', onPointerMove);
-    document.removeEventListener('touchmove', onPointerMove);
+    document.removeEventListener('mousemove', onDocMouseMove);
+    document.removeEventListener('touchmove', onDocTouchMove);
     document.removeEventListener('mouseup', onMouseUpHandler);
     document.removeEventListener('touchend', onTouchEndHandler);
+    document.removeEventListener('keydown', onDocKeydown);
+    document.removeEventListener('pointerdown', onDocPointerDown);
+    window.removeEventListener('resize', onWindowResize);
+    if (refitTimer !== undefined) { clearTimeout(refitTimer); refitTimer = undefined; }
     listenersAttached = false;
   }
 
   attachGlobalListeners();
 
   document.addEventListener('astro:page-leave', detachGlobalListeners);
-
-  // UX #9: Delete key shortcut for selected signature
-  let selectedSigId: string | null = null;
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Delete' || e.key === 'Backspace') {
-      const tag = (e.target as HTMLElement)?.tagName;
-      const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target as HTMLElement)?.isContentEditable;
-      if (isInput) return;
-      if (selectedSigId) {
-        e.preventDefault();
-        removeSignature(selectedSigId);
-        selectedSigId = null;
-      }
-    }
-  });
 
   // --- 16. SIGNATURE LIST PANEL (UX #6 + #10 + Code #12) ---
   function renderSigList() {
@@ -1044,7 +1212,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     try {
       const page = await pdfDoc.getPage(currentPageIndex + 1);
-      const viewport = page.getViewport({ scale: 1.0 });
+      const baseViewport = page.getViewport({ scale: 1.0 });
+      // S-11: Fit the page to the preview panel width so narrow windows/mobile
+      // never clip the sides (flex-justify-center + overflow-auto made the
+      // overhang unreachable). Coordinates stay %/CSS-px, so drag & export math
+      // is unaffected — currentViewport simply reflects the displayed size.
+      const wrap = previewContainer.parentElement;
+      let scale = 1.0;
+      if (wrap && wrap.clientWidth > 0) {
+        const availW = Math.max(80, wrap.clientWidth - 32); // p-4 wrapper padding
+        scale = Math.max(0.2, Math.min(1.5, availW / baseViewport.width));
+      }
+      const viewport = page.getViewport({ scale });
       currentViewport = viewport;
 
       pdfCanvas.width = viewport.width;
@@ -1060,7 +1239,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         await page.render({ canvasContext: context, viewport }).promise;
       } catch (renderErr) {
         console.error('PDF page render failed:', renderErr);
-        window.showToast?.('Gagal merender halaman PDF.', 'error');
+        window.showToast?.(_tt('Gagal merender halaman PDF.'), 'error');
       }
 
       // Check if this render was aborted before doing overlays
@@ -1069,7 +1248,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       }
     } catch (err) {
       console.error('PDF page load failed:', err);
-      window.showToast?.('Gagal memuat halaman PDF.', 'error');
+      window.showToast?.(_tt('Gagal memuat halaman PDF.'), 'error');
     } finally {
       renderLock = false;
       if (renderLoading) renderLoading.classList.add('hidden');
@@ -1097,12 +1276,32 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const MAX_FILE_SIZE_MB = 50;
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
+  // S-8: Restore drop-zone UI when a PDF fails to open (no stuck empty workspace)
+  function resetToDropZone() {
+    currentFile = null;
+    pdfDoc = null;
+    totalPages = 1;
+    currentPageIndex = 0;
+    currentViewport = null;
+    signatures = [];
+    undoStack = [];
+    redoStack = [];
+    if (selectedSigId) selectSignature(null);
+    updateUndoRedoBtns();
+    renderSigList();
+    hideSnapGuides();
+    if (renderLoading) renderLoading.classList.add('hidden');
+    dropZone?.classList.remove('hidden');
+    workspace?.classList.add('hidden');
+    workspace?.classList.remove('grid');
+  }
+
   window.usePdfDropZone('drop-zone', 'file-input', {
     accentColor: 'blue',
     onFile: async (file: File) => {
       // UX #7: File size validation
       if (file.size > MAX_FILE_SIZE_BYTES) {
-        window.showToast?.(`Ukuran file terlalu besar (max ${MAX_FILE_SIZE_MB}MB).`, 'error');
+        window.showToast?.(_tt(`Ukuran file terlalu besar (max ${MAX_FILE_SIZE_MB}MB).`), 'error');
         return;
       }
       currentFile = file;
@@ -1110,19 +1309,32 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       workspace?.classList.remove('hidden');
       workspace?.classList.add('grid');
       resizePad();
+      clearPad(); // new file → clean pad (S-6 only preserves strokes across resize/tab-switch)
       signatures = [];
       undoStack = [];
       redoStack = [];
+      if (selectedSigId) selectSignature(null);
       updateUndoRedoBtns();
       renderSigList();
-      await renderPdfPage(file);
+      try {
+        await renderPdfPage(file);
+      } catch (err) {
+        console.error('PDF load failed:', err);
+        resetToDropZone();
+        window.showToast?.(_tt('Gagal memuat PDF. Coba file lain.'), 'error');
+      }
     },
   });
 
   // --- 19. APPLY DRAW / UPLOAD ---
   applyDrawBtn?.addEventListener('click', () => {
     if (!padCanvas || !padReady) return;
-    addSignature(padCanvas.toDataURL('image/png'));
+    // S-7: Empty pad guard — no invisible blank signatures from an empty pad
+    if (isPadEmpty()) {
+      window.showToast?.(_tt('Gambar tanda tangan dulu!'), 'error');
+      return;
+    }
+    void addSignature(padCanvas.toDataURL('image/png'));
   });
 
   imgInput?.addEventListener('change', (e: any) => {
@@ -1130,11 +1342,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     if (file) {
       // UX #7: File size validation for images too
       if (file.size > 10 * 1024 * 1024) {
-        window.showToast?.('Ukuran gambar terlalu besar (max 10MB).', 'error');
+        window.showToast?.(_tt('Ukuran gambar terlalu besar (max 10MB).'), 'error');
         return;
       }
       const reader = new FileReader();
-      reader.onload = (ev) => { addSignature(ev.target!.result as string); };
+      reader.onload = (ev) => { void addSignature(ev.target!.result as string); };
       reader.readAsDataURL(file);
     }
   });
@@ -1143,10 +1355,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   savePdfBtn?.addEventListener('click', async () => {
     if (!currentFile) return;
     if (signatures.length === 0) {
-      return window.showToast?.('Belum ada tanda tangan yang ditempel!', 'error');
+      return window.showToast?.(_tt('Belum ada tanda tangan yang ditempel!'), 'error');
     }
 
-    const restoreBtn = window.showButtonSpinner(savePdfBtn, 'Memproses...');
+    const restoreBtn = window.showButtonSpinner(savePdfBtn, _tt('Memproses...'));
 
     try {
       const arrayBuffer = await currentFile.arrayBuffer();
@@ -1193,9 +1405,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       const pdfBytes = await pdfDocOut.save();
       window.downloadBytes(pdfBytes, `signed-${currentFile.name}`);
-      window.showToast?.(`Berhasil! ${signatures.length} TTD ditambahkan.`, 'success');
+      window.showToast?.(_tt(`Berhasil! ${signatures.length} TTD ditambahkan.`), 'success');
     } catch (err) {
-      window.showToast?.('Gagal menyimpan PDF.', 'error');
+      window.showToast?.(_tt('Gagal menyimpan PDF.'), 'error');
     } finally {
       restoreBtn();
     }
