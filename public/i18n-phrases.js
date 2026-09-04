@@ -391,4 +391,16 @@ window._i18nPhrases = {
   'Buka di GitHub':'Open on GitHub',
   'Terima kasih! GitHub Issues akan terbuka di tab baru.':'Thank you! GitHub Issues will open in a new tab.',
   'Mohon isi deskripsi bug terlebih dahulu.':'Please fill in the bug description first.',
+  // PDF Sign tool (sign.astro)
+  'Ketik nama untuk tanda tangan!':'Type your name to sign!',
+  'TTD ditambahkan ke Hal.':'Signature added to page',
+  'Geser untuk atur posisi.':'Drag to reposition.',
+  'TTD ditambahkan.':' signatures added.',
+  'Gagal merender halaman PDF.':'Failed to render the PDF page.',
+  'Gagal memuat halaman PDF.':'Failed to load the PDF page.',
+  'Ukuran file terlalu besar (max 50MB).':'File too large (max 50MB).',
+  'Ukuran gambar terlalu besar (max 10MB).':'Image too large (max 10MB).',
+  'Gambar tanda tangan dulu!':'Draw your signature first!',
+  'Gagal memuat PDF. Coba file lain.':'Failed to load the PDF. Try another file.',
+  'Gagal menambahkan stempel tanggal.':'Failed to add the date stamp.',
 };
