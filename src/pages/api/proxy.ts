@@ -9,6 +9,7 @@ const ALLOWED_DOMAINS = [
   'wttr.in',
   'api.ipify.org',
   'ipapi.co',
+  'crt.sh',
 ];
 
 function isAllowedDomain(urlString: string): boolean {

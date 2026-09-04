@@ -66,10 +66,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       resultArea.innerHTML = '<p class="text-matte-400 text-center py-6 animate-pulse">Fetching SSL info dari crt.sh...</p>';
 
       try {
-        // Primary: crt.sh Certificate Transparency logs (CORS-friendly)
-        const ctRes = await fetch(`https://crt.sh/?q=${encodeURIComponent(domain)}&output=json`, {
-          headers: { 'Accept': 'application/json' },
-        });
+        // Use server-side proxy to bypass CORS (crt.sh added to proxy allowlist)
+        const ctRes = await fetch(`/api/proxy?url=${encodeURIComponent(`https://crt.sh/?q=${domain}&output=json`)}`);
 
         if (!ctRes.ok) throw new Error('crt.sh returned ' + ctRes.status);
 

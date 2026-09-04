@@ -5,31 +5,38 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <BaseLayout pageTitle="Sign PDF" pdfJs={true}>
   <div class="max-w-6xl mx-auto px-4 min-h-[80vh]">
-        <ToolPageHeader
+    <ToolPageHeader
       title="Sign PDF Pro"
-      desc="Gambar tanda tangan atau upload gambar PNG, lalu tempel posisinya sesuka hati."
+      desc="Buat tanda tangan, lalu tempel sesuka hati — bisa banyak TTD di beberapa halaman."
       icon='<path d="M11 12H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4"/><path d="M18 8V5a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v3"/><path d="M18 21v-3"/><path d="M22 18h-4"/>'
       gradient="from-blue-500 to-indigo-600"
     />
 
+    <!-- Drop Zone -->
     <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-matte-300 dark:border-matte-600 rounded-3xl p-12 cursor-pointer hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-matte-800/50 transition-all group text-center animate-on-scroll">
       <div class="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </div>
       <h3 class="text-2xl font-bold text-matte-700 dark:text-matte-200 mb-2">Pilih PDF</h3>
+      <p class="text-sm text-matte-400">Drag & drop atau klik untuk memilih</p>
       <input type="file" id="file-input" accept="application/pdf" class="hidden" />
     </div>
 
+    <!-- Workspace -->
     <div id="workspace" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20 animate-fade-in">
       
+      <!-- Left Sidebar -->
       <div class="lg:col-span-1 space-y-6">
         <div class="bg-white dark:bg-matte-800 p-6 rounded-2xl border border-matte-200 dark:border-matte-700 shadow-lg sticky top-24">
           
+          <!-- Signature Type Tabs -->
           <div class="flex p-1 bg-matte-100 dark:bg-matte-700 rounded-lg mb-6">
-            <button id="tab-draw" class="flex-1 py-2 px-4 rounded-md text-sm font-bold bg-white dark:bg-matte-600 text-blue-600 shadow-sm transition-all">Gambar TTD</button>
-            <button id="tab-upload" class="flex-1 py-2 px-4 rounded-md text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-300 transition-all">Upload PNG</button>
+            <button id="tab-draw" class="flex-1 py-2 px-2 rounded-md text-xs font-bold bg-white dark:bg-matte-600 text-blue-600 shadow-sm transition-all">Gambar</button>
+            <button id="tab-upload" class="flex-1 py-2 px-2 rounded-md text-xs font-medium text-matte-500 hover:text-matte-700 dark:text-matte-300 transition-all">Upload</button>
+            <button id="tab-type" class="flex-1 py-2 px-2 rounded-md text-xs font-medium text-matte-500 hover:text-matte-700 dark:text-matte-300 transition-all">Ketik</button>
           </div>
 
+          <!-- Draw Mode -->
           <div id="mode-draw" class="space-y-4">
             <div class="border-2 border-matte-200 dark:border-matte-600 rounded-xl overflow-hidden bg-white touch-none relative h-40">
                <canvas id="pad-canvas" class="w-full h-full cursor-crosshair"></canvas>
@@ -37,34 +44,79 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
                  <button id="clear-pad" class="p-1 bg-matte-200 hover:bg-red-100 text-matte-500 hover:text-red-500 rounded" title="Hapus" aria-label="Hapus tanda tangan"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
                </div>
             </div>
-            
             <div class="flex items-center justify-between">
                <div class="flex gap-2">
-                  <button class="w-6 h-6 rounded-full bg-black ring-2 ring-transparent focus:ring-blue-500 color-btn" data-color="#000000"></button>
-                  <button class="w-6 h-6 rounded-full bg-blue-600 ring-2 ring-transparent focus:ring-blue-500 color-btn" data-color="#2563eb"></button>
+                  <button class="w-6 h-6 rounded-full bg-black ring-2 ring-blue-500 color-btn" data-color="#000000"></button>
+                  <button class="w-6 h-6 rounded-full bg-blue-600 ring-2 ring-transparent color-btn" data-color="#2563eb"></button>
+                  <button class="w-6 h-6 rounded-full bg-red-600 ring-2 ring-transparent color-btn" data-color="#dc2626"></button>
                </div>
                <input type="range" id="pen-size" min="1" max="5" value="2" class="w-20 h-2 bg-matte-200 rounded-lg accent-blue-600" />
             </div>
-
             <button id="apply-draw" class="w-full bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-              Pakai Tanda Tangan Ini
+              Tambahkan TTD
             </button>
           </div>
 
+          <!-- Upload Mode -->
           <div id="mode-upload" class="hidden space-y-4">
             <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-6 text-center hover:bg-matte-50 dark:hover:bg-matte-700/50 cursor-pointer transition-colors relative">
                <input type="file" id="img-input" accept="image/png, image/jpeg" class="absolute inset-0 opacity-0 cursor-pointer" />
                <div class="text-matte-400">
                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                  <span class="text-xs font-bold">Upload PNG (Transparan)</span>
+                  <span class="text-xs font-bold">Upload PNG / JPG</span>
                </div>
             </div>
-            <p class="text-xs text-center text-matte-400">Disarankan menggunakan file PNG tanpa background.</p>
+            <p class="text-xs text-center text-matte-400">Disarankan file PNG tanpa background.</p>
           </div>
 
-          <hr class="border-matte-200 dark:border-matte-700" />
+          <!-- Type Mode -->
+          <div id="mode-type" class="hidden space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-matte-500 mb-1">Teks Tanda Tangan</label>
+              <input type="text" id="type-text" placeholder="Nama Anda" class="w-full border-2 border-matte-200 dark:border-matte-600 rounded-xl px-4 py-3 text-lg font-bold text-center bg-white dark:bg-matte-700 dark:text-white focus:border-blue-500 focus:outline-none transition-colors" maxlength="40" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-matte-500 mb-1">Gaya Font</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="font-style-btn py-2 px-3 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-bold" data-font="cursive" style="font-family: 'Brush Script MT', 'Segoe Script', cursive;">Brush Script</button>
+                <button class="font-style-btn py-2 px-3 rounded-lg border-2 border-matte-200 dark:border-matte-600 text-matte-500 text-sm" data-font="serif" style="font-family: 'Georgia', 'Times New Roman', serif;">Georgia</button>
+                <button class="font-style-btn py-2 px-3 rounded-lg border-2 border-matte-200 dark:border-matte-600 text-matte-500 text-sm" data-font="sans" style="font-family: 'Helvetica', 'Arial', sans-serif;">Helvetica</button>
+                <button class="font-style-btn py-2 px-3 rounded-lg border-2 border-matte-200 dark:border-matte-600 text-matte-500 text-sm" data-font="mono" style="font-family: 'Courier New', monospace;">Courier</button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-matte-500 mb-1">Warna Teks</label>
+              <div class="flex gap-2">
+                <button class="w-6 h-6 rounded-full bg-black ring-2 ring-blue-500 type-color-btn" data-color="#000000"></button>
+                <button class="w-6 h-6 rounded-full bg-blue-600 ring-2 ring-transparent type-color-btn" data-color="#2563eb"></button>
+                <button class="w-6 h-6 rounded-full bg-red-600 ring-2 ring-transparent type-color-btn" data-color="#dc2626"></button>
+              </div>
+            </div>
+            <div id="type-preview-box" class="border-2 border-matte-200 dark:border-matte-600 rounded-xl p-4 bg-white dark:bg-matte-700 flex items-center justify-center min-h-[60px]">
+              <span id="type-preview" class="text-lg text-matte-300 italic">Pratinjau tanda tangan</span>
+            </div>
+            <button id="apply-type" class="w-full bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+              Tambahkan TTD
+            </button>
+          </div>
+
+          <hr class="border-matte-200 dark:border-matte-700 my-4" />
           
+          <!-- Undo / Redo -->
+          <div class="flex items-center gap-2 mb-4">
+             <button id="undo-btn" disabled class="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-matte-100 dark:bg-matte-700 text-matte-500 hover:text-matte-700 dark:hover:text-matte-300 text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+               Undo
+             </button>
+             <button id="redo-btn" disabled class="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-matte-100 dark:bg-matte-700 text-matte-500 hover:text-matte-700 dark:hover:text-matte-300 text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+               Redo
+               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+             </button>
+          </div>
+
+          <!-- Size Control -->
           <div class="space-y-3">
              <div class="flex justify-between text-xs font-bold text-matte-500">
                 <span>Ukuran TTD</span>
@@ -73,34 +125,78 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
              <input type="range" id="sig-scale" min="20" max="200" value="100" class="w-full h-2 bg-matte-200 dark:bg-matte-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
           </div>
 
+          <!-- Opacity Control -->
+          <div class="space-y-3 mt-3">
+             <div class="flex justify-between text-xs font-bold text-matte-500">
+                <span>Transparansi</span>
+                <span id="opacity-val">100%</span>
+             </div>
+             <input type="range" id="sig-opacity" min="10" max="100" value="100" class="w-full h-2 bg-matte-200 dark:bg-matte-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
+          </div>
+
+          <!-- Page Selector -->
+          <div class="space-y-2 mt-3">
+             <div class="flex justify-between text-xs font-bold text-matte-500">
+                <span>Tempel di Halaman</span>
+             </div>
+             <select id="page-select" class="w-full border-2 border-matte-200 dark:border-matte-600 rounded-lg px-3 py-2 text-sm font-bold bg-white dark:bg-matte-700 dark:text-matte-200 focus:border-blue-500 focus:outline-none transition-colors">
+                <option value="0">Halaman 1</option>
+             </select>
+          </div>
+
+          <!-- Date Stamp Toggle -->
+          <div class="flex items-center justify-between mt-3">
+             <label for="date-stamp-toggle" class="text-xs font-bold text-matte-500">Stempel Tanggal</label>
+             <button id="date-stamp-toggle" type="button" role="switch" aria-checked="false" class="relative inline-flex h-5 w-9 items-center rounded-full bg-matte-300 dark:bg-matte-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+               <span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform translate-x-0.5"></span>
+             </button>
+          </div>
+
           <button id="save-pdf-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 mt-4">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             Simpan PDF
           </button>
         </div>
+
+        <!-- Signature List Panel (UX #10: animated toggle) -->
+        <div id="sig-list-panel" class="bg-white dark:bg-matte-800 p-4 rounded-2xl border border-matte-200 dark:border-matte-700 shadow-lg overflow-hidden transition-all duration-300 ease-in-out" style="max-height:0; opacity:0; padding:0; border-width:0;">
+          <h4 class="text-xs font-bold text-matte-500 uppercase tracking-wide mb-3">Tanda Tangan Tertempel</h4>
+          <div id="sig-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+          <p id="sig-list-empty" class="text-xs text-matte-400 text-center py-2">Belum ada TTD. Buat di atas, lalu geser posisinya.</p>
+        </div>
       </div>
 
+      <!-- Right Preview Area -->
       <div class="lg:col-span-2 flex flex-col items-center">
+        <!-- Page Navigation -->
+        <div id="page-nav" class="hidden w-full flex items-center justify-between mb-3">
+          <button id="prev-page" class="p-2 rounded-lg bg-matte-100 dark:bg-matte-700 hover:bg-matte-200 dark:hover:bg-matte-600 text-matte-600 dark:text-matte-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <span id="page-display" class="text-sm font-bold text-matte-600 dark:text-matte-300">Halaman 1 / 1</span>
+          <button id="next-page" class="p-2 rounded-lg bg-matte-100 dark:bg-matte-700 hover:bg-matte-200 dark:hover:bg-matte-600 text-matte-600 dark:text-matte-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+
         <div class="bg-matte-200 dark:bg-matte-900 p-4 rounded-xl border border-matte-300 dark:border-matte-700 shadow-inner w-full flex justify-center overflow-auto relative min-h-[500px]">
-           
-           <p class="absolute top-2 text-xs text-matte-500 font-mono z-0">Preview Halaman 1</p>
-
-           <div id="preview-container" class="relative shadow-2xl mt-6 select-none">
-              <canvas id="pdf-render" class="block bg-white"></canvas>
-              
-              <div id="sig-overlay" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-move group border border-dashed border-blue-400 hover:bg-blue-500/10 transition-colors" style="width: 150px; height: auto;">
-                 <img id="sig-image" src="" class="w-full h-full object-contain pointer-events-none" loading="lazy" />
-                 
-                 <button id="remove-sig" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 hidden group-hover:block transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                 </button>
-              </div>
+           <!-- Loading overlay for page render (Bug #2) -->
+           <div id="render-loading" class="hidden absolute inset-0 z-30 flex items-center justify-center bg-matte-200/80 dark:bg-matte-900/80 rounded-xl backdrop-blur-sm">
+             <div class="flex flex-col items-center gap-2">
+               <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+               <span class="text-xs font-bold text-blue-600">Memuat halaman...</span>
+             </div>
            </div>
-
+           <div id="preview-container" class="relative shadow-2xl mt-2 select-none">
+              <canvas id="pdf-render" class="block bg-white"></canvas>
+              <!-- Snap guide lines (hidden by default) -->
+              <div id="snap-v" class="hidden absolute top-0 bottom-0 w-px bg-red-400/70 pointer-events-none" style="z-index:20;"></div>
+              <div id="snap-h" class="hidden absolute left-0 right-0 h-px bg-red-400/70 pointer-events-none" style="z-index:20;"></div>
+           </div>
         </div>
         <p class="text-xs text-matte-500 mt-4 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l4 4l-4 4"/><path d="M3 3l18 18"/><path d="M9 5l4 4l-4 4"/></svg>
-            Tips: Gambar atau upload TTD di menu kiri, lalu geser posisinya di kanan.
+            Drag posisi · Corner handle untuk resize · Ctrl+Z undo · Ctrl+Y redo · Del hapus
         </p>
       </div>
 
@@ -109,6 +205,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  // ============================================================
+  // SIGN PDF PRO — All 14 audit fixes applied
+  // ============================================================
+
   // --- 1. SETUP & IMPORTS ---
   let PDFDocument: any;
   async function _loadPdfLib() {
@@ -122,75 +222,198 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('file-input');
   const workspace = document.getElementById('workspace');
+  const pageNav = document.getElementById('page-nav');
   
-  // Canvas Elements
-  const pdfCanvas = document.getElementById('pdf-render');
-  const padCanvas = document.getElementById('pad-canvas');
-  const padCtx = padCanvas.getContext('2d');
+  const pdfCanvas = document.getElementById('pdf-render') as HTMLCanvasElement;
+  const padCanvas = document.getElementById('pad-canvas') as HTMLCanvasElement;
+  const padCtx = padCanvas?.getContext('2d');
   let padReady = !!padCtx;
-  if (!padReady) { window.showToast?.(window._tToast ? window._tToast('Gagal render pad tanda tangan') : 'Gagal render pad tanda tangan', 'error'); }
   
-  // Signature Overlay
   const previewContainer = document.getElementById('preview-container');
-  const sigOverlay = document.getElementById('sig-overlay');
-  const sigImage = document.getElementById('sig-image');
-  const removeSigBtn = document.getElementById('remove-sig');
+  const snapV = document.getElementById('snap-v');
+  const snapH = document.getElementById('snap-h');
+  const renderLoading = document.getElementById('render-loading');
   
-  // Controls
   const tabDraw = document.getElementById('tab-draw');
   const tabUpload = document.getElementById('tab-upload');
+  const tabType = document.getElementById('tab-type');
   const modeDraw = document.getElementById('mode-draw');
   const modeUpload = document.getElementById('mode-upload');
+  const modeType = document.getElementById('mode-type');
   const clearPadBtn = document.getElementById('clear-pad');
   const applyDrawBtn = document.getElementById('apply-draw');
+  const applyTypeBtn = document.getElementById('apply-type');
   const imgInput = document.getElementById('img-input');
   const sigScale = document.getElementById('sig-scale');
   const scaleVal = document.getElementById('scale-val');
+  const sigOpacity = document.getElementById('sig-opacity');
+  const opacityVal = document.getElementById('opacity-val');
+  const pageSelect = document.getElementById('page-select') as HTMLSelectElement;
+  const dateStampToggle = document.getElementById('date-stamp-toggle');
   const savePdfBtn = document.getElementById('save-pdf-btn');
+  const undoBtn = document.getElementById('undo-btn');
+  const redoBtn = document.getElementById('redo-btn');
   const colorBtns = document.querySelectorAll('.color-btn');
+  const typeColorBtns = document.querySelectorAll('.type-color-btn');
+  const fontStyleBtns = document.querySelectorAll('.font-style-btn');
   const penSize = document.getElementById('pen-size');
+  const typeText = document.getElementById('type-text') as HTMLInputElement;
+  const typePreview = document.getElementById('type-preview');
+  const prevPageBtn = document.getElementById('prev-page');
+  const nextPageBtn = document.getElementById('next-page');
+  const pageDisplay = document.getElementById('page-display');
+  const pageIndicator = document.getElementById('page-indicator');
+  const sigListPanel = document.getElementById('sig-list-panel');
+  const sigListEl = document.getElementById('sig-list');
+  const sigListEmpty = document.getElementById('sig-list-empty');
 
-  let currentFile = null;
+  // --- 2. STATE (Bug #1: dragStartSnapshot moved here) ---
+  let currentFile: File | null = null;
   let isDrawing = false;
-  let signatureData = null; // Base64 image data
-  
-  // Drawing Settings
   let penColor = '#000000';
   let penWidth = 2;
+  let typeColor = '#000000';
+  let typeFontStyle = 'cursive';
+  let dateStampEnabled = false;
 
-  // --- 2. TAB SWITCHING ---
-  function switchTab(mode) {
-    if (mode === 'draw') {
-        tabDraw.className = "flex-1 py-2 px-4 rounded-md text-sm font-bold bg-white dark:bg-matte-600 text-blue-600 shadow-sm transition-all";
-        tabUpload.className = "flex-1 py-2 px-4 rounded-md text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-300 transition-all";
-        modeDraw.classList.remove('hidden');
-        modeUpload.classList.add('hidden');
-        resizePad(); // Refresh canvas size
-    } else {
-        tabUpload.className = "flex-1 py-2 px-4 rounded-md text-sm font-bold bg-white dark:bg-matte-600 text-blue-600 shadow-sm transition-all";
-        tabDraw.className = "flex-1 py-2 px-4 rounded-md text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-300 transition-all";
-        modeUpload.classList.remove('hidden');
-        modeDraw.classList.add('hidden');
-    }
+  let pdfDoc: any = null;
+  let totalPages = 1;
+  let currentPageIndex = 0;
+  let currentViewport: any = null;
+
+  // Bug #3: Render lock to prevent race conditions
+  let renderLock = false;
+  let renderAbortController: AbortController | null = null;
+
+  type SigEntry = {
+    id: string; dataUrl: string; page: number;
+    xPercent: number; yPercent: number; width: number;
+    opacity: number; dateStamp: string | null;
+  };
+  let signatures: SigEntry[] = [];
+  let sigIdCounter = 0;
+
+  // Interaction state
+  let activeDragId: string | null = null;
+  let interactionMode: 'none' | 'drag' | 'resize' = 'none';
+  let resizeCorner: string = '';
+  let resizeStartX = 0;
+  let resizeStartY = 0;
+  let resizeStartWidth = 0;
+
+  // Snap
+  const SNAP_THRESHOLD = 8;
+
+  // Bug #1: dragStartSnapshot declared here (before use in startDrag)
+  let dragStartSnapshot: SigEntry[] | null = null;
+
+  // Undo/Redo
+  type HistoryEntry = { signatures: SigEntry[] };
+  let undoStack: HistoryEntry[] = [];
+  let redoStack: HistoryEntry[] = [];
+  const MAX_HISTORY = 50;
+
+  // Code #11: Track which listeners were added for proper cleanup
+  let listenersAttached = false;
+
+  // Code #13: Shared SVG templates to avoid duplication
+  const SVG_CLOSE = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  const SVG_DELETE = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+  // --- 3. UTILITY ---
+  function genId() { return 'sig-' + (++sigIdCounter); }
+
+  function formatDateID(d: Date): string {
+    const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   }
-  tabDraw.addEventListener('click', () => switchTab('draw'));
-  tabUpload.addEventListener('click', () => switchTab('upload'));
 
-  // --- 3. DRAWING PAD LOGIC ---
+  function cloneSigs(): SigEntry[] {
+    return signatures.map(s => ({ ...s }));
+  }
+
+  function pushHistory() {
+    undoStack.push({ signatures: cloneSigs() });
+    if (undoStack.length > MAX_HISTORY) undoStack.shift();
+    redoStack = [];
+    updateUndoRedoBtns();
+  }
+
+  function undo() {
+    if (undoStack.length === 0) return;
+    redoStack.push({ signatures: cloneSigs() });
+    const entry = undoStack.pop()!;
+    signatures = entry.signatures;
+    renderAllOverlays();
+    renderSigList();
+    updateUndoRedoBtns();
+  }
+
+  function redo() {
+    if (redoStack.length === 0) return;
+    undoStack.push({ signatures: cloneSigs() });
+    const entry = redoStack.pop()!;
+    signatures = entry.signatures;
+    renderAllOverlays();
+    renderSigList();
+    updateUndoRedoBtns();
+  }
+
+  function updateUndoRedoBtns() {
+    if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+    if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+  }
+
+  undoBtn?.addEventListener('click', undo);
+  redoBtn?.addEventListener('click', redo);
+
+  // Bug #4: Skip undo/redo when focus is in a text input
+  document.addEventListener('keydown', (e) => {
+    const tag = (e.target as HTMLElement)?.tagName;
+    const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target as HTMLElement)?.isContentEditable;
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+      if (!isInput) { e.preventDefault(); undo(); }
+    }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+      if (!isInput) { e.preventDefault(); redo(); }
+    }
+  });
+
+  // --- 4. TAB SWITCHING ---
+  function switchTab(mode: string) {
+    const tabs = [tabDraw, tabUpload, tabType];
+    const modes = [modeDraw, modeUpload, modeType];
+    const names = ['draw', 'upload', 'type'];
+    modes.forEach((m, i) => {
+      if (!m) return;
+      const isActive = names[i] === mode;
+      m.classList.toggle('hidden', !isActive);
+      if (tabs[i]) {
+        tabs[i].className = isActive
+          ? 'flex-1 py-2 px-2 rounded-md text-xs font-bold bg-white dark:bg-matte-600 text-blue-600 shadow-sm transition-all'
+          : 'flex-1 py-2 px-2 rounded-md text-xs font-medium text-matte-500 hover:text-matte-700 dark:text-matte-300 transition-all';
+      }
+    });
+    if (mode === 'draw') resizePad();
+  }
+  tabDraw?.addEventListener('click', () => switchTab('draw'));
+  tabUpload?.addEventListener('click', () => switchTab('upload'));
+  tabType?.addEventListener('click', () => switchTab('type'));
+
+  // --- 5. DRAWING PAD ---
   function resizePad() {
-    if (!padReady) return;
-    const parent = padCanvas.parentElement;
+    if (!padReady || !padCanvas) return;
+    const parent = padCanvas.parentElement!;
     padCanvas.width = parent.clientWidth;
     padCanvas.height = parent.clientHeight;
-    padCtx.lineCap = 'round';
-    padCtx.lineJoin = 'round';
-    padCtx.strokeStyle = penColor;
-    padCtx.lineWidth = penWidth;
+    padCtx!.lineCap = 'round';
+    padCtx!.lineJoin = 'round';
+    padCtx!.strokeStyle = penColor;
+    padCtx!.lineWidth = penWidth;
   }
   window.addEventListener('resize', resizePad);
-  setTimeout(resizePad, 500); // Init resize
 
-  function getPos(e) {
+  function getPos(e: any) {
     const rect = padCanvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -198,245 +421,783 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
 
   ['mousedown', 'touchstart'].forEach(ev => {
-    padCanvas.addEventListener(ev, (e) => {
-        if (!padReady) return;
-        isDrawing = true;
-        const pos = getPos(e);
-        padCtx.beginPath();
-        padCtx.moveTo(pos.x, pos.y);
-        e.preventDefault();
+    padCanvas?.addEventListener(ev, (e: any) => {
+      if (!padReady) return;
+      isDrawing = true;
+      const pos = getPos(e);
+      padCtx!.beginPath();
+      padCtx!.moveTo(pos.x, pos.y);
+      e.preventDefault();
     }, { passive: false });
   });
 
   ['mousemove', 'touchmove'].forEach(ev => {
-    padCanvas.addEventListener(ev, (e) => {
-        if (!isDrawing) return;
-        const pos = getPos(e);
-        padCtx.lineTo(pos.x, pos.y);
-        padCtx.stroke();
-        e.preventDefault();
+    padCanvas?.addEventListener(ev, (e: any) => {
+      if (!isDrawing) return;
+      const pos = getPos(e);
+      padCtx!.lineTo(pos.x, pos.y);
+      padCtx!.stroke();
+      e.preventDefault();
     }, { passive: false });
   });
 
   ['mouseup', 'touchend'].forEach(ev => {
-    padCanvas.addEventListener(ev, () => isDrawing = false);
+    padCanvas?.addEventListener(ev, () => { isDrawing = false; });
   });
 
-  clearPadBtn.addEventListener('click', () => {
-    if (!padReady) return;
-    padCtx.clearRect(0, 0, padCanvas.width, padCanvas.height);
+  clearPadBtn?.addEventListener('click', () => {
+    if (!padReady || !padCanvas) return;
+    padCtx!.clearRect(0, 0, padCanvas.width, padCanvas.height);
   });
 
   colorBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        penColor = e.target.dataset.color;
-        padCtx.strokeStyle = penColor;
-        colorBtns.forEach(b => b.classList.remove('ring-2', 'ring-blue-500'));
-        e.target.classList.add('ring-2', 'ring-blue-500');
+    btn.addEventListener('click', (e: any) => {
+      penColor = e.target.dataset.color;
+      if (padCtx) padCtx.strokeStyle = penColor;
+      colorBtns.forEach(b => b.classList.remove('ring-2', 'ring-blue-500'));
+      colorBtns.forEach(b => b.classList.add('ring-2', 'ring-transparent'));
+      e.target.classList.remove('ring-transparent');
+      e.target.classList.add('ring-2', 'ring-blue-500');
     });
   });
 
-  penSize.addEventListener('input', (e) => {
-      penWidth = e.target.value;
-      padCtx.lineWidth = penWidth;
+  penSize?.addEventListener('input', (e: any) => {
+    penWidth = e.target.value;
+    if (padCtx) padCtx.lineWidth = penWidth;
   });
 
-  // Apply Drawing
-  applyDrawBtn.addEventListener('click', () => {
-      signatureData = padCanvas.toDataURL('image/png');
-      showSignatureOnPdf(signatureData);
+  // --- 6. TYPE SIGNATURE ---
+  const fontMap: Record<string, string> = {
+    cursive: "'Brush Script MT', 'Segoe Script', cursive",
+    serif: "'Georgia', 'Times New Roman', serif",
+    sans: "'Helvetica', 'Arial', sans-serif",
+    mono: "'Courier New', monospace",
+  };
+
+  function updateTypePreview() {
+    if (!typePreview || !typeText) return;
+    const val = typeText.value.trim();
+    if (val) {
+      typePreview.textContent = val;
+      typePreview.className = 'text-lg text-matte-800 dark:text-white';
+      (typePreview as HTMLElement).style.fontFamily = fontMap[typeFontStyle] || fontMap.cursive;
+      (typePreview as HTMLElement).style.color = typeColor;
+      typePreview.classList.remove('italic', 'text-matte-300');
+    } else {
+      typePreview.textContent = 'Pratinjau tanda tangan';
+      typePreview.className = 'text-lg text-matte-300 italic';
+      (typePreview as HTMLElement).style.fontFamily = '';
+      (typePreview as HTMLElement).style.color = '';
+    }
+  }
+
+  typeText?.addEventListener('input', updateTypePreview);
+
+  fontStyleBtns.forEach(btn => {
+    btn.addEventListener('click', (e: any) => {
+      typeFontStyle = e.target.dataset.font;
+      fontStyleBtns.forEach(b => {
+        b.className = 'font-style-btn py-2 px-3 rounded-lg border-2 border-matte-200 dark:border-matte-600 text-matte-500 text-sm';
+      });
+      e.target.className = 'font-style-btn py-2 px-3 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-bold';
+      updateTypePreview();
+    });
   });
 
-  // --- 4. UPLOAD IMAGE LOGIC ---
-  imgInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-              signatureData = ev.target.result;
-              showSignatureOnPdf(signatureData);
-          };
-          reader.readAsDataURL(file);
+  typeColorBtns.forEach(btn => {
+    btn.addEventListener('click', (e: any) => {
+      typeColor = e.target.dataset.color;
+      typeColorBtns.forEach(b => b.classList.add('ring-transparent'));
+      typeColorBtns.forEach(b => b.classList.remove('ring-2', 'ring-blue-500'));
+      e.target.classList.remove('ring-transparent');
+      e.target.classList.add('ring-2', 'ring-blue-500');
+      updateTypePreview();
+    });
+  });
+
+  function renderTypeSignature(text: string, font: string, color: string): string {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    const fontFamily = fontMap[font] || fontMap.cursive;
+    ctx.font = `bold 48px ${fontFamily}`;
+    const metrics = ctx.measureText(text);
+    canvas.width = Math.ceil(metrics.width) + 20;
+    canvas.height = 68;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = `bold 48px ${fontFamily}`;
+    ctx.fillStyle = color;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 10, canvas.height / 2);
+    return canvas.toDataURL('image/png');
+  }
+
+  applyTypeBtn?.addEventListener('click', () => {
+    const text = typeText?.value.trim();
+    if (!text) { window.showToast?.('Ketik nama untuk tanda tangan!', 'error'); return; }
+    addSignature(renderTypeSignature(text, typeFontStyle, typeColor));
+  });
+
+  // --- 7. DATE STAMP TOGGLE ---
+  dateStampToggle?.addEventListener('click', () => {
+    dateStampEnabled = !dateStampEnabled;
+    dateStampToggle.setAttribute('aria-checked', String(dateStampEnabled));
+    const dot = dateStampToggle.querySelector('span')!;
+    if (dateStampEnabled) {
+      dateStampToggle.classList.remove('bg-matte-300', 'dark:bg-matte-600');
+      dateStampToggle.classList.add('bg-blue-600');
+      dot.style.transform = 'translateX(18px)';
+    } else {
+      dateStampToggle.classList.add('bg-matte-300', 'dark:bg-matte-600');
+      dateStampToggle.classList.remove('bg-blue-600');
+      dot.style.transform = 'translateX(2px)';
+    }
+  });
+
+  // --- 8. PAGE SELECTOR ---
+  function updatePageSelect() {
+    if (!pageSelect) return;
+    pageSelect.innerHTML = '';
+    for (let i = 0; i < totalPages; i++) {
+      const opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = `Halaman ${i + 1}`;
+      if (i === currentPageIndex) opt.selected = true;
+      pageSelect.appendChild(opt);
+    }
+  }
+
+  pageSelect?.addEventListener('change', () => {
+    const targetPage = parseInt(pageSelect.value);
+    if (targetPage >= 0 && targetPage < totalPages && targetPage !== currentPageIndex) {
+      currentPageIndex = targetPage;
+      renderCurrentPage();
+      updatePageNav();
+    }
+  });
+
+  // --- 9. OPACITY SLIDER ---
+  sigOpacity?.addEventListener('input', (e: any) => {
+    opacityVal!.textContent = `${parseInt(e.target.value)}%`;
+  });
+
+  // --- 10. ADD / REMOVE SIGNATURES ---
+  function addSignature(dataUrl: string) {
+    pushHistory();
+    const id = genId();
+    const scalePct = parseInt(sigScale?.value || '100');
+    const width = 150 * (scalePct / 100);
+    const opacityPct = parseInt(sigOpacity?.value || '100');
+    const targetPage = parseInt(pageSelect?.value || '0');
+    const dateStamp = dateStampEnabled ? formatDateID(new Date()) : null;
+
+    signatures.push({ id, dataUrl, page: targetPage, xPercent: 0.5, yPercent: 0.5, width, opacity: opacityPct / 100, dateStamp });
+
+    if (targetPage !== currentPageIndex) {
+      currentPageIndex = targetPage;
+      renderCurrentPage();
+      updatePageNav();
+    } else {
+      renderAllOverlays();
+    }
+    renderSigList();
+    window.showToast?.(`TTD ditambahkan ke Hal. ${targetPage + 1}! Geser untuk atur posisi.`, 'info');
+  }
+
+  function removeSignature(id: string) {
+    pushHistory();
+    signatures = signatures.filter(s => s.id !== id);
+    renderAllOverlays();
+    renderSigList();
+  }
+
+  // UX #6: Z-order reordering
+  function moveSignature(id: string, direction: 'up' | 'down') {
+    const idx = signatures.findIndex(s => s.id === id);
+    if (idx === -1) return;
+    if (direction === 'up' && idx < signatures.length - 1) {
+      pushHistory();
+      [signatures[idx], signatures[idx + 1]] = [signatures[idx + 1], signatures[idx]];
+      renderAllOverlays();
+      renderSigList();
+    } else if (direction === 'down' && idx > 0) {
+      pushHistory();
+      [signatures[idx], signatures[idx - 1]] = [signatures[idx - 1], signatures[idx]];
+      renderAllOverlays();
+      renderSigList();
+    }
+  }
+
+  // --- 11. SNAP LOGIC ---
+  function showSnapGuides(xPx: number, yPx: number, containerW: number, containerH: number) {
+    let snappedX = xPx;
+    let snappedY = yPx;
+    let showV = false;
+    let showH = false;
+
+    const centerX = containerW / 2;
+    const centerY = containerH / 2;
+
+    const xChecks = [
+      { pos: 0, snap: 0 },
+      { pos: centerX, snap: centerX },
+      { pos: containerW, snap: containerW },
+    ];
+    for (const check of xChecks) {
+      if (Math.abs(xPx - check.pos) < SNAP_THRESHOLD) {
+        snappedX = check.snap;
+        showV = true;
+        break;
       }
+    }
+
+    const yChecks = [
+      { pos: 0, snap: 0 },
+      { pos: centerY, snap: centerY },
+      { pos: containerH, snap: containerH },
+    ];
+    for (const check of yChecks) {
+      if (Math.abs(yPx - check.pos) < SNAP_THRESHOLD) {
+        snappedY = check.snap;
+        showH = true;
+        break;
+      }
+    }
+
+    if (snapV) {
+      snapV.classList.toggle('hidden', !showV);
+      if (showV) snapV.style.left = `${snappedX}px`;
+    }
+    if (snapH) {
+      snapH.classList.toggle('hidden', !showH);
+      if (showH) snapH.style.top = `${snappedY}px`;
+    }
+
+    return { x: snappedX, y: snappedY };
+  }
+
+  function hideSnapGuides() {
+    snapV?.classList.add('hidden');
+    snapH?.classList.add('hidden');
+  }
+
+  // --- 12. RENDER OVERLAYS (with corner handles) ---
+  function renderAllOverlays() {
+    if (!previewContainer) return;
+    previewContainer.querySelectorAll('.sig-overlay-dynamic').forEach(el => el.remove());
+
+    signatures.forEach(sig => {
+      if (sig.page !== currentPageIndex) return;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'sig-overlay-dynamic absolute cursor-move group border border-dashed border-blue-400 hover:border-blue-500 transition-colors';
+      overlay.dataset.sigId = sig.id;
+      overlay.style.width = `${sig.width}px`;
+      overlay.style.height = 'auto';
+      overlay.style.left = `${sig.xPercent * 100}%`;
+      overlay.style.top = `${sig.yPercent * 100}%`;
+      overlay.style.transform = 'translate(-50%, -50%)';
+      overlay.style.zIndex = '10';
+      overlay.style.opacity = String(sig.opacity);
+
+      // Signature image
+      const img = document.createElement('img');
+      img.src = sig.dataUrl;
+      img.className = 'w-full h-full object-contain pointer-events-none';
+      img.loading = 'lazy';
+      overlay.appendChild(img);
+
+      // Date stamp
+      if (sig.dateStamp) {
+        const dateLabel = document.createElement('div');
+        dateLabel.className = 'absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-white/80 dark:bg-matte-800/80 px-1.5 py-0.5 rounded whitespace-nowrap pointer-events-none';
+        dateLabel.textContent = sig.dateStamp;
+        overlay.appendChild(dateLabel);
+      }
+
+      // Remove button (Code #13: use shared SVG template)
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 hidden group-hover:block transition-all';
+      removeBtn.innerHTML = SVG_CLOSE;
+      removeBtn.addEventListener('click', (e) => { e.stopPropagation(); removeSignature(sig.id); });
+      overlay.appendChild(removeBtn);
+
+      // Corner resize handles (4 corners)
+      const corners = [
+        { cls: 'tl', cursor: 'nwse-resize', pos: '-4px,-4px', anchor: 'top-left' },
+        { cls: 'tr', cursor: 'nesw-resize', pos: 'calc(100% - 4px),-4px', anchor: 'top-right' },
+        { cls: 'bl', cursor: 'nesw-resize', pos: '-4px,calc(100% - 4px)', anchor: 'bottom-left' },
+        { cls: 'br', cursor: 'nwse-resize', pos: 'calc(100% - 4px),calc(100% - 4px)', anchor: 'bottom-right' },
+      ];
+      corners.forEach(c => {
+        const handle = document.createElement('div');
+        handle.className = `sig-handle sig-handle-${c.cls} absolute w-3 h-3 bg-white border-2 border-blue-500 rounded-sm shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto`;
+        handle.style.left = c.pos.split(',')[0];
+        handle.style.top = c.pos.split(',')[1];
+        handle.style.cursor = c.cursor;
+        handle.style.zIndex = '15';
+        handle.dataset.corner = c.cls;
+        handle.dataset.sigId = sig.id;
+        overlay.appendChild(handle);
+      });
+
+      // Drag: mousedown on overlay body (not handles/buttons)
+      overlay.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.sig-handle') || e.target.closest('button')) return;
+        startDrag(e, sig.id);
+      });
+      overlay.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.sig-handle') || e.target.closest('button')) return;
+        startDrag(e, sig.id);
+      }, { passive: false });
+
+      // Resize: mousedown on handles
+      overlay.querySelectorAll('.sig-handle').forEach(handle => {
+        handle.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+          startResize(e, sig.id, handle.dataset.corner!);
+        });
+        handle.addEventListener('touchstart', (e) => {
+          e.stopPropagation();
+          startResize(e, sig.id, handle.dataset.corner!);
+        }, { passive: false });
+      });
+
+      previewContainer.appendChild(overlay);
+    });
+  }
+
+  // --- 13. DRAG LOGIC ---
+  function startDrag(e: any, id: string) {
+    dragStartSnapshot = cloneSigs();
+    activeDragId = id;
+    interactionMode = 'drag';
+    e.preventDefault();
+  }
+
+  // --- 14. RESIZE LOGIC ---
+  function startResize(e: any, id: string, corner: string) {
+    dragStartSnapshot = cloneSigs();
+    activeDragId = id;
+    interactionMode = 'resize';
+    resizeCorner = corner;
+
+    let clientX: number, clientY: number;
+    if (e.touches) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+    else { clientX = e.clientX; clientY = e.clientY; }
+    resizeStartX = clientX;
+    resizeStartY = clientY;
+
+    const sig = signatures.find(s => s.id === id);
+    resizeStartWidth = sig ? sig.width : 150;
+    e.preventDefault();
+  }
+
+  // --- 15. UNIFIED MOVE HANDLER ---
+  function onPointerMove(e: any) {
+    if (interactionMode === 'none' || !activeDragId || !previewContainer) return;
+    e.preventDefault();
+
+    let clientX: number, clientY: number;
+    if (e.touches) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+    else { clientX = e.clientX; clientY = e.clientY; }
+
+    const rect = previewContainer.getBoundingClientRect();
+
+    if (interactionMode === 'drag') {
+      let x = clientX - rect.left;
+      let y = clientY - rect.top;
+      x = Math.max(0, Math.min(x, rect.width));
+      y = Math.max(0, Math.min(y, rect.height));
+
+      const snapped = showSnapGuides(x, y, rect.width, rect.height);
+
+      const sig = signatures.find(s => s.id === activeDragId);
+      if (sig) {
+        sig.xPercent = snapped.x / rect.width;
+        sig.yPercent = snapped.y / rect.height;
+      }
+
+      const overlay = previewContainer.querySelector(`[data-sig-id="${activeDragId}"]`) as HTMLElement;
+      if (overlay) {
+        overlay.style.left = `${snapped.x}px`;
+        overlay.style.top = `${snapped.y}px`;
+        overlay.style.transform = 'translate(-50%, -50%)';
+      }
+    }
+
+    if (interactionMode === 'resize') {
+      const dx = clientX - resizeStartX;
+      const dy = clientY - resizeStartY;
+
+      let newWidth: number;
+      const isRight = resizeCorner === 'tr' || resizeCorner === 'br';
+      const isBottom = resizeCorner === 'bl' || resizeCorner === 'br';
+
+      if (isRight && isBottom) newWidth = resizeStartWidth + dx;
+      else if (!isRight && !isBottom) newWidth = resizeStartWidth - dx;
+      else if (isRight && !isBottom) newWidth = resizeStartWidth + dx;
+      else newWidth = resizeStartWidth - dx;
+
+      newWidth = Math.max(40, Math.min(newWidth, rect.width * 0.8));
+
+      const sig = signatures.find(s => s.id === activeDragId);
+      if (sig) sig.width = newWidth;
+
+      const overlay = previewContainer.querySelector(`[data-sig-id="${activeDragId}"]`) as HTMLElement;
+      if (overlay) overlay.style.width = `${newWidth}px`;
+
+      // Sync scale slider
+      if (sigScale) {
+        const pct = Math.round((newWidth / 150) * 100);
+        sigScale.value = String(Math.min(200, Math.max(20, pct)));
+        scaleVal!.textContent = `${sigScale.value}%`;
+      }
+    }
+  }
+
+  function onPointerUp() {
+    if (interactionMode !== 'none') {
+      hideSnapGuides();
+    }
+    interactionMode = 'none';
+    activeDragId = null;
+  }
+
+  // Code #14: Optimized history comparison — only compare changed sig's fields, not full array scan
+  function didDragChange(): boolean {
+    if (!dragStartSnapshot) return false;
+    // If sig count changed (added/removed), it changed
+    if (signatures.length !== dragStartSnapshot.length) return true;
+    for (let i = 0; i < signatures.length; i++) {
+      const s = signatures[i];
+      const orig = dragStartSnapshot[i];
+      if (!orig || s.id !== orig.id || s.xPercent !== orig.xPercent || s.yPercent !== orig.yPercent || s.width !== orig.width || s.opacity !== orig.opacity) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function onMouseUpHandler() {
+    if (dragStartSnapshot) {
+      if (didDragChange()) pushHistory();
+      dragStartSnapshot = null;
+    }
+    onPointerUp();
+  }
+
+  function onTouchEndHandler() {
+    if (dragStartSnapshot) {
+      if (didDragChange()) pushHistory();
+      dragStartSnapshot = null;
+    }
+    onPointerUp();
+  }
+
+  // Code #11: Only add listeners once, track state
+  function attachGlobalListeners() {
+    if (listenersAttached) return;
+    listenersAttached = true;
+    document.addEventListener('mousemove', (e) => {
+      if (interactionMode === 'none' && !dragStartSnapshot) return;
+      onPointerMove(e);
+    });
+    document.addEventListener('touchmove', (e) => { onPointerMove(e); }, { passive: false });
+    document.addEventListener('mouseup', onMouseUpHandler);
+    document.addEventListener('touchend', onTouchEndHandler);
+  }
+
+  function detachGlobalListeners() {
+    if (!listenersAttached) return;
+    document.removeEventListener('mousemove', onPointerMove);
+    document.removeEventListener('touchmove', onPointerMove);
+    document.removeEventListener('mouseup', onMouseUpHandler);
+    document.removeEventListener('touchend', onTouchEndHandler);
+    listenersAttached = false;
+  }
+
+  attachGlobalListeners();
+
+  document.addEventListener('astro:page-leave', detachGlobalListeners);
+
+  // UX #9: Delete key shortcut for selected signature
+  let selectedSigId: string | null = null;
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      const tag = (e.target as HTMLElement)?.tagName;
+      const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target as HTMLElement)?.isContentEditable;
+      if (isInput) return;
+      if (selectedSigId) {
+        e.preventDefault();
+        removeSignature(selectedSigId);
+        selectedSigId = null;
+      }
+    }
   });
 
-  // --- 5. RENDER PDF (didaftarkan global via BaseLayout) ---
+  // --- 16. SIGNATURE LIST PANEL (UX #6 + #10 + Code #12) ---
+  function renderSigList() {
+    if (!sigListEl || !sigListPanel || !sigListEmpty) return;
+
+    if (signatures.length === 0) {
+      // UX #10: Animated panel hide
+      sigListPanel.style.maxHeight = '0';
+      sigListPanel.style.opacity = '0';
+      sigListPanel.style.padding = '0';
+      sigListPanel.style.borderWidth = '0';
+      return;
+    }
+
+    // UX #10: Animated panel show
+    sigListPanel.style.maxHeight = '400px';
+    sigListPanel.style.opacity = '1';
+    sigListPanel.style.padding = '';
+    sigListPanel.style.borderWidth = '';
+
+    sigListEl.innerHTML = '';
+
+    signatures.forEach((sig, i) => {
+      const item = document.createElement('div');
+      item.className = 'flex items-center gap-2 p-2 bg-matte-50 dark:bg-matte-700 rounded-lg text-xs';
+
+      const thumb = document.createElement('img');
+      thumb.src = sig.dataUrl;
+      thumb.className = 'w-8 h-8 object-contain rounded border border-matte-200 dark:border-matte-600 bg-white flex-shrink-0';
+
+      const info = document.createElement('div');
+      info.className = 'flex-1 min-w-0';
+      const opacityPct = Math.round(sig.opacity * 100);
+      const dateInfo = sig.dateStamp ? ` · ${sig.dateStamp}` : '';
+
+      // Code #12: Use textContent instead of innerHTML to prevent XSS
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'font-bold text-matte-600 dark:text-matte-300 truncate';
+      nameDiv.textContent = `TTD #${i + 1}`;
+      info.appendChild(nameDiv);
+
+      const detailDiv = document.createElement('div');
+      detailDiv.className = 'text-matte-400';
+      detailDiv.textContent = `Hal. ${sig.page + 1} · ${opacityPct}%${dateInfo}`;
+      info.appendChild(detailDiv);
+
+      // UX #6: Z-order move buttons
+      const moveBtns = document.createElement('div');
+      moveBtns.className = 'flex flex-col gap-0.5 flex-shrink-0';
+
+      const moveUpBtn = document.createElement('button');
+      moveUpBtn.className = 'p-0.5 text-matte-400 hover:text-blue-500 transition-colors disabled:opacity-20';
+      moveUpBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>';
+      moveUpBtn.disabled = i === signatures.length - 1;
+      moveUpBtn.addEventListener('click', () => moveSignature(sig.id, 'up'));
+      moveBtns.appendChild(moveUpBtn);
+
+      const moveDownBtn = document.createElement('button');
+      moveDownBtn.className = 'p-0.5 text-matte-400 hover:text-blue-500 transition-colors disabled:opacity-20';
+      moveDownBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+      moveDownBtn.disabled = i === 0;
+      moveDownBtn.addEventListener('click', () => moveSignature(sig.id, 'down'));
+      moveBtns.appendChild(moveDownBtn);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'p-1 text-matte-400 hover:text-red-500 transition-colors flex-shrink-0';
+      delBtn.innerHTML = SVG_DELETE;
+      delBtn.addEventListener('click', () => removeSignature(sig.id));
+
+      item.appendChild(thumb);
+      item.appendChild(info);
+      item.appendChild(moveBtns);
+      item.appendChild(delBtn);
+      sigListEl.appendChild(item);
+    });
+  }
+
+  // --- 17. PDF RENDERING & PAGE NAVIGATION (Bug #2 + #3) ---
+  async function renderPdfPage(file: File) {
+    const arrayBuffer = await file.arrayBuffer();
+    pdfDoc = await pdfjsLib.getDocument(arrayBuffer).promise;
+    totalPages = pdfDoc.numPages;
+    currentPageIndex = 0;
+    updatePageSelect();
+    await renderCurrentPage();
+    updatePageNav();
+  }
+
+  async function renderCurrentPage() {
+    if (!pdfDoc || !pdfCanvas || !previewContainer) return;
+
+    // Bug #3: Abort any previous render
+    if (renderAbortController) {
+      renderAbortController.abort();
+    }
+    renderAbortController = new AbortController();
+    const signal = renderAbortController.signal;
+
+    // Bug #3: Wait for any ongoing render to finish
+    while (renderLock) {
+      await new Promise(r => setTimeout(r, 50));
+    }
+    renderLock = true;
+
+    // Show loading overlay (Bug #2)
+    if (renderLoading) renderLoading.classList.remove('hidden');
+
+    try {
+      const page = await pdfDoc.getPage(currentPageIndex + 1);
+      const viewport = page.getViewport({ scale: 1.0 });
+      currentViewport = viewport;
+
+      pdfCanvas.width = viewport.width;
+      pdfCanvas.height = viewport.height;
+      previewContainer.style.width = `${viewport.width}px`;
+      previewContainer.style.height = `${viewport.height}px`;
+
+      const context = pdfCanvas.getContext('2d');
+      if (!context) return;
+
+      // Bug #2: Error handling for render
+      try {
+        await page.render({ canvasContext: context, viewport }).promise;
+      } catch (renderErr) {
+        console.error('PDF page render failed:', renderErr);
+        window.showToast?.('Gagal merender halaman PDF.', 'error');
+      }
+
+      // Check if this render was aborted before doing overlays
+      if (!signal.aborted) {
+        renderAllOverlays();
+      }
+    } catch (err) {
+      console.error('PDF page load failed:', err);
+      window.showToast?.('Gagal memuat halaman PDF.', 'error');
+    } finally {
+      renderLock = false;
+      if (renderLoading) renderLoading.classList.add('hidden');
+    }
+  }
+
+  function updatePageNav() {
+    if (prevPageBtn) prevPageBtn.disabled = currentPageIndex <= 0;
+    if (nextPageBtn) nextPageBtn.disabled = currentPageIndex >= totalPages - 1;
+    if (pageDisplay) pageDisplay.textContent = `Halaman ${currentPageIndex + 1} / ${totalPages}`;
+    if (pageIndicator) pageIndicator.textContent = `${currentPageIndex + 1} / ${totalPages}`;
+    if (pageNav) pageNav.classList.toggle('hidden', totalPages <= 1);
+    if (pageSelect) pageSelect.value = String(currentPageIndex);
+  }
+
+  prevPageBtn?.addEventListener('click', async () => {
+    if (currentPageIndex > 0) { currentPageIndex--; await renderCurrentPage(); updatePageNav(); }
+  });
+
+  nextPageBtn?.addEventListener('click', async () => {
+    if (currentPageIndex < totalPages - 1) { currentPageIndex++; await renderCurrentPage(); updatePageNav(); }
+  });
+
+  // --- 18. FILE DROP ZONE (UX #7: file size validation) ---
+  const MAX_FILE_SIZE_MB = 50;
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
   window.usePdfDropZone('drop-zone', 'file-input', {
     accentColor: 'blue',
-    onFile: async (file) => {
+    onFile: async (file: File) => {
+      // UX #7: File size validation
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        window.showToast?.(`Ukuran file terlalu besar (max ${MAX_FILE_SIZE_MB}MB).`, 'error');
+        return;
+      }
       currentFile = file;
-      dropZone.classList.add('hidden');
-      workspace.classList.remove('hidden');
-      workspace.classList.add('grid');
+      dropZone?.classList.add('hidden');
+      workspace?.classList.remove('hidden');
+      workspace?.classList.add('grid');
       resizePad();
+      signatures = [];
+      undoStack = [];
+      redoStack = [];
+      updateUndoRedoBtns();
+      renderSigList();
       await renderPdfPage(file);
     },
   });
 
-  async function renderPdfPage(file) {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-    const page = await pdf.getPage(1);
-    const viewport = page.getViewport({ scale: 1.0 });
-
-    pdfCanvas.width = viewport.width;
-    pdfCanvas.height = viewport.height;
-    previewContainer.style.width = `${viewport.width}px`;
-    previewContainer.style.height = `${viewport.height}px`;
-
-    const context = pdfCanvas.getContext('2d');
-    if (!context) { window.showToast?.(window._tToast ? window._tToast('Gagal render PDF') : 'Gagal render PDF', 'error'); return; }
-    await page.render({ canvasContext: context, viewport: viewport }).promise;
-  }
-
-  // --- 6. OVERLAY & DRAG LOGIC ---
-  function showSignatureOnPdf(dataUrl) {
-      sigImage.src = dataUrl;
-      sigOverlay.classList.remove('hidden');
-      sigOverlay.style.top = '50%';
-      sigOverlay.style.left = '50%';
-      window.showToast?.(window._tToast ? window._tToast("Tanda tangan ditambahkan. Geser untuk mengatur posisi.") : "Tanda tangan ditambahkan. Geser untuk mengatur posisi.", "info");
-  }
-
-  removeSigBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // Biar gak trigger drag
-      sigOverlay.classList.add('hidden');
-      signatureData = null;
+  // --- 19. APPLY DRAW / UPLOAD ---
+  applyDrawBtn?.addEventListener('click', () => {
+    if (!padCanvas || !padReady) return;
+    addSignature(padCanvas.toDataURL('image/png'));
   });
 
-  // Scale Logic
-  sigScale.addEventListener('input', (e) => {
-      const val = e.target.value;
-      scaleVal.innerText = `${val}%`;
-      // Default width is around 150px
-      const newWidth = 150 * (val / 100);
-      sigOverlay.style.width = `${newWidth}px`;
-  });
-
-  // Draggable Logic (Simple implementation)
-  let isDraggingSig = false;
-  
-  // Koordinat relatif overlay (Persentase)
-  let finalXPercent = 0.5;
-  let finalYPercent = 0.5;
-
-  sigOverlay.addEventListener('mousedown', startDragSig);
-  sigOverlay.addEventListener('touchstart', startDragSig, { passive: false });
-
-  document.addEventListener('mousemove', dragSig);
-  document.addEventListener('touchmove', dragSig, { passive: false });
-
-  document.addEventListener('mouseup', stopDragSig);
-  document.addEventListener('touchend', stopDragSig);
-
-  // Cleanup global listeners on SPA navigation
-  document.addEventListener('astro:page-leave', () => {
-    document.removeEventListener('mousemove', dragSig);
-    document.removeEventListener('touchmove', dragSig);
-    document.removeEventListener('mouseup', stopDragSig);
-    document.removeEventListener('touchend', stopDragSig);
-  });
-
-  function startDragSig(e) {
-      if(e.target === removeSigBtn) return;
-      isDraggingSig = true;
-      e.preventDefault();
-  }
-
-  function dragSig(e) {
-      if (!isDraggingSig) return;
-      e.preventDefault();
-
-      let clientX, clientY;
-      if (e.touches) {
-          clientX = e.touches[0].clientX;
-          clientY = e.touches[0].clientY;
-      } else {
-          clientX = e.clientX;
-          clientY = e.clientY;
+  imgInput?.addEventListener('change', (e: any) => {
+    const file = e.target.files[0];
+    if (file) {
+      // UX #7: File size validation for images too
+      if (file.size > 10 * 1024 * 1024) {
+        window.showToast?.('Ukuran gambar terlalu besar (max 10MB).', 'error');
+        return;
       }
+      const reader = new FileReader();
+      reader.onload = (ev) => { addSignature(ev.target!.result as string); };
+      reader.readAsDataURL(file);
+    }
+  });
 
-      const rect = previewContainer.getBoundingClientRect();
-      let x = clientX - rect.left;
-      let y = clientY - rect.top;
+  // --- 20. SAVE PDF ---
+  savePdfBtn?.addEventListener('click', async () => {
+    if (!currentFile) return;
+    if (signatures.length === 0) {
+      return window.showToast?.('Belum ada tanda tangan yang ditempel!', 'error');
+    }
 
-      // Batasi area
-      x = Math.max(0, Math.min(x, rect.width));
-      y = Math.max(0, Math.min(y, rect.height));
+    const restoreBtn = window.showButtonSpinner(savePdfBtn, 'Memproses...');
 
-      // Pindahkan (Center point cursor)
-      sigOverlay.style.left = `${x}px`;
-      sigOverlay.style.top = `${y}px`;
-      
-      // Update Transform agar drag point di tengah element
-      sigOverlay.style.transform = "translate(-50%, -50%)";
+    try {
+      const arrayBuffer = await currentFile.arrayBuffer();
+      const pdfDocOut = await (await _loadPdfLib()).load(arrayBuffer);
+      const pages = pdfDocOut.getPages();
 
-      // Simpan persentase posisi untuk PDF saving
-      finalXPercent = x / rect.width;
-      finalYPercent = y / rect.height;
-  }
+      const byPage = new Map<number, SigEntry[]>();
+      signatures.forEach(sig => {
+        const list = byPage.get(sig.page) || [];
+        list.push(sig);
+        byPage.set(sig.page, list);
+      });
 
-  function stopDragSig() {
-      isDraggingSig = false;
-  }
+      const embedCache = new Map<string, any>();
 
-  // --- 7. SAVE TO PDF LOGIC ---
-  savePdfBtn.addEventListener('click', async () => {
-      if (!currentFile) return;
-      if (sigOverlay.classList.contains('hidden')) {
-          return window.showToast?.(window._tToast ? window._tToast("Belum ada tanda tangan yang ditempel!") : "Belum ada tanda tangan yang ditempel!", "error");
-      }
+      for (const [pageNum, sigs] of byPage) {
+        if (pageNum >= pages.length) continue;
+        const page = pages[pageNum];
+        const { width, height } = page.getSize();
 
-      const restoreBtn = window.showButtonSpinner(savePdfBtn, window._tToast ? window._tToast('Memproses...') : 'Memproses...');
-
-      try {
-          const arrayBuffer = await currentFile.arrayBuffer();
-          const pdfDoc = await (await _loadPdfLib()).load(arrayBuffer);
-          const pages = pdfDoc.getPages();
-          const page = pages[0]; // Logic halaman 1 dulu
-          const { width, height } = page.getSize();
-
-          // Embed gambar
-          let embeddedImage;
-          if (signatureData.startsWith('data:image/png')) {
-              embeddedImage = await pdfDoc.embedPng(signatureData);
-          } else {
-              embeddedImage = await pdfDoc.embedJpg(signatureData);
+        for (const sig of sigs) {
+          let embeddedImage = embedCache.get(sig.dataUrl);
+          if (!embeddedImage) {
+            embeddedImage = sig.dataUrl.startsWith('data:image/png')
+              ? await pdfDocOut.embedPng(sig.dataUrl)
+              : await pdfDocOut.embedJpg(sig.dataUrl);
+            embedCache.set(sig.dataUrl, embeddedImage);
           }
 
-          // Hitung Ukuran di PDF
-          // Kita ambil lebar overlay di layar, bandingkan dengan lebar canvas
-          // Lalu proporsikan ke lebar PDF
-          const overlayRect = sigOverlay.getBoundingClientRect();
-          const containerRect = previewContainer.getBoundingClientRect();
-          
-          const scaleRatio = overlayRect.width / containerRect.width;
+          const scaleRatio = sig.width / (currentViewport?.width || 600);
           const pdfImgWidth = width * scaleRatio;
-          
-          // Jaga aspect ratio gambar asli
-          const imgDims = embeddedImage.scaleToFit(pdfImgWidth, pdfImgWidth); 
+          const imgDims = embeddedImage.scaleToFit(pdfImgWidth, pdfImgWidth);
 
-          // Hitung Posisi
-          // HTML (0,0 Top-Left) -> PDF (0,0 Bottom-Left)
-          const xPos = width * finalXPercent - (imgDims.width / 2);
-          const yPos = height - (height * finalYPercent) - (imgDims.height / 2);
+          const xPos = width * sig.xPercent - (imgDims.width / 2);
+          const yPos = height - (height * sig.yPercent) - (imgDims.height / 2);
 
           page.drawImage(embeddedImage, {
-              x: xPos,
-              y: yPos,
-              width: imgDims.width,
-              height: imgDims.height,
+            x: xPos, y: yPos,
+            width: imgDims.width, height: imgDims.height,
+            opacity: sig.opacity,
           });
-
-          const pdfBytes = await pdfDoc.save();
-          window.downloadBytes(pdfBytes, `signed-${currentFile.name}`);
-          
-          window.showToast?.(window._tToast ? window._tToast("Berhasil! Dokumen ditandatangani.") : "Berhasil! Dokumen ditandatangani.", "success");
-
-      } catch (err) {
-          window.showToast?.(window._tToast ? window._tToast("Gagal menyimpan PDF.") : "Gagal menyimpan PDF.", "error");
-      } finally {
-          restoreBtn();
+        }
       }
+
+      const pdfBytes = await pdfDocOut.save();
+      window.downloadBytes(pdfBytes, `signed-${currentFile.name}`);
+      window.showToast?.(`Berhasil! ${signatures.length} TTD ditambahkan.`, 'success');
+    } catch (err) {
+      window.showToast?.('Gagal menyimpan PDF.', 'error');
+    } finally {
+      restoreBtn();
+    }
   });
 </script>
