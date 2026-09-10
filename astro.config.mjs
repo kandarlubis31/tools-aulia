@@ -135,6 +135,20 @@ export default defineConfig({
             cacheableResponse: { statuses: [0, 200] }
           }
         },
+        // --- Search index (command palette): 34KB static endpoint, fetched saat
+        //     page load pertama. SWR → offline-capable setelah kunjungan pertama
+        //     + auto-refresh di background. TIDAK di-precache: globPatterns tanpa
+        //     json (biar kbbi-sinonim.json 9.4MB gak ikut) dan includeAssets cuma
+        //     bisa narik file dari public/, bukan output endpoint. ---
+        {
+          urlPattern: /\/search-tools\.json$/,
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'search-tools',
+            expiration: { maxEntries: 1, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            cacheableResponse: { statuses: [0, 200] }
+          }
+        },
         // --- Large Static Datasets (rarely change) ---
         {
           urlPattern: /\/kbbi-sinonim\.json$/,

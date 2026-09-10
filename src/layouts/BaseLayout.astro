@@ -6,15 +6,6 @@ import criticalCss from '../styles/critical.css?raw';
 import interWoff2 from '../assets/fonts/Inter-Variable.woff2';
 import jakartaWoff2 from '../assets/fonts/PlusJakartaSans-Variable.woff2';
 
-// Derive search-friendly tool list from shared data
-const searchTools = tools.map(t => ({
-  name: t.title,
-  url: t.href,
-  category: t.category,
-  descKey: t.descKey,
-  descFallback: t.desc,
-}));
-
 interface Props {
   pageTitle: string;
   description?: string;
@@ -751,9 +742,6 @@ if (isPdfRoot) {
     </div>
   </footer>
 
-  <!-- Pass search tools data to client scripts (avoids esbuild parse error) -->
-  <script id="search-tools-json" type="application/json" set:html={JSON.stringify(searchTools)}></script>
-
   <!-- Performance: Load i18n phrases async to not block rendering -->
   <script src="/i18n-phrases.js" defer></script>
   
@@ -1003,6 +991,8 @@ if (isPdfRoot) {
         if (modal) modal.classList.remove('hidden');
         if (input) input.focus();
         if (btn) btn.setAttribute('aria-expanded', 'true');
+        // Retry muat index pencarian kalau fetch pertama gagal (mis. offline → online).
+        if (window.__searchToolsRetry && typeof initSearchList === 'function') initSearchList();
         // Android back support: push entry KOPI index dari history.state saat ini.
         // Router Astro membaca history.state.index untuk deteksi arah back/forward
         // — pushState asing TANPA index (bug lama {__searchOpen} polos) membuat
@@ -1152,15 +1142,37 @@ if (isPdfRoot) {
         cacheClearMobile.addEventListener('click', cacheClearHandler);
       }
 
-      const toolsList = JSON.parse(document.getElementById('search-tools-json')?.textContent || '[]');
-      
-      const searchInputEl = document.getElementById('search-modal-input');
-      const searchResultsEl = document.getElementById('search-results');
-      
-      if (searchInputEl && searchResultsEl && !searchInputEl.dataset.hasListener) {
-        searchInputEl.dataset.hasListener = 'true';
-        
-        var searchDebounceTimer;
+      // Search index dimuat lazy dari /search-tools.json (static endpoint,
+      // sekali per sesi + di-precache SW). Dulu data ini di-inline (~60KB) ke
+      // SETIAP halaman → duplikasi ~14MB di build output 233 halaman.
+      // getToolsList() men-cache promise-nya di window biar gak re-fetch saat
+      // astro:page-load berikutnya (SPA nav) dan aman dipanggil bersamaan.
+      var getToolsList = function () {
+        if (window.__searchToolsPromise) return window.__searchToolsPromise;
+        window.__searchToolsPromise = fetch('/search-tools.json')
+          .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+          })
+          .catch(function (err) {
+            console.debug('Gagal memuat search-tools.json:', err);
+            window.__searchToolsPromise = null; // boleh retry lain waktu
+            return [];
+          });
+        return window.__searchToolsPromise;
+      };
+
+      var initSearchList = function () {
+        getToolsList().then(function (toolsList) {
+          if (!toolsList.length) { window.__searchToolsRetry = true; return; }
+          window.__searchToolsRetry = false;
+          var searchInputEl = document.getElementById('search-modal-input');
+          var searchResultsEl = document.getElementById('search-results');
+          if (!searchInputEl || !searchResultsEl || searchInputEl.dataset.hasListener) return;
+
+          searchInputEl.dataset.hasListener = 'true';
+
+          var searchDebounceTimer;
 
         // --- Command palette: keyboard navigation ---
         var palIndex = -1;
@@ -1286,12 +1298,17 @@ if (isPdfRoot) {
 
         // Ganti konten statis SSR ("Ketik untuk mencari") dengan default view.
         renderSearchDefault();
-      }
+        });
+      };
+      // Muat index + pasang listener search modal (idempoten — guard dataset.hasListener).
+      initSearchList();
 
       // Close the modal when a search result link is clicked (SPA nav otherwise leaves it open)
-      if (searchResultsEl && !searchResultsEl.dataset.hasCloseListener) {
-        searchResultsEl.dataset.hasCloseListener = 'true';
-        searchResultsEl.addEventListener('click', function (e) {
+      // (elemen di-requery di sini karena searchResultsEl di-scope di dalam initSearchList)
+      const searchResultsHost = document.getElementById('search-results');
+      if (searchResultsHost && !searchResultsHost.dataset.hasCloseListener) {
+        searchResultsHost.dataset.hasCloseListener = 'true';
+        searchResultsHost.addEventListener('click', function (e) {
           if (e.target && e.target.closest && e.target.closest('a')) closeSearchModal();
         });
       }
