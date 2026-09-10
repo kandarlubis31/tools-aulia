@@ -70,6 +70,12 @@ declare global {
     downloadBytes?: typeof import('../composables/usePdfDownload').downloadBytes;
     /** useCdnLib — wait for a CDN-loaded global lib with retries (src/composables/useCdnLib.ts) */
     waitForCdnLib?: (libName: string, options?: { maxRetries?: number; interval?: number }) => Promise<boolean>;
+    /** Cached promise for the lazy-loaded search index (/search-tools.json) */
+    __searchToolsPromise?: Promise<unknown[]> | null;
+    /** Flag: last search index fetch failed → retry on next modal open */
+    __searchToolsRetry?: boolean;
+    /** Search modal open state (BaseLayout command palette) */
+    __searchModalOpen?: boolean;
   }
 
   // pdf.js types
