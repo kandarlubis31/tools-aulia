@@ -468,11 +468,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       overlay.style.top = `${photo.yPercent * 100}%`;
       overlay.style.transform = 'translate(-50%, -50%)';
       overlay.style.zIndex = '10';
-      overlay.style.opacity = String(photo.opacity);
+
+      // Foto + border dalam satu inner layer yang menerima opacity — preview jadi
+      // identik dengan export (border ikut opacity di drawRectangle), sementara
+      // handle & tombol X di luar layer ini tetap opaque agar bisa diedit meski
+      // opacity rendah.
+      const fade = document.createElement('div');
+      fade.className = 'photo-fade-layer absolute inset-0 pointer-events-none';
+      fade.style.opacity = String(photo.opacity);
       if (photo.border) {
         const bPx = Math.max(1, photo.border.pt * (pxPerCm / PT_PER_CM));
-        overlay.style.border = `${bPx}px solid ${photo.border.color}`;
-        overlay.style.boxSizing = 'content-box';
+        fade.style.border = `${bPx}px solid ${photo.border.color}`;
+        fade.style.boxSizing = 'content-box';
       }
 
       const img = document.createElement('img');
@@ -480,10 +487,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       img.className = 'w-full h-full object-cover pointer-events-none';
       img.alt = 'Foto ditempel';
       img.draggable = false;
-      overlay.appendChild(img);
+      fade.appendChild(img);
+      overlay.appendChild(fade);
 
       const removeBtn = document.createElement('button');
-      removeBtn.className = 'absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 hidden group-hover:block transition-all z-20';
+      removeBtn.className = 'photo-x-btn absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-all z-20';
       removeBtn.innerHTML = SVG_CLOSE;
       removeBtn.setAttribute('aria-label', 'Hapus foto');
       removeBtn.addEventListener('click', (e) => { e.stopPropagation(); removePhoto(photo.id); });
@@ -497,7 +505,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       ];
       corners.forEach(c => {
         const handle = document.createElement('div');
-        handle.className = 'photo-handle absolute w-3 h-3 bg-white border-2 border-sky-500 rounded-sm shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto';
+        handle.className = 'photo-handle absolute w-3 h-3 bg-white border-2 border-sky-500 rounded-sm shadow-sm transition-opacity pointer-events-auto';
         const [x, y] = c.pos.split(',');
         handle.style.left = x; handle.style.top = y;
         handle.style.cursor = c.cursor;
@@ -536,6 +544,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const isSel = o.dataset.photoId === selectedPhotoId;
       o.style.outline = isSel ? '2px solid #0284c7' : '';
       o.style.outlineOffset = isSel ? '2px' : '';
+      // Handle resize & tombol X hanya tampil saat foto TERPILIH — di perangkat
+      // sentuh gak ada hover, reveal-via-hover bikin resize/hapus mustahil
+      // ditemukan. Tap/click foto → controls muncul.
+      o.querySelectorAll<HTMLElement>('.photo-handle, .photo-x-btn').forEach((ctl) => {
+        ctl.style.opacity = isSel ? '1' : '0';
+        ctl.style.pointerEvents = isSel ? 'auto' : 'none';
+      });
     });
   }
 
@@ -549,6 +564,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
 
   let dragStartSnapshot: PhotoEntry[] | null = null;
+  let opacitySnapshot: PhotoEntry[] | null = null;
 
   function startResize(e: any, id: string, corner: string) {
     dragStartSnapshot = clonePhotos();
@@ -624,12 +640,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     activePhotoId = null;
   }
 
-  function didChange(): boolean {
-    if (!dragStartSnapshot) return false;
-    if (photos.length !== dragStartSnapshot.length) return true;
+  function didChange(snap: PhotoEntry[] | null): boolean {
+    if (!snap) return false;
+    if (photos.length !== snap.length) return true;
     for (let i = 0; i < photos.length; i++) {
-      const a = photos[i], b = dragStartSnapshot[i];
-      if (!b || a.id !== b.id || a.xPercent !== b.xPercent || a.yPercent !== b.yPercent || a.widthCm !== b.widthCm) return true;
+      const a = photos[i], b = snap[i];
+      if (!b || a.id !== b.id || a.xPercent !== b.xPercent || a.yPercent !== b.yPercent || a.widthCm !== b.widthCm || a.opacity !== b.opacity) return true;
     }
     return false;
   }
@@ -641,7 +657,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   function onDocTouchMove(e: TouchEvent) { onPointerMove(e); }
   function onMouseUp() {
     if (dragStartSnapshot) {
-      if (didChange()) pushHistory();
+      // Commit snapshot PRE-gesture — pushHistory tanpa argumen menyimpan state
+      // POST-mutasi, bikin Ctrl+Z pertama keliatan mati (restore ke state yang sama).
+      if (didChange(dragStartSnapshot)) pushHistory(dragStartSnapshot);
       dragStartSnapshot = null;
     }
     onPointerUp();
@@ -708,8 +726,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
 
   // --- 9. HISTORY ---
-  function pushHistory() {
-    undoStack.push({ photos: clonePhotos() });
+  function pushHistory(preState?: PhotoEntry[]) {
+    // Simpan state SEBELUM perubahan (undo = kembali ke state pre). Caller yang
+    // mutasi secara live (drag/resize/opacity) wajib pass snapshot pre-gesture;
+    // caller yang push SEBELUM mutasi (add/remove/preset) cukup tanpa argumen.
+    undoStack.push({ photos: preState ? preState : clonePhotos() });
     if (undoStack.length > MAX_HISTORY) undoStack.shift();
     redoStack = [];
     updateUndoRedoBtns();
@@ -941,8 +962,23 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     if (borderWidthVal) borderWidthVal.textContent = `${borderWidth.value}pt`;
   });
 
-  photoOpacity?.addEventListener('input', (e: any) => {
-    if (opacityVal) opacityVal.textContent = `${e.target.value}%`;
+  // Opacity live-update ke foto TERPILIH. Kalau gak ada yang terpilih, slider
+  // cuma jadi default buat foto berikutnya. Commit history saat gesture selesai.
+  photoOpacity?.addEventListener('input', () => {
+    const val = parseInt(photoOpacity.value) / 100;
+    if (opacityVal) opacityVal.textContent = `${photoOpacity.value}%`;
+    const sel = photos.find(p => p.id === selectedPhotoId);
+    if (!sel || sel.opacity === val) return;
+    if (!opacitySnapshot) opacitySnapshot = clonePhotos();
+    sel.opacity = val;
+    const fade = previewContainer?.querySelector(`[data-photo-id="${selectedPhotoId}"] .photo-fade-layer`) as HTMLElement | null;
+    if (fade) fade.style.opacity = String(val);
+  });
+  photoOpacity?.addEventListener('change', () => {
+    if (opacitySnapshot) {
+      if (didChange(opacitySnapshot)) pushHistory(opacitySnapshot);
+      opacitySnapshot = null;
+    }
   });
 
   // --- 13. FILE DROP ZONE ---

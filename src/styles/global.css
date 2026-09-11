@@ -240,11 +240,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border-color: var(--surface-border);
 }
 .card-base:hover {
-  border-color: var(--matte-300);
+  border-color: rgba(var(--accent-blue-rgb), 0.35);
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 .dark .card-base:hover {
-  border-color: rgba(56, 189, 248, 0.25);
+  border-color: rgba(var(--accent-blue-rgb), 0.35);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 .card-base:active {
@@ -531,6 +531,38 @@ html.dark .checkerboard {
     font-size: 0.8125rem;
   }
 }
+/* ========== TOOL PLACEHOLDER SKELETON (shimmer) ==========
+   Kartu tool #37+ di-render lazy via IntersectionObserver. Sebelum aktif,
+   placeholder jangan keliatan lobang kosong — kasih shimmer halus.
+   Cleanup otomatis: class .tool-placeholder di-remove saat kartu di-render. */
+.tool-placeholder {
+  border-radius: 0.75rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--matte-200);
+  position: relative;
+  overflow: hidden;
+}
+.dark .tool-placeholder {
+  border-color: var(--surface-border);
+}
+.tool-placeholder::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: shimmer 1.6s infinite;
+}
+.dark .tool-placeholder::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+}
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tool-placeholder::after { animation: none; }
+}
+
 .tool-item {
   content-visibility: auto;
   contain-intrinsic-size: auto 120px;
