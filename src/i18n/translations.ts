@@ -122,6 +122,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'index.media': { id: '🎵 Media', en: '🎵 Media' },
   'index.sort_popular': { id: 'Populer', en: 'Popular' },
   'index.sort_az': { id: 'A-Z', en: 'A-Z' },
+  'index.sort_recent': { id: 'Terbaru', en: 'Recent' },
   'index.empty_title': { id: 'Tidak ditemukan', en: 'Nothing found' },
   'index.empty_desc': { id: 'Coba kata kunci lain atau reset filter.', en: 'Try another keyword or reset the filters.' },
   'index.reset': { id: 'Reset Filter', en: 'Reset Filters' },
@@ -2352,6 +2353,8 @@ export const translations: Record<string, { id: string; en: string }> = {
   'tool.slug_gen': { id: 'Slug Generator', en: 'Slug Generator' },
   'tool.slug_gen_desc': { id: 'Generate URL slug dari teks (lowercase, separator).', en: 'Generate URL slug from text (lowercase, separator).' },
   // === B13 ===
+  'tool.pdf_photo': { id: 'PDF Photo Insert', en: 'PDF Photo Insert' },
+  'tool.pdf_photo_desc': { id: 'Tempel pas foto ke slot foto di PDF (form lamaran, dsb).', en: 'Paste a pass photo into a photo slot on any PDF (job forms, etc.).' },
   'tool.pdf_annotate': { id: 'PDF Annotate', en: 'PDF Annotate' },
   'tool.pdf_annotate_desc': { id: 'Tambah highlight, underline, & sticky notes ke PDF.', en: 'Add highlight, underline & sticky notes to PDF.' },
   'tool.image_overlay': { id: 'Image Overlay', en: 'Image Overlay' },

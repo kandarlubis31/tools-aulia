@@ -403,4 +403,9 @@ window._i18nPhrases = {
   'Gambar tanda tangan dulu!':'Draw your signature first!',
   'Gagal memuat PDF. Coba file lain.':'Failed to load the PDF. Try another file.',
   'Gagal menambahkan stempel tanggal.':'Failed to add the date stamp.',
+  'Belum ada foto yang ditempel!':'No photos placed yet!',
+  'Semua foto dihapus.':'All photos removed.',
+  'Gagal memproses foto. Coba file lain.':'Failed to process the photo. Try another file.',
+  ' foto ditambahkan.':' photo(s) added.',
+  'Foto ditambahkan ke halaman ':'Photo added to page ',
 };

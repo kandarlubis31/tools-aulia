@@ -13,17 +13,19 @@ interface Props {
 const { title, desc, href, icon, isSoon = false, titleKey, descKey, tileClass = 'from-matte-100 to-matte-200/60 text-matte-500 dark:from-surface-elevated dark:to-matte-800 dark:text-matte-300' } = Astro.props;
 ---
 
-<a href={isSoon ? "#" : href}
-   class={`card-base group relative flex flex-col p-4 rounded-xl overflow-hidden
-           ${isSoon ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150'}`}
+<!-- P0 a11y fix: wrapper adalah <article> (bukan <a>) — button tidak boleh nested di dalam <a>.
+     Link utama = judul, dengan ::after fullscreen (stretched-link pattern) supaya
+     seluruh kartu tetap clickable; fav-star jadi sibling dengan z-10 di atasnya. -->
+<article class={`card-base group relative flex flex-col p-4 rounded-xl overflow-hidden
+        ${isSoon ? 'opacity-50' : 'hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150'}`}
    data-tool-href={href}>
-  
+
   {isSoon && (
     <span class="absolute top-2 right-2 badge-muted text-2xs px-1.5 py-0.5">Soon</span>
   )}
 
   {!isSoon && (
-    <button class="fav-star absolute top-2 right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-white/80 dark:bg-matte-800/80 backdrop-blur-sm text-matte-300 hover:text-amber-400 hover:scale-110 transition-all duration-150 opacity-0 group-hover:opacity-100"
+    <button class="fav-star absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 dark:bg-matte-800/80 backdrop-blur-sm text-matte-300 hover:text-amber-400 hover:scale-110 transition-all duration-150 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
       data-fav={href} title="Add to favorites" aria-label="Add to favorites" type="button">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
     </button>
@@ -33,14 +35,16 @@ const { title, desc, href, icon, isSoon = false, titleKey, descKey, tileClass = 
   <div class={`icon-mono icon-tile w-10 h-10 mb-3 rounded-xl bg-gradient-to-br ${tileClass} transition-all duration-150 group-hover:scale-110 shrink-0`}>
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: inherit" set:html={icon} />
   </div>
-  
-  <!-- Title -->
+
+  <!-- Title = stretched link: ::after menutupi seluruh kartu (di bawah z-10 star) -->
   <h3 class="text-sm font-semibold text-matte-800 dark:text-white transition-colors duration-150 group-hover:text-accent-blue leading-snug truncate" data-i18n={titleKey || undefined}>
-    {title}
+    <a href={isSoon ? "#" : href} class={isSoon ? 'cursor-not-allowed' : 'after:absolute after:inset-0'}>
+      {title}
+    </a>
   </h3>
-  
+
   <!-- Description -->
   <p class="text-xs text-matte-400 dark:text-matte-300 leading-relaxed mt-1 line-clamp-2" data-i18n={descKey || undefined}>
     {desc}
   </p>
-</a>
+</article>

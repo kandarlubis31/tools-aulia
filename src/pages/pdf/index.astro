@@ -102,6 +102,13 @@ const pdfTools = [
     icon: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>' 
   },
   { 
+    title: "PDF Photo Insert", 
+    desc: "Tempel pas foto ke slot foto PDF.", 
+    href: "/pdf/photo", 
+    color: "sky",
+    icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>' 
+  },
+  { 
     title: "Watermark", 
     desc: "Kasih cap air/watermark.", 
     href: "/pdf/watermark", 
@@ -165,7 +172,7 @@ const popularTools = ['merge', 'compress', 'split', 'rotate'];
 const glowColors: Record<string, string> = {
   rose: '#f43f5e', orange: '#f97316', emerald: '#10b981', blue: '#3b82f6',
   indigo: '#6366f1', teal: '#14b8a6', yellow: '#eab308', purple: '#a855f7',
-  cyan: '#06b6d4', slate: '#64748b', pink: '#ec4899', gray: '#6b7280', amber: '#f59e0b',
+  cyan: '#06b6d4', slate: '#64748b', pink: '#ec4899', gray: '#6b7280', amber: '#f59e0b', sky: '#0ea5e9',
 };
 
 const getColorClass = (color: string) => {
@@ -179,6 +186,7 @@ const getColorClass = (color: string) => {
     yellow: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400",
     purple: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
     cyan: "bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400",
+    sky: "bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400",
     slate: "bg-matte-100 text-matte-600 dark:bg-matte-800 dark:text-matte-300",
     pink: "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400",
     gray: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
@@ -327,7 +335,7 @@ const getColorClass = (color: string) => {
       {pdfTools.map((tool) => {
         let cat = 'all';
         if (tool.href.includes('merge') || tool.href.includes('split') || tool.href.includes('compress')) cat = 'manipulasi';
-        else if (tool.href.includes('rotate') || tool.href.includes('reorder') || tool.href.includes('delete') || tool.href.includes('extract')) cat = 'editing';
+        else if (tool.href.includes('rotate') || tool.href.includes('reorder') || tool.href.includes('delete') || tool.href.includes('extract') || tool.href.includes('photo')) cat = 'editing';
         else if (tool.href.includes('to-') || tool.href.includes('-to-') || tool.href.includes('html-to-pdf') || tool.href.includes('to-text')) cat = 'konversi';
         else cat = 'security';
 

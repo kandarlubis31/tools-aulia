@@ -1,0 +1,1077 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Photo to PDF Slot" pdfJs={true}>
+  <div class="max-w-6xl mx-auto px-4 min-h-[80vh]">
+    <ToolPageHeader
+      title="PDF Photo Insert"
+      desc="Tempel pas foto ke slot foto di PDF — form lamaran, pendaftaran, administrasi. Preset 2x3, 3x4, 4x6 cm."
+      icon='<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'
+      gradient="from-sky-500 to-blue-600"
+    />
+
+    <!-- Drop Zone -->
+    <div id="drop-zone" class="max-w-2xl mx-auto border-3 border-dashed border-matte-300 dark:border-matte-600 rounded-3xl p-12 cursor-pointer hover:border-sky-500 hover:bg-sky-50 dark:hover:bg-matte-800/50 transition-all group text-center animate-on-scroll">
+      <div class="w-20 h-20 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <h3 class="text-2xl font-bold text-matte-700 dark:text-matte-200 mb-2">Pilih PDF</h3>
+      <p class="text-sm text-matte-400">Drag & drop atau klik untuk memilih</p>
+      <input type="file" id="file-input" accept="application/pdf" class="hidden" />
+    </div>
+
+    <!-- Workspace -->
+    <div id="workspace" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20 animate-fade-in">
+
+      <!-- Left Sidebar -->
+      <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white dark:bg-matte-800 p-6 rounded-2xl border border-matte-200 dark:border-matte-700 shadow-lg lg:sticky lg:top-24">
+
+          <!-- Photo Upload -->
+          <div class="space-y-3 mb-5">
+            <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-5 text-center hover:bg-matte-50 dark:hover:bg-matte-700/50 cursor-pointer transition-colors relative">
+              <input type="file" id="photo-input" accept="image/png, image/jpeg, image/webp" class="absolute inset-0 opacity-0 cursor-pointer" />
+              <div class="text-matte-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span class="text-xs font-bold">Upload Pas Foto (PNG / JPG)</span>
+                <p class="text-[10px] mt-1">Foto akan di-crop otomatis sesuai preset</p>
+              </div>
+            </div>
+
+            <!-- BG Removal -->
+            <div class="flex items-center justify-between bg-matte-50 dark:bg-matte-900/50 rounded-lg px-3 py-2">
+              <label for="bg-remove-toggle" class="text-xs font-bold text-matte-600 dark:text-matte-300 cursor-pointer flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2a10 10 0 0 0 0 20"/></svg>
+                Hapus Background Putih
+              </label>
+              <button id="bg-remove-toggle" role="switch" aria-checked="false" aria-label="Hapus background foto" class="relative inline-flex h-5 w-10 items-center rounded-full bg-matte-300 dark:bg-matte-600 transition-colors">
+                <span class="inline-block h-3.5 w-3.5 translate-x-0.5 rounded-full bg-white shadow transition-transform"></span>
+              </button>
+            </div>
+            <div id="tolerance-row" class="hidden">
+              <div class="flex justify-between text-[10px] font-bold text-matte-400 uppercase mb-1">
+                <span data-i18n="stp.tolerance">Toleransi Background</span>
+                <span id="tolerance-val" class="font-mono font-bold text-sky-600 normal-case tracking-normal">35</span>
+              </div>
+              <input type="range" id="tolerance" min="0" max="100" value="35" class="w-full h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-sky-600" />
+            </div>
+          </div>
+
+          <hr class="border-matte-200 dark:border-matte-700 my-4" />
+
+          <!-- Size Presets -->
+          <div class="mb-4">
+            <label class="block text-xs font-bold text-matte-500 mb-2 uppercase tracking-wide">Ukuran Foto</label>
+            <div class="grid grid-cols-4 gap-1.5" role="group" aria-label="Preset ukuran pas foto">
+              <button class="preset-btn py-2 px-1 rounded-lg border-2 border-sky-500 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 text-xs font-bold transition-all" data-preset="3x4">3×4</button>
+              <button class="preset-btn py-2 px-1 rounded-lg border-2 border-matte-200 dark:border-matte-600 text-matte-500 text-xs font-bold transition-all" data-preset="4x6">4×6</button>
+              <button class="preset-btn py-2 px-1 rounded-lg border-2 border-matte-200 dark:border-matte-600 text-matte-500 text-xs font-bold transition-all" data-preset="2x3">2×3</button>
+              <button class="preset-btn py-2 px-1 rounded-lg border-2 border-matte-200 dark:border-matte-600 text-matte-500 text-xs font-bold transition-all" data-preset="free">Bebas</button>
+            </div>
+            <p class="text-[10px] text-matte-400 mt-1.5">Preset = ukuran asli di PDF (cm). "Bebas" ikut rasio foto asli.</p>
+          </div>
+
+          <!-- Border -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <label for="border-toggle" class="text-xs font-bold text-matte-500 uppercase tracking-wide cursor-pointer">Border Foto</label>
+              <button id="border-toggle" role="switch" aria-checked="false" aria-label="Border foto" class="relative inline-flex h-5 w-10 items-center rounded-full bg-matte-300 dark:bg-matte-600 transition-colors">
+                <span class="inline-block h-3.5 w-3.5 translate-x-0.5 rounded-full bg-white shadow transition-transform"></span>
+              </button>
+            </div>
+            <div id="border-row" class="hidden flex items-center gap-2">
+              <input type="color" id="border-color" value="#ffffff" aria-label="Warna border" class="w-8 h-8 rounded cursor-pointer border border-matte-200 dark:border-matte-600 bg-transparent p-0.5" />
+              <input type="range" id="border-width" min="1" max="5" step="0.5" value="2" class="flex-1 h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-sky-600" aria-label="Tebal border" />
+              <span id="border-width-val" class="text-xs font-mono font-bold text-matte-500 w-10 text-right">2pt</span>
+            </div>
+          </div>
+
+          <!-- Opacity -->
+          <div class="mb-4">
+            <div class="flex justify-between text-xs font-bold text-matte-500 uppercase mb-1">
+              <label for="photo-opacity">Opasitas</label>
+              <span id="opacity-val" class="text-matte-400 normal-case">100%</span>
+            </div>
+            <input type="range" id="photo-opacity" min="20" max="100" value="100" class="w-full h-2 bg-matte-200 dark:bg-surface-border rounded-lg appearance-none cursor-pointer accent-sky-600" />
+          </div>
+
+          <hr class="border-matte-200 dark:border-matte-700 my-4" />
+
+          <!-- Undo / Redo -->
+          <div class="flex items-center gap-2 mb-4">
+            <button id="undo-btn" disabled class="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-matte-100 dark:bg-matte-700 text-matte-500 hover:text-matte-700 dark:hover:text-matte-300 text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              Undo
+            </button>
+            <button id="redo-btn" disabled class="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-matte-100 dark:bg-matte-700 text-matte-500 hover:text-matte-700 dark:hover:text-matte-300 text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              Redo
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+          </div>
+
+          <!-- Photo List -->
+          <div id="photo-list-panel" class="transition-all duration-200 overflow-hidden" style="max-height:0; opacity:0;">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-matte-500 uppercase tracking-wide">Foto Ditempel</span>
+              <button id="clear-all-btn" class="text-2xs font-bold text-red-500 hover:text-red-600">Hapus Semua</button>
+            </div>
+            <div id="photo-list" class="space-y-2 max-h-44 overflow-y-auto pr-1"></div>
+          </div>
+
+          <!-- Save -->
+          <button id="save-pdf-btn" class="w-full mt-5 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:from-sky-600 hover:to-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Simpan PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Preview -->
+      <div class="lg:col-span-2">
+        <!-- Page Navigation -->
+        <div id="page-nav" class="hidden flex items-center justify-center gap-3 mb-4">
+          <button id="prev-page" class="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-matte-800 border border-matte-200 dark:border-matte-700 text-matte-500 hover:text-sky-600 hover:border-sky-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" aria-label="Halaman sebelumnya">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <select id="page-select" class="text-xs font-bold bg-white dark:bg-matte-800 border border-matte-200 dark:border-matte-700 rounded-lg px-3 py-2 text-matte-600 dark:text-matte-300 focus:outline-none focus:border-sky-500" aria-label="Pilih halaman"></select>
+          <span id="page-indicator" class="text-xs text-matte-400 font-medium"></span>
+          <button id="next-page" class="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-matte-800 border border-matte-200 dark:border-matte-700 text-matte-500 hover:text-sky-600 hover:border-sky-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" aria-label="Halaman berikutnya">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <div class="bg-matte-200 dark:bg-matte-900 p-4 rounded-xl border border-matte-300 dark:border-matte-700 shadow-inner w-full max-w-full flex justify-center overflow-auto relative min-h-[500px]">
+          <div id="render-loading" class="hidden absolute inset-0 z-30 flex items-center justify-center bg-matte-200/80 dark:bg-matte-900/80 rounded-xl backdrop-blur-sm">
+            <div class="flex flex-col items-center gap-2">
+              <svg class="animate-spin h-8 w-8 text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              <span class="text-xs font-bold text-sky-600">Memuat halaman...</span>
+            </div>
+          </div>
+          <div id="preview-container" class="relative shadow-2xl mt-2 select-none">
+            <canvas id="pdf-render" class="block bg-white"></canvas>
+            <div id="snap-v" class="hidden absolute top-0 bottom-0 w-px bg-red-400/70 pointer-events-none" style="z-index:20;"></div>
+            <div id="snap-h" class="hidden absolute left-0 right-0 h-px bg-red-400/70 pointer-events-none" style="z-index:20;"></div>
+          </div>
+        </div>
+        <p class="text-xs text-matte-500 mt-4 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l4 4l-4 4"/><path d="M3 3l18 18"/><path d="M9 5l4 4l-4 4"/></svg>
+          Drag posisi · Corner handle untuk resize · Ctrl+Z undo · Del hapus · Foto di-crop otomatis ke rasio preset
+        </p>
+      </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // ============================================================
+  // PDF PHOTO INSERT — pas foto ke slot foto PDF form
+  // Pattern dari sign.astro (placement/undo/render) + sign-to-png
+  // (BG removal). Preset cm = ukuran asli di PDF export.
+  // ============================================================
+
+  const __page = '/pdf/photo';
+
+  // --- 1. IMPORTS & SETUP ---
+  let PDFDocument: any;
+  let pdfRgb: any;
+  async function _loadPdfLib() {
+    if (!PDFDocument) {
+      const lib = await import('pdf-lib');
+      PDFDocument = lib.PDFDocument;
+      pdfRgb = lib.rgb;
+    }
+    return PDFDocument;
+  }
+
+  const PT_PER_CM = 28.3465;
+  const PRESETS: Record<string, { w: number; h: number } | null> = {
+    '2x3': { w: 2, h: 3 },
+    '3x4': { w: 3, h: 4 },
+    '4x6': { w: 4, h: 6 },
+    free: null,
+  };
+
+  // --- 2. ELEMENTS ---
+  const dropZone = document.getElementById('drop-zone');
+  const workspace = document.getElementById('workspace');
+  const pdfCanvas = document.getElementById('pdf-render') as HTMLCanvasElement;
+  const previewContainer = document.getElementById('preview-container');
+  const renderLoading = document.getElementById('render-loading');
+  const snapV = document.getElementById('snap-v');
+  const snapH = document.getElementById('snap-h');
+  const photoInput = document.getElementById('photo-input') as HTMLInputElement;
+  const bgRemoveToggle = document.getElementById('bg-remove-toggle');
+  const toleranceRow = document.getElementById('tolerance-row');
+  const toleranceSlider = document.getElementById('tolerance') as HTMLInputElement;
+  const toleranceVal = document.getElementById('tolerance-val');
+  const presetBtns = document.querySelectorAll('.preset-btn');
+  const borderToggle = document.getElementById('border-toggle');
+  const borderRow = document.getElementById('border-row');
+  const borderColor = document.getElementById('border-color') as HTMLInputElement;
+  const borderWidth = document.getElementById('border-width') as HTMLInputElement;
+  const borderWidthVal = document.getElementById('border-width-val');
+  const photoOpacity = document.getElementById('photo-opacity') as HTMLInputElement;
+  const opacityVal = document.getElementById('opacity-val');
+  const savePdfBtn = document.getElementById('save-pdf-btn');
+  const undoBtn = document.getElementById('undo-btn');
+  const redoBtn = document.getElementById('redo-btn');
+  const clearAllBtn = document.getElementById('clear-all-btn');
+  const photoListPanel = document.getElementById('photo-list-panel');
+  const photoListEl = document.getElementById('photo-list');
+  const prevPageBtn = document.getElementById('prev-page');
+  const nextPageBtn = document.getElementById('next-page');
+  const pageSelect = document.getElementById('page-select') as HTMLSelectElement;
+  const pageIndicator = document.getElementById('page-indicator');
+  const pageNav = document.getElementById('page-nav');
+
+  // --- 3. STATE ---
+  type PhotoEntry = {
+    id: string;
+    dataUrl: string;           // baked PNG (aspect-cropped + optional BG removal)
+    preset: string;            // '2x3' | '3x4' | '4x6' | 'free'
+    aspectW: number; aspectH: number; // ratio (cm for presets, natural px for free)
+    widthCm: number;           // display width in cm — source of truth (export = widthCm * PT_PER_CM)
+    page: number;
+    xPercent: number; yPercent: number; // center position (0..1)
+    opacity: number;
+    border: { color: string; pt: number } | null;
+  };
+
+  let currentFile: File | null = null;
+  let pdfDoc: any = null;
+  let totalPages = 1;
+  let currentPageIndex = 0;
+  let currentViewport: any = null;
+  let pxPerCm = 30;      // display px per cm at current viewport
+
+  let photos: PhotoEntry[] = [];
+  let photoIdCounter = 0;
+  let selectedPhotoId: string | null = null;
+
+  // Settings for the NEXT added photo
+  let currentPreset = '3x4';
+  let bgRemoveEnabled = false;
+  let borderEnabled = false;
+
+  // Interaction
+  let interactionMode: 'none' | 'drag' | 'resize' = 'none';
+  let activePhotoId: string | null = null;
+  let resizeCorner = '';
+  let resizeStartX = 0;
+  let resizeStartWidthCm = 0;
+  const SNAP_THRESHOLD = 10;
+
+  // Undo/Redo
+  type HistoryEntry = { photos: PhotoEntry[] };
+  let undoStack: HistoryEntry[] = [];
+  let redoStack: HistoryEntry[] = [];
+  const MAX_HISTORY = 50;
+
+  let listenersAttached = false;
+  let renderLock = false;
+  let renderAbortController: AbortController | null = null;
+  let refitTimer: number | undefined;
+
+  const SVG_CLOSE = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+  // --- 4. UTILS ---
+  function _tt(msg: string): string {
+    return window._tToast ? window._tToast(msg) : msg;
+  }
+  function genId() { return 'photo-' + (++photoIdCounter); }
+  function clonePhotos(): PhotoEntry[] { return photos.map(p => ({ ...p, border: p.border ? { ...p.border } : null })); }
+
+  function hexToRgbComponents(hex: string): [number, number, number] {
+    const m = hex.replace('#', '');
+    const full = m.length === 3 ? m.split('').map(c => c + c).join('') : m;
+    const n = parseInt(full, 16);
+    return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+  }
+
+  function toggleSwitch(btn: HTMLElement | null, on: boolean) {
+    if (!btn) return;
+    btn.setAttribute('aria-checked', String(on));
+    btn.classList.toggle('bg-sky-600', on);
+    btn.classList.toggle('bg-matte-300', !on);
+    btn.classList.toggle('dark:bg-matte-600', !on);
+    const dot = btn.querySelector('span') as HTMLElement | null;
+    if (dot) dot.style.transform = on ? 'translateX(18px)' : 'translateX(2px)';
+  }
+
+  // --- 5. PHOTO PREPROCESSING (aspect crop + optional BG removal) ---
+  function edgeBaseline(d: Uint8ClampedArray, w: number, h: number): number {
+    let sum = 0, n = 0;
+    const sample = (x: number, y: number) => {
+      const i = (y * w + x) * 4;
+      sum += d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
+      n++;
+    };
+    const stepX = Math.max(1, Math.floor(w / 64));
+    const stepY = Math.max(1, Math.floor(h / 64));
+    for (let x = 0; x < w; x += stepX) { sample(x, 0); sample(x, h - 1); }
+    for (let y = 0; y < h; y += stepY) { sample(0, y); sample(w - 1, y); }
+    return n ? sum / n : 235;
+  }
+
+  // Center-crop (object-cover) to target aspect + optional white-BG removal.
+  // Output bitmap has the FINAL aspect → preview and export are identical.
+  function bakePhotoCanvas(img: HTMLImageElement, aspectW: number, aspectH: number, removeBg: boolean, tolerance: number): HTMLCanvasElement {
+    const srcRatio = img.naturalWidth / img.naturalHeight;
+    const targetRatio = aspectW / aspectH;
+
+    // Cover-crop source rect
+    let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+    if (srcRatio > targetRatio) {
+      sw = Math.round(img.naturalHeight * targetRatio);
+      sx = Math.round((img.naturalWidth - sw) / 2);
+    } else if (srcRatio < targetRatio) {
+      sh = Math.round(img.naturalWidth / targetRatio);
+      sy = Math.round((img.naturalHeight - sh) / 2);
+    }
+
+    // Output resolution: good quality but capped (pas foto doesn't need 4000px)
+    const MAX_OUT = 1200;
+    const targetOut = Math.min(MAX_OUT, Math.max(240, sw));
+    const scale = Math.min(2, Math.max(0.25, targetOut / sw));
+    const ow = Math.max(1, Math.round(sw * scale));
+    const oh = Math.max(1, Math.round(sh * scale));
+
+    const c = document.createElement('canvas');
+    c.width = ow; c.height = oh;
+    const ctx = c.getContext('2d', { willReadFrequently: !!removeBg })!;
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, ow, oh);
+
+    if (removeBg) {
+      const imageData = ctx.getImageData(0, 0, ow, oh);
+      const d = imageData.data;
+      const baseLum = edgeBaseline(d, ow, oh);
+      const cut = Math.min(250, baseLum * 0.92 + tolerance * 0.55);
+      const band = 16;
+      const satMax = Math.max(12, 42 - tolerance * 0.25);
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        const lum = r * 0.299 + g * 0.587 + b * 0.114;
+        const sat = Math.max(r, g, b) - Math.min(r, g, b);
+        if (sat >= satMax) continue;
+        const dist = lum - cut;
+        if (dist >= band) d[i + 3] = 0;
+        else if (dist > -band) d[i + 3] = Math.max(0, Math.min(255, Math.round(127.5 - (dist / band) * 127.5)));
+        else d[i + 3] = 255;
+      }
+      ctx.putImageData(imageData, 0, 0);
+    }
+    return c;
+  }
+
+  // --- 6. PDF RENDER (fit-to-panel, S-11 pattern) ---
+  async function renderCurrentPage() {
+    if (!pdfDoc || !pdfCanvas) return;
+    renderAbortController = new AbortController();
+    const signal = renderAbortController.signal;
+
+    while (renderLock) await new Promise(r => setTimeout(r, 50));
+    renderLock = true;
+    if (renderLoading) renderLoading.classList.remove('hidden');
+
+    try {
+      const page = await pdfDoc.getPage(currentPageIndex + 1);
+      const baseViewport = page.getViewport({ scale: 1.0 });
+
+      // Fit to preview panel width so narrow panels never clip the page
+      const wrap = previewContainer?.parentElement;
+      let scale = 1.0;
+      if (wrap && wrap.clientWidth > 0) {
+        const availW = Math.max(80, wrap.clientWidth - 32);
+        scale = Math.max(0.2, Math.min(1.5, availW / baseViewport.width));
+      }
+      const viewport = page.getViewport({ scale });
+      currentViewport = viewport;
+      pxPerCm = (viewport.width * PT_PER_CM) / baseViewport.width;
+
+      pdfCanvas.width = viewport.width;
+      pdfCanvas.height = viewport.height;
+      if (previewContainer) {
+        previewContainer.style.width = `${viewport.width}px`;
+        previewContainer.style.height = `${viewport.height}px`;
+      }
+
+      const context = pdfCanvas.getContext('2d');
+      if (!context) return;
+      try {
+        await page.render({ canvasContext: context, viewport }).promise;
+      } catch (renderErr) {
+        console.error('PDF page render failed:', renderErr);
+        window.showToast?.(_tt('Gagal merender halaman PDF.'), 'error');
+      }
+
+      if (!signal.aborted) renderAllOverlays();
+    } catch (err) {
+      console.error('PDF page load failed:', err);
+      window.showToast?.(_tt('Gagal memuat halaman PDF.'), 'error');
+    } finally {
+      renderLock = false;
+      if (renderLoading) renderLoading.classList.add('hidden');
+    }
+  }
+
+  function updatePageNav() {
+    if (prevPageBtn) prevPageBtn.disabled = currentPageIndex <= 0;
+    if (nextPageBtn) nextPageBtn.disabled = currentPageIndex >= totalPages - 1;
+    if (pageIndicator) pageIndicator.textContent = `${currentPageIndex + 1} / ${totalPages}`;
+    if (pageNav) pageNav.classList.toggle('hidden', totalPages <= 1);
+    if (pageSelect) pageSelect.value = String(currentPageIndex);
+  }
+
+  function updatePageSelect() {
+    if (!pageSelect) return;
+    pageSelect.innerHTML = '';
+    for (let i = 0; i < totalPages; i++) {
+      const opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = `Halaman ${i + 1}`;
+      if (i === currentPageIndex) opt.selected = true;
+      pageSelect.appendChild(opt);
+    }
+  }
+
+  prevPageBtn?.addEventListener('click', async () => {
+    if (currentPageIndex > 0) { currentPageIndex--; await renderCurrentPage(); updatePageNav(); }
+  });
+  nextPageBtn?.addEventListener('click', async () => {
+    if (currentPageIndex < totalPages - 1) { currentPageIndex++; await renderCurrentPage(); updatePageNav(); }
+  });
+  pageSelect?.addEventListener('change', () => {
+    const target = parseInt(pageSelect.value);
+    if (target >= 0 && target < totalPages && target !== currentPageIndex) {
+      currentPageIndex = target;
+      void renderCurrentPage();
+      updatePageNav();
+    }
+  });
+
+  // --- 7. OVERLAY RENDERING ---
+  function renderAllOverlays() {
+    if (!previewContainer) return;
+    previewContainer.querySelectorAll('.photo-overlay-dynamic').forEach(el => el.remove());
+
+    photos.filter(p => p.page === currentPageIndex).forEach(photo => {
+      const overlay = document.createElement('div');
+      overlay.className = 'photo-overlay-dynamic absolute group';
+      overlay.dataset.photoId = photo.id;
+      const widthPx = photo.widthCm * pxPerCm;
+      overlay.style.width = `${widthPx}px`;
+      overlay.style.aspectRatio = `${photo.aspectW} / ${photo.aspectH}`;
+      overlay.style.left = `${photo.xPercent * 100}%`;
+      overlay.style.top = `${photo.yPercent * 100}%`;
+      overlay.style.transform = 'translate(-50%, -50%)';
+      overlay.style.zIndex = '10';
+      overlay.style.opacity = String(photo.opacity);
+      if (photo.border) {
+        const bPx = Math.max(1, photo.border.pt * (pxPerCm / PT_PER_CM));
+        overlay.style.border = `${bPx}px solid ${photo.border.color}`;
+        overlay.style.boxSizing = 'content-box';
+      }
+
+      const img = document.createElement('img');
+      img.src = photo.dataUrl;
+      img.className = 'w-full h-full object-cover pointer-events-none';
+      img.alt = 'Foto ditempel';
+      img.draggable = false;
+      overlay.appendChild(img);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 hidden group-hover:block transition-all z-20';
+      removeBtn.innerHTML = SVG_CLOSE;
+      removeBtn.setAttribute('aria-label', 'Hapus foto');
+      removeBtn.addEventListener('click', (e) => { e.stopPropagation(); removePhoto(photo.id); });
+      overlay.appendChild(removeBtn);
+
+      const corners = [
+        { cls: 'tl', cursor: 'nwse-resize', pos: '-4px,-4px' },
+        { cls: 'tr', cursor: 'nesw-resize', pos: 'calc(100% - 4px),-4px' },
+        { cls: 'bl', cursor: 'nesw-resize', pos: '-4px,calc(100% - 4px)' },
+        { cls: 'br', cursor: 'nwse-resize', pos: 'calc(100% - 4px),calc(100% - 4px)' },
+      ];
+      corners.forEach(c => {
+        const handle = document.createElement('div');
+        handle.className = 'photo-handle absolute w-3 h-3 bg-white border-2 border-sky-500 rounded-sm shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto';
+        const [x, y] = c.pos.split(',');
+        handle.style.left = x; handle.style.top = y;
+        handle.style.cursor = c.cursor;
+        handle.style.zIndex = '15';
+        handle.dataset.corner = c.cls;
+        handle.dataset.photoId = photo.id;
+        overlay.appendChild(handle);
+
+        handle.addEventListener('mousedown', (e) => { e.stopPropagation(); startResize(e, photo.id, c.cls); });
+        handle.addEventListener('touchstart', (e) => { e.stopPropagation(); startResize(e, photo.id, c.cls); }, { passive: false });
+      });
+
+      overlay.addEventListener('mousedown', (e) => {
+        if ((e.target as HTMLElement).closest('.photo-handle') || (e.target as HTMLElement).closest('button')) return;
+        startDrag(e, photo.id);
+      });
+      overlay.addEventListener('touchstart', (e) => {
+        if ((e.target as HTMLElement).closest('.photo-handle') || (e.target as HTMLElement).closest('button')) return;
+        startDrag(e, photo.id);
+      }, { passive: false });
+
+      previewContainer.appendChild(overlay);
+    });
+    applySelectionUI();
+  }
+
+  function selectPhoto(id: string | null) {
+    selectedPhotoId = id;
+    applySelectionUI();
+  }
+
+  function applySelectionUI() {
+    if (!previewContainer) return;
+    previewContainer.querySelectorAll('.photo-overlay-dynamic').forEach((el) => {
+      const o = el as HTMLElement;
+      const isSel = o.dataset.photoId === selectedPhotoId;
+      o.style.outline = isSel ? '2px solid #0284c7' : '';
+      o.style.outlineOffset = isSel ? '2px' : '';
+    });
+  }
+
+  // --- 8. DRAG & RESIZE (aspect-locked) ---
+  function startDrag(e: any, id: string) {
+    dragStartSnapshot = clonePhotos();
+    activePhotoId = id;
+    interactionMode = 'drag';
+    selectPhoto(id);
+    e.preventDefault();
+  }
+
+  let dragStartSnapshot: PhotoEntry[] | null = null;
+
+  function startResize(e: any, id: string, corner: string) {
+    dragStartSnapshot = clonePhotos();
+    activePhotoId = id;
+    interactionMode = 'resize';
+    resizeCorner = corner;
+    let clientX: number, clientY: number;
+    if (e.touches) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+    else { clientX = e.clientX; clientY = e.clientY; }
+    resizeStartX = clientX;
+    const p = photos.find(x => x.id === id);
+    resizeStartWidthCm = p ? p.widthCm : 3.5;
+    e.preventDefault();
+  }
+
+  function showSnapGuides(x: number, y: number, w: number, h: number) {
+    let sx = x, sy = y, snapped = false;
+    if (Math.abs(x - w / 2) < SNAP_THRESHOLD) { sx = w / 2; snapped = true; }
+    if (Math.abs(y - h / 2) < SNAP_THRESHOLD) { sy = h / 2; snapped = true; }
+    if (snapV) snapV.classList.toggle('hidden', !(snapped && Math.abs(sx - w / 2) < SNAP_THRESHOLD));
+    if (snapH) snapH.classList.toggle('hidden', !(snapped && Math.abs(sy - h / 2) < SNAP_THRESHOLD));
+    return { x: sx, y: sy };
+  }
+
+  function hideSnapGuides() {
+    snapV?.classList.add('hidden');
+    snapH?.classList.add('hidden');
+  }
+
+  function onPointerMove(e: any) {
+    if (interactionMode === 'none' || !activePhotoId || !previewContainer) return;
+    e.preventDefault();
+
+    let clientX: number, clientY: number;
+    if (e.touches) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+    else { clientX = e.clientX; clientY = e.clientY; }
+
+    const rect = previewContainer.getBoundingClientRect();
+    const photo = photos.find(p => p.id === activePhotoId);
+    if (!photo) return;
+
+    if (interactionMode === 'drag') {
+      let x = clientX - rect.left;
+      let y = clientY - rect.top;
+      x = Math.max(0, Math.min(x, rect.width));
+      y = Math.max(0, Math.min(y, rect.height));
+      const snapped = showSnapGuides(x, y, rect.width, rect.height);
+      photo.xPercent = snapped.x / rect.width;
+      photo.yPercent = snapped.y / rect.height;
+
+      const overlay = previewContainer.querySelector(`[data-photo-id="${activePhotoId}"]`) as HTMLElement;
+      if (overlay) {
+        overlay.style.left = `${snapped.x}px`;
+        overlay.style.top = `${snapped.y}px`;
+        overlay.style.transform = 'translate(-50%, -50%)';
+      }
+    }
+
+    if (interactionMode === 'resize') {
+      const dx = clientX - resizeStartX;
+      const isRight = resizeCorner === 'tr' || resizeCorner === 'br';
+      const deltaCm = (isRight ? dx : -dx) / pxPerCm;
+      photo.widthCm = Math.max(0.5, Math.min(resizeStartWidthCm + deltaCm, 20));
+
+      const overlay = previewContainer.querySelector(`[data-photo-id="${activePhotoId}"]`) as HTMLElement;
+      if (overlay) overlay.style.width = `${photo.widthCm * pxPerCm}px`;
+    }
+  }
+
+  function onPointerUp() {
+    hideSnapGuides();
+    interactionMode = 'none';
+    activePhotoId = null;
+  }
+
+  function didChange(): boolean {
+    if (!dragStartSnapshot) return false;
+    if (photos.length !== dragStartSnapshot.length) return true;
+    for (let i = 0; i < photos.length; i++) {
+      const a = photos[i], b = dragStartSnapshot[i];
+      if (!b || a.id !== b.id || a.xPercent !== b.xPercent || a.yPercent !== b.yPercent || a.widthCm !== b.widthCm) return true;
+    }
+    return false;
+  }
+
+  function onDocMouseMove(e: MouseEvent) {
+    if (interactionMode === 'none' && !dragStartSnapshot) return;
+    onPointerMove(e);
+  }
+  function onDocTouchMove(e: TouchEvent) { onPointerMove(e); }
+  function onMouseUp() {
+    if (dragStartSnapshot) {
+      if (didChange()) pushHistory();
+      dragStartSnapshot = null;
+    }
+    onPointerUp();
+  }
+  function onTouchEnd() { onMouseUp(); }
+
+  function onDocKeydown(e: KeyboardEvent) {
+    const tag = (e.target as HTMLElement)?.tagName;
+    const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target as HTMLElement)?.isContentEditable;
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+      if (!isInput) { e.preventDefault(); undo(); }
+    }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+      if (!isInput) { e.preventDefault(); redo(); }
+    }
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !isInput && selectedPhotoId) {
+      e.preventDefault();
+      removePhoto(selectedPhotoId);
+      selectPhoto(null);
+    }
+  }
+
+  function onDocPointerDown(e: PointerEvent) {
+    const target = e.target as HTMLElement | null;
+    if (interactionMode === 'none' && (!target || !target.closest('.photo-overlay-dynamic'))) {
+      selectPhoto(null);
+    }
+  }
+
+  function onWindowResize() {
+    if (pdfDoc) {
+      if (refitTimer !== undefined) clearTimeout(refitTimer);
+      refitTimer = window.setTimeout(() => {
+        refitTimer = undefined;
+        // widthCm fisik — re-render viewport + overlay saja, ukuran tak berubah
+        void renderCurrentPage();
+      }, 150);
+    }
+  }
+
+  function attachGlobalListeners() {
+    if (listenersAttached) return;
+    listenersAttached = true;
+    document.addEventListener('mousemove', onDocMouseMove);
+    document.addEventListener('touchmove', onDocTouchMove, { passive: false });
+    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('touchend', onTouchEnd);
+    document.addEventListener('keydown', onDocKeydown);
+    document.addEventListener('pointerdown', onDocPointerDown);
+    window.addEventListener('resize', onWindowResize);
+  }
+
+  function detachGlobalListeners() {
+    if (!listenersAttached) return;
+    document.removeEventListener('mousemove', onDocMouseMove);
+    document.removeEventListener('touchmove', onDocTouchMove);
+    document.removeEventListener('mouseup', onMouseUp);
+    document.removeEventListener('touchend', onTouchEnd);
+    document.removeEventListener('keydown', onDocKeydown);
+    document.removeEventListener('pointerdown', onDocPointerDown);
+    window.removeEventListener('resize', onWindowResize);
+    if (refitTimer !== undefined) { clearTimeout(refitTimer); refitTimer = undefined; }
+    listenersAttached = false;
+  }
+
+  // --- 9. HISTORY ---
+  function pushHistory() {
+    undoStack.push({ photos: clonePhotos() });
+    if (undoStack.length > MAX_HISTORY) undoStack.shift();
+    redoStack = [];
+    updateUndoRedoBtns();
+  }
+
+  function undo() {
+    if (undoStack.length === 0) return;
+    redoStack.push({ photos: clonePhotos() });
+    photos = undoStack.pop()!.photos;
+    if (selectedPhotoId && !photos.some(p => p.id === selectedPhotoId)) selectPhoto(null);
+    renderAllOverlays();
+    renderPhotoList();
+    updateUndoRedoBtns();
+  }
+
+  function redo() {
+    if (redoStack.length === 0) return;
+    undoStack.push({ photos: clonePhotos() });
+    photos = redoStack.pop()!.photos;
+    if (selectedPhotoId && !photos.some(p => p.id === selectedPhotoId)) selectPhoto(null);
+    renderAllOverlays();
+    renderPhotoList();
+    updateUndoRedoBtns();
+  }
+
+  function updateUndoRedoBtns() {
+    if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+    if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+  }
+
+  undoBtn?.addEventListener('click', undo);
+  redoBtn?.addEventListener('click', redo);
+
+  // --- 10. ADD / REMOVE PHOTOS ---
+  async function addPhotoFromFile(file: File) {
+    if (file.size > 10 * 1024 * 1024) {
+      window.showToast?.(_tt('Ukuran gambar terlalu besar (max 10MB).'), 'error');
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => reject(new Error('Image load failed'));
+        i.src = url;
+      });
+
+      // Resolve target aspect
+      let aspectW: number, aspectH: number;
+      if (currentPreset !== 'free' && PRESETS[currentPreset]) {
+        aspectW = PRESETS[currentPreset]!.w;
+        aspectH = PRESETS[currentPreset]!.h;
+      } else {
+        aspectW = img.naturalWidth;
+        aspectH = img.naturalHeight;
+      }
+
+      const canvas = bakePhotoCanvas(img, aspectW, aspectH, bgRemoveEnabled, parseInt(toleranceSlider?.value || '35'));
+      const dataUrl = canvas.toDataURL('image/png');
+      const widthCm = currentPreset !== 'free' ? PRESETS[currentPreset]!.w : Math.max(1.5, Math.min(200 / pxPerCm, 15));
+
+      pushHistory();
+      const entry: PhotoEntry = {
+        id: genId(),
+        dataUrl,
+        preset: currentPreset,
+        aspectW, aspectH,
+        widthCm,
+        page: currentPageIndex,
+        xPercent: 0.5, yPercent: 0.5,
+        opacity: parseInt(photoOpacity?.value || '100') / 100,
+        border: borderEnabled ? { color: borderColor?.value || '#ffffff', pt: parseFloat(borderWidth?.value || '2') } : null,
+      };
+      photos.push(entry);
+      selectPhoto(entry.id);
+      renderAllOverlays();
+      renderPhotoList();
+      window.showToast?.(_tt('Foto ditambahkan ke halaman ' + (currentPageIndex + 1) + '.'), 'success');
+    } catch (err) {
+      console.error('Photo add failed:', err);
+      window.showToast?.(_tt('Gagal memproses foto. Coba file lain.'), 'error');
+    } finally {
+      URL.revokeObjectURL(url);
+      if (photoInput) photoInput.value = '';
+    }
+  }
+
+  photoInput?.addEventListener('change', (e: any) => {
+    const file = e.target.files?.[0];
+    if (file) void addPhotoFromFile(file);
+  });
+
+  function removePhoto(id: string) {
+    pushHistory();
+    photos = photos.filter(p => p.id !== id);
+    if (selectedPhotoId === id) selectPhoto(null);
+    renderAllOverlays();
+    renderPhotoList();
+  }
+
+  clearAllBtn?.addEventListener('click', () => {
+    if (photos.length === 0) return;
+    pushHistory();
+    photos = [];
+    selectPhoto(null);
+    renderAllOverlays();
+    renderPhotoList();
+    window.showToast?.(_tt('Semua foto dihapus.'), 'success');
+  });
+
+  // --- 11. PHOTO LIST PANEL ---
+  function renderPhotoList() {
+    if (!photoListEl || !photoListPanel) return;
+    if (photos.length === 0) {
+      photoListPanel.style.maxHeight = '0';
+      photoListPanel.style.opacity = '0';
+      return;
+    }
+    photoListPanel.style.maxHeight = '220px';
+    photoListPanel.style.opacity = '1';
+    photoListEl.innerHTML = '';
+    photos.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors ' +
+        (p.id === selectedPhotoId ? 'bg-sky-50 dark:bg-sky-900/30' : 'hover:bg-matte-100 dark:hover:bg-matte-700/50');
+      row.dataset.photoId = p.id;
+
+      const thumb = document.createElement('img');
+      thumb.src = p.dataUrl;
+      thumb.className = 'w-9 h-9 object-cover rounded border border-matte-200 dark:border-matte-600 shrink-0';
+      thumb.alt = `Foto ${i + 1}`;
+      row.appendChild(thumb);
+
+      const info = document.createElement('div');
+      info.className = 'flex-1 min-w-0';
+      const presetLabel = p.preset === 'free' ? 'Bebas' : p.preset.replace('x', '×') + ' cm';
+      info.innerHTML = `<p class="text-xs font-bold text-matte-700 dark:text-matte-200 truncate">Foto ${i + 1} · ${presetLabel}</p><p class="text-2xs text-matte-400">Halaman ${p.page + 1}</p>`;
+      row.appendChild(info);
+
+      const goBtn = document.createElement('button');
+      goBtn.className = 'text-2xs font-bold text-sky-600 hover:text-sky-700 shrink-0 px-1';
+      goBtn.textContent = 'Lihat';
+      goBtn.setAttribute('aria-label', `Buka halaman ${p.page + 1}`);
+      goBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (p.page !== currentPageIndex) {
+          currentPageIndex = p.page;
+          void renderCurrentPage();
+          updatePageNav();
+        }
+        selectPhoto(p.id);
+      });
+      row.appendChild(goBtn);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'text-matte-400 hover:text-red-500 shrink-0';
+      delBtn.innerHTML = SVG_CLOSE;
+      delBtn.setAttribute('aria-label', `Hapus foto ${i + 1}`);
+      delBtn.addEventListener('click', (e) => { e.stopPropagation(); removePhoto(p.id); });
+      row.appendChild(delBtn);
+
+      row.addEventListener('click', () => {
+        if (p.page !== currentPageIndex) {
+          currentPageIndex = p.page;
+          void renderCurrentPage();
+          updatePageNav();
+        }
+        selectPhoto(p.id);
+      });
+
+      photoListEl.appendChild(row);
+    });
+  }
+
+  // --- 12. SETTINGS CONTROLS ---
+  presetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = (btn as HTMLElement).dataset.preset!;
+      currentPreset = preset;
+      presetBtns.forEach(b => {
+        const active = (b as HTMLElement).dataset.preset === preset;
+        b.classList.toggle('border-sky-500', active);
+        b.classList.toggle('bg-sky-50', active);
+        b.classList.toggle('dark:bg-sky-900/30', active);
+        b.classList.toggle('text-sky-700', active);
+        b.classList.toggle('dark:text-sky-300', active);
+        b.classList.toggle('border-matte-200', !active);
+        b.classList.toggle('dark:border-matte-600', !active);
+        b.classList.toggle('text-matte-500', !active);
+      });
+
+      // Preset applies to the selected photo too (keeps center position)
+      const sel = photos.find(p => p.id === selectedPhotoId);
+      if (sel) {
+        pushHistory();
+        if (preset !== 'free' && PRESETS[preset]) {
+          sel.preset = preset;
+          sel.aspectW = PRESETS[preset]!.w;
+          sel.aspectH = PRESETS[preset]!.h;
+          sel.widthCm = PRESETS[preset]!.w;
+        } else {
+          sel.preset = 'free';
+        }
+        renderAllOverlays();
+        renderPhotoList();
+      }
+    });
+  });
+
+  bgRemoveToggle?.addEventListener('click', () => {
+    bgRemoveEnabled = !bgRemoveEnabled;
+    toggleSwitch(bgRemoveToggle, bgRemoveEnabled);
+    toleranceRow?.classList.toggle('hidden', !bgRemoveEnabled);
+  });
+
+  toleranceSlider?.addEventListener('input', () => {
+    if (toleranceVal) toleranceVal.textContent = toleranceSlider.value;
+  });
+
+  borderToggle?.addEventListener('click', () => {
+    borderEnabled = !borderEnabled;
+    toggleSwitch(borderToggle, borderEnabled);
+    if (borderRow) borderRow.classList.toggle('hidden', !borderEnabled);
+    if (borderRow) borderRow.classList.toggle('flex', borderEnabled);
+  });
+
+  borderWidth?.addEventListener('input', () => {
+    if (borderWidthVal) borderWidthVal.textContent = `${borderWidth.value}pt`;
+  });
+
+  photoOpacity?.addEventListener('input', (e: any) => {
+    if (opacityVal) opacityVal.textContent = `${e.target.value}%`;
+  });
+
+  // --- 13. FILE DROP ZONE ---
+  window.usePdfDropZone('drop-zone', 'file-input', {
+    accentColor: 'sky',
+    onFile: async (file: File) => {
+      currentFile = file;
+      dropZone?.classList.add('hidden');
+      workspace?.classList.remove('hidden');
+      photos = [];
+      undoStack = [];
+      redoStack = [];
+      selectPhoto(null);
+      renderPhotoList();
+      updateUndoRedoBtns();
+      try {
+        const { loadPdf } = await import('../../composables/usePdfRenderer');
+        pdfDoc = await loadPdf(await file.arrayBuffer());
+        totalPages = pdfDoc.numPages;
+        currentPageIndex = 0;
+        updatePageSelect();
+        updatePageNav();
+        await renderCurrentPage();
+      } catch (err) {
+        console.error('PDF load failed:', err);
+        resetToDropZone();
+        window.showToast?.(_tt('Gagal memuat PDF. Coba file lain.'), 'error');
+      }
+    },
+  });
+
+  function resetToDropZone() {
+    currentFile = null;
+    pdfDoc = null;
+    totalPages = 1;
+    currentPageIndex = 0;
+    currentViewport = null;
+    photos = [];
+    undoStack = [];
+    redoStack = [];
+    selectPhoto(null);
+    renderPhotoList();
+    if (renderLoading) renderLoading.classList.add('hidden');
+    dropZone?.classList.remove('hidden');
+    workspace?.classList.add('hidden');
+  }
+
+  // --- 14. EXPORT (pdf-lib) ---
+  savePdfBtn?.addEventListener('click', async () => {
+    if (!currentFile) return;
+    if (photos.length === 0) {
+      window.showToast?.(_tt('Belum ada foto yang ditempel!'), 'error');
+      return;
+    }
+
+    const restoreBtn = window.showButtonSpinner(savePdfBtn, _tt('Memproses...'));
+    try {
+      const arrayBuffer = await currentFile.arrayBuffer();
+      const pdfDocOut = await _loadPdfLib();
+      const doc = await pdfDocOut.load(arrayBuffer);
+      const pages = doc.getPages();
+
+      const byPage = new Map<number, PhotoEntry[]>();
+      photos.forEach(p => {
+        const list = byPage.get(p.page) || [];
+        list.push(p);
+        byPage.set(p.page, list);
+      });
+
+      const embedCache = new Map<string, any>();
+
+      for (const [pageNum, entries] of byPage) {
+        if (pageNum >= pages.length) continue;
+        const page = pages[pageNum];
+        const { width: pageW, height: pageH } = page.getSize();
+
+        for (const photo of entries) {
+          let embedded = embedCache.get(photo.dataUrl);
+          if (!embedded) {
+            embedded = await doc.embedPng(photo.dataUrl);
+            embedCache.set(photo.dataUrl, embedded);
+          }
+
+          // widthCm is physical → export size is exact regardless of preview zoom
+          const wPt = photo.widthCm * PT_PER_CM;
+          const hPt = wPt * (photo.aspectH / photo.aspectW);
+          const xC = pageW * photo.xPercent;
+          const yC = pageH * (1 - photo.yPercent);
+
+          // Border frame: rectangle slightly larger than the photo, drawn first
+          if (photo.border) {
+            const b = photo.border.pt;
+            const [r, g, b2] = hexToRgbComponents(photo.border.color);
+            page.drawRectangle({
+              x: xC - wPt / 2 - b,
+              y: yC - hPt / 2 - b,
+              width: wPt + 2 * b,
+              height: hPt + 2 * b,
+              color: pdfRgb(r, g, b2),
+              opacity: photo.opacity,
+            });
+          }
+
+          page.drawImage(embedded, {
+            x: xC - wPt / 2,
+            y: yC - hPt / 2,
+            width: wPt,
+            height: hPt,
+            opacity: photo.opacity,
+          });
+        }
+      }
+
+      const pdfBytes = await doc.save();
+      window.downloadBytes(pdfBytes, `photo-${currentFile.name}`);
+      window.showToast?.(_tt(`Berhasil! ${photos.length} foto ditambahkan.`), 'success');
+    } catch (err) {
+      console.error('Save failed:', err);
+      window.showToast?.(_tt('Gagal menyimpan PDF.'), 'error');
+    } finally {
+      restoreBtn();
+    }
+  });
+
+  // --- 15. INIT (SPA convention: astro:page-load + pathname guard) ---
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+    attachGlobalListeners();
+  });
+
+  document.addEventListener('astro:page-leave', detachGlobalListeners);
+</script>

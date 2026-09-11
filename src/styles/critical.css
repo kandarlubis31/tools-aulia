@@ -3,6 +3,21 @@
    Inlined in <head> via ?raw so the full Tailwind bundle can load async.
    Keep in sync with global.css + tailwind.config.mjs when changing
    header / hero / bento / filter-bar / tool-card markup.
+
+   SLIMMED (Sep 11, 2026): utility classes (w-*, px-*, gap-*, text-xs, flex,
+   gradient stops, dll) DIHAPUS. Alasan: Tailwind bundle di-load render-
+   blocking normal (lihat BaseLayout — trik async media="print" sudah
+   dihapus, Keputusan #12), jadi browser TIDAK PERNAH paint sebelum bundle
+   selesai. Utility di sini tidak pernah memberi benefit first-paint —
+   hanya duplikasi 8KB+ per halaman. Yang tersisa = yang benar-benar
+   load-bearing saat <style> ini jalan sebelum bundle:
+   1. Preflight reset (anti layout-shift saat bundle terlambat)
+   2. CSS variables (:root/.dark) — diverifikasi guardrail
+   3. Component classes + dark-mode contrast overrides
+   4. Urutan display utilities (bug "popup gak bisa diclose") + modal
+      defense-in-depth (#search-modal.hidden dsb. — !important menang
+      apapun kondisi bundle)
+   5. scroll-progress, sr-only, keyframes kecil
    ========================================================================== */
 
 /* ---- Tailwind v3 Preflight (essential reset) ---- */
@@ -170,6 +185,8 @@ h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-seri
 }
 .card-grid > * { min-width: 0; }
 .tool-item { content-visibility: auto; contain-intrinsic-size: auto 120px; contain: layout style paint; min-width: 0; }
+/* Hero entrance — above-fold: jalan dari critical.css, bukan nunggu bundle
+   (kalau nunggu bundle, animasi jalan terlambat → hero "pop" di cold load). */
 .animate-fade-in-down { animation: fadeInDown 0.25s ease-out; will-change: transform, opacity; }
 .animate-fade-in-up { animation: fadeInUp 0.25s ease-out; will-change: transform, opacity; }
 @keyframes fadeInDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
@@ -180,12 +197,10 @@ h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-seri
 #scroll-progress { position: fixed; top: 0; left: 0; width: 100%; height: 2px; z-index: 9999; pointer-events: none; }
 #scroll-progress-bar { height: 100%; width: 0%; background: var(--accent-blue); transition: width 50ms linear; }
 
-/* ---- Display ---- */
-/* NOTE: `.hidden` HARUS dideklarasikan SETELAH utility display lain (`.flex`,
-   `.grid`, `.block`). Tailwind menerbitkan urutan ini (hidden paling akhir) supaya
-   elemen yang membawa KEDUA class (`hidden` + `flex`) tetap tersembunyi. Urutan
-   terbalik di sini adalah akar bug "popup search gak bisa diclose": `flex`
-   menang, jadi `classList.add('hidden')` tidak berpengaruh. */
+/* ---- Display & a11y (urutan PENTING: .hidden HARUS setelah display utilities
+   lain agar `hidden flex` tetap tersembunyi — akar bug "popup search gak bisa
+   diclose". Aturan modal ber-ID + !important = defense-in-depth: menang apapun
+   kondisi bundle Tailwind (yang kini render-blocking, tapi tetap dijaga). ---- */
 .block { display: block; }
 .inline-flex { display: inline-flex; }
 .flex { display: flex; }
@@ -193,257 +208,24 @@ h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-seri
 .hidden { display: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0; }
 
-/* ---- Modals: hidden WAJIB selalu menang (defense-in-depth) ----
-   Modal hanya men-toggle class `hidden` (class `flex` permanen). Aturan ber-ID ini
-   menjamin `display:none` berlaku apapun urutan class-nya, jadi modal tidak pernah
-   "nyangkut terbuka". Elemen lain ber-pola `hidden flex` (mis. #empty-state) sudah
-   tertangani oleh reorder `.hidden` di atas. */
 #search-modal.hidden,
 #feedback-modal.hidden,
 #pwa-custom-modal.hidden { display: none !important; }
 
-/* Search modal — layout kritis sebelum full Tailwind load (async via media="print").
-   Tanpa ini, saat CSS belum selesai load modal tampil sebagai overlay TRANSPARAN
-   tanpa z-index (backdrop hilang) → terlihat seperti "popup" yang tidak bisa
-   ditutup dan klik lolos ke konten di belakangnya. */
+/* Search modal backdrop: tampil benar sebelum bundle Tailwind selesai parse
+   (z-index + dim backdrop). Tanpa ini, klik-baru-user saat bundle terlambat
+   melihat modal transparan tanpa backdrop → "popup gak bisa diclose". */
 #search-modal { z-index: 100; align-items: flex-start; padding: 5rem 1rem 0; background: rgb(0 0 0 / 0.5); }
 #search-modal > div { width: 100%; max-width: 42rem; background: #ffffff; border-radius: 0.75rem; }
 .dark #search-modal > div { background: var(--surface-elevated); }
 
-/* ---- Position ---- */
-.fixed { position: fixed; }
-.absolute { position: absolute; }
-.relative { position: relative; }
-.sticky { position: sticky; }
-.inset-0 { inset: 0; }
-.top-0 { top: 0; }
-.top-2 { top: 0.5rem; }
-.top-14 { top: 3.5rem; }
-.top-20 { top: 5rem; }
-.-top-6 { top: -1.5rem; }
-.right-2 { right: 0.5rem; }
-.right-3 { right: 0.75rem; }
-.-right-6 { right: -1.5rem; }
-.bottom-3 { bottom: 0.75rem; }
-.-z-10 { z-index: -10; }
-.z-40 { z-index: 40; }
-.z-50 { z-index: 50; }
-
-/* ---- Flexbox ---- */
-.items-center { align-items: center; }
-.justify-center { justify-content: center; }
-.justify-between { justify-content: space-between; }
-.flex-col { flex-direction: column; }
-.flex-row { flex-direction: row; }
-.flex-wrap { flex-wrap: wrap; }
-.flex-1 { flex: 1 1 0%; }
-.shrink-0 { flex-shrink: 0; }
-.min-w-0 { min-width: 0; }
-
-/* ---- Grid ---- */
-.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-/* ---- Sizing ---- */
-.w-1\.5 { width: 0.375rem; }
-.w-6 { width: 1.5rem; }
-.w-8 { width: 2rem; }
-.w-9 { width: 2.25rem; }
-.w-10 { width: 2.5rem; }
-.w-12 { width: 3rem; }
-.w-20 { width: 5rem; }
-.w-full { width: 100%; }
-.h-1\.5 { height: 0.375rem; }
-.h-2 { height: 0.5rem; }
-.h-8 { height: 2rem; }
-.h-9 { height: 2.25rem; }
-.h-10 { height: 2.5rem; }
-.h-12 { height: 3rem; }
-.h-16 { height: 4rem; }
-.h-20 { height: 5rem; }
-.max-w-7xl { max-width: 80rem; }
-.max-w-lg { max-width: 32rem; }
-.min-h-\[50vh\] { min-height: 50vh; }
-.min-h-screen { min-height: 100vh; }
-
-/* ---- Spacing: padding ---- */
-.p-1 { padding: 0.25rem; }
-.p-4 { padding: 1rem; }
-.px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; }
-.px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-.px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
-.px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-.px-3\.5 { padding-left: 0.875rem; padding-right: 0.875rem; }
-.px-4 { padding-left: 1rem; padding-right: 1rem; }
-.py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
-.py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-.py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
-.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-.py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
-.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-.pt-4 { padding-top: 1rem; }
-.pt-8 { padding-top: 2rem; }
-.pb-4 { padding-bottom: 1rem; }
-.pb-28 { padding-bottom: 7rem; }
-.pl-2\.5 { padding-left: 0.625rem; }
-.pl-8 { padding-left: 2rem; }
-.pl-9 { padding-left: 2.25rem; }
-.pr-2 { padding-right: 0.5rem; }
-.pr-7 { padding-right: 1.75rem; }
-.pr-12 { padding-right: 3rem; }
-
-/* ---- Spacing: margin ---- */
-.mt-1 { margin-top: 0.25rem; }
-.mt-5 { margin-top: 1.25rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.mb-3 { margin-bottom: 0.75rem; }
-.mb-6 { margin-bottom: 1.5rem; }
-.mx-auto { margin-left: auto; margin-right: auto; }
-
-/* ---- Spacing: gap ---- */
-.gap-0\.5 { gap: 0.125rem; }
-.gap-1 { gap: 0.25rem; }
-.gap-1\.5 { gap: 0.375rem; }
-.gap-2 { gap: 0.5rem; }
-.gap-2\.5 { gap: 0.625rem; }
-.gap-3 { gap: 0.75rem; }
-.gap-4 { gap: 1rem; }
-
-/* ---- Typography ---- */
-.text-center { text-align: center; }
-.whitespace-nowrap { white-space: nowrap; }
-.tracking-tight { letter-spacing: -0.025em; }
-.tracking-wider { letter-spacing: 0.05em; }
-.leading-tight { line-height: 1.25; }
-.leading-snug { line-height: 1.375; }
-.leading-relaxed { line-height: 1.625; }
-.font-medium { font-weight: 500; }
-.font-semibold { font-weight: 600; }
-.font-bold { font-weight: 700; }
-.font-extrabold { font-weight: 800; }
-.text-2xs { font-size: 0.625rem; line-height: 0.875rem; }
-.text-xs { font-size: 0.75rem; line-height: 1rem; }
-.text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-.text-base { font-size: 1rem; line-height: 1.5rem; }
-.text-2xl { font-size: 1.5rem; line-height: 2rem; }
-.text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
-.tabular-nums { font-variant-numeric: tabular-nums; }
-.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-
-/* ---- Colors: text ---- */
-.text-white { color: #fff; }
-.text-white\/60 { color: rgb(255 255 255 / 0.6); }
-.text-white\/70 { color: rgb(255 255 255 / 0.7); }
-.text-slate-600 { color: #475569; }
-.text-matte-400 { color: #6e7681; }
-.text-matte-600 { color: #30363d; }
-.text-matte-700 { color: #242b3b; }
-.text-matte-800 { color: #1a2030; }
-.text-matte-900 { color: #131722; }
-.text-accent-blue { color: rgb(var(--accent-blue-rgb) / 1); }
-
-/* ---- Colors: background ---- */
-.bg-white { background-color: #fff; }
-.bg-\[\#fafafa\] { background-color: #fafafa; }
-.bg-white\/10 { background-color: rgb(255 255 255 / 0.1); }
-.bg-white\/20 { background-color: rgb(255 255 255 / 0.2); }
-.bg-white\/80 { background-color: rgb(255 255 255 / 0.8); }
-.bg-matte-100 { background-color: #e1e4e8; }
-.bg-matte-200 { background-color: #d0d7de; }
-.bg-matte-700 { background-color: #242b3b; }
-.bg-matte-900 { background-color: #131722; }
-.bg-matte-950 { background-color: #0b0e14; }
-.bg-surface-elevated { background-color: #161b22; }
-.bg-accent-blue { background-color: rgb(var(--accent-blue-rgb) / 1); }
-
-/* ---- Colors: border ---- */
-.border-matte-200 { border-color: #d0d7de; }
-.border-surface-border { border-color: #21262d; }
-.border-b { border-bottom-width: 1px; }
-
-/* ---- Dark variants (class mode: `.dark` on <html>) ---- */
-.dark .dark\:bg-white { background-color: #fff; }
-.dark .dark\:bg-matte-700 { background-color: #242b3b; }
-.dark .dark\:bg-matte-950 { background-color: #0b0e14; }
-.dark .dark\:bg-matte-950\/80 { background-color: rgb(11 14 20 / 0.8); }
-.dark .dark\:bg-surface-elevated { background-color: #161b22; }
-.dark .dark\:border-surface-border { border-color: #21262d; }
-.dark .dark\:text-white { color: #fff; }
-.dark .dark\:text-matte-900 { color: #131722; }
-.dark .dark\:text-matte-300 { color: #8b949e; }
-.dark .dark\:text-blue-300 { color: #93c5fd; }
-.dark .dark\:text-emerald-300 { color: #6ee7b7; }
-.dark .dark\:text-slate-300 { color: #cbd5e1; }
-
-/* ---- Effects ---- */
-.rounded-lg { border-radius: 0.5rem; }
-.rounded-xl { border-radius: 0.75rem; }
-.rounded-2xl { border-radius: 1rem; }
-.rounded-full { border-radius: 9999px; }
-.overflow-hidden { overflow: hidden; }
-.overflow-x-auto { overflow-x: auto; }
-.pointer-events-none { pointer-events: none; }
-.appearance-none { -webkit-appearance: none; appearance: none; }
-.outline-none { outline: 2px solid transparent; outline-offset: 2px; }
-.cursor-pointer { cursor: pointer; }
-.shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
-.shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
-.backdrop-blur-sm { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
-.backdrop-blur-lg { -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
-.blur-xl { filter: blur(24px); }
-.opacity-0 { opacity: 0; }
-.opacity-75 { opacity: 0.75; }
-.opacity-100 { opacity: 1; }
-@keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
-.animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
-
-/* ---- Gradients ---- */
-.bg-gradient-to-br { background-image: linear-gradient(to bottom right, var(--tw-gradient-stops)); }
-/* Logo: from-sky-500 via-indigo-500 to-violet-500 */
-.from-sky-500 { --tw-gradient-from: #0ea5e9; --tw-gradient-to: rgb(14 165 233 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.via-indigo-500 { --tw-gradient-to: rgb(99 102 241 / 0); --tw-gradient-stops: var(--tw-gradient-from), #6366f1, var(--tw-gradient-to); }
-.to-violet-500 { --tw-gradient-to: #8b5cf6; }
-/* Bento tiles */
-.from-blue-600\/80 { --tw-gradient-from: rgb(37 99 235 / 0.8); --tw-gradient-to: rgb(37 99 235 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.to-blue-700\/80 { --tw-gradient-to: rgb(29 78 216 / 0.8); }
-.from-emerald-600\/80 { --tw-gradient-from: rgb(5 150 105 / 0.8); --tw-gradient-to: rgb(5 150 105 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.to-emerald-700\/80 { --tw-gradient-to: rgb(4 120 87 / 0.8); }
-.from-slate-600\/80 { --tw-gradient-from: rgb(71 85 105 / 0.8); --tw-gradient-to: rgb(71 85 105 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.to-slate-700\/80 { --tw-gradient-to: rgb(51 65 85 / 0.8); }
-.from-teal-600\/80 { --tw-gradient-from: rgb(13 148 136 / 0.8); --tw-gradient-to: rgb(13 148 136 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.to-teal-700\/80 { --tw-gradient-to: rgb(15 118 110 / 0.8); }
-/* Tool icon tiles (light) */
-.from-matte-200 { --tw-gradient-from: #d0d7de; --tw-gradient-to: rgb(208 215 222 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.to-matte-100 { --tw-gradient-to: #e1e4e8; }
-/* Tool icon tiles (dark) */
-.dark .from-blue-500\/15 { --tw-gradient-from: rgb(59 130 246 / 0.15); --tw-gradient-to: rgb(59 130 246 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.dark .to-blue-500\/5 { --tw-gradient-to: rgb(59 130 246 / 0.05); }
-.dark .from-emerald-500\/15 { --tw-gradient-from: rgb(16 185 129 / 0.15); --tw-gradient-to: rgb(16 185 129 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.dark .to-emerald-500\/5 { --tw-gradient-to: rgb(16 185 129 / 0.05); }
-.dark .from-slate-500\/15 { --tw-gradient-from: rgb(100 116 139 / 0.15); --tw-gradient-to: rgb(100 116 139 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.dark .to-slate-500\/5 { --tw-gradient-to: rgb(100 116 139 / 0.05); }
-
-/* ---- Responsive (sm=640, md=768, lg=1024) ---- */
+/* ---- .card-grid responsive breakpoints — WAJIB identik dengan global.css
+   (guardrail check-critical-css.mjs Check 2 memverifikasi ini). Homepage grid
+   adalah above-fold, jadi breakpoint-nya memang perlu ada di critical. ---- */
 @media (min-width: 640px) {
-  .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-  .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .card-grid { grid-template-columns: repeat(3, 1fr); }
 }
-@media (min-width: 768px) {
-  .md\:flex { display: flex; }
-  .md\:hidden { display: none; }
-  .md\:flex-row { flex-direction: row; }
-  .md\:w-auto { width: auto; }
-  .md\:w-56 { width: 14rem; }
-  .md\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-  .md\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
-  .md\:bg-white\/80 { background-color: rgb(255 255 255 / 0.8); }
-  .md\:backdrop-blur-lg { -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
-  .dark .md\:dark\:bg-matte-950\/80 { background-color: rgb(11 14 20 / 0.8); }
-}
 @media (min-width: 1024px) {
-  .lg\:flex-row { flex-direction: row; }
-  .lg\:w-64 { width: 16rem; }
   .card-grid { grid-template-columns: repeat(4, 1fr); }
 }
 @media (min-width: 1440px) {

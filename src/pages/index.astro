@@ -227,6 +227,7 @@ const categories = [
                <label for="sort-select" class="sr-only">Sortir Tools</label>
                <select id="sort-select" class="appearance-none h-full pl-2.5 pr-7 py-2 rounded-lg bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border text-xs font-medium text-matte-600 dark:text-matte-300 outline-none focus:border-accent-blue cursor-pointer transition-all">
                    <option value="name" data-i18n="index.sort_az">A-Z</option>
+                   <option value="recent" data-i18n="index.sort_recent">Terbaru</option>
                </select>
                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-matte-400">
                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -279,6 +280,7 @@ const categories = [
           <div 
             class="tool-item" 
             data-cat={tool.cat} 
+            data-href={tool.href}
             data-title={tool.title.toLowerCase()}
             data-name={tool.titleKey || tool.title}
             data-color={tool.color}
@@ -302,6 +304,7 @@ const categories = [
             class="tool-placeholder tool-item"
             data-tool-index={36 + i}
             data-cat={tool.cat}
+            data-href={tool.href}
             data-title={tool.title.toLowerCase()}
             data-name={tool.titleKey || tool.title}
             data-color={tool.color}
@@ -382,16 +385,16 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const tc = (colorTile && colorTile[tool.color]) || DEFAULT_TILE;
         const titleKey = tool.titleKey ? ` data-i18n="${tool.titleKey}"` : '';
         const descKey = tool.descKey ? ` data-i18n="${tool.descKey}"` : '';
-        return `<a href="${tool.href}" class="card-base group relative flex flex-col p-4 rounded-xl overflow-hidden hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150" data-tool-href="${tool.href}">
-          <button class="fav-star absolute top-2 right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-white/80 dark:bg-matte-800/80 backdrop-blur-sm text-matte-300 hover:text-amber-400 hover:scale-110 transition-all duration-150 opacity-0 group-hover:opacity-100" data-fav="${tool.href}" title="Add to favorites" aria-label="Add to favorites" type="button">
+        return `<article class="card-base group relative flex flex-col p-4 rounded-xl overflow-hidden hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150" data-tool-href="${tool.href}">
+          <button class="fav-star absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 dark:bg-matte-800/80 backdrop-blur-sm text-matte-300 hover:text-amber-400 hover:scale-110 transition-all duration-150 opacity-0 group-hover:opacity-100 focus-visible:opacity-100" data-fav="${tool.href}" title="Add to favorites" aria-label="Add to favorites" type="button">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </button>
           <div class="icon-mono icon-tile w-10 h-10 mb-3 rounded-xl bg-gradient-to-br ${tc} transition-all duration-150 group-hover:scale-110 shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:inherit">${tool.icon}</svg>
           </div>
-          <h3 class="text-sm font-semibold text-matte-800 dark:text-white transition-colors duration-150 group-hover:text-accent-blue leading-snug truncate"${titleKey}>${tool.title}</h3>
+          <h3 class="text-sm font-semibold text-matte-800 dark:text-white transition-colors duration-150 group-hover:text-accent-blue leading-snug truncate"${titleKey}><a href="${tool.href}" class="after:absolute after:inset-0">${tool.title}</a></h3>
           <p class="text-xs text-matte-400 dark:text-matte-300 leading-relaxed mt-1 line-clamp-2"${descKey}>${tool.desc}</p>
-        </a>`;
+        </article>`;
       }
 
       let renderedPlaceholders = new Set();
@@ -608,11 +611,23 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const toolsArray = Array.from(tools);
         const matched = [];
 
+        const hrefOf = (el) => el.getAttribute('data-href') || '';
         if(currentSort === 'name') {
             toolsArray.sort((a, b) => {
                 const nameA = a.getAttribute('data-name') || '';
                 const nameB = b.getAttribute('data-name') || '';
                 return nameA.localeCompare(nameB);
+            });
+        } else if(currentSort === 'recent') {
+            // Urutkan berdasarkan riwayat pemakaian (recentTools). Tool yang belum
+            // pernah dipakai jatuh ke belakang dengan urutan stabil (registry order).
+            const order = getRecentTools().map(t => t.href);
+            const rank = new Map(order.map((h, i) => [h, i]));
+            const UNRANKED = order.length;
+            toolsArray.sort((a, b) => {
+                const ra = rank.get(hrefOf(a)) ?? UNRANKED;
+                const rb = rank.get(hrefOf(b)) ?? UNRANKED;
+                return ra - rb;
             });
         }
 

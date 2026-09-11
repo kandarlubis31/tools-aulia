@@ -76,6 +76,7 @@ declare global {
     __searchToolsRetry?: boolean;
     /** Search modal open state (BaseLayout command palette) */
     __searchModalOpen?: boolean;
+    __closeSearchModal?: () => void;
   }
 
   // pdf.js types
