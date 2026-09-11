@@ -76,7 +76,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       filesList.innerHTML = imageFiles.map((f, i) => `
         <div class="relative group">
-          <img src="${URL.createObjectURL(f)}" class="w-16 h-16 object-cover rounded-lg border-2 border-matte-200 dark:border-matte-700" />
+          <img src="${URL.createObjectURL(f)}" alt="" class="w-16 h-16 object-cover rounded-lg border-2 border-matte-200 dark:border-matte-700" />
           <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-blue-500 text-white text-2xs flex items-center justify-center font-bold">${i+1}</span>
           <button class="del-btn absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-2xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" data-idx="${i}">x</button>
         </div>`).join('');

@@ -153,9 +153,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .dark .custom-scrollbar { scrollbar-color: #30363d transparent; }
 
 /* ========== ANIMATIONS (Clean & Fast) ========== */
+/* P0 fix: .animate-fade-in dipakai di ~180 halaman (empty state, modal, dsb.)
+   tapi kelasnya belum pernah didefinisikan — elemen langsung muncul tanpa fade. */
+.animate-fade-in { animation: fadeIn 0.25s ease-out; }
 .animate-fade-in-down { animation: fadeInDown 0.25s ease-out; will-change: transform, opacity; }
 .animate-fade-in-up { animation: fadeInUp 0.25s ease-out; will-change: transform, opacity; }
 .animate-slide-up { animation: slideUp 0.3s ease-out; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 @keyframes fadeInDown { 
   from { opacity: 0; transform: translateY(-6px); } 

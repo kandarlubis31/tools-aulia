@@ -221,7 +221,11 @@ if (isPdfRoot) {
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         var m = document.getElementById('search-modal');
-        if (m && !m.classList.contains('hidden')) m.classList.add('hidden');
+        if (m && !m.classList.contains('hidden')) {
+          m.classList.add('hidden');
+          var b = document.getElementById('search-btn');
+          if (b) { b.setAttribute('aria-expanded', 'false'); b.focus(); }
+        }
       }
     });
     document.addEventListener('click', function (e) {
@@ -229,9 +233,13 @@ if (isPdfRoot) {
       if (!m || m.classList.contains('hidden')) return;
       var card = m.querySelector('div');
       if (card && !card.contains(e.target)) {
+        if (window.__closeSearchModal) { window.__closeSearchModal(); return; }
         m.classList.add('hidden');
         var i = document.getElementById('search-modal-input');
         if (i) { i.value = ''; i.blur(); }
+        var b = document.getElementById('search-btn');
+        if (b) { b.setAttribute('aria-expanded', 'false'); b.focus(); }
+        window.__searchModalOpen = false;
       }
     }, true);
     window.addEventListener('pageshow', function (e) {
@@ -608,7 +616,7 @@ if (isPdfRoot) {
       <div class="p-4 border-b border-matte-200 dark:border-surface-border">
         <div class="relative">
           <input type="text" id="search-modal-input" placeholder="Cari tools..." class="w-full pl-9 pr-9 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 text-sm text-matte-800 dark:text-white transition-all duration-150" autocomplete="off" data-i18n-attr="placeholder" data-i18n="search.placeholder">
-          <button id="close-search" onclick="(function(){var m=document.getElementById('search-modal');if(m)m.classList.add('hidden');var i=document.getElementById('search-modal-input');if(i){i.value='';i.blur();}})()" class="absolute inset-y-0 right-0 w-11 flex items-center justify-center rounded-r-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors" aria-label="Close search">
+          <button id="close-search" onclick="(window.__closeSearchModal ? window.__closeSearchModal() : (function(){var m=document.getElementById('search-modal');if(m)m.classList.add('hidden');var b=document.getElementById('search-btn');if(b)b.setAttribute('aria-expanded','false');window.__searchModalOpen=false;if(history.state&&history.state.__searchOpen){var st=Object.assign({},history.state);delete st.__searchOpen;history.replaceState(st,'');}})())" class="absolute inset-y-0 right-0 w-11 flex items-center justify-center rounded-r-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors" aria-label="Close search">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 hover:text-matte-600 dark:hover:text-matte-300"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
@@ -619,7 +627,7 @@ if (isPdfRoot) {
         </div>
       </div>
       <div class="p-2.5 border-t border-matte-100 dark:border-surface-border flex items-center justify-end">
-        <button id="search-cancel" onclick="(function(){var m=document.getElementById('search-modal');if(m)m.classList.add('hidden');var i=document.getElementById('search-modal-input');if(i){i.value='';i.blur();}})()" class="px-5 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 text-sm font-semibold hover:bg-matte-200 dark:hover:bg-matte-600 transition-colors" data-i18n="feedback.close">Tutup</button>
+        <button id="search-cancel" onclick="(window.__closeSearchModal ? window.__closeSearchModal() : (function(){var m=document.getElementById('search-modal');if(m)m.classList.add('hidden');var b=document.getElementById('search-btn');if(b)b.setAttribute('aria-expanded','false');window.__searchModalOpen=false;if(history.state&&history.state.__searchOpen){var st=Object.assign({},history.state);delete st.__searchOpen;history.replaceState(st,'');}})())" class="px-5 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 text-sm font-semibold hover:bg-matte-200 dark:hover:bg-matte-600 transition-colors" data-i18n="feedback.close">Tutup</button>
       </div>
     </div>
   </div>
@@ -1016,9 +1024,13 @@ if (isPdfRoot) {
         const modal = document.getElementById('search-modal');
         const input = document.getElementById('search-modal-input');
         const btn = document.getElementById('search-btn');
+        const wasOpen = !!modal && !modal.classList.contains('hidden');
         if (modal) modal.classList.add('hidden');
         if (input) { input.value = ''; input.blur(); }
         if (btn) btn.setAttribute('aria-expanded', 'false');
+        // A11y: kembalikan fokus ke tombol pemicu — hanya jika modal benar-benar
+        // tertutup oleh aksi ini (Esc saat modal sudah tutup tidak boleh curi fokus).
+        if (wasOpen) btn?.focus();
         window.__searchModalOpen = false;
         // Bersihkan flag __searchOpen dari entry modal via history.replaceState —
         // TANPA history.back(). replaceState TIDAK memicu popstate/navigasi, jadi
@@ -1033,6 +1045,8 @@ if (isPdfRoot) {
           history.replaceState(st, '');
         }
       };
+      // Expose buat fallback inline onclick (close tanpa module script)
+      window.__closeSearchModal = closeSearchModal;
 
       // Android back button: close the modal instead of navigating away
       if (!window._searchPopstateBound) {
@@ -1044,6 +1058,8 @@ if (isPdfRoot) {
             var i = document.getElementById('search-modal-input');
             if (m) m.classList.add('hidden');
             if (i) { i.value = ''; i.blur(); }
+            var b = document.getElementById('search-btn');
+            if (b) b.focus();
           }
         });
       }
@@ -1814,10 +1830,13 @@ if (isPdfRoot) {
       const modal = document.getElementById('feedback-modal');
       const card = modal?.querySelector('div');
       if (!modal || !card) return;
+      const wasOpen = !modal.classList.contains('hidden');
       modal.classList.add('opacity-0');
       modal.classList.remove('opacity-100');
       card.classList.add('scale-95');
       setTimeout(() => modal.classList.add('hidden'), 200);
+      // A11y: kembalikan fokus ke tombol pemicu di navbar
+      if (wasOpen) document.getElementById('feedback-btn')?.focus();
     }
 
     function buildFeedbackUrl() {
