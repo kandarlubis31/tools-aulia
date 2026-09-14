@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { tools } from '../data/tools';
+import { publicTools as tools } from '../data/tools';
 
 /**
  * GET /search-tools.json

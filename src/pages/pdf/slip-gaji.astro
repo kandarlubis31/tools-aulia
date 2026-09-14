@@ -1,0 +1,296 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Slip Gaji Generator — Buat Payslip PDF dari HRD Dashboard">
+  <div class="max-w-4xl mx-auto px-4 min-h-[70vh] py-10">
+    <ToolPageHeader
+      title="Slip Gaji Generator"
+      desc="Buat slip gaji (payslip) PDF rapi. Tarik data karyawan & absensi otomatis dari HRD Dashboard, atau isi manual. 100% di browser — data gaji tidak pernah di-upload."
+      icon='<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <div class="grid gap-8 animate-fade-in">
+      <!-- 1. Data perusahaan & periode -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">1 · Perusahaan & Periode</h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div><label class="text-xs text-matte-500 mb-1 block" for="co-name">Nama Perusahaan</label><input id="co-name" type="text" placeholder="cth: PT Migas Kalimantan Jaya" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="co-addr">Alamat / Departemen</label><input id="co-addr" type="text" placeholder="cth: Jl. Mineral No. 1, Balikpapan" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="period">Periode Gaji</label><input id="period" type="month" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="text-xs text-matte-500 mb-1 block" for="sign-name">Nama Penandatangan</label><input id="sign-name" type="text" placeholder="cth: Budi Santoso" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+            <div><label class="text-xs text-matte-500 mb-1 block" for="sign-title">Jabatan</label><input id="sign-title" type="text" placeholder="cth: HR Manager" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Karyawan -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-2">2 · Karyawan</h3>
+        <div id="hrd-status" class="text-sm mb-6"></div>
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="text-xs text-matte-500 mb-1 block" for="emp-select">Pilih Karyawan (dari HRD Dashboard)</label>
+            <select id="emp-select" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold"><option value="">— tidak ada data —</option></select>
+            <p class="text-[11px] text-matte-400 mt-1">Kosong? Isi data karyawan dulu di <a href="/utils/hrd-dashboard" class="text-emerald-600 dark:text-emerald-400 underline">HRD Dashboard</a>, atau isi manual di samping.</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3 content-start">
+            <div><label class="text-xs text-matte-500 mb-1 block" for="man-name">Nama (manual)</label><input id="man-name" type="text" placeholder="cth: Ahmad Fulan" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+            <div><label class="text-xs text-matte-500 mb-1 block" for="man-pos">Jabatan (manual)</label><input id="man-pos" type="text" placeholder="cth: Operator" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+            <div class="col-span-2"><label class="text-xs text-matte-500 mb-1 block" for="man-salary">Gaji Pokok Manual (Rp)</label><input id="man-salary" type="number" min="0" placeholder="cth: 5000000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          </div>
+        </div>
+        <div class="grid md:grid-cols-3 gap-4">
+          <div><label class="text-xs text-matte-500 mb-1 block" for="f-tunjangan">Tunjangan (Rp)</label><input id="f-tunjangan" type="number" min="0" value="0" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="f-lembur">Lembur (Rp)</label><input id="f-lembur" type="number" min="0" value="0" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="f-bonus">Bonus / THR (Rp)</label><input id="f-bonus" type="number" min="0" value="0" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="f-bpjs">Potongan BPJS (Rp)</label><input id="f-bpjs" type="number" min="0" value="0" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="f-pph">Potongan PPh 21 (Rp)</label><input id="f-pph" type="number" min="0" value="0" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /><p class="text-[11px] text-matte-400 mt-1">Estimasi cepat: pakai <a href="/calc/pph21-ter" class="text-emerald-600 dark:text-emerald-400 underline">Kalkulator PPh 21 TER</a>.</p></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="f-lain">Potongan Lainnya (Rp)</label><input id="f-lain" type="number" min="0" value="0" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+        </div>
+        <label class="flex items-center gap-2 mt-5 text-sm text-matte-600 dark:text-matte-300">
+          <input id="f-auto-alpha" type="checkbox" checked class="w-4 h-4 accent-emerald-600" />
+          Potong alpha otomatis dari absensi HRD Dashboard (gaji pokok ÷ 22 × hari alpha)
+        </label>
+      </div>
+
+      <!-- 3. Preview & Download -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">3 · Preview & Unduh</h3>
+        <div class="flex flex-wrap gap-3 mb-6">
+          <button id="btn-preview" class="flex-1 min-w-40 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors">Preview Slip</button>
+          <button id="btn-pdf" class="flex-1 min-w-40 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors">Download PDF</button>
+        </div>
+        <div id="preview-wrap" class="hidden">
+          <p class="text-xs text-matte-400 mb-2">Preview (skala menyesuaikan layar — PDF mengikuti ukuran asli):</p>
+          <div class="overflow-x-auto rounded-xl border border-matte-200 dark:border-surface-border p-4 bg-matte-100 dark:bg-surface-hover">
+            <div id="preview"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-xs text-matte-400 bg-matte-100 dark:bg-surface-hover rounded-xl p-4 leading-relaxed">
+        <p class="font-bold text-matte-600 dark:text-matte-300 mb-1">Yang perlu diketahui</p>
+        <ul class="list-disc list-inside space-y-0.5">
+          <li>Data karyawan & absensi dibaca langsung dari HRD Dashboard di browser yang sama (localStorage) — tidak ada upload.</li>
+          <li>Potongan alpha otomatis memakai rumus yang sama dengan tab Payroll di HRD Dashboard.</li>
+          <li>Slip bisa diisi manual tanpa dashboard — cocok untuk payroll sekali jalan.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { loadCdnLib } from '../../composables/useCdnLib';
+
+  const DATA_KEY = 'hrd_data_v1';
+  interface Emp { id: number; name: string; position: string; division: string; salary: number; }
+  interface Att { empId: number; date: string; status: 'hadir' | 'sakit' | 'izin' | 'alpha'; }
+
+  function loadHrd(): { employees: Emp[]; attendance: Att[] } {
+    try {
+      const raw = localStorage.getItem(DATA_KEY);
+      if (!raw) return { employees: [], attendance: [] };
+      const d = JSON.parse(raw);
+      return { employees: d.employees ?? [], attendance: d.attendance ?? [] };
+    } catch { return { employees: [], attendance: [] }; }
+  }
+
+  const fmtRp = (n: number) => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+  const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  const periodEl = document.getElementById('period') as HTMLInputElement;
+  periodEl.value = new Date().toISOString().slice(0, 7);
+
+  // ===== Muat karyawan dari HRD Dashboard
+  const hrd = loadHrd();
+  const empSelect = document.getElementById('emp-select') as HTMLSelectElement;
+  const statusEl = document.getElementById('hrd-status')!;
+  if (hrd.employees.length > 0) {
+    statusEl.innerHTML = `<span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">✓ ${hrd.employees.length} karyawan ditemukan di HRD Dashboard</span>`;
+    hrd.employees.forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = String(e.id);
+      opt.textContent = `${e.name} — ${e.position} (${fmtRp(e.salary || 0)})`;
+      empSelect.appendChild(opt);
+    });
+  } else {
+    statusEl.innerHTML = `<span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">Tidak ada data HRD Dashboard di browser ini — isi manual di sebelah kanan</span>`;
+  }
+
+  function resolveEmployee(): { name: string; position: string; salary: number; alpha: number } | null {
+    const manName = (document.getElementById('man-name') as HTMLInputElement).value.trim();
+    const manSalary = parseFloat((document.getElementById('man-salary') as HTMLInputElement).value);
+    if (manName) {
+      if (!Number.isFinite(manSalary) || manSalary < 0) return null;
+      return { name: manName, position: (document.getElementById('man-pos') as HTMLInputElement).value.trim() || 'Karyawan', salary: manSalary, alpha: 0 };
+    }
+    const id = parseInt(empSelect.value, 10);
+    const emp = hrd.employees.find(e => e.id === id);
+    if (!emp || !(emp.salary > 0)) return null;
+    return { name: emp.name, position: emp.position || 'Karyawan', salary: emp.salary, alpha: 0 };
+  }
+
+  function numVal(id: string): number {
+    const n = parseFloat((document.getElementById(id) as HTMLInputElement).value);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  }
+
+  function resolveAlpha(empId: number | null): number {
+    const period = periodEl.value;
+    if (!empId || !period) return 0;
+    return hrd.attendance.filter(a => a.empId === empId && a.date.startsWith(period) && a.status === 'alpha').length;
+  }
+
+  function buildSlip(): HTMLElement | null {
+    const emp = resolveEmployee();
+    if (!emp) { alert('Pilih karyawan dari HRD Dashboard (dengan gaji terisi), atau isi nama & gaji manual.'); return null; }
+
+    const period = periodEl.value || new Date().toISOString().slice(0, 7);
+    const [y, m] = period.split('-').map(Number);
+    const periodLabel = `${MONTHS_ID[(m || 1) - 1]} ${y}`;
+    const coName = (document.getElementById('co-name') as HTMLInputElement).value.trim() || 'PT / Perusahaan';
+    const coAddr = (document.getElementById('co-addr') as HTMLInputElement).value.trim();
+    const signName = (document.getElementById('sign-name') as HTMLInputElement).value.trim();
+    const signTitle = (document.getElementById('sign-title') as HTMLInputElement).value.trim() || 'HR Manager';
+
+    const tunjangan = numVal('f-tunjangan'), lembur = numVal('f-lembur'), bonus = numVal('f-bonus');
+    const bpjs = numVal('f-bpjs'), pph = numVal('f-pph'), lain = numVal('f-lain');
+
+    let potAlpha = 0;
+    let alphaNote = '';
+    if ((document.getElementById('f-auto-alpha') as HTMLInputElement).checked) {
+      const id = parseInt(empSelect.value, 10) || null;
+      const alpha = resolveAlpha(id);
+      if (alpha > 0) {
+        potAlpha = Math.round((emp.salary / 22) * alpha);
+        alphaNote = `(${alpha} hari alpha)`;
+      }
+    }
+
+    const earnings: [string, number, string][] = [
+      ['Gaji Pokok', emp.salary, ''],
+      ['Tunjangan', tunjangan, ''],
+      ['Lembur', lembur, ''],
+      ['Bonus / THR', bonus, ''],
+    ];
+    const deductions: [string, number, string][] = [
+      ['Potongan Alpha', potAlpha, alphaNote],
+      ['BPJS', bpjs, ''],
+      ['PPh 21', pph, ''],
+      ['Potongan Lainnya', lain, ''],
+    ];
+    const totalEarn = earnings.reduce((s, [, v]) => s + v, 0);
+    const totalDed = deductions.reduce((s, [, v]) => s + v, 0);
+    const net = totalEarn - totalDed;
+
+    const div = document.createElement('div');
+    div.style.cssText = 'width:210mm;min-height:290mm;padding:14mm;background:#ffffff;color:#1f2937;font-family:Arial,Helvetica,sans-serif;box-sizing:border-box;';
+    const row = (label: string, val: string) => `<tr>
+      <td style="padding:5px 0;color:#4b5563;font-size:12px;">${label}</td>
+      <td style="padding:5px 12px;width:8px;">:</td>
+      <td style="padding:5px 0;font-size:12px;font-weight:bold;color:#111827;">${val}</td></tr>`;
+    const earnRows = earnings.filter(([, v]) => v > 0).map(([l, v, n]) =>
+      `<tr><td style="padding:6px 0;font-size:12px;">${l} ${n ? `<span style="color:#9ca3af;font-size:10px;">${n}</span>` : ''}</td><td style="padding:6px 0;text-align:right;font-size:12px;">${fmtRp(v)}</td></tr>`).join('');
+    const dedRows = deductions.filter(([, v]) => v > 0).map(([l, v, n]) =>
+      `<tr><td style="padding:6px 0;font-size:12px;">${l} ${n ? `<span style="color:#9ca3af;font-size:10px;">${n}</span>` : ''}</td><td style="padding:6px 0;text-align:right;font-size:12px;">${fmtRp(v)}</td></tr>`).join('');
+
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #059669;padding-bottom:10px;margin-bottom:16px;">
+        <div>
+          <div style="font-size:18px;font-weight:bold;color:#065f46;">${coName}</div>
+          ${coAddr ? `<div style="font-size:11px;color:#6b7280;margin-top:2px;">${coAddr}</div>` : ''}
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:14px;font-weight:bold;color:#111827;">SLIP GAJI</div>
+          <div style="font-size:11px;color:#6b7280;">Periode: ${periodLabel}</div>
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:bold;color:#059669;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Informasi Karyawan</div>
+        <table style="width:100%;border-collapse:collapse;">
+          ${row('Nama', emp.name)}
+          ${row('Jabatan', emp.position)}
+          ${row('Periode', periodLabel)}
+        </table>
+      </div>
+      <div style="display:flex;gap:16px;margin-bottom:20px;">
+        <div style="flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:bold;color:#059669;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Penerimaan</div>
+          ${earnRows || '<div style="font-size:11px;color:#9ca3af;">—</div>'}
+          <div style="border-top:1px solid #e5e7eb;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-size:12px;font-weight:bold;">
+            <span>Total Penerimaan</span><span>${fmtRp(totalEarn)}</span>
+          </div>
+        </div>
+        <div style="flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:bold;color:#dc2626;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Potongan</div>
+          ${dedRows || '<div style="font-size:11px;color:#9ca3af;">—</div>'}
+          <div style="border-top:1px solid #e5e7eb;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-size:12px;font-weight:bold;">
+            <span>Total Potongan</span><span>${fmtRp(totalDed)}</span>
+          </div>
+        </div>
+      </div>
+      <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;">
+        <span style="font-size:12px;font-weight:bold;color:#065f46;text-transform:uppercase;letter-spacing:1px;">Gaji Bersih (Take-Home Pay)</span>
+        <span style="font-size:20px;font-weight:bold;color:#065f46;">${fmtRp(net)}</span>
+      </div>
+      <div style="display:flex;justify-content:flex-end;">
+        <div style="text-align:center;">
+          <div style="font-size:11px;color:#6b7280;margin-bottom:48px;">${periodLabel}</div>
+          <div style="border-top:1px solid #9ca3af;padding-top:4px;font-size:12px;font-weight:bold;min-width:180px;">${signName || '(Tanda Tangan HRD)'}</div>
+          <div style="font-size:11px;color:#6b7280;">${signTitle}</div>
+        </div>
+      </div>`;
+    return div;
+  }
+
+  const preview = document.getElementById('preview')!;
+  const previewWrap = document.getElementById('preview-wrap')!;
+
+  (document.getElementById('btn-preview') as HTMLButtonElement).onclick = () => {
+    const slip = buildSlip();
+    if (!slip) return;
+    preview.innerHTML = '';
+    const scaled = document.createElement('div');
+    scaled.style.cssText = 'transform-origin:top left;width:210mm;';
+    scaled.appendChild(slip);
+    preview.appendChild(scaled);
+    const w = preview.clientWidth || 800;
+    scaled.style.transform = `scale(${Math.min(1, w / 794)})`;
+    scaled.style.height = `${1123 * Math.min(1, w / 794)}px`;
+    scaled.style.overflow = 'hidden';
+    previewWrap.classList.remove('hidden');
+  };
+
+  (document.getElementById('btn-pdf') as HTMLButtonElement).onclick = async () => {
+    const slip = buildSlip();
+    if (!slip) return;
+    const cdnReady = await loadCdnLib('html2pdf', [
+      'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+      'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
+      'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
+    ]);
+    if (!cdnReady) { alert('Library PDF gagal dimuat — cek koneksi internet.'); return; }
+    const holder = document.createElement('div');
+    holder.style.cssText = 'position:fixed;left:-10000px;top:0;';
+    holder.appendChild(slip);
+    document.body.appendChild(holder);
+    try {
+      const emp = resolveEmployee();
+      const period = periodEl.value || '';
+      const fname = `slip-gaji_${(emp?.name || 'karyawan').replace(/\s+/g, '-').toLowerCase()}_${period}.pdf`;
+      await (window as any).html2pdf().set({
+        margin: 0,
+        filename: fname,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      }).from(slip).save();
+    } finally {
+      holder.remove();
+    }
+  };
+</script>

@@ -1,0 +1,423 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Generator Surat HR — Surat Keterangan Kerja, Surat Peringatan & PKWT ke PDF">
+  <div class="max-w-4xl mx-auto px-4 min-h-[70vh] py-10">
+    <ToolPageHeader
+      title="Surat HR Generator"
+      desc="Buat surat resmi siap print & tanda tangan: Surat Keterangan Kerja, Surat Peringatan SP-1/2/3, dan Perjanjian Kerja PKWT. 100% di browser — dokumen tidak pernah di-upload."
+      icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'
+      gradient="from-blue-500 to-indigo-600"
+    />
+
+    <div class="grid gap-8 animate-fade-in">
+      <!-- 0. Pilih Karyawan dari HRD Dashboard -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-2">0 · Pilih Karyawan (opsional)</h3>
+        <p class="text-sm text-matte-500 mb-4">Ambil data karyawan langsung dari <a href="/utils/hrd-dashboard" class="text-blue-600 dark:text-blue-400 underline">HRD Dashboard</a> di browser ini — form surat di bawah terisi otomatis.</p>
+        <div id="hrd-status" class="text-sm mb-4"></div>
+        <select id="emp-select" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold mb-3"><option value="">— pilih karyawan —</option></select>
+        <button id="btn-autofill" class="w-full py-3 bg-blue-50 dark:bg-surface-hover text-blue-700 dark:text-blue-300 border-2 border-blue-200 dark:border-blue-900 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">Isi Otomatis Form Surat ↓</button>
+      </div>
+
+      <!-- 1. Kop Surat & Umum -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">1 · Kop Surat & Umum</h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div><label class="text-xs text-matte-500 mb-1 block" for="c-company">Nama Perusahaan</label><input id="c-company" type="text" placeholder="cth: PT Migas Kalimantan Jaya" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="c-addr">Alamat Perusahaan</label><input id="c-addr" type="text" placeholder="cth: Jl. Mineral No. 1, Balikpapan" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="c-num">Nomor Surat</label><input id="c-num" type="text" placeholder="cth: 001/HR-SKK/IX/2026" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="text-xs text-matte-500 mb-1 block" for="c-city">Kota</label><input id="c-city" type="text" placeholder="cth: Balikpapan" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+            <div><label class="text-xs text-matte-500 mb-1 block" for="c-date">Tanggal</label><input id="c-date" type="date" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          </div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="c-sign-name">Nama Penandatangan</label><input id="c-sign-name" type="text" placeholder="cth: Budi Santoso" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="c-sign-title">Jabatan Penandatangan</label><input id="c-sign-title" type="text" placeholder="cth: HR Manager" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+        </div>
+      </div>
+
+      <!-- 2. Jenis Surat -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">2 · Pilih Jenis Surat</h3>
+        <div class="flex flex-wrap gap-2 mb-6">
+          <button data-letter-tab="skk" class="letter-tab px-5 py-2 rounded-xl font-bold text-sm border-2 border-blue-600 bg-blue-600 text-white">Surat Keterangan Kerja</button>
+          <button data-letter-tab="sp" class="letter-tab px-5 py-2 rounded-xl font-bold text-sm border-2 border-matte-300 dark:border-surface-border text-matte-600 dark:text-matte-300">Surat Peringatan</button>
+          <button data-letter-tab="pkwt" class="letter-tab px-5 py-2 rounded-xl font-bold text-sm border-2 border-matte-300 dark:border-surface-border text-matte-600 dark:text-matte-300">PKWT</button>
+        </div>
+
+        <!-- Form: SKK -->
+        <div id="form-skk" class="letter-form grid md:grid-cols-2 gap-4">
+          <div><label class="text-xs text-matte-500 mb-1 block" for="skk-name">Nama Karyawan</label><input id="skk-name" type="text" placeholder="cth: Ahmad Fulan" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="skk-nik">NIK Karyawan (opsional)</label><input id="skk-nik" type="text" placeholder="cth: 6401012345670001" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="skk-position">Jabatan</label><input id="skk-position" type="text" placeholder="cth: Operator Produksi" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="skk-division">Divisi / Departemen</label><input id="skk-division" type="text" placeholder="cth: Operasional" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="skk-join">Bekerja Sejak</label><input id="skk-join" type="date" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="skk-status">Status Kepegawaian</label>
+            <select id="skk-status" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border">
+              <option>PKWTT (Karyawan Tetap)</option>
+              <option>PKWT (Kontrak)</option>
+            </select>
+          </div>
+          <div class="md:col-span-2"><label class="text-xs text-matte-500 mb-1 block" for="skk-purpose">Keperluan Surat</label><input id="skk-purpose" type="text" placeholder="cth: pengajuan kredit bank" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+        </div>
+
+        <!-- Form: SP -->
+        <div id="form-sp" class="letter-form hidden grid md:grid-cols-2 gap-4">
+          <div><label class="text-xs text-matte-500 mb-1 block" for="sp-level">Tingkat Surat Peringatan</label>
+            <select id="sp-level" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
+              <option value="1">SP-1 (Pertama)</option>
+              <option value="2">SP-2 (Kedua)</option>
+              <option value="3">SP-3 (Ketiga / Terakhir)</option>
+            </select>
+          </div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="sp-name">Nama Karyawan</label><input id="sp-name" type="text" placeholder="cth: Ahmad Fulan" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="sp-position">Jabatan</label><input id="sp-position" type="text" placeholder="cth: Operator Produksi" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="sp-division">Divisi / Departemen</label><input id="sp-division" type="text" placeholder="cth: Operasional" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="sp-date-incident">Tanggal Kejadian</label><input id="sp-date-incident" type="date" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="sp-pasal">Pasal yang Dilanggar (opsional)</label><input id="sp-pasal" type="text" placeholder="cth: Pasal 12 Peraturan Perusahaan" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div class="md:col-span-2"><label class="text-xs text-matte-500 mb-1 block" for="sp-violation">Uraian Pelanggaran</label><textarea id="sp-violation" rows="3" placeholder="cth: Tidak masuk kerja tanpa izin selama 3 hari berturut-turut…" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border"></textarea></div>
+        </div>
+
+        <!-- Form: PKWT -->
+        <div id="form-pkwt" class="letter-form hidden grid md:grid-cols-2 gap-4">
+          <div><label class="text-xs text-matte-500 mb-1 block" for="pk-name">Nama Karyawan</label><input id="pk-name" type="text" placeholder="cth: Ahmad Fulan" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="pk-nik">NIK KTP (opsional)</label><input id="pk-nik" type="text" placeholder="cth: 6401012345670001" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div class="md:col-span-2"><label class="text-xs text-matte-500 mb-1 block" for="pk-addr">Alamat Karyawan</label><input id="pk-addr" type="text" placeholder="cth: Jl. Anggur No. 5, Balikpapan" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="pk-position">Jabatan</label><input id="pk-position" type="text" placeholder="cth: Operator Produksi" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="pk-division">Divisi / Penempatan</label><input id="pk-division" type="text" placeholder="cth: Operasional — Site A" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="pk-start">Mulai Kerja</label><input id="pk-start" type="date" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="pk-dur">Durasi Kontrak (bulan)</label><input id="pk-dur" type="number" min="1" max="60" value="12" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /><p class="text-[11px] text-matte-400 mt-1">Maks. 5 tahun (UU Ketenagakerjaan). Perpanjangan hanya 1×.</p></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="pk-salary">Gaji Pokok (Rp/bulan)</label><input id="pk-salary" type="number" min="0" placeholder="cth: 5000000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="pk-allow">Tunjangan Tetap (Rp/bulan, opsional)</label><input id="pk-allow" type="number" min="0" value="0" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="pk-payday">Tanggal Pembayaran Gaji</label><input id="pk-payday" type="number" min="1" max="31" value="25" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+          <div><label class="text-xs text-matte-500 mb-1 block" for="pk-probation">Masa Percobaan (bulan, 0 = tanpa)</label><input id="pk-probation" type="number" min="0" max="3" value="3" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+        </div>
+      </div>
+
+      <!-- 3. Preview & Download -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">3 · Preview & Unduh</h3>
+        <div class="flex flex-wrap gap-3 mb-3">
+          <button id="btn-preview" class="flex-1 min-w-40 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">Preview Surat</button>
+          <button id="btn-pdf" class="flex-1 min-w-40 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors">Download PDF</button>
+        </div>
+        <button id="btn-batch" class="w-full mb-6 py-3 bg-white dark:bg-surface-elevated text-indigo-700 dark:text-indigo-300 border-2 border-indigo-300 dark:border-indigo-800 rounded-xl font-bold hover:bg-indigo-50 dark:hover:bg-blue-900/20 transition-colors">📦 Download SKK Massal — 1 PDF untuk semua karyawan (HRD Dashboard)</button>
+        <div id="preview-wrap" class="hidden">
+          <p class="text-xs text-matte-400 mb-2">Preview (skala menyesuaikan layar — PDF mengikuti ukuran asli):</p>
+          <div class="overflow-x-auto rounded-xl border border-matte-200 dark:border-surface-border p-4 bg-matte-100 dark:bg-surface-hover">
+            <div id="preview"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-xs text-matte-400 bg-matte-100 dark:bg-surface-hover rounded-xl p-4 leading-relaxed">
+        <p class="font-bold text-matte-600 dark:text-matte-300 mb-1">Yang perlu diketahui</p>
+        <ul class="list-disc list-inside space-y-0.5">
+          <li>Data karyawan dibaca langsung dari HRD Dashboard di browser yang sama (localStorage) — tidak ada upload.</li>
+          <li>SKK Massal membuat 1 PDF berisi surat untuk semua karyawan di HRD Dashboard — satu halaman per karyawan.</li>
+          <li>Template surat bersifat umum — sesuaikan pasal & kebijakan dengan Peraturan Perusahaan / Perjanjian Kerja Bersama.</li>
+          <li>Masa berlaku SP mengikuti ketentuan umum 6 bulan; PKWT maksimal 5 tahun & hanya dapat diperpanjang 1 kali (UU 13/2003 jo. UU Cipta Kerja).</li>
+          <li>Semua dokumen diproses lokal di browser — tidak ada upload, aman untuk data pegawai internal.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { loadCdnLib } from '../../composables/useCdnLib';
+
+  // ===== Data karyawan dari HRD Dashboard (localStorage, browser yang sama)
+  const DATA_KEY = 'hrd_data_v1';
+  interface Emp { id: number; name: string; position: string; division: string; status: string; joinDate: string; salary: number; }
+  function loadHrdEmployees(): Emp[] {
+    try {
+      const raw = localStorage.getItem(DATA_KEY);
+      if (!raw) return [];
+      const d = JSON.parse(raw);
+      return (d.employees ?? []) as Emp[];
+    } catch { return []; }
+  }
+  const hrdEmps = loadHrdEmployees();
+  const empSelect = document.getElementById('emp-select') as HTMLSelectElement;
+  const hrdStatus = document.getElementById('hrd-status')!;
+  if (hrdEmps.length > 0) {
+    hrdStatus.innerHTML = `<span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">✓ ${hrdEmps.length} karyawan ditemukan di HRD Dashboard</span>`;
+    hrdEmps.forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = String(e.id);
+      opt.textContent = `${e.name} — ${e.position}${e.division ? ' (' + e.division + ')' : ''}`;
+      empSelect.appendChild(opt);
+    });
+  } else {
+    hrdStatus.innerHTML = `<span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">Tidak ada data HRD Dashboard di browser ini — isi form manual di bawah</span>`;
+  }
+  (document.getElementById('btn-autofill') as HTMLButtonElement).onclick = () => {
+    const emp = hrdEmps.find(e => e.id === parseInt(empSelect.value, 10));
+    if (!emp) { alert('Pilih karyawan dari daftar dulu.'); return; }
+    const set = (id: string, val: string) => { const el = document.getElementById(id) as HTMLInputElement | undefined; if (el) el.value = val; };
+    // Semua jenis surat: nama, jabatan, divisi
+    set('skk-name', emp.name); set('skk-position', emp.position); set('skk-division', emp.division); set('skk-join', emp.joinDate || '');
+    set('sp-name', emp.name); set('sp-position', emp.position); set('sp-division', emp.division);
+    set('pk-name', emp.name); set('pk-position', emp.position); set('pk-division', emp.division);
+    set('pk-salary', emp.salary > 0 ? String(emp.salary) : '');
+    // Status kepegawaian (dropdown SKK): PKWT → "PKWT (Kontrak)", selain itu "PKWTT (Karyawan Tetap)"
+    const skkStatus = document.getElementById('skk-status') as HTMLSelectElement | undefined;
+    if (skkStatus) skkStatus.value = /pkwt|kontrak/i.test(emp.status) ? 'PKWT (Kontrak)' : 'PKWTT (Karyawan Tetap)';
+    hrdStatus.innerHTML = `<span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">✓ Form terisi otomatis: ${emp.name}</span>`;
+  };
+
+  const fmtRp = (n: number) => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+  const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  const fmtDateID = (iso: string) => {
+    if (!iso) return '…';
+    const [y, m, d] = iso.split('-').map(Number);
+    if (!y || !m || !d) return '…';
+    return `${d} ${MONTHS_ID[m - 1]} ${y}`;
+  };
+  function masaKerja(joinIso: string): string {
+    if (!joinIso) return '…';
+    const start = new Date(joinIso);
+    const now = new Date();
+    let months = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+    if (now.getDate() < start.getDate()) months--;
+    if (months < 0) return 'baru akan bergabung';
+    const y = Math.floor(months / 12), m = months % 12;
+    if (y && m) return `${y} tahun ${m} bulan`;
+    if (y) return `${y} tahun`;
+    return `${Math.max(1, m)} bulan`;
+  }
+
+  const v = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement)?.value.trim() || '';
+  const dateV = (id: string) => (document.getElementById(id) as HTMLInputElement)?.value || '';
+
+  // ===== Jenis surat aktif
+  let activeType: 'skk' | 'sp' | 'pkwt' = 'skk';
+  function setTab(type: 'skk' | 'sp' | 'pkwt') {
+    activeType = type;
+    (['skk', 'sp', 'pkwt'] as const).forEach(t => {
+      document.getElementById('form-' + t)!.classList.toggle('hidden', t !== type);
+    });
+    document.querySelectorAll('.letter-tab').forEach(b => {
+      const btn = b as HTMLButtonElement;
+      const active = btn.dataset.letterTab === type;
+      btn.className = 'letter-tab px-5 py-2 rounded-xl font-bold text-sm border-2 ' + (active
+        ? 'border-blue-600 bg-blue-600 text-white'
+        : 'border-matte-300 dark:border-surface-border text-matte-600 dark:text-matte-300');
+    });
+  }
+  document.querySelectorAll('.letter-tab').forEach(b => {
+    (b as HTMLButtonElement).onclick = () => setTab((b as HTMLButtonElement).dataset.letterTab as 'skk' | 'sp' | 'pkwt');
+  });
+
+  (document.getElementById('c-date') as HTMLInputElement).value = new Date().toISOString().slice(0, 10);
+
+  // ===== SKK Massal: 1 PDF multi-halaman untuk semua karyawan HRD Dashboard
+  (document.getElementById('btn-batch') as HTMLButtonElement).onclick = async () => {
+    if (hrdEmps.length === 0) { alert('Tidak ada data karyawan HRD Dashboard di browser ini.'); return; }
+    const cdnReady = await loadCdnLib('html2pdf', [
+      'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+      'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
+      'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
+    ]);
+    if (!cdnReady) { alert('Library PDF gagal dimuat — cek koneksi internet.'); return; }
+    const holder = document.createElement('div');
+    holder.style.cssText = 'position:fixed;left:-10000px;top:0;';
+    for (const emp of hrdEmps) {
+      const page = document.createElement('div');
+      page.style.cssText = `width:210mm;height:296mm;overflow:hidden;padding:18mm 20mm;background:#ffffff;color:#1f2937;box-sizing:border-box;page-break-after:always;${baseFont}`;
+      page.innerHTML = kop() + buildSKK({
+        name: emp.name,
+        position: emp.position || '',
+        division: emp.division || '',
+        join: emp.joinDate || '',
+        status: /pkwt|kontrak/i.test(emp.status) ? 'PKWT (Kontrak)' : 'PKWTT (Karyawan Tetap)',
+      });
+      holder.appendChild(page);
+    }
+    document.body.appendChild(holder);
+    try {
+      await (window as any).html2pdf().set({
+        margin: 0,
+        filename: `skk-massal_${hrdEmps.length}-karyawan_${new Date().toISOString().slice(0, 10)}.pdf`,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      }).from(holder).save();
+    } finally { holder.remove(); }
+  };
+
+  const baseFont = 'font-family:Arial,Helvetica,sans-serif;color:#1f2937;';
+  const kop = () => `
+    <div style="border-bottom:3px double #111827;padding-bottom:10px;margin-bottom:20px;text-align:center;">
+      <div style="font-size:17px;font-weight:bold;color:#111827;letter-spacing:0.5px;">${v('c-company') || 'PT / NAMA PERUSAHAAN'}</div>
+      <div style="font-size:10.5px;color:#4b5563;margin-top:2px;">${v('c-addr')}</div>
+    </div>`;
+  const nomorRow = (nomor: string) => `
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:18px;">
+      <div>Nomor&nbsp;: ${nomor || '…'}</div>
+      <div>${v('c-city') || '…'}, ${fmtDateID(dateV('c-date'))}</div>
+    </div>`;
+  const sigBlock = (name: string, title: string, extra = '') => `
+    <div style="text-align:center;min-width:200px;">
+      <div style="font-size:11px;color:#4b5563;margin-bottom:56px;">${extra}</div>
+      <div style="border-top:1px solid #374151;padding-top:4px;font-size:12px;font-weight:bold;">${name || '(Tanda Tangan)'}</div>
+      <div style="font-size:11px;color:#4b5563;">${title}</div>
+    </div>`;
+
+  type SkkOv = { name?: string; nik?: string; position?: string; division?: string; join?: string; status?: string };
+  function buildSKK(ov: SkkOv = {}): string {
+    const name = ov.name ?? v('skk-name');
+    const nik = ov.nik ?? v('skk-nik');
+    const position = ov.position ?? v('skk-position');
+    const division = ov.division ?? v('skk-division');
+    const join = ov.join ?? dateV('skk-join');
+    const status = ov.status ?? (document.getElementById('skk-status') as HTMLSelectElement).value;
+    return `
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:14px;font-weight:bold;text-decoration:underline;color:#111827;letter-spacing:1px;">SURAT KETERANGAN KERJA</div>
+      </div>
+      ${nomorRow(v('c-num'))}
+      <p style="font-size:12px;line-height:1.7;text-align:justify;margin-bottom:14px;">Yang bertanda tangan di bawah ini <b>${v('c-sign-name') || '…'}</b>, dalam kapasitas sebagai <b>${v('c-sign-title') || '…'}</b> ${v('c-company') || 'PT / Nama Perusahaan'}, dengan ini menerangkan dengan sesungguhnya bahwa:</p>
+      <table style="width:100%;border-collapse:collapse;margin:0 0 14px 24px;">
+        <tr><td style="font-size:12px;padding:3px 0;width:160px;color:#374151;">Nama</td><td style="width:8px;">:</td><td style="font-size:12px;font-weight:bold;">${name || '…'}</td></tr>
+        ${nik ? `<tr><td style="font-size:12px;padding:3px 0;color:#374151;">NIK</td><td>:</td><td style="font-size:12px;">${nik}</td></tr>` : ''}
+        <tr><td style="font-size:12px;padding:3px 0;color:#374151;">Jabatan</td><td>:</td><td style="font-size:12px;">${position || '…'}</td></tr>
+        <tr><td style="font-size:12px;padding:3px 0;color:#374151;">Departemen</td><td>:</td><td style="font-size:12px;">${division || '…'}</td></tr>
+        <tr><td style="font-size:12px;padding:3px 0;color:#374151;">Status Kepegawaian</td><td>:</td><td style="font-size:12px;">${status}</td></tr>
+        <tr><td style="font-size:12px;padding:3px 0;color:#374151;">Masa Kerja</td><td>:</td><td style="font-size:12px;">Sejak ${fmtDateID(join)} (${masaKerja(join)})</td></tr>
+      </table>
+      <p style="font-size:12px;line-height:1.7;text-align:justify;margin-bottom:14px;">Selama bekerja di lingkungan ${v('c-company') || 'perusahaan'} tersebut di atas, yang bersangkutan menunjukkan perilaku dan kinerja yang baik.</p>
+      <p style="font-size:12px;line-height:1.7;text-align:justify;margin-bottom:28px;">Surat keterangan ini dibuat untuk keperluan <b>${v('skk-purpose') || '…'}</b> dan dapat dipergunakan sebagaimana mestinya.</p>
+      <div style="display:flex;justify-content:flex-end;">${sigBlock(v('c-sign-name'), v('c-sign-title'))}</div>`;
+  }
+
+  function buildSP(): string {
+    const level = v('sp-level') || '1';
+    const levelLabel = level === '1' ? 'PERINGATAN PERTAMA' : level === '2' ? 'PERINGATAN KEDUA' : 'PERINGATAN KETIGA (TERAKHIR)';
+    const consequence = level === '1'
+      ? 'Apabila di masa mendatang yang bersangkutan kembali melakukan pelanggaran, maka yang bersangkutan akan diterbitkan Surat Peringatan Kedua.'
+      : level === '2'
+      ? 'Apabila di masa mendatang yang bersangkutan kembali melakukan pelanggaran, maka yang bersangkutan akan diterbitkan Surat Peringatan Ketiga.'
+      : 'Apabila di masa mendatang yang bersangkutan kembali melakukan pelanggaran, maka perusahaan dapat memutus penghentian hubungan kerja sesuai ketentuan peraturan perundang-undangan yang berlaku.';
+    const pasal = v('sp-pasal') ? ` sebagaimana diatur dalam <b>${v('sp-pasal')}</b>` : '';
+    return `
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:14px;font-weight:bold;text-decoration:underline;color:#111827;letter-spacing:1px;">SURAT ${levelLabel}</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:2px;">Nomor: ${v('c-num') || '…'}</div>
+      </div>
+      <p style="font-size:12px;line-height:1.7;text-align:justify;margin-bottom:14px;">Yang bertanda tangan di bawah ini <b>${v('c-sign-name') || '…'}</b>, ${v('c-sign-title') || '…'} ${v('c-company') || 'PT / Nama Perusahaan'}, dengan ini menerangkan bahwa berdasarkan hasil evaluasi, diterbitkan surat peringatan ini kepada karyawan dengan data sebagai berikut:</p>
+      <table style="width:100%;border-collapse:collapse;margin:0 0 14px 24px;">
+        <tr><td style="font-size:12px;padding:3px 0;width:160px;color:#374151;">Nama</td><td style="width:8px;">:</td><td style="font-size:12px;font-weight:bold;">${v('sp-name') || '…'}</td></tr>
+        <tr><td style="font-size:12px;padding:3px 0;color:#374151;">Jabatan</td><td>:</td><td style="font-size:12px;">${v('sp-position') || '…'}</td></tr>
+        <tr><td style="font-size:12px;padding:3px 0;color:#374151;">Departemen</td><td>:</td><td style="font-size:12px;">${v('sp-division') || '…'}</td></tr>
+        <tr><td style="font-size:12px;padding:3px 0;color:#374151;">Tanggal Kejadian</td><td>:</td><td style="font-size:12px;">${fmtDateID(dateV('sp-date-incident'))}</td></tr>
+      </table>
+      <p style="font-size:12px;line-height:1.7;text-align:justify;margin-bottom:14px;">Berdasarkan catatan perusahaan, pada tanggal <b>${fmtDateID(dateV('sp-date-incident'))}</b> yang bersangkutan telah melakukan pelanggaran${pasal}, yaitu:</p>
+      <p style="font-size:12px;line-height:1.7;text-align:justify;border:1px solid #d1d5db;border-radius:6px;padding:10px 12px;margin-bottom:14px;">${v('sp-violation') || '…'}</p>
+      <p style="font-size:12px;line-height:1.7;text-align:justify;margin-bottom:14px;">${consequence}</p>
+      <p style="font-size:12px;line-height:1.7;text-align:justify;margin-bottom:28px;">Surat peringatan ini berlaku selama <b>6 (enam) bulan</b> sejak tanggal diterbitkan. Demikian surat peringatan ini diterbitkan untuk dipergunakan sebagaimana mestinya.</p>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+        ${sigBlock(v('sp-name'), 'Penerima — ' + (v('sp-position') || 'Karyawan'))}
+        ${sigBlock(v('c-sign-name'), v('c-sign-title'))}
+      </div>`;
+  }
+
+  function buildPKWT(): string {
+    const start = dateV('pk-start');
+    const dur = parseInt(v('pk-dur') || '12', 10) || 12;
+    let end = '…';
+    if (start) {
+      const s = new Date(start);
+      s.setMonth(s.getMonth() + dur);
+      s.setDate(s.getDate() - 1);
+      end = fmtDateID(s.toISOString().slice(0, 10));
+    }
+    const salary = parseFloat(v('pk-salary')) || 0;
+    const allow = parseFloat(v('pk-allow')) || 0;
+    const payday = parseInt(v('pk-payday') || '25', 10) || 25;
+    const prob = parseInt(v('pk-probation') || '0', 10) || 0;
+    const clause = (n: string, title: string, body: string) => `
+      <p style="font-size:12px;font-weight:bold;margin:12px 0 4px;">Pasal ${n} — ${title}</p>
+      <p style="font-size:12px;line-height:1.7;text-align:justify;">${body}</p>`;
+    return `
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:14px;font-weight:bold;text-decoration:underline;color:#111827;letter-spacing:1px;">PERJANJIAN KERJA WAKTU TERTENTANG</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:2px;">Nomor: ${v('c-num') || '…'}</div>
+      </div>
+      <p style="font-size:12px;line-height:1.7;text-align:justify;margin-bottom:12px;">Perjanjian Kerja Waktu Tertentang ini dibuat pada hari ini, ${fmtDateID(dateV('c-date'))}, antara:</p>
+      <p style="font-size:12px;line-height:1.7;margin-bottom:6px;"><b>${v('c-company') || 'PT / Nama Perusahaan'}</b>, yang diwakili oleh <b>${v('c-sign-name') || '…'}</b> selaku ${v('c-sign-title') || '…'}, beralamat di ${v('c-addr') || '…'} — selanjutnya disebut <b>PIHAK PERTAMA</b>.</p>
+      <p style="font-size:12px;line-height:1.7;margin-bottom:12px;"><b>${v('pk-name') || '…'}</b>${v('pk-nik') ? `, NIK ${v('pk-nik')},` : ''} beralamat di ${v('pk-addr') || '…'} — selanjutnya disebut <b>PIHAK KEDUA</b>.</p>
+      <p style="font-size:12px;line-height:1.7;text-align:justify;margin-bottom:10px;">Kedua belah pihak sepakat mengikatkan diri dalam perjanjian kerja dengan syarat dan ketentuan sebagai berikut:</p>
+      ${clause('1', 'Jabatan', `PIHAK KEDUA diangkat sebagai <b>${v('pk-position') || '…'}</b> pada ${v('pk-division') || '…'}, dengan tugas dan tanggung jawab sesuai ketentuan yang berlaku pada PIHAK PERTAMA.`)}
+      ${clause('2', 'Masa Berlaku', `Perjanjian ini berlaku mulai tanggal <b>${fmtDateID(start)}</b> sampai dengan <b>${end}</b> (${dur} bulan). Perpanjangan perjanjian disepakati secara tertulis sebelum perjanjian berakhir.`)}
+      ${clause('3', 'Upah', `PIHAK KEDUA menerima upah pokok sebesar <b>${fmtRp(salary)}</b> per bulan${allow > 0 ? ` ditambah tunjangan tetap <b>${fmtRp(allow)}</b> per bulan` : ''}, dibayarkan setiap tanggal <b>${payday}</b> melalui rekening PIHAK KEDUA.`)}
+      ${clause('4', 'Masa Percobaan', prob > 0 ? `PIHAK KEDUA menjalani masa percobaan selama <b>${prob} bulan</b>. Selama masa percobaan, PIHAK PERTAMA dapat mengakhiri perjanjian dengan pemberitahuan 7 (tujuh) hari kerja sebelumnya.` : 'Perjanjian ini tidak memuat masa percobaan, sesuai ketentuan bahwa masa percobaan maksimal 3 (tiga) bulan.')}
+      ${clause('5', 'Kewajiban & Tata Tertib', `PIHAK KEDUA wajib mematuhi jam kerja, tata tertib, dan seluruh peraturan yang berlaku pada PIHAK PERTAMA, termasuk ketentuan mengenai kerahasiaan perusahaan.`)}
+      ${clause('6', 'Penutup', `Hal-hal yang belum diatur dalam perjanjian ini mengacu pada peraturan perusahaan serta peraturan perundang-undangan ketenagakerjaan yang berlaku di Republik Indonesia. Perjanjian ini dibuat dalam rangkap 2 (dua) bermeterai cukup, masing-masing berkekuatan hukum sama.`)}
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:28px;">
+        ${sigBlock(v('c-sign-name'), 'PIHAK PERTAMA — ' + (v('c-sign-title') || ''))}
+        ${sigBlock(v('pk-name'), 'PIHAK KEDUA')}
+      </div>`;
+  }
+
+  function buildLetter(): HTMLElement | null {
+    const required = activeType === 'skk' ? v('skk-name') : activeType === 'sp' ? v('sp-name') : v('pk-name');
+    if (!required) {
+      alert(activeType === 'skk' ? 'Isi nama karyawan di form Surat Keterangan Kerja.' : activeType === 'sp' ? 'Isi nama karyawan di form Surat Peringatan.' : 'Isi nama karyawan di form PKWT.');
+      return null;
+    }
+    const div = document.createElement('div');
+    div.style.cssText = `width:210mm;min-height:295mm;padding:18mm 20mm;background:#ffffff;color:#1f2937;box-sizing:border-box;${baseFont}`;
+    div.innerHTML = kop() + (activeType === 'skk' ? buildSKK() : activeType === 'sp' ? buildSP() : buildPKWT());
+    return div;
+  }
+
+  const preview = document.getElementById('preview')!;
+  const previewWrap = document.getElementById('preview-wrap')!;
+
+  (document.getElementById('btn-preview') as HTMLButtonElement).onclick = () => {
+    const letter = buildLetter();
+    if (!letter) return;
+    preview.innerHTML = '';
+    const scaled = document.createElement('div');
+    scaled.style.cssText = 'transform-origin:top left;width:210mm;';
+    scaled.appendChild(letter);
+    preview.appendChild(scaled);
+    const w = preview.clientWidth || 800;
+    const k = Math.min(1, w / 794);
+    scaled.style.transform = `scale(${k})`;
+    scaled.style.height = `${1165 * k}px`;
+    scaled.style.overflow = 'hidden';
+    previewWrap.classList.remove('hidden');
+  };
+
+  (document.getElementById('btn-pdf') as HTMLButtonElement).onclick = async () => {
+    const letter = buildLetter();
+    if (!letter) return;
+    const cdnReady = await loadCdnLib('html2pdf', [
+      'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+      'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
+      'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
+    ]);
+    if (!cdnReady) { alert('Library PDF gagal dimuat — cek koneksi internet.'); return; }
+    const holder = document.createElement('div');
+    holder.style.cssText = 'position:fixed;left:-10000px;top:0;';
+    holder.appendChild(letter);
+    document.body.appendChild(holder);
+    try {
+      const fname = `surat-${activeType}_${(activeType === 'skk' ? v('skk-name') : activeType === 'sp' ? v('sp-name') : v('pk-name')).replace(/\s+/g, '-').toLowerCase()}_${dateV('c-date')}.pdf`;
+      await (window as any).html2pdf().set({
+        margin: 0,
+        filename: fname,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      }).from(letter).save();
+    } finally {
+      holder.remove();
+    }
+  };
+</script>

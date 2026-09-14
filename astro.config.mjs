@@ -196,7 +196,7 @@ export default defineConfig({
       enabled: true
     },
   }), sitemap({
-    filter: (page) => !page.includes('/api/'),
+    filter: (page) => !page.includes('/api/') && !page.includes('/utils/hrd-dashboard'),
     changefreq: 'weekly',
     priority: 1.0,
     lastmod: new Date(),
