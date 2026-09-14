@@ -7,6 +7,14 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  '/calc/workdays',
+  '/calc/thr-bpjs',
+  '/pdf/surat-hr',
+  '/calc/pph21-ter',
+  '/pdf/slip-gaji',
+  '/pdf/word-to-pdf',
+  '/pdf/excel-to-pdf',
+  '/utils/hrd-dashboard',
   '/pdf/photo',
   '/image/sign-to-png',
   '/utils/image-to-scan',

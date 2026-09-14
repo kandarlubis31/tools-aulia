@@ -1,0 +1,190 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Kalkulator THR & BPJS — Tunjangan Hari Raya & Iuran BPJS TK/Kes">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader
+      title="Kalkulator THR & BPJS"
+      desc="Hitung THR prorata sesuai Permenaker 6/2016, breakdown iuran BPJS Ketenagakerjaan (JHT, JP, JKK, JKM, JKP) & BPJS Kesehatan — siapa tanggung apa. 100% offline."
+      icon='<path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>'
+      gradient="from-amber-500 to-orange-600"
+    />
+
+    <div class="grid gap-8 animate-fade-in">
+      <!-- Card 1: THR Prorata -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-2">THR Prorata</h3>
+        <p class="text-sm text-matte-500 mb-6">Aturan Permenaker 6/2016: masa kerja ≥ 12 bulan → 1 bulan upah; 1–11 bulan → proporsional (masa kerja ÷ 12 × upah).</p>
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="text-xs text-matte-500 mb-1 block" for="thr-salary">Upah (Gaji Pokok + Tunjangan Tetap, Rp)</label>
+            <input id="thr-salary" type="number" min="0" placeholder="cth: 5000000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" />
+            <p class="text-[11px] text-matte-400 mt-1">THR dihitung dari upah pokok + tunjangan tetap (tidak termasuk lembur/otp).</p>
+          </div>
+          <div>
+            <label class="text-xs text-matte-500 mb-1 block" for="thr-months">Masa Kerja (bulan)</label>
+            <input id="thr-months" type="number" min="1" max="600" placeholder="cth: 8" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" />
+          </div>
+        </div>
+        <div class="mb-6">
+          <label class="text-xs text-matte-500 mb-1 block" for="thr-hari-raya">Hari Raya</label>
+          <select id="thr-hari-raya" class="w-full md:w-1/2 p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border">
+            <option value="lebaran">Lebaran (bayar maks H-7)</option>
+            <option value="natal">Natal / Tahun Baru</option>
+            <option value="nyepi">Nyepi</option>
+            <option value="waisak">Waisak</option>
+          </select>
+        </div>
+        <button id="calc-thr" class="w-full py-3 bg-amber-600 text-white rounded-xl font-bold hover:bg-amber-700 transition-colors">Hitung THR</button>
+        <div id="result-thr" class="mt-6 hidden"></div>
+      </div>
+
+      <!-- Card 2: BPJS -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-2">Iuran BPJS Ketenagakerjaan & Kesehatan</h3>
+        <p class="text-sm text-matte-500 mb-6">Breakdown lengkap: yang dipotong dari karyawan vs ditanggung perusahaan. Rate sesuai PP 6/2025 (JKK & JKP terbaru) & cap JP resmi BPJS.</p>
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="text-xs text-matte-500 mb-1 block" for="bpjs-salary">Upah Sebulan (Rp)</label>
+            <input id="bpjs-salary" type="number" min="0" placeholder="cth: 8000000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" />
+            <p class="text-[11px] text-matte-400 mt-1">Kalau pakai HRD Dashboard, gaji pokok tercatat di sana — tambahkan tunjangan tetap di sini bila ada.</p>
+          </div>
+          <div>
+            <label class="text-xs text-matte-500 mb-1 block" for="bpjs-risk">Tingkat Risiko Kerja (JKK)</label>
+            <select id="bpjs-risk" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border">
+              <option value="0.10">I — Sangat Rendah (0,10%) · staf kantor</option>
+              <option value="0.40">II — Rendah (0,40%) · kasir, kebersihan</option>
+              <option value="0.75" selected>III — Sedang (0,75%) · operator, teknisi</option>
+              <option value="1.13">IV — Tinggi (1,13%) · pekerja pabrik</option>
+              <option value="1.60">V — Sangat Tinggi (1,60%) · tambang, konstruksi</option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="flex items-center gap-2 text-sm text-matte-600 dark:text-matte-300">
+              <input id="bpjs-kes" type="checkbox" checked class="w-4 h-4 accent-amber-600" />
+              Sertakan BPJS Kesehatan (5%: 4% perusahaan + 1% karyawan, cap upah Rp12.000.000)
+            </label>
+          </div>
+        </div>
+        <button id="calc-bpjs" class="w-full py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-colors">Hitung Iuran BPJS</button>
+        <div id="result-bpjs" class="mt-6 hidden"></div>
+      </div>
+
+      <div class="text-xs text-matte-400 bg-matte-100 dark:bg-surface-hover rounded-xl p-4 leading-relaxed">
+        <p class="font-bold text-matte-600 dark:text-matte-300 mb-1">Dasar perhitungan & catatan</p>
+        <ul class="list-disc list-inside space-y-0.5">
+          <li>THR: Permenaker 6/2016 — wajib bagi karyawan masa kerja ≥ 1 bulan, dibayar paling lambat H-7 sebelum hari raya.</li>
+          <li>JHT 5,7% (3,7% perusahaan + 2% karyawan) · JP 3% (2% + 1%, cap upah Rp11.086.300 per Mar 2026) · JKM 0,3% (perusahaan).</li>
+          <li>JKK pasca PP 6/2025 (rekomposisi JKP): 0,10% – 1,60% sesuai 5 kelas risiko, ditanggung perusahaan.</li>
+          <li>JKP 0,36% (rekomposisi JKK 0,14% + pemerintah 0,22%), cap upah Rp5.000.000 — tidak membebani karyawan.</li>
+          <li>BPJS Kesehatan PPU: 5% dari upah (4% perusahaan + 1% karyawan), batas upah Rp12.000.000.</li>
+          <li>Angka pembulatan ke rupiah terdekat — untuk pelaporan resmi tetap rujuk billing BPJS perusahaan.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const JP_CAP = 11086300;    // batas upah JP per Maret 2026 (info resmi BPJS)
+  const JKP_CAP = 5000000;    // cap upah JKP (PP 6/2025)
+  const KES_CAP = 12000000;   // batas upah BPJS Kesehatan PPU
+
+  const fmtRp = (n: number) => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+  const br = (v: string) => { const n = parseFloat(v); return Number.isFinite(n) && n >= 0 ? n : 0; };
+
+  const statBox = (label: string, value: string, cls: string) =>
+    `<div class="p-3 rounded-xl ${cls}"><p class="text-[11px] font-bold uppercase opacity-70">${label}</p><p class="font-bold text-sm mt-1">${value}</p></div>`;
+
+  // ===== THR
+  (document.getElementById('calc-thr') as HTMLButtonElement).onclick = () => {
+    const salary = br((document.getElementById('thr-salary') as HTMLInputElement).value);
+    const months = br((document.getElementById('thr-months') as HTMLInputElement).value);
+    const el = document.getElementById('result-thr')!;
+    if (salary <= 0 || months <= 0) {
+      el.className = 'mt-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-500';
+      el.textContent = 'Isi upah & masa kerja dengan angka yang valid (masa kerja minimal 1 bulan).';
+      el.classList.remove('hidden');
+      return;
+    }
+    const eligible = months >= 12;
+    const factor = eligible ? 1 : months / 12;
+    const thr = Math.round(salary * factor);
+    el.className = 'mt-6 p-5 bg-matte-50 dark:bg-surface-hover rounded-xl border border-amber-300 dark:border-amber-800';
+    el.innerHTML = `
+      <div class="flex flex-wrap gap-2 mb-3">
+        <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">${eligible ? 'Hak penuh' : 'Prorata'}</span>
+        <span class="px-3 py-1 rounded-full bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 text-xs font-bold">${eligible ? 'Masa kerja ≥ 12 bulan' : 'Masa kerja ' + months.toLocaleString('id-ID') + ' bulan'}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-3 text-center">
+        ${statBox('Upah Dasar', fmtRp(salary), 'bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border text-matte-800 dark:text-white')}
+        ${statBox('Porsi THR', eligible ? '12/12' : `${months}/12`, 'bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border text-matte-800 dark:text-white')}
+        ${statBox('THR Diterima', fmtRp(thr), 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-600')}
+      </div>
+      <p class="text-[11px] text-matte-400 mt-3">Rumus: ${eligible ? '1 × upah' : `(${months} ÷ 12) × upah`} = ${fmtRp(thr)}. Bayar maksimal H-7 hari raya; denda 5% bila terlambat.</p>`;
+    el.classList.remove('hidden');
+  };
+
+  // ===== BPJS
+  (document.getElementById('calc-bpjs') as HTMLButtonElement).onclick = () => {
+    const salary = br((document.getElementById('bpjs-salary') as HTMLInputElement).value);
+    const jkkRate = parseFloat((document.getElementById('bpjs-risk') as HTMLSelectElement).value) / 100;
+    const includeKes = (document.getElementById('bpjs-kes') as HTMLInputElement).checked;
+    const el = document.getElementById('result-bpjs')!;
+    if (salary <= 0) {
+      el.className = 'mt-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-500';
+      el.textContent = 'Isi upah sebulan dengan angka yang valid.';
+      el.classList.remove('hidden');
+      return;
+    }
+
+    const jpBase = Math.min(salary, JP_CAP);
+    const jkpBase = Math.min(salary, JKP_CAP);
+    const kesBase = includeKes ? Math.min(salary, KES_CAP) : 0;
+
+    // rate = [perusahaan, karyawan], basis
+    const rows: [string, number, number, string, string][] = [
+      ['JHT — Jaminan Hari Tua', 0.037, 0.02, salary, 'Tabungan hari tua'],
+      ['JP — Jaminan Pensiun', 0.02, 0.01, jpBase, `Cap upah ${fmtRp(JP_CAP)}`],
+      ['JKK — Kecelakaan Kerja', jkkRate, 0, salary, 'Ditanggung penuh perusahaan'],
+      ['JKM — Kematian', 0.003, 0, salary, 'Ditanggung penuh perusahaan'],
+      ['JKP — Kehilangan Pekerjaan', 0.0014, 0, jkpBase, 'Rekomposisi JKK; 0,22% pemerintah'],
+    ];
+    if (includeKes) rows.push(['BPJS Kesehatan', 0.04, 0.01, kesBase, `Cap upah ${fmtRp(KES_CAP)}`]);
+
+    let totCo = 0, totEmp = 0;
+    const body = rows.map(([name, co, emp, base, note]) => {
+      const vCo = Math.round(base * co), vEmp = Math.round(base * emp);
+      totCo += vCo; totEmp += vEmp;
+      return `<tr class="border-t border-matte-100 dark:border-surface-border">
+        <td class="py-2 pr-2"><p class="font-semibold text-matte-700 dark:text-matte-200 text-sm">${name}</p><p class="text-[11px] text-matte-400">${note}</p></td>
+        <td class="py-2 text-right text-sm whitespace-nowrap">${(co * 100).toLocaleString('id-ID')}%<p class="text-[11px] text-matte-400">× ${fmtRp(base)}</p></td>
+        <td class="py-2 text-right text-sm font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">${fmtRp(vCo)}</td>
+        <td class="py-2 text-right text-sm font-semibold ${emp > 0 ? 'text-red-500' : 'text-matte-400'} whitespace-nowrap">${emp > 0 ? '−' + fmtRp(vEmp) : 'Rp 0'}</td>
+      </tr>`;
+    }).join('');
+
+    const netEffect = salary - totEmp;
+    el.className = 'mt-6 overflow-x-auto rounded-xl border border-orange-300 dark:border-orange-800 bg-matte-50 dark:bg-surface-hover p-4';
+    el.innerHTML = `
+      <table class="w-full min-w-160">
+        <thead><tr class="text-[11px] uppercase text-matte-400 font-bold">
+          <th class="text-left pb-2">Program</th><th class="text-right pb-2">Tarif & Dasar</th><th class="text-right pb-2">Perusahaan</th><th class="text-right pb-2">Potongan Karyawan</th>
+        </tr></thead>
+        <tbody>${body}</tbody>
+        <tfoot><tr class="border-t-2 border-matte-200 dark:border-surface-border">
+          <td class="pt-3 font-bold text-matte-700 dark:text-matte-200">Total / bulan</td><td></td>
+          <td class="pt-3 text-right font-bold text-emerald-600 dark:text-emerald-400">${fmtRp(totCo)}</td>
+          <td class="pt-3 text-right font-bold text-red-500">−${fmtRp(totEmp)}</td>
+        </tr></tfoot>
+      </table>
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        ${statBox('Beban Perusahaan (+)', fmtRp(totCo), 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-600')}
+        ${statBox('Take-Home Setelah Potongan', fmtRp(netEffect), 'bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border text-matte-800 dark:text-white')}
+      </div>
+      <p class="text-[11px] text-matte-400 mt-3">Potongan karyawan hanya JHT 2% + JP 1% + BPJS Kes 1% (jika disertakan) — program lain ditanggung perusahaan/pemerintah.</p>`;
+    el.classList.remove('hidden');
+  };
+</script>

@@ -1,0 +1,251 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Kalkulator PPh 21 TER — Tarif Efektif Rata-Rata PP 58/2023">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+    <ToolPageHeader
+      title="Kalkulator PPh 21 TER"
+      desc="Hitung PPh 21 bulanan dengan tarif efektif rata-rata (TER) Kategori A/B/C sesuai PP 58/2023 & PMK 168/2023, plus simulasi Desember (Pasal 17). 100% offline."
+      icon='<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
+      gradient="from-teal-500 to-emerald-600"
+    />
+
+    <div class="grid gap-8 animate-fade-in">
+      <!-- Card 1: TER Bulanan -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-2">PPh 21 Bulanan — Metode TER <span class="text-xs font-normal text-matte-400">(Januari–November)</span></h3>
+        <p class="text-sm text-matte-500 mb-6">Kategori TER ditentukan otomatis dari status PTKP: <b>A</b> = TK/0, K/0, TK/1 · <b>B</b> = TK/2, K/1, TK/3, K/2 · <b>C</b> = K/3.</p>
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="text-xs text-matte-500 mb-1 block" for="ter-bruto">Penghasilan Bruto Sebulan (Rp)</label>
+            <input id="ter-bruto" type="number" min="0" placeholder="cth: 8500000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" />
+            <p class="text-[11px] text-matte-400 mt-1">Gaji + tunjangan + bonus + lembur + natura yang dikenai pajak.</p>
+          </div>
+          <div>
+            <label class="text-xs text-matte-500 mb-1 block" for="ter-ptkp">Status PTKP (Kawin / Tanggungan)</label>
+            <select id="ter-ptkp" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
+              <option value="TK/0">TK/0 — Tidak Kawin</option>
+              <option value="TK/1">TK/1</option>
+              <option value="TK/2">TK/2</option>
+              <option value="TK/3">TK/3</option>
+              <option value="K/0">K/0 — Kawin, 0 tanggungan</option>
+              <option value="K/1">K/1</option>
+              <option value="K/2">K/2</option>
+              <option value="K/3">K/3</option>
+            </select>
+          </div>
+        </div>
+        <button id="calc-ter" class="w-full py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors">Hitung PPh 21 (TER)</button>
+        <div id="result-ter" class="mt-6 hidden"></div>
+      </div>
+
+      <!-- Card 2: Pasal 17 Desember -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-2">PPh 21 Desember — Metode Pasal 17</h3>
+        <p class="text-sm text-matte-500 mb-6">Masa pajak terakhir dihitung progresif setahun: PPh setahun − PPh yang sudah dipotong Jan–Nov.</p>
+        <div class="grid md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="text-xs text-matte-500 mb-1 block" for="p17-des">Bruto Bulan Desember (Rp)</label>
+            <input id="p17-des" type="number" min="0" placeholder="cth: 8500000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" />
+          </div>
+          <div>
+            <label class="text-xs text-matte-500 mb-1 block" for="p17-jannov">Total Bruto Jan–Nov (Rp)</label>
+            <input id="p17-jannov" type="number" min="0" placeholder="cth: 93500000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" />
+          </div>
+          <div>
+            <label class="text-xs text-matte-500 mb-1 block" for="p17-kredit">PPh 21 Sudah Dipotong Jan–Nov (Rp)</label>
+            <input id="p17-kredit" type="number" min="0" placeholder="cth: 960000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" />
+            <button id="p17-fill-kredit" type="button" class="text-[11px] text-teal-600 dark:text-teal-400 underline mt-1">Isi otomatis = PPh TER × 11 (dari Card 1)</button>
+          </div>
+          <div>
+            <label class="text-xs text-matte-500 mb-1 block" for="p17-ptkp">Status PTKP</label>
+            <select id="p17-ptkp" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
+              <option value="TK/0">TK/0</option>
+              <option value="TK/1">TK/1</option>
+              <option value="TK/2">TK/2</option>
+              <option value="TK/3">TK/3</option>
+              <option value="K/0">K/0</option>
+              <option value="K/1">K/1</option>
+              <option value="K/2">K/2</option>
+              <option value="K/3">K/3</option>
+            </select>
+          </div>
+        </div>
+        <button id="calc-p17" class="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors">Hitung PPh 21 Desember</button>
+        <div id="result-p17" class="mt-6 hidden"></div>
+      </div>
+
+      <!-- Card 3: Tabel TER -->
+      <div class="card-base p-8">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-4">Tabel TER Lengkap</h3>
+        <div class="flex gap-2 mb-4">
+          <button data-ter-tab="A" class="ter-tab px-5 py-2 rounded-xl font-bold text-sm border-2 border-teal-600 bg-teal-600 text-white">Kategori A</button>
+          <button data-ter-tab="B" class="ter-tab px-5 py-2 rounded-xl font-bold text-sm border-2 border-matte-300 dark:border-surface-border text-matte-600 dark:text-matte-300">Kategori B</button>
+          <button data-ter-tab="C" class="ter-tab px-5 py-2 rounded-xl font-bold text-sm border-2 border-matte-300 dark:border-surface-border text-matte-600 dark:text-matte-300">Kategori C</button>
+        </div>
+        <p id="ter-cat-info" class="text-xs text-matte-500 mb-3"></p>
+        <div class="max-h-96 overflow-y-auto rounded-xl border border-matte-200 dark:border-surface-border">
+          <table class="w-full text-sm">
+            <thead class="sticky top-0 bg-matte-100 dark:bg-surface-hover">
+              <tr><th class="text-left px-4 py-2 font-bold">Penghasilan Bruto Bulanan (Rp)</th><th class="text-right px-4 py-2 font-bold">TER</th></tr>
+            </thead>
+            <tbody id="ter-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="text-xs text-matte-400 bg-matte-100 dark:bg-surface-hover rounded-xl p-4 leading-relaxed">
+        <p class="font-bold text-matte-600 dark:text-matte-300 mb-1">Dasar hukum & catatan</p>
+        <ul class="list-disc list-inside space-y-0.5">
+          <li>TER Bulanan: PP 58/2023 lampiran & PMK 168/2023 — berlaku masa pajak Januari–November (bukan Masa Pajak Terakhir).</li>
+          <li>Desember (Masa Pajak Terakhir) kembali pakai tarif progresif Pasal 17 ayat (1) huruf a UU PPh (UU HPP 7/2021): 5%–35%.</li>
+          <li>Biaya jabatan 5% × bruto setahun, maksimal Rp6.000.000; PKP dibulatkan ribuan penuh ke bawah.</li>
+          <li>Hasil perhitungan pembulatan ke rupiah terdekat — untuk pembukuan resmi tetap rujuk bupot & sistem payroll perusahaan.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // ===== Tabel TER (PP 58/2023 lampiran) — batas atas bruto bulanan → tarif %
+  const TER_A: [number, number][] = [
+    [5400000, 0], [5650000, 0.25], [5950000, 0.5], [6300000, 0.75], [6750000, 1], [7500000, 1.25], [8550000, 1.5], [9650000, 1.75], [10050000, 2], [10350000, 2.25], [10700000, 2.5], [11050000, 3], [11600000, 3.5], [12500000, 4], [13750000, 5], [15100000, 6], [16950000, 7], [19750000, 8], [24150000, 9], [26450000, 10], [28000000, 11], [30050000, 12], [32400000, 13], [35400000, 14], [39100000, 15], [43850000, 16], [47800000, 17], [51400000, 18], [56300000, 19], [62200000, 20], [68600000, 21], [77500000, 22], [89000000, 23], [103000000, 24], [125000000, 25], [157000000, 26], [206000000, 27], [337000000, 28], [454000000, 29], [550000000, 30], [695000000, 31], [910000000, 32], [1400000000, 33], [Infinity, 34],
+  ];
+  const TER_B: [number, number][] = [
+    [6200000, 0], [6500000, 0.25], [6850000, 0.5], [7300000, 0.75], [9200000, 1], [10750000, 1.5], [11250000, 2], [11600000, 2.5], [12600000, 3], [13600000, 4], [14950000, 5], [16400000, 6], [18450000, 7], [21850000, 8], [26000000, 9], [27700000, 10], [29350000, 11], [31450000, 12], [33950000, 13], [37100000, 14], [41100000, 15], [45800000, 16], [49500000, 17], [53800000, 18], [58500000, 19], [64000000, 20], [71000000, 21], [80000000, 22], [93000000, 23], [109000000, 24], [129000000, 25], [163000000, 26], [211000000, 27], [374000000, 28], [459000000, 29], [555000000, 30], [704000000, 31], [957000000, 32], [1405000000, 33], [Infinity, 34],
+  ];
+  const TER_C: [number, number][] = [
+    [6600000, 0], [6950000, 0.25], [7350000, 0.5], [7800000, 0.75], [8850000, 1], [9800000, 1.25], [10950000, 1.5], [11200000, 1.75], [12050000, 2], [12950000, 3], [14150000, 4], [15550000, 5], [17050000, 6], [19500000, 7], [22700000, 8], [26600000, 9], [28100000, 10], [30100000, 11], [32600000, 12], [35400000, 13], [38900000, 14], [43000000, 15], [47400000, 16], [51200000, 17], [55800000, 18], [60400000, 19], [66700000, 20], [74500000, 21], [83200000, 22], [95600000, 23], [110000000, 24], [134000000, 25], [169000000, 26], [221000000, 27], [390000000, 28], [463000000, 29], [561000000, 30], [709000000, 31], [965000000, 32], [1419000000, 33], [Infinity, 34],
+  ];
+  const TER_TABLES: Record<string, [number, number][]> = { A: TER_A, B: TER_B, C: TER_C };
+  const CAT_INFO: Record<string, string> = {
+    A: 'Kategori A — PTKP TK/0, K/0, TK/1 (Rp54–58,5 juta/tahun)',
+    B: 'Kategori B — PTKP TK/2, K/1, TK/3, K/2 (Rp63–67,5 juta/tahun)',
+    C: 'Kategori C — PTKP K/3 (Rp72 juta/tahun)',
+  };
+  const PTKP_MAP: Record<string, { ptkp: number; cat: 'A' | 'B' | 'C' }> = {
+    'TK/0': { ptkp: 54000000, cat: 'A' }, 'TK/1': { ptkp: 58500000, cat: 'A' }, 'K/0': { ptkp: 58500000, cat: 'A' },
+    'TK/2': { ptkp: 63000000, cat: 'B' }, 'K/1': { ptkp: 63000000, cat: 'B' }, 'TK/3': { ptkp: 67500000, cat: 'B' }, 'K/2': { ptkp: 67500000, cat: 'B' },
+    'K/3': { ptkp: 72000000, cat: 'C' },
+  };
+
+  const fmtRp = (n: number) => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+  const fmtRate = (r: number) => (Number.isInteger(r) ? `${r}%` : `${r.toLocaleString('id-ID')}%`);
+
+  function terRate(cat: string, bruto: number): number {
+    for (const [cap, rate] of TER_TABLES[cat]) if (bruto <= cap) return rate;
+    return 34;
+  }
+  function pasal17Tax(pkp: number): number {
+    // UU HPP: 60jt @5%, s.d. 250jt @15%, s.d. 500jt @25%, s.d. 5M @30%, sisanya @35%
+    const caps = [60000000, 250000000, 500000000, 5000000000, Infinity];
+    const rates = [0.05, 0.15, 0.25, 0.3, 0.35];
+    let tax = 0, prev = 0, rem = Math.max(0, pkp);
+    for (let i = 0; i < caps.length && rem > 0; i++) {
+      const span = Math.min(rem, caps[i] - prev);
+      tax += span * rates[i];
+      rem -= span;
+      prev = caps[i];
+    }
+    return tax;
+  }
+
+  const brEl = (v: string) => { const n = parseFloat(v); return Number.isFinite(n) && n >= 0 ? n : 0; };
+  const box = (cls: string) => cls; // mapping statis (Tailwind scan literal)
+
+  // ===== Card 1: TER
+  const calcTerBtn = document.getElementById('calc-ter') as HTMLButtonElement;
+  calcTerBtn.onclick = () => {
+    const bruto = brEl((document.getElementById('ter-bruto') as HTMLInputElement).value);
+    const st = PTKP_MAP[(document.getElementById('ter-ptkp') as HTMLSelectElement).value];
+    const rate = terRate(st.cat, bruto);
+    const pph = Math.round(bruto * rate / 100);
+    const take = bruto - pph;
+    const el = document.getElementById('result-ter')!;
+    el.className = 'mt-6 p-5 bg-matte-50 dark:bg-surface-hover rounded-xl border border-teal-300 dark:border-teal-800';
+    el.innerHTML = `
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <span class="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-bold">Kategori TER ${st.cat}</span>
+        <span class="px-3 py-1 rounded-full bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 text-xs font-bold">Tarif ${fmtRate(rate)}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-3 text-center">
+        <div class="p-3 rounded-xl bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border"><p class="text-[11px] text-matte-400 font-bold uppercase">Bruto</p><p class="font-bold text-matte-800 dark:text-white text-sm mt-1">${fmtRp(bruto)}</p></div>
+        <div class="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"><p class="text-[11px] text-red-400 font-bold uppercase">PPh 21 Dipotong</p><p class="font-bold text-red-500 text-sm mt-1">${fmtRp(pph)}</p></div>
+        <div class="p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"><p class="text-[11px] text-green-500 font-bold uppercase">Take-Home Pay</p><p class="font-bold text-green-600 text-sm mt-1">${fmtRp(take)}</p></div>
+      </div>
+      <p class="text-[11px] text-matte-400 mt-3">Rumus: PPh 21 = ${fmtRate(rate)} × ${fmtRp(bruto)}. Berlaku masa pajak Jan–Nov.</p>`;
+    el.classList.remove('hidden');
+  };
+
+  // ===== Card 2: Pasal 17 (Desember)
+  const fillKredit = document.getElementById('p17-fill-kredit') as HTMLButtonElement;
+  fillKredit.onclick = () => {
+    const bruto = brEl((document.getElementById('ter-bruto') as HTMLInputElement).value);
+    if (bruto <= 0) { alert('Isi dulu bruto di Card 1 (TER) untuk estimasi.'); return; }
+    const st = PTKP_MAP[(document.getElementById('ter-ptkp') as HTMLSelectElement).value];
+    const est = Math.round(bruto * terRate(st.cat, bruto) / 100) * 11;
+    (document.getElementById('p17-kredit') as HTMLInputElement).value = String(est);
+  };
+
+  const calcP17Btn = document.getElementById('calc-p17') as HTMLButtonElement;
+  calcP17Btn.onclick = () => {
+    const des = brEl((document.getElementById('p17-des') as HTMLInputElement).value);
+    const jannov = brEl((document.getElementById('p17-jannov') as HTMLInputElement).value);
+    const kredit = brEl((document.getElementById('p17-kredit') as HTMLInputElement).value);
+    const st = PTKP_MAP[(document.getElementById('p17-ptkp') as HTMLSelectElement).value];
+
+    const brutoTahun = des + jannov;
+    const biayaJabatan = Math.min(brutoTahun * 0.05, 6000000);
+    const neto = brutoTahun - biayaJabatan;
+    const pkp = Math.max(0, Math.floor((neto - st.ptkp) / 1000) * 1000);
+    const pphSetahun = pasal17Tax(pkp);
+    const pphDes = Math.max(0, Math.round(pphSetahun) - kredit);
+
+    const el = document.getElementById('result-p17')!;
+    el.className = 'mt-6 p-5 bg-matte-50 dark:bg-surface-hover rounded-xl border border-emerald-300 dark:border-emerald-800';
+    el.innerHTML = `
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center mb-3">
+        <div class="p-3 rounded-xl bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border"><p class="text-[11px] text-matte-400 font-bold uppercase">Bruto Setahun</p><p class="font-bold text-matte-800 dark:text-white text-sm mt-1">${fmtRp(brutoTahun)}</p></div>
+        <div class="p-3 rounded-xl bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border"><p class="text-[11px] text-matte-400 font-bold uppercase">Biaya Jabatan</p><p class="font-bold text-matte-800 dark:text-white text-sm mt-1">−${fmtRp(biayaJabatan)}</p></div>
+        <div class="p-3 rounded-xl bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border"><p class="text-[11px] text-matte-400 font-bold uppercase">PKP (${st.ptkp ? 'PTKP ' + fmtRp(st.ptkp) : ''})</p><p class="font-bold text-matte-800 dark:text-white text-sm mt-1">${fmtRp(pkp)}</p></div>
+        <div class="p-3 rounded-xl bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border"><p class="text-[11px] text-matte-400 font-bold uppercase">PPh Setahun</p><p class="font-bold text-matte-800 dark:text-white text-sm mt-1">${fmtRp(pphSetahun)}</p></div>
+      </div>
+      <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-center">
+        <p class="text-[11px] text-emerald-500 font-bold uppercase">PPh 21 Dipotong di Desember</p>
+        <p class="font-bold text-emerald-600 text-lg mt-1">${fmtRp(pphDes)}</p>
+        <p class="text-[11px] text-matte-400 mt-1">= PPh setahun ${fmtRp(pphSetahun)} − kredit Jan–Nov ${fmtRp(kredit)}</p>
+      </div>`;
+    el.classList.remove('hidden');
+  };
+
+  // ===== Card 3: Tabel TER
+  function renderTerTable(cat: string) {
+    const rows = TER_TABLES[cat];
+    const tbody = document.getElementById('ter-table-body')!;
+    let html = '';
+    let prev = 0;
+    rows.forEach(([cap, rate], i) => {
+      const label = i === 0 ? `sampai dengan ${cap.toLocaleString('id-ID')}`
+        : cap === Infinity ? `di atas ${prev.toLocaleString('id-ID')}`
+        : `${prev.toLocaleString('id-ID')} – ${cap.toLocaleString('id-ID')}`;
+      html += `<tr class="border-t border-matte-100 dark:border-surface-border"><td class="px-4 py-1.5 text-matte-600 dark:text-matte-300">${label}</td><td class="px-4 py-1.5 text-right font-bold text-teal-600 dark:text-teal-400">${fmtRate(rate)}</td></tr>`;
+      prev = cap;
+    });
+    tbody.innerHTML = html;
+    document.getElementById('ter-cat-info')!.textContent = CAT_INFO[cat];
+    document.querySelectorAll('.ter-tab').forEach(b => {
+      const btn = b as HTMLButtonElement;
+      const active = btn.dataset.terTab === cat;
+      btn.className = 'ter-tab px-5 py-2 rounded-xl font-bold text-sm border-2 ' + (active
+        ? 'border-teal-600 bg-teal-600 text-white'
+        : 'border-matte-300 dark:border-surface-border text-matte-600 dark:text-matte-300');
+    });
+  }
+  document.querySelectorAll('.ter-tab').forEach(b => {
+    (b as HTMLButtonElement).onclick = () => renderTerTable((b as HTMLButtonElement).dataset.terTab!);
+  });
+  renderTerTable('A');
+</script>

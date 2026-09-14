@@ -1,0 +1,1301 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="HRD Dashboard" noIndex />
+  <div class="max-w-4xl mx-auto px-4 min-h-[70vh]">
+    <ToolPageHeader
+      title="HRD Dashboard"
+      desc="Kelola data karyawan, absensi, cuti, dan payroll. Data tersimpan 100% lokal di browser Anda."
+      icon='<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <!-- ============ AUTH SCREEN ============ -->
+    <div id="auth-screen" class="card-base p-6 md:p-8 animate-fade-in">
+      <!-- Setup (belum ada kredensial) -->
+      <div id="auth-setup" class="hidden">
+        <h2 class="text-xl font-bold text-matte-900 dark:text-white mb-1">Buat Kredensial Login</h2>
+        <p class="text-sm text-matte-400 mb-6">Pertama kali pakai? Buat username & password untuk melindungi data HRD Anda. Kredensial hanya disimpan di browser ini.</p>
+        <form id="setup-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="setup-username">Username</label>
+            <input id="setup-username" type="text" required autocomplete="username" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="setup-password">Password (min. 6 karakter)</label>
+            <input id="setup-password" type="password" required minlength="6" autocomplete="new-password" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="setup-confirm">Ulangi Password</label>
+            <input id="setup-confirm" type="password" required minlength="6" autocomplete="new-password" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="setup-hint">Hint password (opsional)</label>
+            <input id="setup-hint" type="text" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
+          </div>
+          <p id="setup-error" class="hidden text-sm text-red-500 font-medium"></p>
+          <button type="submit" class="w-full bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold py-3 rounded-lg transition-all active:scale-95">Simpan & Masuk</button>
+        </form>
+      </div>
+
+      <!-- Login -->
+      <div id="auth-login" class="hidden">
+        <h2 class="text-xl font-bold text-matte-900 dark:text-white mb-1">Login</h2>
+        <p class="text-sm text-matte-400 mb-6">Masukkan kredensial Anda untuk membuka dashboard.</p>
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="login-username">Username</label>
+            <input id="login-username" type="text" required autocomplete="username" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="login-password">Password</label>
+            <input id="login-password" type="password" required autocomplete="current-password" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
+          </div>
+          <p id="login-hint" class="hidden text-xs text-matte-400"></p>
+          <p id="login-error" class="hidden text-sm text-red-500 font-medium"></p>
+          <button type="submit" class="w-full bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold py-3 rounded-lg transition-all active:scale-95">Masuk</button>
+        </form>
+        <p class="text-xs text-matte-400 mt-4 text-center">Data tersimpan di browser ini. Gunakan perangkat yang sama untuk membukanya kembali.</p>
+      </div>
+    </div>
+
+    <!-- ============ APP SCREEN ============ -->
+    <div id="app-screen" class="animate-fade-in hidden">
+      <!-- Topbar -->
+      <div class="card-base px-4 py-3 mb-4 flex items-center justify-between gap-3 flex-wrap">
+        <div class="flex items-center gap-2 min-w-0">
+          <span id="welcome-user" class="text-sm font-semibold text-matte-700 dark:text-white truncate"></span>
+          <span class="text-xs text-matte-400">· HR</span>
+        </div>
+        <button id="logout-btn" class="text-xs font-semibold text-matte-500 dark:text-matte-400 hover:text-red-500 border border-matte-200 dark:border-surface-border hover:border-red-500/40 rounded-full px-3.5 py-1.5 transition-colors">Keluar</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="card-base p-1.5 mb-4 grid grid-cols-3 sm:grid-cols-7 gap-1" role="tablist">
+        <button data-tab="ringkasan" class="tab-btn px-2 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors">Ringkasan</button>
+        <button data-tab="karyawan" class="tab-btn px-2 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors">Karyawan</button>
+        <button data-tab="absensi" class="tab-btn px-2 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors">Absensi</button>
+        <button data-tab="cuti" class="tab-btn px-2 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors">Cuti</button>
+        <button data-tab="payroll" class="tab-btn px-2 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors">Payroll</button>
+        <button data-tab="rekrutmen" class="tab-btn px-2 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors">Rekrutmen</button>
+        <button data-tab="data" class="tab-btn px-2 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors">Data</button>
+        <button data-tab="panduan" class="tab-btn px-2 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors">❓ Panduan</button>
+      </div>
+
+      <!-- ===== Tab: Ringkasan ===== -->
+      <section id="tab-ringkasan" class="tab-panel space-y-4">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="card-base p-4">
+            <p class="text-xs text-matte-400 font-medium">Total Karyawan</p>
+            <p id="stat-employees" class="text-2xl font-extrabold text-matte-900 dark:text-white mt-1">0</p>
+          </div>
+          <div class="card-base p-4">
+            <p class="text-xs text-matte-400 font-medium">Divisi</p>
+            <p id="stat-divisions" class="text-2xl font-extrabold text-matte-900 dark:text-white mt-1">0</p>
+          </div>
+          <div class="card-base p-4">
+            <p class="text-xs text-matte-400 font-medium">Hadir Hari Ini</p>
+            <p id="stat-present" class="text-2xl font-extrabold text-emerald-500 mt-1">0</p>
+          </div>
+          <div class="card-base p-4">
+            <p class="text-xs text-matte-400 font-medium">Cuti Menunggu</p>
+            <p id="stat-pending" class="text-2xl font-extrabold text-amber-500 mt-1">0</p>
+          </div>
+        </div>
+        <div class="card-base p-4 md:p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-matte-900 dark:text-white">Karyawan per Divisi</h3>
+            <span id="attendance-rate" class="text-xs font-semibold text-matte-400"></span>
+          </div>
+          <div id="division-list" class="space-y-2"></div>
+        </div>
+        <div id="contract-card" class="card-base p-4 md:p-5 hidden">
+          <h3 class="font-bold text-matte-900 dark:text-white mb-1">⏰ Kontrak Segera Berakhir</h3>
+          <p class="text-xs text-matte-400 mb-3">Karyawan PKWT yang kontraknya habis dalam ≤ 30 hari (atau sudah lewat).</p>
+          <div id="contract-list" class="space-y-2 text-sm"></div>
+        </div>
+        <div id="thr-card" class="card-base p-4 md:p-5">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="font-bold text-matte-900 dark:text-white">🎁 Countdown THR</h3>
+            <span id="thr-next-label" class="text-xs font-semibold text-matte-400 text-right"></span>
+          </div>
+          <p id="thr-days" class="text-3xl font-extrabold text-amber-500 mt-2">—</p>
+          <p id="thr-note" class="text-xs text-matte-400 mt-1"></p>
+          <div class="mt-3 pt-3 border-t border-matte-100 dark:border-surface-border flex flex-wrap gap-2 text-xs">
+            <a href="/calc/thr-bpjs" class="px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors">Hitung THR</a>
+            <a href="/calc/pph21-ter" class="px-3 py-1.5 rounded-full bg-matte-100 dark:bg-surface-hover text-matte-500 dark:text-matte-300 font-semibold hover:bg-matte-200 dark:hover:bg-surface-elevated transition-colors">Estimasi PPh 21</a>
+            <a href="/pdf/slip-gaji" class="px-3 py-1.5 rounded-full bg-matte-100 dark:bg-surface-hover text-matte-500 dark:text-matte-300 font-semibold hover:bg-matte-200 dark:hover:bg-surface-elevated transition-colors">Cetak Slip Gaji</a>
+          </div>
+        </div>
+        <div class="card-base p-4 md:p-5">
+          <h3 class="font-bold text-matte-900 dark:text-white mb-3">Cuti Terbaru</h3>
+          <div id="recent-leaves" class="space-y-2 text-sm"></div>
+        </div>
+      </section>
+
+      <!-- ===== Tab: Panduan ===== -->
+      <section id="tab-panduan" class="tab-panel hidden space-y-4">
+        <div class="card-base p-4 md:p-6">
+          <h3 class="font-bold text-matte-900 dark:text-white mb-1">Mulai dari sini 🚀</h3>
+          <p class="text-sm text-matte-500 dark:text-matte-300">Dashboard ini disimpan di browser perangkat ini — pastikan pakai satu browser yang sama tiap hari, dan rutin backup lewat tab <b>Data</b>.</p>
+        </div>
+        <div class="card-base p-4 md:p-6 space-y-4">
+          <div class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center">1</span><div><p class="font-bold text-matte-900 dark:text-white text-sm">Input data karyawan dulu</p><p class="text-sm text-matte-500 dark:text-matte-300">Tab <b>Karyawan</b> → tambah satu-satu lewat tombol tambah, atau kalau datanya masih di Excel/CSV langsung pakai tombol <b>Import Excel/CSV</b> — kolom dikenali otomatis (Nama, Jabatan, Divisi, Gaji Pokok, dll). Isi juga <b>akhir kontrak</b> untuk karyawan PKWT. Semua fitur lain (absensi, payroll, slip, surat) menarik data dari sini.</p></div></div>
+          <div class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center">2</span><div><p class="font-bold text-matte-900 dark:text-white text-sm">Catat absensi tiap hari</p><p class="text-sm text-matte-500 dark:text-matte-300">Tab <b>Absensi</b> → pilih tanggal → tekan Hadir/Sakit/Izin/Alpha untuk tiap karyawan, atau pakai <b>Tandai Semua Hadir</b> lalu koreksi yang berbeda. Hari alpha otomatis jadi potongan di Payroll.</p></div></div>
+          <div class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center">3</span><div><p class="font-bold text-matte-900 dark:text-white text-sm">Kelola cuti & rekrutmen</p><p class="text-sm text-matte-500 dark:text-matte-300">Tab <b>Cuti</b>: ajukan cuti lalu Setujui/Tolak. Tab <b>Rekrutmen</b>: catat pelamar dan geser tahapannya dari Lamar sampai Diterima.</p></div></div>
+          <div class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center">4</span><div><p class="font-bold text-matte-900 dark:text-white text-sm">Gajian: cek Payroll & cetak slip</p><p class="text-sm text-matte-500 dark:text-matte-300">Tab <b>Payroll</b> menampilkan rekap potongan alpha otomatis, bisa diexport CSV. Untuk slip resmi per karyawan, buka <a href="/pdf/slip-gaji" class="text-blue-600 dark:text-blue-400 underline font-semibold">Slip Gaji Generator</a> — datanya terkirim otomatis dari dashboard ini.</p></div></div>
+          <div class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center">5</span><div><p class="font-bold text-matte-900 dark:text-white text-sm">Pajak, THR, dan hari efektif</p><p class="text-sm text-matte-500 dark:text-matte-300">Potongan pajak dihitung dengan <a href="/calc/pph21-ter" class="text-blue-600 dark:text-blue-400 underline font-semibold">Kalkulator PPh 21 TER</a>, THR dengan <a href="/calc/thr-bpjs" class="text-blue-600 dark:text-blue-400 underline font-semibold">Kalkulator THR & BPJS</a> (countdown-nya ada di Ringkasan), dan hari kerja prorata dengan <a href="/calc/workdays" class="text-blue-600 dark:text-blue-400 underline font-semibold">Kalkulator Hari Kerja Efektif</a>.</p></div></div>
+          <div class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center">6</span><div><p class="font-bold text-matte-900 dark:text-white text-sm">Surat resmi tinggal 2 klik</p><p class="text-sm text-matte-500 dark:text-matte-300"><a href="/pdf/surat-hr" class="text-blue-600 dark:text-blue-400 underline font-semibold">Surat HR Generator</a>: pilih karyawan → form terisi otomatis → pilih jenis (SKK, Surat Peringatan, PKWT) → Download PDF. Ada juga tombol SKK Massal untuk semua karyawan sekaligus.</p></div></div>
+          <div class="flex gap-3"><span class="shrink-0 w-7 h-7 rounded-full bg-amber-500 text-white font-bold text-sm flex items-center justify-center">!</span><div><p class="font-bold text-matte-900 dark:text-white text-sm">Rutinitas penting</p><p class="text-sm text-matte-500 dark:text-matte-300">① Tiap akhir minggu: tab <b>Data</b> → <b>Download Backup</b> (file JSON, simpan di WhatsApp/email sendiri). ② Kalau ganti HP/laptop: backup dulu → restore di perangkat baru. ③ Dashboard terkunci otomatis setelah 15 menit tidak dipakai — cukup login ulang.</p></div></div>
+        </div>
+        <div class="card-base p-4 md:p-6">
+          <h3 class="font-bold text-matte-900 dark:text-white mb-2">Alat pelengkap di situs ini 🔧</h3>
+          <div class="grid sm:grid-cols-2 gap-2 text-sm">
+            <a href="/pdf/slip-gaji" class="p-3 rounded-xl bg-matte-50 dark:bg-surface-hover hover:bg-matte-100 dark:hover:bg-surface-elevated transition-colors font-semibold text-matte-700 dark:text-matte-200">📄 Slip Gaji — payslip PDF dari data karyawan</a>
+            <a href="/pdf/surat-hr" class="p-3 rounded-xl bg-matte-50 dark:bg-surface-hover hover:bg-matte-100 dark:hover:bg-surface-elevated transition-colors font-semibold text-matte-700 dark:text-matte-200">✍️ Surat HR — SKK, SP, PKWT (+massal)</a>
+            <a href="/calc/pph21-ter" class="p-3 rounded-xl bg-matte-50 dark:bg-surface-hover hover:bg-matte-100 dark:hover:bg-surface-elevated transition-colors font-semibold text-matte-700 dark:text-matte-200">🧮 PPh 21 TER — pajak gaji Jan–Nov & Desember</a>
+            <a href="/calc/thr-bpjs" class="p-3 rounded-xl bg-matte-50 dark:bg-surface-hover hover:bg-matte-100 dark:hover:bg-surface-elevated transition-colors font-semibold text-matte-700 dark:text-matte-200">🎁 THR & BPJS — prorata + iuran perusahaan/karyawan</a>
+            <a href="/calc/workdays" class="p-3 rounded-xl bg-matte-50 dark:bg-surface-hover hover:bg-matte-100 dark:hover:bg-surface-elevated transition-colors font-semibold text-matte-700 dark:text-matte-200">📅 Hari Kerja Efektif — prorata gaji & cuti</a>
+            <a href="/pdf/excel-to-pdf" class="p-3 rounded-xl bg-matte-50 dark:bg-surface-hover hover:bg-matte-100 dark:hover:bg-surface-elevated transition-colors font-semibold text-matte-700 dark:text-matte-200">📊 Excel ke PDF — rekap lama jadi rapi</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Tab: Karyawan ===== -->
+      <section id="tab-karyawan" class="tab-panel hidden space-y-4">
+        <div class="card-base p-4 flex flex-col sm:flex-row gap-2">
+          <input id="emp-search" type="text" placeholder="Cari nama / jabatan / divisi..." class="flex-1 p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
+          <button id="emp-add-btn" class="bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold py-3 px-6 rounded-lg transition-all active:scale-95 whitespace-nowrap">+ Tambah Karyawan</button>
+        </div>
+        <div class="card-base p-4 flex flex-col sm:flex-row sm:items-center gap-2">
+          <p class="flex-1 text-sm text-matte-500 dark:text-matte-300">Punya data lama di Excel? Import massal — kolom dikenali otomatis (kolom <b>Nama</b> wajib ada).</p>
+          <button id="emp-import-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-5 rounded-lg transition-colors whitespace-nowrap">📥 Import Excel/CSV</button>
+          <input id="emp-import-input" type="file" accept=".csv,.xlsx,.xls" class="hidden" />
+        </div>
+        <div id="emp-import-status" class="hidden"></div>
+        <div class="card-base overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-matte-100 dark:bg-surface-hover text-left text-xs uppercase tracking-wide text-matte-400">
+                  <th class="px-4 py-3">Nama</th>
+                  <th class="px-4 py-3">Jabatan</th>
+                  <th class="px-4 py-3">Divisi</th>
+                  <th class="px-4 py-3">Status</th>
+                  <th class="px-4 py-3">Masuk</th>
+                  <th class="px-4 py-3">Akhir Kontrak</th>
+                  <th class="px-4 py-3 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="emp-tbody" class="divide-y divide-matte-100 dark:divide-surface-border"></tbody>
+            </table>
+          </div>
+          <div class="p-3 bg-matte-100 dark:bg-surface-hover border-t border-matte-200 dark:border-surface-border text-xs text-matte-400 flex justify-between items-center">
+            <span id="emp-count">0 karyawan</span>
+            <button id="emp-export-btn" class="text-emerald-600 dark:text-emerald-400 font-bold hover:underline">Export CSV</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Tab: Absensi ===== -->
+      <section id="tab-absensi" class="tab-panel hidden space-y-4">
+        <div class="card-base p-4 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+          <input id="att-date" type="date" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
+          <button id="att-all-present" class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/10 rounded-lg px-4 py-3 transition-colors">Tandai Semua Hadir</button>
+        </div>
+        <div class="card-base overflow-hidden">
+          <ul id="att-list" class="divide-y divide-matte-100 dark:divide-surface-border"></ul>
+          <div class="p-3 bg-matte-100 dark:bg-surface-hover border-t border-matte-200 dark:border-surface-border text-xs text-matte-400" id="att-summary">—</div>
+        </div>
+      </section>
+
+      <!-- ===== Tab: Cuti ===== -->
+      <section id="tab-cuti" class="tab-panel hidden space-y-4">
+        <div class="card-base p-4 md:p-5">
+          <h3 class="font-bold text-matte-900 dark:text-white mb-3">Ajukan Cuti / Izin</h3>
+          <form id="leave-form" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <select id="leave-emp" required class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue"></select>
+            <select id="leave-type" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue">
+              <option value="Tahunan">Cuti Tahunan</option>
+              <option value="Sakit">Sakit</option>
+              <option value="Melahirkan">Melahirkan</option>
+              <option value="Izin">Izin Lainnya</option>
+            </select>
+            <div></div>
+            <input id="leave-start" type="date" required class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            <input id="leave-end" type="date" required class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            <div></div>
+            <input id="leave-reason" type="text" placeholder="Alasan (opsional)" class="col-span-2 md:col-span-2 p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            <button type="submit" class="bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold py-3 rounded-lg transition-all active:scale-95">Ajukan</button>
+          </form>
+        </div>
+        <div class="card-base overflow-hidden">
+          <ul id="leave-list" class="divide-y divide-matte-100 dark:divide-surface-border"></ul>
+        </div>
+      </section>
+
+      <!-- ===== Tab: Rekrutmen ===== -->
+      <section id="tab-rekrutmen" class="tab-panel hidden space-y-4">
+        <div class="card-base p-4 md:p-5">
+          <h3 class="font-bold text-matte-900 dark:text-white mb-3">Tambah Pelamar</h3>
+          <form id="cand-form" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <input id="cand-name" type="text" required placeholder="Nama pelamar *" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            <input id="cand-position" type="text" placeholder="Posisi dilamar" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            <input id="cand-contact" type="text" placeholder="Kontak (WA/email)" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            <input id="cand-note" type="text" placeholder="Catatan" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            <button type="submit" class="col-span-2 md:col-span-4 bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold py-3 rounded-lg transition-all active:scale-95">Tambah ke Pipeline</button>
+          </form>
+        </div>
+        <div class="flex items-center justify-between px-1">
+          <h3 class="font-bold text-matte-900 dark:text-white">Pipeline Rekrutmen</h3>
+          <span id="cand-count" class="text-xs text-matte-400"></span>
+        </div>
+        <div id="kanban" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-start"></div>
+      </section>
+
+      <!-- ===== Tab: Payroll ===== -->
+      <section id="tab-payroll" class="tab-panel hidden space-y-4">
+        <div class="card-base p-4 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
+          <input id="payroll-month" type="month" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+          <button id="payroll-export-btn" class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/10 rounded-lg px-4 py-3 transition-colors">Export CSV</button>
+        </div>
+        <div class="card-base overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-matte-100 dark:bg-surface-hover text-left text-xs uppercase tracking-wide text-matte-400">
+                  <th class="px-4 py-3">Nama</th>
+                  <th class="px-4 py-3 text-right">Gaji Pokok</th>
+                  <th class="px-4 py-3 text-center">Hadir</th>
+                  <th class="px-4 py-3 text-center">Alpha</th>
+                  <th class="px-4 py-3 text-right">Gaji Bersih</th>
+                </tr>
+              </thead>
+              <tbody id="payroll-tbody" class="divide-y divide-matte-100 dark:divide-surface-border"></tbody>
+            </table>
+          </div>
+          <div class="p-3 bg-matte-100 dark:bg-surface-hover border-t border-matte-200 dark:border-surface-border text-xs text-matte-400 flex justify-between items-center">
+            <span>Potongan = (gaji pokok ÷ 22) × hari alpha</span>
+            <span id="payroll-total" class="font-bold text-matte-700 dark:text-white"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Tab: Data ===== -->
+      <section id="tab-data" class="tab-panel hidden space-y-4">
+        <div class="card-base p-4 md:p-5 space-y-4">
+          <div>
+            <h3 class="font-bold text-matte-900 dark:text-white mb-1">Backup Data</h3>
+            <p class="text-sm text-matte-400 mb-3">Simpan semua data (karyawan, absensi, cuti) ke file JSON. Lakukan rutin supaya data aman walau ganti browser/perangkat.</p>
+            <button id="export-json-btn" class="text-sm font-semibold text-accent-blue border border-accent-blue/40 hover:bg-accent-blue/10 rounded-lg px-4 py-2.5 transition-colors">Download Backup (JSON)</button>
+          </div>
+          <div class="border-t border-matte-100 dark:border-surface-border pt-4">
+            <h3 class="font-bold text-matte-900 dark:text-white mb-1">Restore Data</h3>
+            <p class="text-sm text-matte-400 mb-3">Impor file backup JSON. Data saat ini akan diganti dengan isi file.</p>
+            <input id="import-json-input" type="file" accept=".json,application/json" class="block w-full text-sm text-matte-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-matte-900 dark:file:bg-white file:text-white dark:file:text-matte-900 file:font-semibold file:cursor-pointer" />
+          </div>
+          <div class="border-t border-matte-100 dark:border-surface-border pt-4">
+            <h3 class="font-bold text-matte-900 dark:text-white mb-1">Reset Kredensial</h3>
+            <p class="text-sm text-matte-400 mb-3">Hapus login (username & password) dari browser ini. Data karyawan tetap ada, tapi bisa di-setup ulang.</p>
+            <button id="reset-auth-btn" class="text-sm font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/40 hover:bg-amber-500/10 rounded-lg px-4 py-2.5 transition-colors">Reset Kredensial</button>
+          </div>
+          <div class="border-t border-matte-100 dark:border-surface-border pt-4">
+            <h3 class="font-bold text-red-500 mb-1">Hapus Semua Data</h3>
+            <p class="text-sm text-matte-400 mb-3">Menghapus permanen seluruh data karyawan, absensi, dan cuti dari browser ini.</p>
+            <button id="wipe-btn" class="text-sm font-semibold text-red-500 border border-red-500/40 hover:bg-red-500/10 rounded-lg px-4 py-2.5 transition-colors">Hapus Permanen</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ EMPLOYEE MODAL ============ -->
+    <div id="emp-modal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      <div class="card-base w-full max-w-md p-5 md:p-6 max-h-[90vh] overflow-y-auto">
+        <h3 id="emp-modal-title" class="font-bold text-lg text-matte-900 dark:text-white mb-4">Tambah Karyawan</h3>
+        <form id="emp-form" class="space-y-3">
+          <input type="hidden" id="emp-id" />
+          <div>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Nama Lengkap *</label>
+            <input id="emp-name" type="text" required class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Jabatan</label>
+              <input id="emp-position" type="text" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Divisi</label>
+              <input id="emp-division" type="text" list="division-options" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+              <datalist id="division-options"></datalist>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Status</label>
+              <select id="emp-status" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue">
+                <option value="Tetap">Tetap</option>
+                <option value="Kontrak">Kontrak</option>
+                <option value="Magang">Magang</option>
+                <option value="Paruh Waktu">Paruh Waktu</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Tgl Masuk</label>
+              <input id="emp-join" type="date" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Akhir Kontrak (khusus PKWT, opsional)</label>
+            <input id="emp-contract-end" type="date" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Gaji Pokok / bulan (Rp)</label>
+            <input id="emp-salary" type="number" min="0" step="100000" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Email</label>
+              <input id="emp-email" type="email" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Telepon</label>
+              <input id="emp-phone" type="tel" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            </div>
+          </div>
+          <p id="emp-error" class="hidden text-sm text-red-500 font-medium"></p>
+          <div class="flex gap-2 pt-2">
+            <button type="button" id="emp-cancel" class="flex-1 font-semibold py-3 rounded-lg border border-matte-200 dark:border-surface-border text-matte-600 dark:text-matte-300 transition-colors">Batal</button>
+            <button type="submit" class="flex-1 bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold py-3 rounded-lg transition-all active:scale-95">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { loadCdnLib } from '../../composables/useCdnLib';
+
+  // ==================== Storage ====================
+  const AUTH_KEY = 'hrd_auth_v1';
+  const DATA_KEY = 'hrd_data_v1';
+  const SESSION_KEY = 'hrd_session_v1';
+  const FAILED_KEY = 'hrd_failed_v1';
+  const LAST_ACTIVITY_KEY = 'hrd_last_activity_v1';
+  const IDLE_MS = 15 * 60 * 1000;
+
+  interface Auth { username: string; salt: string; hash: string; hint?: string; }
+  interface Employee { id: number; name: string; position: string; division: string; status: string; joinDate: string; salary: number; email: string; phone: string; contractEnd: string; }
+  interface Attendance { empId: number; date: string; status: 'hadir' | 'sakit' | 'izin' | 'alpha'; }
+  interface Leave { id: number; empId: number; type: string; start: string; end: string; reason: string; status: 'menunggu' | 'disetujui' | 'ditolak'; }
+  interface Candidate { id: number; name: string; position: string; stage: 'applied' | 'interview' | 'offer' | 'hired' | 'rejected'; contact: string; note: string; }
+  interface HrdData { employees: Employee[]; attendance: Attendance[]; leaves: Leave[]; candidates: Candidate[]; }
+
+  function loadAuth(): Auth | null {
+    try { const raw = localStorage.getItem(AUTH_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
+  }
+  function saveAuth(a: Auth) { localStorage.setItem(AUTH_KEY, JSON.stringify(a)); }
+  function loadData(): HrdData {
+    try {
+      const raw = localStorage.getItem(DATA_KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        return { employees: d.employees ?? [], attendance: d.attendance ?? [], leaves: d.leaves ?? [], candidates: d.candidates ?? [] };
+      }
+    } catch { /* corrupt → reset */ }
+    return { employees: [], attendance: [], leaves: [], candidates: [] };
+  }
+  function saveData(d: HrdData) { localStorage.setItem(DATA_KEY, JSON.stringify(d)); }
+
+  async function sha256Hex(text: string): Promise<string> {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // ==================== Brute-force guard & idle lock ====================
+  const MAX_ATTEMPTS = 5;
+  const LOCK_MS = 5 * 60 * 1000;
+
+  function getFailed(): { n: number; until: number } {
+    try { const v = JSON.parse(localStorage.getItem(FAILED_KEY) || ''); return (v && typeof v === 'object') ? v : { n: 0, until: 0 }; } catch { return { n: 0, until: 0 }; }
+  }
+  function markFailed(): { n: number; until: number } {
+    const f = getFailed();
+    const n = f.n + 1;
+    const until = n >= MAX_ATTEMPTS ? Date.now() + LOCK_MS : 0;
+    localStorage.setItem(FAILED_KEY, JSON.stringify({ n, until }));
+    return { n, until };
+  }
+  function markSuccess() { localStorage.removeItem(FAILED_KEY); }
+  function checkLockout(): boolean {
+    const f = getFailed();
+    if (f.until > Date.now()) {
+      const err = $('login-error');
+      err.textContent = `Terlalu banyak percobaan gagal. Coba lagi dalam ${Math.ceil((f.until - Date.now()) / 60000)} menit.`;
+      err.classList.remove('hidden');
+      return true;
+    }
+    return false;
+  }
+  function checkIdle() {
+    if (sessionStorage.getItem(SESSION_KEY) !== '1') return;
+    const last = parseInt(localStorage.getItem(LAST_ACTIVITY_KEY) || '0', 10);
+    if (last > 0 && Date.now() - last > IDLE_MS) {
+      sessionStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(LAST_ACTIVITY_KEY);
+      $('app-screen').classList.add('hidden');
+      $('auth-screen').classList.remove('hidden');
+      showLogin();
+      toast('Sesi berakhir karena tidak ada aktivitas. Silakan login kembali.');
+    }
+  }
+
+  // ==================== Helpers ====================
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+
+  function esc(s: unknown): string {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+  }
+  const fmtRp = (n: number) => 'Rp ' + (n || 0).toLocaleString('id-ID');
+  const todayStr = () => new Date().toISOString().slice(0, 10);
+  const fmtDate = (iso: string) => {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? iso : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  function downloadFile(filename: string, content: string, mime: string) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function csvCell(v: unknown): string {
+    const s = String(v ?? '');
+    return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  function toast(msg: string) {
+    document.querySelectorAll('.hrd-toast').forEach(t => t.remove());
+    const el = document.createElement('div');
+    el.className = 'hrd-toast fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] bg-matte-900 dark:bg-white text-white dark:text-matte-900 text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg animate-fade-in';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+  }
+
+  // ==================== State ====================
+  let data: HrdData = loadData();
+  let currentTab = 'ringkasan';
+
+  const save = () => saveData(data);
+  const empById = (id: number) => data.employees.find(e => e.id === id);
+  const empName = (id: number) => empById(id)?.name ?? '(karyawan terhapus)';
+
+  function contractDaysLeft(e: Employee): number | null {
+    if (!e.contractEnd) return null;
+    return Math.round((new Date(e.contractEnd).getTime() - new Date(todayStr()).getTime()) / 86400000);
+  }
+
+  // ==================== Auth flow ====================
+  async function handleSetup(e: Event) {
+    e.preventDefault();
+    const err = $('setup-error');
+    err.classList.add('hidden');
+    const username = ($('setup-username') as HTMLInputElement).value.trim();
+    const password = ($('setup-password') as HTMLInputElement).value;
+    const confirm = ($('setup-confirm') as HTMLInputElement).value;
+    const hint = ($('setup-hint') as HTMLInputElement).value.trim();
+    if (password !== confirm) { err.textContent = 'Password tidak sama.'; err.classList.remove('hidden'); return; }
+    if (!username) { err.textContent = 'Username wajib diisi.'; err.classList.remove('hidden'); return; }
+    try {
+      const salt = crypto.randomUUID();
+      const hash = await sha256Hex(salt + password);
+      saveAuth({ username, salt, hash, hint: hint || undefined });
+      sessionStorage.setItem(SESSION_KEY, '1');
+      localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
+      enterApp();
+    } catch {
+      err.textContent = 'crypto.subtle tidak tersedia. Buka halaman via https:// atau localhost.'; err.classList.remove('hidden');
+    }
+  }
+
+  async function handleLogin(e: Event) {
+    e.preventDefault();
+    const auth = loadAuth();
+    if (!auth) return;
+    const err = $('login-error');
+    err.classList.add('hidden');
+    if (checkLockout()) return;
+    const username = ($('login-username') as HTMLInputElement).value.trim();
+    const password = ($('login-password') as HTMLInputElement).value;
+    const hash = await sha256Hex(auth.salt + password);
+    if (username === auth.username && hash === auth.hash) {
+      markSuccess();
+      sessionStorage.setItem(SESSION_KEY, '1');
+      localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
+      enterApp();
+    } else {
+      const fail = markFailed();
+      if (fail.until > 0) {
+        err.textContent = `Terlalu banyak percobaan gagal. Coba lagi dalam ${Math.ceil((fail.until - Date.now()) / 60000)} menit.`;
+      } else {
+        err.textContent = `Username atau password salah. Sisa percobaan: ${Math.max(0, MAX_ATTEMPTS - fail.n)}.`;
+      }
+      err.classList.remove('hidden');
+    }
+  }
+
+  function enterApp() {
+    const auth = loadAuth();
+    $('auth-screen').classList.add('hidden');
+    $('app-screen').classList.remove('hidden');
+    if (auth) $('welcome-user').textContent = 'Halo, ' + auth.username;
+    localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
+    data = loadData();
+    switchTab(currentTab);
+    renderAll();
+  }
+
+  function logout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(LAST_ACTIVITY_KEY);
+    $('app-screen').classList.add('hidden');
+    $('auth-screen').classList.remove('hidden');
+    showLogin();
+  }
+
+  function showLogin() {
+    const auth = loadAuth();
+    const login = $('auth-login'), setup = $('auth-setup');
+    if (auth) {
+      setup.classList.add('hidden'); login.classList.remove('hidden');
+      const hintEl = $('login-hint');
+      if (auth.hint) { hintEl.textContent = 'Hint: ' + auth.hint; hintEl.classList.remove('hidden'); }
+    } else {
+      login.classList.add('hidden'); setup.classList.remove('hidden');
+    }
+  }
+
+  // ==================== Tabs ====================
+  function switchTab(tab: string) {
+    currentTab = tab;
+    history.replaceState(null, '', '#' + tab);
+    document.querySelectorAll<HTMLElement>('.tab-panel').forEach(p => p.classList.add('hidden'));
+    const panel = $('tab-' + tab);
+    if (panel) panel.classList.remove('hidden');
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      const active = (b as HTMLElement).dataset.tab === tab;
+      b.classList.toggle('bg-accent-blue', active);
+      b.classList.toggle('text-white', active);
+      b.classList.toggle('text-matte-500', !active);
+      b.classList.toggle('dark:text-matte-300', !active);
+      b.classList.toggle('hover:bg-matte-100', !active);
+      b.classList.toggle('dark:hover:bg-surface-hover', !active);
+    });
+  }
+
+  // ==================== Render: Ringkasan ====================
+  function renderSummary() {
+    $('stat-employees').textContent = String(data.employees.length);
+    $('stat-divisions').textContent = String(new Set(data.employees.map(e => e.division).filter(Boolean)).size);
+
+    const today = todayStr();
+    const presentToday = data.attendance.filter(a => a.date === today && a.status === 'hadir').length;
+    $('stat-present').textContent = String(presentToday);
+    $('stat-pending').textContent = String(data.leaves.filter(l => l.status === 'menunggu').length);
+
+    // Attendance rate bulan ini
+    const month = today.slice(0, 7);
+    const monthAtt = data.attendance.filter(a => a.date.startsWith(month));
+    if (monthAtt.length > 0) {
+      const present = monthAtt.filter(a => a.status === 'hadir').length;
+      $('attendance-rate').textContent = 'Kehadiran bulan ini: ' + Math.round(present / monthAtt.length * 100) + '%';
+    } else {
+      $('attendance-rate').textContent = 'Belum ada data absensi bulan ini';
+    }
+
+    // Kontrak segera berakhir (≤30 hari)
+    const expiring = data.employees
+      .map(e => ({ e, days: contractDaysLeft(e) }))
+      .filter((x): x is { e: Employee; days: number } => x.days !== null && x.days <= 30)
+      .sort((a, b) => a.days - b.days);
+    const contractCard = $('contract-card');
+    if (expiring.length > 0) {
+      contractCard.classList.remove('hidden');
+      $('contract-list').innerHTML = expiring.map(({ e, days }) => `
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-matte-600 dark:text-matte-300 truncate">${esc(e.name)} <span class="text-xs text-matte-400">· ${esc(e.position) || '—'}</span></span>
+          <span class="text-xs font-bold whitespace-nowrap ${days < 0 ? 'text-red-500' : 'text-amber-600 dark:text-amber-400'}">${days < 0 ? 'Lewat ' + Math.abs(days) + ' hari' : days + ' hari lagi'}</span>
+        </div>`).join('');
+    } else {
+      contractCard.classList.add('hidden');
+    }
+
+    // Per divisi
+    const divList = $('division-list');
+    const byDiv = new Map<string, number>();
+    data.employees.forEach(e => { const k = e.division || '(tanpa divisi)'; byDiv.set(k, (byDiv.get(k) ?? 0) + 1); });
+    const max = Math.max(1, ...byDiv.values());
+    divList.innerHTML = byDiv.size === 0
+      ? '<p class="text-sm text-matte-400">Belum ada karyawan. Tambahkan di tab Karyawan.</p>'
+      : [...byDiv.entries()].sort((a, b) => b[1] - a[1]).map(([name, count]) => `
+          <div class="flex items-center gap-3">
+            <span class="w-32 sm:w-40 shrink-0 text-sm text-matte-600 dark:text-matte-300 truncate">${esc(name)}</span>
+            <div class="flex-1 h-2.5 bg-matte-100 dark:bg-surface-hover rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" style="width:${Math.round(count / max * 100)}%"></div>
+            </div>
+            <span class="text-sm font-bold text-matte-700 dark:text-white w-8 text-right">${count}</span>
+          </div>`).join('');
+
+    // Cuti terbaru
+    const recent = $('recent-leaves');
+    const latest = [...data.leaves].sort((a, b) => b.id - a.id).slice(0, 5);
+    recent.innerHTML = latest.length === 0
+      ? '<p class="text-matte-400">Belum ada pengajuan cuti.</p>'
+      : latest.map(l => `
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-matte-600 dark:text-matte-300 truncate">${esc(empName(l.empId))} — ${esc(l.type)} (${fmtDate(l.start)})</span>
+            ${leaveBadge(l.status)}
+          </div>`).join('');
+  }
+
+  function leaveBadge(status: Leave['status']): string {
+    const map = { menunggu: 'bg-amber-500/15 text-amber-600 dark:text-amber-400', disetujui: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400', ditolak: 'bg-red-500/15 text-red-500' };
+    return `<span class="text-xs font-bold px-2 py-1 rounded-full ${map[status]}">${status}</span>`;
+  }
+
+  // ==================== Render: Karyawan ====================
+  function renderEmployees() {
+    const q = (($('emp-search') as HTMLInputElement).value || '').toLowerCase();
+    const rows = data.employees.filter(e =>
+      !q || [e.name, e.position, e.division].some(v => (v || '').toLowerCase().includes(q))
+    );
+    const tbody = $('emp-tbody');
+    tbody.innerHTML = rows.length === 0
+      ? `<tr><td colspan="6" class="px-4 py-10 text-center text-matte-400">${data.employees.length === 0 ? 'Belum ada karyawan. Klik "Tambah Karyawan" untuk mulai.' : 'Tidak ada hasil yang cocok.'}</td></tr>`
+      : rows.map(e => `
+          <tr class="hover:bg-matte-100/50 dark:hover:bg-surface-hover/50 transition-colors">
+            <td class="px-4 py-3 font-semibold text-matte-900 dark:text-white">${esc(e.name)}</td>
+            <td class="px-4 py-3 text-matte-600 dark:text-matte-300">${esc(e.position) || '—'}</td>
+            <td class="px-4 py-3 text-matte-600 dark:text-matte-300">${esc(e.division) || '—'}</td>
+            <td class="px-4 py-3"><span class="text-xs font-bold px-2 py-1 rounded-full bg-accent-blue/10 text-accent-blue">${esc(e.status)}</span></td>
+            <td class="px-4 py-3 text-matte-500">${fmtDate(e.joinDate)}</td>
+            ${contractCell(e)}
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <button data-edit="${e.id}" class="text-accent-blue hover:underline font-semibold text-xs mr-3">Edit</button>
+              <button data-del="${e.id}" class="text-red-500 hover:underline font-semibold text-xs">Hapus</button>
+            </td>
+          </tr>`).join('');
+    $('emp-count').textContent = data.employees.length + ' karyawan';
+
+    tbody.querySelectorAll<HTMLButtonElement>('[data-edit]').forEach(b => b.addEventListener('click', () => openEmpModal(+b.dataset.edit!)));
+    tbody.querySelectorAll<HTMLButtonElement>('[data-del]').forEach(b => b.addEventListener('click', () => {
+      const id = +b.dataset.del!;
+      if (confirm('Hapus karyawan "' + empName(id) + '" beserta data absensi & cutinya?')) {
+        data.employees = data.employees.filter(e => e.id !== id);
+        data.attendance = data.attendance.filter(a => a.empId !== id);
+        data.leaves = data.leaves.filter(l => l.empId !== id);
+        save(); renderAll(); toast('Karyawan dihapus');
+      }
+    }));
+
+    // datalist divisi
+    $('division-options').innerHTML = [...new Set(data.employees.map(e => e.division).filter(Boolean))]
+      .map(d => `<option value="${esc(d)}"></option>`).join('');
+  }
+
+  function contractCell(e: Employee): string {
+    const days = contractDaysLeft(e);
+    if (days === null) return '<td class="px-4 py-3 text-matte-400">—</td>';
+    if (days < 0) return `<td class="px-4 py-3"><span class="text-xs font-bold px-2 py-1 rounded-full bg-red-500/15 text-red-500">Lewat ${Math.abs(days)} hari</span></td>`;
+    if (days <= 30) return `<td class="px-4 py-3"><span class="text-xs font-bold px-2 py-1 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">${days} hari lagi</span></td>`;
+    return `<td class="px-4 py-3 text-matte-500">${fmtDate(e.contractEnd)}</td>`;
+  }
+
+  function openEmpModal(id?: number) {
+    const form = $('emp-form') as HTMLFormElement;
+    form.reset();
+    $('emp-error').classList.add('hidden');
+    if (id) {
+      const e = empById(id);
+      if (!e) return;
+      $('emp-modal-title').textContent = 'Edit Karyawan';
+      ($('emp-id') as HTMLInputElement).value = String(e.id);
+      ($('emp-name') as HTMLInputElement).value = e.name;
+      ($('emp-position') as HTMLInputElement).value = e.position;
+      ($('emp-division') as HTMLInputElement).value = e.division;
+      ($('emp-status') as HTMLSelectElement).value = e.status;
+      ($('emp-join') as HTMLInputElement).value = e.joinDate;
+      ($('emp-contract-end') as HTMLInputElement).value = e.contractEnd || '';
+      ($('emp-salary') as HTMLInputElement).value = e.salary ? String(e.salary) : '';
+      ($('emp-email') as HTMLInputElement).value = e.email;
+      ($('emp-phone') as HTMLInputElement).value = e.phone;
+    } else {
+      $('emp-modal-title').textContent = 'Tambah Karyawan';
+      ($('emp-id') as HTMLInputElement).value = '';
+    }
+    $('emp-modal').classList.remove('hidden');
+    ($('emp-name') as HTMLInputElement).focus();
+  }
+
+  function handleEmpSubmit(e: Event) {
+    e.preventDefault();
+    const id = ($('emp-id') as HTMLInputElement).value;
+    const name = ($('emp-name') as HTMLInputElement).value.trim();
+    if (!name) return;
+    const payload: Employee = {
+      id: id ? +id : Date.now(),
+      name,
+      position: ($('emp-position') as HTMLInputElement).value.trim(),
+      division: ($('emp-division') as HTMLInputElement).value.trim(),
+      status: ($('emp-status') as HTMLSelectElement).value,
+      joinDate: ($('emp-join') as HTMLInputElement).value,
+      contractEnd: ($('emp-contract-end') as HTMLInputElement).value,
+      salary: +(($('emp-salary') as HTMLInputElement).value || 0),
+      email: ($('emp-email') as HTMLInputElement).value.trim(),
+      phone: ($('emp-phone') as HTMLInputElement).value.trim(),
+    };
+    if (id) {
+      const idx = data.employees.findIndex(x => x.id === +id);
+      if (idx >= 0) data.employees[idx] = payload;
+    } else {
+      data.employees.unshift(payload);
+    }
+    save();
+    $('emp-modal').classList.add('hidden');
+    renderAll();
+    toast(id ? 'Karyawan diperbarui' : 'Karyawan ditambahkan');
+  }
+
+  function exportEmployeesCsv() {
+    if (data.employees.length === 0) { toast('Belum ada data karyawan'); return; }
+    const header = ['Nama', 'Jabatan', 'Divisi', 'Status', 'Tanggal Masuk', 'Akhir Kontrak', 'Gaji Pokok', 'Email', 'Telepon'];
+    const rows = data.employees.map(e => [e.name, e.position, e.division, e.status, e.joinDate, e.contractEnd, e.salary, e.email, e.phone]);
+    const csv = '\uFEFF' + [header, ...rows].map(r => r.map(csvCell).join(';')).join('\n');
+    downloadFile('karyawan-' + todayStr() + '.csv', csv, 'text/csv;charset=utf-8');
+  }
+
+  // ==================== Import Excel/CSV massal ====================
+  const XLSX_URLS = [
+    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
+  ];
+  const IMPORT_HEADER_MAP: Record<string, string> = {
+    nama: 'name', name: 'name', 'nama karyawan': 'name', 'nama lengkap': 'name',
+    jabatan: 'position', position: 'position',
+    divisi: 'division', departemen: 'division', division: 'division', department: 'division',
+    status: 'status',
+    'tanggal masuk': 'joinDate', 'tgl masuk': 'joinDate', masuk: 'joinDate', joindate: 'joinDate',
+    'akhir kontrak': 'contractEnd', 'kontrak habis': 'contractEnd', contractend: 'contractEnd',
+    gaji: 'salary', 'gaji pokok': 'salary', upah: 'salary', salary: 'salary',
+    email: 'email', mail: 'email',
+    telepon: 'phone', telp: 'phone', hp: 'phone', phone: 'phone', 'no hp': 'phone', nohp: 'phone',
+  };
+
+  function parseCsvRows(text: string): string[][] {
+    const first = text.split(/\r?\n/)[0] || '';
+    const delim = (first.match(/;/g) || []).length >= (first.match(/,/g) || []).length ? ';' : ',';
+    const rows: string[][] = [];
+    let row: string[] = [], cell = '', inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQ) {
+        if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else inQ = false; }
+        else cell += c;
+      } else if (c === '"') inQ = true;
+      else if (c === delim) { row.push(cell); cell = ''; }
+      else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+      else if (c !== '\r') cell += c;
+    }
+    if (cell !== '' || row.length > 0) { row.push(cell); rows.push(row); }
+    return rows.filter(r => r.some(c => c.trim() !== ''));
+  }
+
+  function normImportDate(v: string): string {
+    const s = v.trim();
+    if (!s) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    const m = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+    if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+    const n = Number(s.replace(/[^\d.]/g, ''));
+    if (Number.isFinite(n) && n > 20000 && n < 80000) {
+      return new Date(Date.UTC(1899, 11, 30) + n * 86400000).toISOString().slice(0, 10);
+    }
+    return '';
+  }
+
+  function normImportSalary(v: string): number {
+    const n = parseInt(v.replace(/[^\d]/g, ''), 10);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  async function handleImportFile(file: File) {
+    const statusEl = $('emp-import-status');
+    try {
+      let records: Record<string, string>[] = [];
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        const text = (await file.text()).replace(/^\uFEFF/, '');
+        const rows = parseCsvRows(text);
+        if (rows.length < 2) throw new Error('File kosong atau hanya berisi judul kolom.');
+        const headers = rows[0].map(h => IMPORT_HEADER_MAP[h.trim().toLowerCase()] ?? '');
+        records = rows.slice(1).map(r => { const o: Record<string, string> = {}; headers.forEach((h, i) => { if (h) o[h] = (r[i] ?? '').trim(); }); return o; });
+      } else {
+        const ready = await loadCdnLib('XLSX', XLSX_URLS);
+        if (!ready) throw new Error('Library Excel gagal dimuat — cek koneksi internet.');
+        const buf = await file.arrayBuffer();
+        const XLSX = (window as any).XLSX;
+        const wb = XLSX.read(buf, { type: 'array' });
+        const rows: string[][] = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '', raw: false });
+        if (rows.length < 2) throw new Error('Sheet pertama kosong atau hanya berisi judul kolom.');
+        const headers = (rows[0] as unknown as string[]).map(h => IMPORT_HEADER_MAP[String(h).trim().toLowerCase()] ?? '');
+        records = rows.slice(1).map(r => { const o: Record<string, string> = {}; headers.forEach((h, i) => { if (h) o[h] = String(r[i] ?? '').trim(); }); return o; });
+      }
+      const valid = records.filter(r => r.name);
+      const skipped = records.length - valid.length;
+      if (valid.length === 0) throw new Error('Tidak ada baris dengan kolom "Nama" terisi. Pastikan baris pertama memuat header, misal: Nama; Jabatan; Divisi; Gaji Pokok.');
+
+      let nextId = data.employees.reduce((m, e) => Math.max(m, e.id), 0) + 1;
+      const added: Employee[] = valid.map(r => ({
+        id: nextId++,
+        name: r.name,
+        position: r.position ?? '',
+        division: r.division ?? '',
+        status: r.status ?? 'PKWTT',
+        joinDate: normImportDate(r.joinDate ?? ''),
+        contractEnd: normImportDate(r.contractEnd ?? ''),
+        salary: normImportSalary(r.salary ?? ''),
+        email: r.email ?? '',
+        phone: r.phone ?? '',
+      }));
+      if (!confirm(`${added.length} karyawan akan ditambahkan${skipped > 0 ? `, ${skipped} baris dilewati (nama kosong)` : ''}. Lanjutkan?`)) return;
+      data.employees.push(...added);
+      save(); renderAll();
+      statusEl.className = 'card-base p-4 text-sm text-emerald-600 dark:text-emerald-400 font-semibold';
+      statusEl.textContent = `✓ ${added.length} karyawan berhasil diimport${skipped > 0 ? `, ${skipped} baris dilewati` : ''}.`;
+      statusEl.classList.remove('hidden');
+      toast(`${added.length} karyawan ditambahkan`);
+    } catch (e) {
+      statusEl.className = 'card-base p-4 text-sm text-red-500 font-semibold';
+      statusEl.textContent = '✗ ' + (e instanceof Error ? e.message : 'Gagal membaca file.');
+      statusEl.classList.remove('hidden');
+    }
+  }
+
+  // ==================== Render: Absensi ====================
+  function renderAttendance() {
+    const date = ($('att-date') as HTMLInputElement).value || todayStr();
+    const list = $('att-list');
+    if (data.employees.length === 0) {
+      list.innerHTML = '<li class="p-8 text-center text-matte-400">Belum ada karyawan. Tambahkan dulu di tab Karyawan.</li>';
+      $('att-summary').textContent = '—';
+      return;
+    }
+    const dayAtt = new Map(data.attendance.filter(a => a.date === date).map(a => [a.empId, a.status]));
+    const options: Array<{ val: Attendance['status']; label: string; on: string; off: string }> = [
+      { val: 'hadir', label: 'Hadir', on: 'bg-emerald-500 border-emerald-500', off: 'hover:border-emerald-500' },
+      { val: 'sakit', label: 'Sakit', on: 'bg-sky-500 border-sky-500', off: 'hover:border-sky-500' },
+      { val: 'izin', label: 'Izin', on: 'bg-amber-500 border-amber-500', off: 'hover:border-amber-500' },
+      { val: 'alpha', label: 'Alpha', on: 'bg-red-500 border-red-500', off: 'hover:border-red-500' },
+    ];
+    list.innerHTML = data.employees.map(e => {
+      const cur = dayAtt.get(e.id);
+      return `
+        <li class="p-3 flex flex-col sm:flex-row sm:items-center gap-2 justify-between hover:bg-matte-100/50 dark:hover:bg-surface-hover/50 transition-colors">
+          <div class="min-w-0">
+            <p class="font-semibold text-matte-900 dark:text-white truncate">${esc(e.name)}</p>
+            <p class="text-xs text-matte-400 truncate">${esc(e.position) || '—'} · ${esc(e.division) || '—'}</p>
+          </div>
+          <div class="flex gap-1.5 shrink-0">
+            ${options.map(o => `
+              <button data-att-emp="${e.id}" data-att-val="${o.val}" data-att-date="${date}"
+                class="text-xs font-bold px-3 py-1.5 rounded-full border transition-colors ${cur === o.val
+                  ? `${o.on} text-white`
+                  : `border-matte-200 dark:border-surface-border text-matte-500 dark:text-matte-300 ${o.off}`}"
+              >
+                ${o.label}
+              </button>`).join('')}
+          </div>
+        </li>`;
+    }).join('');
+
+    list.querySelectorAll<HTMLButtonElement>('[data-att-emp]').forEach(b => b.addEventListener('click', () => {
+      const empId = +b.dataset.attEmp!, status = b.dataset.attVal as Attendance['status'], d = b.dataset.attDate!;
+      const existing = data.attendance.find(a => a.empId === empId && a.date === d);
+      if (existing && existing.status === status) {
+        data.attendance = data.attendance.filter(a => a !== existing); // klik lagi = batal
+      } else if (existing) {
+        existing.status = status;
+      } else {
+        data.attendance.push({ empId, date: d, status });
+      }
+      save(); renderSummary(); renderAttendance();
+    }));
+
+    const counts = { hadir: 0, sakit: 0, izin: 0, alpha: 0 } as Record<Attendance['status'], number>;
+    dayAtt.forEach(s => counts[s]++);
+    const totalMarked = Object.values(counts).reduce((a, b) => a + b, 0);
+    $('att-summary').textContent = totalMarked === 0
+      ? 'Belum ada yang diabsen untuk ' + fmtDate(date)
+      : `Hadir ${counts.hadir} · Sakit ${counts.sakit} · Izin ${counts.izin} · Alpha ${counts.alpha} (${totalMarked}/${data.employees.length} tercatat)`;
+  }
+
+  function markAllPresent() {
+    const date = ($('att-date') as HTMLInputElement).value || todayStr();
+    if (data.employees.length === 0) return;
+    data.employees.forEach(e => {
+      const existing = data.attendance.find(a => a.empId === e.id && a.date === date);
+      if (existing) existing.status = 'hadir';
+      else data.attendance.push({ empId: e.id, date, status: 'hadir' });
+    });
+    save(); renderSummary(); renderAttendance(); toast('Semua ditandai hadir');
+  }
+
+  // ==================== Render: Cuti ====================
+  function renderLeaves() {
+    const sel = $('leave-emp') as HTMLSelectElement;
+    const current = sel.value;
+    sel.innerHTML = data.employees.length === 0
+      ? '<option value="">— belum ada karyawan —</option>'
+      : '<option value="">Pilih karyawan...</option>' + data.employees.map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('');
+    if (current && data.employees.some(e => String(e.id) === current)) sel.value = current;
+
+    const list = $('leave-list');
+    const leaves = [...data.leaves].sort((a, b) => b.id - a.id);
+    list.innerHTML = leaves.length === 0
+      ? '<li class="p-8 text-center text-matte-400">Belum ada pengajuan cuti.</li>'
+      : leaves.map(l => `
+          <li class="p-4 flex flex-col sm:flex-row sm:items-center gap-2 justify-between hover:bg-matte-100/50 dark:hover:bg-surface-hover/50 transition-colors">
+            <div class="min-w-0">
+              <p class="font-semibold text-matte-900 dark:text-white">${esc(empName(l.empId))} <span class="text-xs font-normal text-matte-400">· ${esc(l.type)}</span></p>
+              <p class="text-xs text-matte-400">${fmtDate(l.start)} → ${fmtDate(l.end)}${l.reason ? ' · ' + esc(l.reason) : ''}</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              ${leaveBadge(l.status)}
+              ${l.status === 'menunggu' ? `
+                <button data-leave-ok="${l.id}" class="text-xs font-bold px-2.5 py-1.5 rounded-full bg-emerald-500 text-white hover:bg-emerald-600 transition-colors">Setujui</button>
+                <button data-leave-no="${l.id}" class="text-xs font-bold px-2.5 py-1.5 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors">Tolak</button>` : ''}
+              <button data-leave-del="${l.id}" class="text-matte-400 hover:text-red-500 p-1" aria-label="Hapus">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </li>`).join('');
+
+    list.querySelectorAll<HTMLButtonElement>('[data-leave-ok]').forEach(b => b.addEventListener('click', () => {
+      const l = data.leaves.find(x => x.id === +b.dataset.leaveOk!);
+      if (l) { l.status = 'disetujui'; save(); renderAll(); toast('Cuti disetujui'); }
+    }));
+    list.querySelectorAll<HTMLButtonElement>('[data-leave-no]').forEach(b => b.addEventListener('click', () => {
+      const l = data.leaves.find(x => x.id === +b.dataset.leaveNo!);
+      if (l) { l.status = 'ditolak'; save(); renderAll(); toast('Cuti ditolak'); }
+    }));
+    list.querySelectorAll<HTMLButtonElement>('[data-leave-del]').forEach(b => b.addEventListener('click', () => {
+      if (confirm('Hapus pengajuan cuti ini?')) {
+        data.leaves = data.leaves.filter(x => x.id !== +b.dataset.leaveDel!);
+        save(); renderAll();
+      }
+    }));
+  }
+
+  function handleLeaveSubmit(e: Event) {
+    e.preventDefault();
+    const empId = +(($('leave-emp') as HTMLSelectElement).value);
+    if (!empId) { toast('Pilih karyawan dulu'); return; }
+    const start = ($('leave-start') as HTMLInputElement).value;
+    const end = ($('leave-end') as HTMLInputElement).value;
+    if (start && end && end < start) { toast('Tanggal selesai < tanggal mulai'); return; }
+    data.leaves.push({
+      id: Date.now(), empId,
+      type: ($('leave-type') as HTMLSelectElement).value,
+      start, end,
+      reason: ($('leave-reason') as HTMLInputElement).value.trim(),
+      status: 'menunggu',
+    });
+    save();
+    ($('leave-form') as HTMLFormElement).reset();
+    renderAll(); toast('Pengajuan tersimpan');
+  }
+
+  // ==================== Render: Rekrutmen ====================
+  const STAGES: Array<{ key: Candidate['stage']; label: string; dot: string }> = [
+    { key: 'applied', label: 'Lamar', dot: 'bg-sky-500' },
+    { key: 'interview', label: 'Interview', dot: 'bg-indigo-500' },
+    { key: 'offer', label: 'Offer', dot: 'bg-amber-500' },
+    { key: 'hired', label: 'Diterima', dot: 'bg-emerald-500' },
+    { key: 'rejected', label: 'Ditolak', dot: 'bg-red-500' },
+  ];
+
+  function renderRecruitment() {
+    const kanban = $('kanban');
+    $('cand-count').textContent = data.candidates.length + ' pelamar';
+    kanban.innerHTML = STAGES.map(stage => {
+      const cards = data.candidates.filter(c => c.stage === stage.key);
+      return `
+        <div class="card-base p-3 space-y-2">
+          <div class="flex items-center gap-2 pb-1 border-b border-matte-100 dark:border-surface-border">
+            <span class="w-2 h-2 rounded-full ${stage.dot}"></span>
+            <span class="text-xs font-bold uppercase tracking-wide text-matte-500 dark:text-matte-300">${stage.label}</span>
+            <span class="text-xs text-matte-400 ml-auto">${cards.length}</span>
+          </div>
+          ${cards.length === 0
+            ? '<p class="text-xs text-matte-400 py-2">Kosong</p>'
+            : cards.map(c => `
+              <div class="rounded-lg border border-matte-200 dark:border-surface-border p-2.5 bg-matte-100/50 dark:bg-surface-hover/50">
+                <p class="text-sm font-semibold text-matte-900 dark:text-white truncate">${esc(c.name)}</p>
+                <p class="text-xs text-matte-400 truncate">${esc(c.position) || '—'}${c.contact ? ' · ' + esc(c.contact) : ''}</p>
+                ${c.note ? `<p class="text-xs text-matte-500 dark:text-matte-300 mt-1">${esc(c.note)}</p>` : ''}
+                <div class="flex items-center gap-1 mt-2">
+                  <select data-cand-move="${c.id}" class="flex-1 text-xs p-1.5 rounded-md bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border text-matte-600 dark:text-matte-300 outline-none">
+                    <option value="">→ pindah ke...</option>
+                    ${STAGES.filter(s => s.key !== c.stage).map(s => `<option value="${s.key}">${s.label}</option>`).join('')}
+                  </select>
+                  <button data-cand-del="${c.id}" class="text-matte-400 hover:text-red-500 p-1" aria-label="Hapus pelamar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                  </button>
+                </div>
+              </div>`).join('')}
+        </div>`;
+    }).join('');
+
+    kanban.querySelectorAll<HTMLSelectElement>('[data-cand-move]').forEach(sel => sel.addEventListener('change', () => {
+      const c = data.candidates.find(x => x.id === +sel.dataset.candMove!);
+      if (c && sel.value) {
+        c.stage = sel.value as Candidate['stage'];
+        save(); renderAll();
+        toast(c.stage === 'hired' ? 'Selamat, kandidat diterima!' : 'Kandidat dipindah');
+      }
+    }));
+    kanban.querySelectorAll<HTMLButtonElement>('[data-cand-del]').forEach(b => b.addEventListener('click', () => {
+      if (confirm('Hapus pelamar ini dari pipeline?')) {
+        data.candidates = data.candidates.filter(x => x.id !== +b.dataset.candDel!);
+        save(); renderAll();
+      }
+    }));
+  }
+
+  function handleCandSubmit(e: Event) {
+    e.preventDefault();
+    const name = ($('cand-name') as HTMLInputElement).value.trim();
+    if (!name) return;
+    data.candidates.unshift({
+      id: Date.now(), name,
+      position: ($('cand-position') as HTMLInputElement).value.trim(),
+      stage: 'applied',
+      contact: ($('cand-contact') as HTMLInputElement).value.trim(),
+      note: ($('cand-note') as HTMLInputElement).value.trim(),
+    });
+    save();
+    ($('cand-form') as HTMLFormElement).reset();
+    renderAll(); toast('Pelamar ditambahkan');
+  }
+
+  // ==================== Render: Payroll ====================
+  function renderPayroll() {
+    const month = ($('payroll-month') as HTMLInputElement).value || todayStr().slice(0, 7);
+    const tbody = $('payroll-tbody');
+    if (data.employees.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-10 text-center text-matte-400">Belum ada karyawan.</td></tr>';
+      $('payroll-total').textContent = '';
+      return;
+    }
+    let grandTotal = 0;
+    tbody.innerHTML = data.employees.map(e => {
+      const att = data.attendance.filter(a => a.empId === e.id && a.date.startsWith(month));
+      const hadir = att.filter(a => a.status === 'hadir').length;
+      const alpha = att.filter(a => a.status === 'alpha').length;
+      const deduction = Math.round((e.salary / 22) * alpha);
+      const net = Math.max(0, e.salary - deduction);
+      grandTotal += net;
+      return `
+        <tr class="hover:bg-matte-100/50 dark:hover:bg-surface-hover/50 transition-colors">
+          <td class="px-4 py-3 font-semibold text-matte-900 dark:text-white">${esc(e.name)}</td>
+          <td class="px-4 py-3 text-right text-matte-600 dark:text-matte-300">${fmtRp(e.salary)}</td>
+          <td class="px-4 py-3 text-center text-emerald-600 dark:text-emerald-400 font-semibold">${hadir}</td>
+          <td class="px-4 py-3 text-center ${alpha > 0 ? 'text-red-500 font-semibold' : 'text-matte-400'}">${alpha}</td>
+          <td class="px-4 py-3 text-right font-bold text-matte-900 dark:text-white">${fmtRp(net)}</td>
+        </tr>`;
+    }).join('');
+    $('payroll-total').textContent = 'Total: ' + fmtRp(grandTotal);
+  }
+
+  function exportPayrollCsv() {
+    const month = ($('payroll-month') as HTMLInputElement).value || todayStr().slice(0, 7);
+    if (data.employees.length === 0) { toast('Belum ada data'); return; }
+    const header = ['Nama', 'Divisi', 'Bulan', 'Gaji Pokok', 'Hadir', 'Alpha', 'Potongan', 'Gaji Bersih'];
+    const rows = data.employees.map(e => {
+      const att = data.attendance.filter(a => a.empId === e.id && a.date.startsWith(month));
+      const hadir = att.filter(a => a.status === 'hadir').length;
+      const alpha = att.filter(a => a.status === 'alpha').length;
+      const potongan = Math.round((e.salary / 22) * alpha);
+      return [e.name, e.division, month, e.salary, hadir, alpha, potongan, Math.max(0, e.salary - potongan)];
+    });
+    const csv = '\uFEFF' + [header, ...rows].map(r => r.map(csvCell).join(';')).join('\n');
+    downloadFile('payroll-' + month + '.csv', csv, 'text/csv;charset=utf-8');
+  }
+
+  // ==================== Tab: Data ====================
+  function exportJson() {
+    const payload = { app: 'toolsaulia-hrd', version: 1, exportedAt: new Date().toISOString(), ...data };
+    downloadFile('hrd-backup-' + todayStr() + '.json', JSON.stringify(payload, null, 2), 'application/json');
+    toast('Backup didownload');
+  }
+
+  function importJson(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result));
+        if (!parsed || !Array.isArray(parsed.employees)) { toast('File tidak valid'); return; }
+        if (!confirm('Ganti data saat ini dengan isi backup?')) return;
+        data = {
+          employees: (parsed.employees ?? []).map((e: Employee) => ({ contractEnd: '', ...e })),
+          attendance: parsed.attendance ?? [],
+          leaves: parsed.leaves ?? [],
+          candidates: parsed.candidates ?? [],
+        };
+        save(); renderAll(); toast('Data berhasil diimpor');
+      } catch { toast('File tidak valid'); }
+    };
+    reader.readAsText(file);
+  }
+
+  // ==================== THR reminder ====================
+  // Tanggal Idulfitri = perkiraan astronomis (geser ±1 hari) — sesuaikan dengan SKB 3 Menteri tahun berjalan.
+  const LEBARAN_APPROX: Record<number, string> = { 2026: '2026-03-20', 2027: '2027-03-10', 2028: '2028-02-26', 2029: '2029-02-15', 2030: '2030-02-05' };
+  function thrUpcoming(): { name: string; date: string; approx: boolean } {
+    const yNow = new Date().getFullYear();
+    const candidates: { name: string; date: string; approx: boolean }[] = [];
+    for (const y of [yNow, yNow + 1]) {
+      const lb = LEBARAN_APPROX[y];
+      if (lb) candidates.push({ name: `Idulfitri ${y}`, date: lb, approx: true });
+      candidates.push({ name: `Natal ${y}`, date: `${y}-12-25`, approx: false });
+    }
+    candidates.sort((a, b) => a.date.localeCompare(b.date));
+    return candidates.find(c => c.date >= todayStr()) ?? candidates[0];
+  }
+  function renderThr() {
+    const ev = thrUpcoming();
+    const days = Math.round((new Date(ev.date).getTime() - new Date(todayStr()).getTime()) / 86400000);
+    $('thr-next-label').textContent = `${ev.name}${ev.approx ? ' (perkiraan)' : ''}`;
+    $('thr-days').textContent = days === 0 ? 'Hari ini!' : days > 0 ? `H-${days}` : `Lewat ${-days} hari`;
+    const note = $('thr-note');
+    if (days > 45) note.textContent = 'Masih longgar — tapi dana THR sebaiknya mulai disisihkan dari sekarang.';
+    else if (days > 7) note.textContent = 'Tenggat bayar H-7 (Permenaker 6/2016). Siapkan anggaran & estimasi pajaknya.';
+    else if (days >= 0) note.textContent = '⚠️ Tinggal ≤7 hari — THR wajib sudah dibayarkan paling lambat H-7.';
+    else note.textContent = 'Sudah lewat — pastikan THR sudah dibayar; terlambat kena denda 5%.';
+  }
+
+  // ==================== Boot ====================
+  function renderAll() {
+    renderSummary();
+    renderThr();
+    renderEmployees();
+    renderAttendance();
+    renderLeaves();
+    renderRecruitment();
+    renderPayroll();
+  }
+
+  function bindEvents() {
+    // Auth
+    $('setup-form').addEventListener('submit', handleSetup);
+    $('login-form').addEventListener('submit', handleLogin);
+    $('logout-btn').addEventListener('click', logout);
+
+    // Tabs
+    document.querySelectorAll<HTMLElement>('.tab-btn').forEach(b =>
+      b.addEventListener('click', () => switchTab(b.dataset.tab || 'ringkasan'))
+    );
+
+    // Karyawan
+    $('emp-add-btn').addEventListener('click', () => openEmpModal());
+    $('emp-cancel').addEventListener('click', () => $('emp-modal').classList.add('hidden'));
+    $('emp-form').addEventListener('submit', handleEmpSubmit);
+    $('emp-search').addEventListener('input', renderEmployees);
+    $('emp-export-btn').addEventListener('click', exportEmployeesCsv);
+    $('emp-import-btn').addEventListener('click', () => $('emp-import-input').click());
+    $('emp-import-input').addEventListener('change', (e) => {
+      const input = e.target as HTMLInputElement;
+      if (input.files && input.files[0]) handleImportFile(input.files[0]);
+      input.value = '';
+    });
+    $('emp-modal').addEventListener('click', (e) => {
+      if (e.target === $('emp-modal')) $('emp-modal').classList.add('hidden');
+    });
+
+    // Absensi
+    ($('att-date') as HTMLInputElement).value = todayStr();
+    ($('payroll-month') as HTMLInputElement).value = todayStr().slice(0, 7);
+    $('att-date').addEventListener('change', renderAttendance);
+    $('att-all-present').addEventListener('click', markAllPresent);
+
+    // Cuti
+    $('leave-form').addEventListener('submit', handleLeaveSubmit);
+
+    // Rekrutmen
+    $('cand-form').addEventListener('submit', handleCandSubmit);
+
+    // Payroll
+    $('payroll-month').addEventListener('change', renderPayroll);
+    $('payroll-export-btn').addEventListener('click', exportPayrollCsv);
+
+    // Data
+    $('export-json-btn').addEventListener('click', exportJson);
+    $('import-json-input').addEventListener('change', (e) => {
+      const input = e.target as HTMLInputElement;
+      if (input.files && input.files[0]) importJson(input.files[0]);
+      input.value = '';
+    });
+    $('reset-auth-btn').addEventListener('click', () => {
+      if (confirm('Hapus kredensial login? Anda perlu membuat username & password baru.')) {
+        localStorage.removeItem(AUTH_KEY);
+        localStorage.removeItem(FAILED_KEY);
+        localStorage.removeItem(LAST_ACTIVITY_KEY);
+        sessionStorage.removeItem(SESSION_KEY);
+        $('app-screen').classList.add('hidden');
+        $('auth-screen').classList.remove('hidden');
+        showLogin();
+        toast('Kredensial direset');
+      }
+    });
+    $('wipe-btn').addEventListener('click', () => {
+      if (confirm('Hapus PERMANEN semua data karyawan, absensi, dan cuti?')) {
+        if (confirm('Yakin 100%? Tindakan ini tidak bisa dibatalkan.')) {
+          data = { employees: [], attendance: [], leaves: [], candidates: [] };
+          save(); renderAll(); toast('Semua data dihapus');
+        }
+      }
+    });
+
+    // Esc = tutup modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') $('emp-modal').classList.add('hidden');
+    });
+  }
+
+  // Init
+  bindEvents();
+
+  // Auto-lock: aktivitas memperpanjang sesi; cek idle tiap 30 detik
+  let lastStamp = 0;
+  ['click', 'keydown', 'mousemove', 'touchstart'].forEach(ev =>
+    document.addEventListener(ev, () => {
+      const now = Date.now();
+      if (now - lastStamp > 10000) { lastStamp = now; localStorage.setItem(LAST_ACTIVITY_KEY, String(now)); }
+    }, { passive: true }));
+  checkIdle();
+  setInterval(checkIdle, 30000);
+
+  if (sessionStorage.getItem(SESSION_KEY) === '1' && loadAuth()) {
+    enterApp();
+  } else {
+    showLogin();
+    switchTab('ringkasan');
+  }
+</script>
