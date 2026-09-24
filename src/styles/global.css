@@ -230,22 +230,23 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* ========== CARD BASE ========== */
+/* Border dihapus (Sep 24, 2026) — ganti hairline box-shadow super tipis biar card
+   tetap ke-definisi dari bg page (white-on-#fbfbfd) tanpa garis keras. Hover =
+   ring accent 1px + lift shadow (gabung di satu box-shadow). */
 .card-base {
   background-color: var(--bg-card);
-  border: 1px solid var(--matte-200);
   border-radius: 1rem;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
   transition: all 0.2s ease;
 }
 .dark .card-base {
-  border-color: var(--surface-border);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 .card-base:hover {
-  border-color: rgba(var(--accent-blue-rgb), 0.35);
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 0 0 1px rgba(var(--accent-blue-rgb), 0.35), 0 4px 14px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 .dark .card-base:hover {
-  border-color: rgba(var(--accent-blue-rgb), 0.35);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 1px rgba(var(--accent-blue-rgb), 0.35), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 .card-base:active {
   transform: scale(0.98);
@@ -449,10 +450,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (hover: hover) and (pointer: fine) {
   .card-base:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 0 0 1px rgba(var(--accent-blue-rgb), 0.35), 0 4px 14px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04);
   }
   .dark .card-base:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 1px rgba(var(--accent-blue-rgb), 0.35), 0 6px 20px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -538,9 +539,12 @@ html.dark .checkerboard {
 .tool-placeholder {
   border-radius: 0.75rem;
   background-color: var(--bg-card);
-  border: 1px solid var(--matte-200);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
   position: relative;
   overflow: hidden;
+}
+.dark .tool-placeholder {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 .dark .tool-placeholder {
   border-color: var(--surface-border);
