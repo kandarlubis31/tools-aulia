@@ -670,7 +670,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
                 resultsCountTitle.textContent = matched.length + ' Tools';
             } else {
                 const activeBtn = Array.from(filterBtns).find(b => b.getAttribute('data-filter') === currentFilter);
-                resultsCountTitle.textContent = (activeBtn ? activeBtn.textContent.trim() : 'Tools') + (totalPages > 1 ? ' — Halaman '+currentPage+'/'+totalPages : '');
+                resultsCountTitle.textContent = (activeBtn ? activeBtn.textContent.trim() : 'Tools') + (totalPages > 1 ? ' — ' + (localStorage.getItem('lang') === 'en' ? 'Page ' : 'Halaman ') + currentPage + '/' + totalPages : '');
             }
         }
 
