@@ -519,27 +519,29 @@ if (isPdfRoot) {
           </div>
         </div>
         
-        <div class="divider-thin w-px h-5 mx-2"></div>
-        
-        <button id="search-btn" class="w-12 h-12 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all duration-150" aria-label="Search tools">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <div class="flex items-center gap-1.5">
+        <button id="search-btn" class="flex items-center gap-2 h-11 px-3.5 rounded-full bg-matte-100 dark:bg-surface-hover text-matte-500 dark:text-matte-300 hover:text-matte-800 dark:hover:text-white hover:bg-matte-200 dark:hover:bg-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/40 active:scale-[0.97] transition-all duration-150" aria-label="Search tools">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <span class="hidden xl:inline text-xs font-medium" data-i18n="search.placeholder">Cari tools...</span>
+          <kbd class="hidden xl:inline-flex items-center px-1.5 py-0.5 text-[9px] font-bold rounded bg-white/80 dark:bg-matte-700 text-matte-400">Ctrl+K</kbd>
         </button>
         
-        <button id="theme-toggle-desktop" class="w-12 h-12 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all duration-150" aria-label="Toggle theme">
+        <button id="theme-toggle-desktop" class="w-11 h-11 flex items-center justify-center rounded-full bg-matte-100 dark:bg-surface-hover text-matte-500 dark:text-matte-300 hover:text-matte-800 dark:hover:text-white hover:bg-matte-200 dark:hover:bg-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/40 active:scale-95 transition-all duration-150" aria-label="Toggle theme">
           <svg id="sun-icon" class="hidden dark:block w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
           <svg id="moon-icon" class="block dark:hidden w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         </button>
         
-        <button id="lang-toggle-desktop" class="w-12 h-12 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all duration-150" aria-label="Ganti bahasa">
+        <button id="lang-toggle-desktop" class="w-11 h-11 flex items-center justify-center rounded-full bg-matte-100 dark:bg-surface-hover text-matte-500 dark:text-matte-300 hover:text-matte-800 dark:hover:text-white hover:bg-matte-200 dark:hover:bg-surface-border focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/40 active:scale-95 transition-all duration-150" aria-label="Ganti bahasa">
           <span id="lang-label-desktop" class="text-xs font-bold uppercase tracking-wide-2">ID</span>
         </button>
         
-        <button id="install-pwa-btn" class="hidden w-12 h-12 flex items-center justify-center rounded-lg text-accent-blue hover:text-accent-blue/80 hover:bg-accent-blue/5 transition-all duration-150" aria-label="Install aplikasi">
+        <button id="install-pwa-btn" class="hidden w-11 h-11 flex items-center justify-center rounded-full bg-matte-100 dark:bg-surface-hover text-accent-blue dark:text-sky-400 hover:bg-accent-blue/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/40 active:scale-95 transition-all duration-150" aria-label="Install aplikasi">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </button>
+        </div>
       </nav>
 
-      <button id="mobile-menu-btn" class="md:hidden w-12 h-12 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all duration-150" aria-label="Toggle menu" aria-expanded="false">
+      <button id="mobile-menu-btn" class="md:hidden w-12 h-12 flex items-center justify-center rounded-xl bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-300 active:scale-95 transition-all duration-150" aria-label="Toggle menu" aria-expanded="false">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
       </button>
     </div>
@@ -1700,30 +1702,46 @@ if (isPdfRoot) {
 
     const skipTags = ['SCRIPT','STYLE','NOSCRIPT','SVG','CODE','PRE','TEXTAREA','INPUT','SELECT'];
 
+    // i18n DOM strategy (rewrite Sep 24, 2026):
+    // - EN: snapshot teks/attr asli sekali (__orig/__i18nA/__d18n) lalu terapkan terjemahan
+    //   EXACT-MATCH (Map lookup, tanpa regex/split-join berantai) — pola substring berantai
+    //   dulu bikin korupsi komposisi ("Reset Filter" -> "Reset Filterss") + freeze 2.2s
+    //   (new RegExp per frase per node).
+    // - ID: restore dari snapshot -> toggle dua arah benar-benar balik ke Indonesia.
+    // - Elemen [data-i18n] di-skip oleh phrase walk (ditangani loop processI18n) biar
+    //   gak dobel diproses.
     function walkAndTranslate(node, lang) {
       if (!node) return;
-      if (lang !== 'en') return;
       const walk = (n) => {
         if (n.nodeType === Node.TEXT_NODE) {
-          const original = n.textContent || '';
-          let modified = original;
-          for (const [idText, enText] of Object.entries(allPhrases)) {
-            if (modified === idText) { modified = enText; break; }
-            if (idText.length <= 10) {
-              const regex = new RegExp('(^|\\s)(' + idText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?=\\s|$|[.,;:!?])', 'g');
-              modified = modified.replace(regex, '$1' + enText);
-            } else {
-              modified = modified.split(idText).join(enText);
+          if (lang === 'en') {
+            const original = n.textContent || '';
+            const en = allPhrases[original.trim()];
+            if (en && en !== original) {
+              if (n.__orig === undefined) n.__orig = original;
+              n.textContent = en;
             }
+          } else if (n.__orig !== undefined) {
+            n.textContent = n.__orig;
+            delete n.__orig;
           }
-          if (modified !== original) n.textContent = modified;
         } else if (n.nodeType === Node.ELEMENT_NODE) {
           const el = n;
           if (skipTags.includes(el.tagName)) return;
+          if (el.hasAttribute('data-i18n')) return; // handled by processI18n loop
           for (const attr of ['placeholder','aria-label','title']) {
             const val = el.getAttribute(attr);
-            if (val && allPhrases[val]) {
-              el.setAttribute(attr, allPhrases[val]);
+            if (!val) continue;
+            if (lang === 'en') {
+              const en = allPhrases[val.trim()];
+              if (en && en !== val) {
+                if (!el.__i18nA) el.__i18nA = {};
+                if (!(attr in el.__i18nA)) el.__i18nA[attr] = val;
+                el.setAttribute(attr, en);
+              }
+            } else if (el.__i18nA && attr in el.__i18nA) {
+              el.setAttribute(attr, el.__i18nA[attr]);
+              delete el.__i18nA[attr];
             }
           }
           Array.from(el.childNodes).forEach(walk);
@@ -1746,7 +1764,7 @@ if (isPdfRoot) {
       if (lang === 'en') {
         const mod = await ensureTranslations();
         if (originalTitle) {
-          document.title = `${allPhrases[originalTitle] || originalTitle} | PakLubis Tools`;
+          document.title = `${allPhrases[originalTitle] || originalTitle} | MasAul Tools`;
         }
         document.querySelectorAll('[data-i18n]').forEach(el => {
           const key = el.getAttribute('data-i18n');
@@ -1755,6 +1773,8 @@ if (isPdfRoot) {
           const entry = mod.translations[key];
           if (!entry) return;
           const text = entry.en;
+          // Snapshot asli sekali -> jadi sumber restore saat kembali ke ID
+          if (el.__d18n === undefined) el.__d18n = { attr, val: attr ? el.getAttribute(attr) : el.textContent };
           if (attr) {
             if (attr === 'textContent') el.textContent = text;
             else el.setAttribute(attr, text);
@@ -1762,8 +1782,22 @@ if (isPdfRoot) {
             el.textContent = text;
           }
         });
-      } else if (originalTitle) {
-        document.title = `${originalTitle} | PakLubis Tools`;
+      } else {
+        if (originalTitle) {
+          document.title = `${originalTitle} | MasAul Tools`;
+        }
+        // Restore semua elemen [data-i18n] dari snapshot -> ID benar-benar kembali
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          if (el.__d18n === undefined) return;
+          const { attr, val } = el.__d18n;
+          if (attr) {
+            if (attr === 'textContent') el.textContent = val;
+            else el.setAttribute(attr, val);
+          } else {
+            el.textContent = val;
+          }
+          delete el.__d18n;
+        });
       }
 
       walkAndTranslate(document.body, lang);
