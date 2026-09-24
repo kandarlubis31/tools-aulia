@@ -11,12 +11,12 @@ no upload, no account).
 ## What we changed (fork adjustments)
 
 1. **Stripped PostHog analytics** + hardcoded project key from `s/main.ts`
-   (privacy-first, consistent with ToolsAulia's "no tracking" stance).
+   (privacy-first, consistent with MasAul Tools' "no tracking" stance).
 2. **Removed `coi-serviceworker`** — nothing in OmniClip needs SharedArrayBuffer,
    and `Cross-Origin-Embedder-Policy: require-corp` would break cross-origin CDN
    libraries in Chrome. Dropping it avoids the double-reload + CORP risk.
 3. **FFmpeg core self-hosted** — `FFmpegHelper` now loads `@ffmpeg/core` from
-   ToolsAulia's own `/vendor/ffmpeg/` (same-origin, offline-first) instead of
+   MasAul Tools' own `/vendor/ffmpeg/` (same-origin, offline-first) instead of
    unpkg (which can be blocked under COEP and has no CORP guarantee).
 4. **Windows build fixes for `@benev/turtle`** — see `omniclip/patch-turtle.mjs`
    (re-applied after `npm ci`): glob separator normalization, `file://` ESM

@@ -39,7 +39,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'search.close_aria': { id: 'Tutup pencarian', en: 'Close search' },
 
   // --- PWA MODAL ---
-  'pwa.install_title': { id: 'Install ToolsAulia', en: 'Install ToolsAulia' },
+  'pwa.install_title': { id: 'Install MasAul Tools', en: 'Install MasAul Tools' },
   'pwa.install_desc': { id: 'Akses semua tools secara offline, lebih cepat, dan masuk langsung dari layar utama HP kamu.', en: 'Access all tools offline, faster, and launch directly from your home screen.' },
   'pwa.install_now': { id: 'Install Sekarang', en: 'Install Now' },
   'pwa.later': { id: 'Nanti Saja', en: 'Maybe Later' },
@@ -56,7 +56,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'offline.disconnected': { id: 'Koneksi terputus.', en: 'Connection lost.' },
 
   // --- FOOTER ---
-  'footer.about_title': { id: 'Tentang ToolsAulia', en: 'About ToolsAulia' },
+  'footer.about_title': { id: 'Tentang MasAul Tools', en: 'About MasAul Tools' },
   'footer.about_desc': { id: 'Koleksi tools developer sederhana yang berjalan sepenuhnya di browser (Client-Side). Aman, cepat, dan tanpa upload data ke server.', en: 'A collection of simple developer tools that run entirely in your browser (Client-Side). Safe, fast, and with no data uploaded to any server.' },
   'footer.github': { id: 'Github', en: 'Github' },
   'footer.website': { id: 'Website', en: 'Website' },
@@ -80,7 +80,7 @@ export const translations: Record<string, { id: string; en: string }> = {
 
   // --- CHANGELOG (D3) ---
   'changelog.title': { id: 'Changelog', en: 'Changelog' },
-  'changelog.desc': { id: 'Catatan update ToolsAulia: tools baru, fitur, dan perbaikan. Subscribe via RSS biar gak ketinggalan!', en: 'ToolsAulia update log: new tools, features, and fixes. Subscribe via RSS so you never miss a thing!' },
+  'changelog.desc': { id: 'Catatan update MasAul Tools: tools baru, fitur, dan perbaikan. Subscribe via RSS biar gak ketinggalan!', en: 'MasAul Tools update log: new tools, features, and fixes. Subscribe via RSS so you never miss a thing!' },
   'changelog.subscribe': { id: 'Subscribe RSS', en: 'Subscribe RSS' },
   'changelog.latest': { id: 'Terbaru', en: 'Latest' },
   'changelog.tag_feat': { id: 'Fitur', en: 'Feature' },
@@ -134,7 +134,7 @@ export const translations: Record<string, { id: string; en: string }> = {
 
   // --- SHOWCASE (Top 20) ---
   'showcase.title': { id: 'Top 20 Tools Terbaik', en: 'Top 20 Best Tools' },
-  'showcase.desc': { id: 'Kurasi 20 tools paling populer & bermanfaat di ToolsAulia. Semua 100% di browser — tanpa install, data aman.', en: 'A curated list of the 20 most popular & useful ToolsAulia tools. All 100% in-browser — no install, data safe.' },
+  'showcase.desc': { id: 'Kurasi 20 tools paling populer & bermanfaat di MasAul Tools. Semua 100% di browser — tanpa install, data aman.', en: 'A curated list of the 20 most popular & useful MasAul Tools tools. All 100% in-browser — no install, data safe.' },
   'showcase.top_used': { id: '🔥 Paling Sering Dipakai', en: '🔥 Most Used' },
   'showcase.top_used_desc': { id: 'Berdasarkan aktivitas kamu di browser ini.', en: 'Based on your activity in this browser.' },
   'showcase.editors_pick': { id: '⭐ Pilihan Editor', en: '⭐ Editor’s Picks' },
@@ -2822,7 +2822,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   // --- FEEDBACK WIDGET (E3) ---
   'feedback.button': { id: '🐛 Lapor Bug', en: '🐛 Report Bug' },
   'feedback.title': { id: 'Lapor Bug', en: 'Report Bug' },
-  'feedback.subtitle': { id: 'Bantu kami memperbaiki ToolsAulia', en: 'Help us improve ToolsAulia' },
+  'feedback.subtitle': { id: 'Bantu kami memperbaiki MasAul Tools', en: 'Help us improve MasAul Tools' },
   'feedback.desc_label': { id: 'Deskripsi Bug', en: 'Bug Description' },
   'feedback.desc_placeholder': { id: 'Jelaskan bug yang kamu temui…', en: 'Describe the bug you found…' },
   'feedback.steps_label': { id: 'Langkah Reproduksi (opsional)', en: 'Steps to Reproduce (optional)' },

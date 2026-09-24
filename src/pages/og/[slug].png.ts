@@ -1,6 +1,6 @@
 export const prerender = true;
 
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { Resvg } from '@resvg/resvg-js';
 import type { APIRoute, GetStaticPaths } from 'astro';
@@ -33,8 +33,15 @@ for (const f of [REGULAR_FONT, BOLD_FONT]) {
   }
 }
 
-const BRAND_ICON =
-  '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>';
+// Logo brand = raster PNG (public/logo.png), di-embed sebagai data URI — resvg
+// merender <image href="data:..."> (SVG shape/trace dari raster tidak tersedia).
+const LOGO_PATH = resolve(process.cwd(), 'public/logo.png');
+if (!existsSync(LOGO_PATH)) {
+  throw new Error(`[og] Logo tidak ditemukan: ${LOGO_PATH}`);
+}
+const LOGO_B64 = readFileSync(LOGO_PATH).toString('base64');
+// Ikon besar di tile 240×240 (home/404/fallback)
+const LOGO_IMAGE = `<image href="data:image/png;base64,${LOGO_B64}" x="20" y="20" width="200" height="200"/>`;
 
 const STAR_ICON =
   '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>';
@@ -44,9 +51,9 @@ const LIST_ICON =
 
 // Non-tool pages (homepage, hubs, informational pages)
 const PAGE_OVERRIDES: Record<string, { title: string; category: string; icon: string }> = {
-  showcase: { title: 'Top 20 Tools Terbaik', category: 'ToolsAulia', icon: STAR_ICON },
-  changelog: { title: 'Changelog', category: 'ToolsAulia', icon: LIST_ICON },
-  '404': { title: 'Halaman Tidak Ditemukan', category: 'ToolsAulia', icon: BRAND_ICON },
+  showcase: { title: 'Top 20 Tools Terbaik', category: 'MasAul Tools', icon: STAR_ICON },
+  changelog: { title: 'Changelog', category: 'MasAul Tools', icon: LIST_ICON },
+  '404': { title: 'Halaman Tidak Ditemukan', category: 'MasAul Tools', icon: LOGO_IMAGE },
 };
 
 // href → og key (e.g. '/pdf/merge' → 'pdf-merge', '/pdf' → 'pdf')
@@ -113,20 +120,15 @@ function buildSvg(opts: { title: string; category: string; icon: string }): stri
   <!-- Brand -->
   <g transform="translate(80 72)">
     <rect width="52" height="52" rx="14" fill="url(#tile)"/>
-    <g transform="translate(15 15)" fill="none" stroke="url(#brand)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-      ${BRAND_ICON}
-    </g>
-    <text x="66" y="33" font-family="Inter" font-weight="700" font-size="28" fill="#ffffff">Tools</text>
-    <text x="140" y="33" font-family="Inter" font-weight="700" font-size="28" fill="url(#brand)">Aulia</text>
+    <image href="data:image/png;base64,${LOGO_B64}" x="4" y="4" width="44" height="44"/>
+    <text x="66" y="33" font-family="Inter" font-weight="700" font-size="28" fill="#ffffff">MasAul Tools</text>
     <text x="66" y="62" font-family="Inter" font-weight="400" font-size="13" fill="#94a3b8" letter-spacing="3">100% DI BROWSER</text>
   </g>
 
   <!-- Tool icon tile -->
   <g transform="translate(880 200)">
     <rect width="240" height="240" rx="44" fill="url(#tile)"/>
-    <g transform="translate(52 52)" fill="none" stroke="#e2e8f0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-      ${opts.icon}
-    </g>
+    ${opts.icon.startsWith('<image') ? opts.icon : `<g transform="translate(52 52)" fill="none" stroke="#e2e8f0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${opts.icon}</g>`}
   </g>
 
   <!-- Category chip + title -->
@@ -155,8 +157,8 @@ export const GET: APIRoute = async ({ params }) => {
 
   if (slug === 'home') {
     title = `Koleksi ${tools.length}+ Tools Gratis`;
-    category = 'ToolsAulia';
-    icon = BRAND_ICON;
+    category = 'MasAul Tools';
+    icon = LOGO_IMAGE;
   } else if (override) {
     title = override.title;
     category = override.category;
@@ -169,9 +171,9 @@ export const GET: APIRoute = async ({ params }) => {
       icon = tool.icon;
     } else {
       // Unknown slug → branded fallback (dev-mode safety; not emitted at build)
-      title = 'ToolsAulia';
+      title = 'MasAul Tools';
       category = 'Tools Gratis';
-      icon = BRAND_ICON;
+      icon = LOGO_IMAGE;
     }
   }
 

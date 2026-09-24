@@ -30,9 +30,9 @@ export const GET: APIRoute = ({ site }) => {
 <?xml-stylesheet type="text/xsl" href="/rss.xsl"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>ToolsAulia — Changelog</title>
+    <title>MasAul Tools — Changelog</title>
     <link>${base}/changelog</link>
-    <description>Update terbaru ToolsAulia: tools baru, fitur, dan perbaikan.</description>
+    <description>Update terbaru MasAul Tools: tools baru, fitur, dan perbaikan.</description>
     <language>id-id</language>
     <lastBuildDate>${now}</lastBuildDate>
     <atom:link href="${base}/rss.xml" rel="self" type="application/rss+xml"/>${items}

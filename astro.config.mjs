@@ -15,10 +15,10 @@ export default defineConfig({
     // to keep it off the critical path. The auto-injected registerSW.js was not being
     // referenced in the built HTML (broken injection) → SW never registered.
     injectRegister: false,
-    includeAssets: ['favicon.svg', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'safari-pinned-tab.svg', 'og-image.png', 'pwa-192x192.png', 'pwa-512x512.png'],
+    includeAssets: ['favicon.svg', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'og-image.png', 'pwa-192x192.png', 'pwa-512x512.png'],
     manifest: {
-      name: 'ToolsAulia',
-      short_name: 'ToolsAulia',
+      name: 'MasAul Tools',
+      short_name: 'MasAul Tools',
       description: 'Koleksi tools developer dan produktivitas lengkap.',
       theme_color: '#ffffff',
       background_color: '#ffffff',

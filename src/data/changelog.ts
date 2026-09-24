@@ -350,8 +350,8 @@ export const changelogEntries: ChangelogEntry[] = [
     version: 'v2.3',
     title: '59 Tools Complete — 227 Total! 🎉',
     titleEn: '59 Tools Complete — 227 Total! 🎉',
-    desc: 'Plan 59 tools selesai. Koleksi ToolsAulia resmi 227 tools.',
-    descEn: 'The 59-tool plan is done. ToolsAulia now has 227 tools.',
+    desc: 'Plan 59 tools selesai. Koleksi MasAul Tools resmi 227 tools.',
+    descEn: 'The 59-tool plan is done. MasAul Tools now has 227 tools.',
     items: [
       'Batch 17: media-info, wake-on-lan, sql-to-json, md-table, handwriting, receipt, grocery-list, bucket-list, audio-convert',
       'Milestone: 58 → 227 tools dalam 12 kategori',
@@ -405,7 +405,7 @@ export const changelogEntries: ChangelogEntry[] = [
     version: 'v2.0',
     title: 'UI/UX Phase 1–3',
     titleEn: 'UI/UX Phase 1–3',
-    desc: 'Wajah baru ToolsAulia: matte palette, header seragam, footer redesign.',
+    desc: 'Wajah baru MasAul Tools: matte palette, header seragam, footer redesign.',
     descEn: 'A fresh look: matte palette, unified headers, redesigned footer.',
     items: [
       'Palet matte profesional + display font + ikon duotone',
@@ -443,8 +443,8 @@ export const changelogEntries: ChangelogEntry[] = [
     version: 'v1.0',
     title: 'Launch 🚀',
     titleEn: 'Launch 🚀',
-    desc: 'ToolsAulia lahir dengan 58 tools pertama.',
-    descEn: 'ToolsAulia launched with its first 58 tools.',
+    desc: 'MasAul Tools lahir dengan 58 tools pertama.',
+    descEn: 'MasAul Tools launched with its first 58 tools.',
     items: [
       'PDF, Image, Dev, Calc, Security, Utils, File tools',
       'PWA offline-first, i18n ID/EN, dark mode',

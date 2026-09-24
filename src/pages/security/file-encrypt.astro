@@ -215,7 +215,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
         // Validasi magic
         const magic = dec.decode(data.slice(0, MAGIC.length));
-        if (magic !== MAGIC) throw new Error('Bukan file ToolsAulia (.taenc)');
+        if (magic !== MAGIC) throw new Error('Bukan file MasAul Tools (.taenc)');
 
         let offset = MAGIC.length;
         const nameLen = new DataView(data.buffer, data.byteOffset + offset, 2).getUint16(0); offset += 2;

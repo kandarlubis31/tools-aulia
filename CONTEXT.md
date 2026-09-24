@@ -1,4 +1,4 @@
-# CONTEXT — ToolsAulia
+# CONTEXT — MasAul Tools
 
 Situs kumpulan tools 100% client-side (Astro + Tailwind). Data pengguna diproses di browser,
 tidak pernah dikirim ke server. Live production: **https://tools.paklubis.my.id** (Vercel).
@@ -65,6 +65,7 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 - ✅ Dashboard gak tampil di landing/search dan gak keindeks (3 lapis, terverifikasi live).
 - ⚠️ Catatan: kalau halaman sempat keindeks sebelum noindex, minta user request removal via Google Search Console.
 - 💡 Backlog opsional (belum diminta): multi-device sync → butuh backend (kandidat: Supabase), PPT → PDF, absensi dari HP karyawan.
+- ✅ **Rebrand (Sep 24, 2026): ToolsAulia → MasAul Tools** — nama baru + logo baru (`public/logo.png`, 1254×1254). Navbar/footer pakai `<img>` `/logo.png`, favicon 16/32, apple-touch 180, PWA 192/512 digenerate dari logo (ffmpeg lanczos), favicon.svg = wrapper logo, safari mask-icon + safari-pinned-tab.svg dihapus, manifest PWA + JSON-LD + seluruh page title `| ToolsAulia` → `| MasAul Tools` (97 file; special-case "ToolsAulia by Mas Aul" tetap), title + favicon 32 di editor ikut. Nama personal "Aulia Iskandar Lubis" di copyright footer/LICENSE tetap.
 
 ## Verifikasi standar selesai kerja
 
