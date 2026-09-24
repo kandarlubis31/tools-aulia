@@ -667,7 +667,7 @@ if (isPdfRoot) {
 
   <footer class="border-t border-matte-200 dark:border-surface-border bg-white dark:bg-matte-900 mt-auto pb-safe content-visibility-auto" role="contentinfo" aria-label="Footer">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-y-2 md:gap-10">
         <!-- Brand -->
         <div class="col-span-2 md:col-span-1">
           <a href="/" class="inline-flex items-center gap-2 font-bold text-lg tracking-tight mb-3">
@@ -688,8 +688,11 @@ if (isPdfRoot) {
         </div>
 
         <!-- Kategori -->
-        <div>
-          <h4 class="section-title mb-3" data-i18n="footer.categories">Kategori Tools</h4>
+        <details class="footer-acc" open>
+          <summary class="footer-acc-summary">
+            <h4 class="section-title" data-i18n="footer.categories">Kategori Tools</h4>
+            <svg class="chev w-3.5 h-3.5 text-matte-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
           <ul class="space-y-2.5 text-xs">
             <li><a href="/pdf" class="footer-link" data-i18n="footer.pdf_tools">PDF Tools</a></li>
             <li><a href="/?cat=image" class="footer-link" data-i18n="footer.image_tools">Image Tools</a></li>
@@ -703,11 +706,14 @@ if (isPdfRoot) {
             <li><a href="/?cat=media" class="footer-link" data-i18n="footer.media_tools">Media Tools</a></li>
             <li><a href="/?cat=network" class="footer-link" data-i18n="footer.network_tools">Network Tools</a></li>
           </ul>
-        </div>
+        </details>
 
         <!-- Tools Populer -->
-        <div>
-          <h4 class="section-title mb-3" data-i18n="footer.popular">Tools Populer</h4>
+        <details class="footer-acc" open>
+          <summary class="footer-acc-summary">
+            <h4 class="section-title" data-i18n="footer.popular">Tools Populer</h4>
+            <svg class="chev w-3.5 h-3.5 text-matte-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
           <ul class="space-y-2.5 text-xs">
             <li><a href="/pdf/compress" class="footer-link">Compress PDF</a></li>
             <li><a href="/pdf/to-jpg" class="footer-link">PDF to Image</a></li>
@@ -715,11 +721,14 @@ if (isPdfRoot) {
             <li><a href="/calc/age" class="footer-link">Kalkulator Usia</a></li>
             <li><a href="/security/password" class="footer-link">Password Generator</a></li>
           </ul>
-        </div>
+        </details>
 
         <!-- Bantuan -->
-        <div>
-          <h4 class="section-title mb-3" data-i18n="footer.support">Bantuan</h4>
+        <details class="footer-acc" open>
+          <summary class="footer-acc-summary">
+            <h4 class="section-title" data-i18n="footer.support">Bantuan</h4>
+            <svg class="chev w-3.5 h-3.5 text-matte-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
           <ul class="space-y-2.5 text-xs">
             <li>
               <button id="cache-clear-btn" class="footer-link inline-flex items-center gap-1.5 cursor-pointer" title="Clear cache & reload" aria-label="Bersihkan cache dan muat ulang">
@@ -733,7 +742,7 @@ if (isPdfRoot) {
             <li><a href="/rss.xml" class="footer-link inline-flex items-center gap-1.5" target="_blank" rel="noopener noreferrer" data-i18n="footer.rss">📡 RSS Feed</a></li>
           </ul>
           <span id="offline-ready-badge" class="hidden mt-4 text-2xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full inline-flex items-center gap-1">📦 Offline-ready</span>
-        </div>
+        </details>
       </div>
 
       <div class="divider-thin my-6"></div>
@@ -871,6 +880,24 @@ if (isPdfRoot) {
           setTimeout(showInstallBtn, 30000);
         }
       });
+
+      // ── Footer accordion sync (mobile) ──
+      // SSR pakai attribute `open` (desktop & no-JS tetap terbuka). JS menentukan
+      // state final: mobile = collapsed, desktop = terbuka. Deterministik dua arah
+      // saat resize lintas breakpoint. Listener MQ di-replace tiap page-load biar
+      // gak numpuk (closure lama pegang node yang udah detached).
+      const footerAccs = document.querySelectorAll('details.footer-acc');
+      const applyFooterAcc = (desktop) => footerAccs.forEach(d => { d.open = desktop; });
+      applyFooterAcc(window.matchMedia('(min-width: 768px)').matches);
+      if (window.__footerAccMQ && window.__footerAccMQHandler) {
+        window.__footerAccMQ.removeEventListener?.('change', window.__footerAccMQHandler);
+      } else {
+        window.__footerAccMQ = window.matchMedia('(min-width: 768px)');
+      }
+      window.__footerAccMQHandler = (e) => applyFooterAcc(e.matches);
+      window.__footerAccMQ.addEventListener
+        ? window.__footerAccMQ.addEventListener('change', window.__footerAccMQHandler)
+        : window.__footerAccMQ.addListener(window.__footerAccMQHandler);
 
       const backBtn = document.getElementById('back-btn');
       const backBtnText = document.getElementById('back-btn-text');

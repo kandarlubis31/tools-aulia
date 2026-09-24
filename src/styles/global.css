@@ -394,6 +394,35 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   color: #ffffff;
 }
 
+/* ========== FOOTER ACCORDION (mobile) ==========
+   Kolom footer jadi <details>/<summary> native — zero JS untuk toggle.
+   Desktop (md+): selalu terbuka via [open] attribute + pointer-events none
+   di summary (klik gak bisa collapse). Mobile: bisa di-tap collapse.
+   Sync open attribute di-handle JS matchMedia (resize lintas breakpoint). */
+.footer-acc-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  list-style: none;
+  cursor: pointer;
+  padding: 0.625rem 0;
+  border-radius: 0.5rem;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s ease;
+}
+.footer-acc-summary::-webkit-details-marker { display: none; }
+.footer-acc-summary:active { background-color: rgba(15, 23, 42, 0.04); }
+.dark .footer-acc-summary:active { background-color: rgba(255, 255, 255, 0.05); }
+.footer-acc-summary .chev { transition: transform 0.2s ease; }
+.footer-acc[open] > .footer-acc-summary .chev { transform: rotate(180deg); }
+@media (min-width: 768px) {
+  /* CATATAN: konten TIDAK di-force display di sini — details[open] sudah tampil
+     secara native, dan force-display bakal nembus attribute `hidden` pada
+     #offline-ready-badge (direct child details Bantuan). */
+  .footer-acc-summary { pointer-events: none; padding: 0 0 0.75rem; cursor: default; }
+}
+
 /* ========== SECTION TITLE ========== */
 .section-title {
   font-size: 0.75rem;
