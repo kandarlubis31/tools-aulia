@@ -1,4 +1,4 @@
-// Global window type declarations for ToolsAulia
+// Global window type declarations for MasAul Tools
 
 declare global {
   interface Window {

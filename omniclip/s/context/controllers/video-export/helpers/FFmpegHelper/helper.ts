@@ -22,7 +22,7 @@ export class FFmpegHelper {
 	}
 
 	async #load_ffmpeg() {
-		// self-hosted core (ToolsAulia /vendor/ffmpeg) — same-origin, offline-first,
+		// self-hosted core (MasAul Tools /vendor/ffmpeg) — same-origin, offline-first,
 		// avoids cross-origin unpkg fetch under COEP: require-corp
 		const baseURL = '/vendor/ffmpeg'
 		await this.ffmpeg.load({

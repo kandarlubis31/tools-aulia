@@ -382,7 +382,7 @@ window._i18nPhrases = {
   'Masukkan nama kontak:':'Enter contact name:',
   '🐛 Lapor Bug':'🐛 Report Bug',
   'Lapor Bug':'Report Bug',
-  'Bantu kami memperbaiki ToolsAulia':'Help us improve ToolsAulia',
+  'Bantu kami memperbaiki MasAul Tools':'Help us improve MasAul Tools',
   'Deskripsi Bug':'Bug Description',
   'Jelaskan bug yang kamu temui…':'Describe the bug you found…',
   'Langkah Reproduksi (opsional)':'Steps to Reproduce (optional)',

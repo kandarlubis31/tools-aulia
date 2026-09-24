@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * check-client-side
- * Pastikan ToolsAulia tetap 100% client-side (garansi inti project).
+ * Pastikan MasAul Tools tetap 100% client-side (garansi inti project).
  *
  * - Scan seluruh src/ + astro.config.mjs untuk pola server-side.
  * - Gagal (exit 1) kalau ada pelanggaran — bisa dijalankan manual atau di CI.

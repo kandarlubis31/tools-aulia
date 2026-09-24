@@ -1,5 +1,5 @@
 /**
- * New Tools — Daftar tools yang baru ditambahkan ke ToolsAulia.
+ * New Tools — Daftar tools yang baru ditambahkan ke MasAul Tools.
  * 
  * Cara pakai: tinggal tambah href tool baru di URUTAN PALING ATAS.
  * Index page otomatis nampilin 8 tools terbaru.

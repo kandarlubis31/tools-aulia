@@ -149,8 +149,8 @@ html = html
   .replace('href="index.css"', 'href="/editor/index.css"')
   .replace('href="./assets/favicon-32x32.png"', 'href="/editor/assets/favicon-32x32.png"')
   .replace('src="/assets/icon3.png"', 'src="/editor/assets/icon3.png"')
-  .replace(/<title>omni-clip<\/title>/, "<title>Video Editor | ToolsAulia</title>")
-  .replace(/<title>omniclip<\/title>/, "<title>Video Editor | ToolsAulia</title>");
+  .replace(/<title>omni-clip<\/title>/, "<title>Video Editor | MasAul Tools</title>")
+  .replace(/<title>omniclip<\/title>/, "<title>Video Editor | MasAul Tools</title>");
 await writeFile(join(OUT, "index.html"), html);
 
 // 2. main.bundle.min.js — rewrite asset refs to ABSOLUTE /editor/assets/... + point
@@ -221,7 +221,7 @@ for (const dir of ["views", "tools", "icons"]) {
 }
 
 // 8. favicon — upstream omniclip references ./assets/favicon-32x32.png but ships none;
-//    use ToolsAulia's own favicon so the tab icon is on-brand.
+//    use MasAul Tools' own favicon so the tab icon is on-brand.
 await cp(join(root, "public", "favicon-32x32.png"), join(OUT, "assets", "favicon-32x32.png"));
 
 console.log("done →", OUT);

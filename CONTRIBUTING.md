@@ -1,6 +1,6 @@
-# Contributing to ToolsAulia
+# Contributing to MasAul Tools
 
-Thank you for your interest in contributing to ToolsAulia! This is a client-side only tool collection built with Astro. We welcome contributions from developers of all skill levels.
+Thank you for your interest in contributing to MasAul Tools! This is a client-side only tool collection built with Astro. We welcome contributions from developers of all skill levels.
 
 ## 📋 Table of Contents
 
