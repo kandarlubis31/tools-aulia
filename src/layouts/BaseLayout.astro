@@ -645,7 +645,8 @@ if (isPdfRoot) {
             <>
               <li aria-hidden="true" class="text-matte-300 dark:text-matte-500">/</li>
               <li>
-                <a id="back-btn" href={crumbMiddle.href} class="inline-flex items-center gap-1 px-2 py-2 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white transition-colors">
+                <a id="back-btn" href={crumbMiddle.href} class="inline-flex items-center gap-1.5 px-2 py-2 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
                   <span id="back-btn-text" data-i18n={crumbMiddle.key || undefined}>{crumbMiddle.label}</span>
                 </a>
               </li>
@@ -688,12 +689,9 @@ if (isPdfRoot) {
         </div>
 
         <!-- Kategori -->
-        <details class="footer-acc" open>
-          <summary class="footer-acc-summary">
-            <h4 class="section-title" data-i18n="footer.categories">Kategori Tools</h4>
-            <svg class="chev w-3.5 h-3.5 text-matte-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-          </summary>
-          <ul class="space-y-2.5 text-xs">
+        <div class="footer-col">
+          <h4 class="section-title mb-3" data-i18n="footer.categories">Kategori Tools</h4>
+          <ul class="footer-col-list space-y-2.5 text-xs">
             <li><a href="/pdf" class="footer-link" data-i18n="footer.pdf_tools">PDF Tools</a></li>
             <li><a href="/?cat=image" class="footer-link" data-i18n="footer.image_tools">Image Tools</a></li>
             <li><a href="/?cat=dev" class="footer-link" data-i18n="footer.dev_tools">Developer Tools</a></li>
@@ -706,30 +704,24 @@ if (isPdfRoot) {
             <li><a href="/?cat=media" class="footer-link" data-i18n="footer.media_tools">Media Tools</a></li>
             <li><a href="/?cat=network" class="footer-link" data-i18n="footer.network_tools">Network Tools</a></li>
           </ul>
-        </details>
+        </div>
 
         <!-- Tools Populer -->
-        <details class="footer-acc" open>
-          <summary class="footer-acc-summary">
-            <h4 class="section-title" data-i18n="footer.popular">Tools Populer</h4>
-            <svg class="chev w-3.5 h-3.5 text-matte-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-          </summary>
-          <ul class="space-y-2.5 text-xs">
+        <div class="footer-col">
+          <h4 class="section-title mb-3" data-i18n="footer.popular">Tools Populer</h4>
+          <ul class="footer-col-list space-y-2.5 text-xs">
             <li><a href="/pdf/compress" class="footer-link">Compress PDF</a></li>
             <li><a href="/pdf/to-jpg" class="footer-link">PDF to Image</a></li>
             <li><a href="/image/converter" class="footer-link">Image Converter</a></li>
             <li><a href="/calc/age" class="footer-link">Kalkulator Usia</a></li>
             <li><a href="/security/password" class="footer-link">Password Generator</a></li>
           </ul>
-        </details>
+        </div>
 
         <!-- Bantuan -->
-        <details class="footer-acc" open>
-          <summary class="footer-acc-summary">
-            <h4 class="section-title" data-i18n="footer.support">Bantuan</h4>
-            <svg class="chev w-3.5 h-3.5 text-matte-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-          </summary>
-          <ul class="space-y-2.5 text-xs">
+        <div class="footer-col">
+          <h4 class="section-title mb-3" data-i18n="footer.support">Bantuan</h4>
+          <ul class="footer-col-list space-y-2.5 text-xs">
             <li>
               <button id="cache-clear-btn" class="footer-link inline-flex items-center gap-1.5 cursor-pointer" title="Clear cache & reload" aria-label="Bersihkan cache dan muat ulang">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
@@ -742,7 +734,7 @@ if (isPdfRoot) {
             <li><a href="/rss.xml" class="footer-link inline-flex items-center gap-1.5" target="_blank" rel="noopener noreferrer" data-i18n="footer.rss">📡 RSS Feed</a></li>
           </ul>
           <span id="offline-ready-badge" class="hidden mt-4 text-2xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full inline-flex items-center gap-1">📦 Offline-ready</span>
-        </details>
+        </div>
       </div>
 
       <div class="divider-thin my-6"></div>
@@ -881,24 +873,6 @@ if (isPdfRoot) {
         }
       });
 
-      // ── Footer accordion sync (mobile) ──
-      // SSR pakai attribute `open` (desktop & no-JS tetap terbuka). JS menentukan
-      // state final: mobile = collapsed, desktop = terbuka. Deterministik dua arah
-      // saat resize lintas breakpoint. Listener MQ di-replace tiap page-load biar
-      // gak numpuk (closure lama pegang node yang udah detached).
-      const footerAccs = document.querySelectorAll('details.footer-acc');
-      const applyFooterAcc = (desktop) => footerAccs.forEach(d => { d.open = desktop; });
-      applyFooterAcc(window.matchMedia('(min-width: 768px)').matches);
-      if (window.__footerAccMQ && window.__footerAccMQHandler) {
-        window.__footerAccMQ.removeEventListener?.('change', window.__footerAccMQHandler);
-      } else {
-        window.__footerAccMQ = window.matchMedia('(min-width: 768px)');
-      }
-      window.__footerAccMQHandler = (e) => applyFooterAcc(e.matches);
-      window.__footerAccMQ.addEventListener
-        ? window.__footerAccMQ.addEventListener('change', window.__footerAccMQHandler)
-        : window.__footerAccMQ.addListener(window.__footerAccMQHandler);
-
       const backBtn = document.getElementById('back-btn');
       const backBtnText = document.getElementById('back-btn-text');
       const urlParams = new URLSearchParams(window.location.search);
@@ -906,9 +880,30 @@ if (isPdfRoot) {
       if (backBtn && fromCat && fromCat !== 'popular' && fromCat !== 'all') {
          backBtn.href = `/?cat=${fromCat}`;
          // Breadcrumb mode: middle crumb = nama kategori, bukan "Kembali ke X"
-         const catNames = {'pdf': 'PDF Tools', 'dev': 'Dev', 'image': 'Image', 'calc': 'Calc', 'file': 'File', 'security': 'Security', 'utils': 'Utils', 'text': 'Text', 'data': 'Data', 'media': 'Media'};
+         // { label, key } — key di-set ke data-i18n span biar toggle bahasa tetap konsisten
+         // dgn kategori tujuan (bug lama: from_cat=media di tool cat=image, toggle lang
+         // balikin label ke kategori asal). network ditambahkan (dulu fallback "Kategori").
+         const catNames = {
+           'pdf': { label: 'PDF Tools', key: 'nav.pdf_tools' },
+           'dev': { label: 'Dev', key: 'nav.category_dev' },
+           'image': { label: 'Image', key: 'nav.category_image' },
+           'calc': { label: 'Calc', key: 'nav.category_calc' },
+           'file': { label: 'File', key: 'nav.category_file' },
+           'security': { label: 'Security', key: 'nav.category_security' },
+           'utils': { label: 'Utils', key: 'nav.category_utils' },
+           'text': { label: 'Text', key: 'nav.category_text' },
+           'data': { label: 'Data', key: 'nav.category_data' },
+           'media': { label: 'Media', key: 'nav.category_media' },
+           'network': { label: 'Network', key: 'nav.category_network' },
+         };
          if (backBtnText) {
-           backBtnText.textContent = catNames[fromCat] || 'Kategori';
+           const cat = catNames[fromCat];
+           if (cat) {
+             backBtnText.textContent = cat.label;
+             backBtnText.setAttribute('data-i18n', cat.key);
+             // Sinkron snapshot i18n (kalo udah diambil saat init EN sebelum override jalan)
+             if (backBtnText.__d18n) backBtnText.__d18n.val = cat.label;
+           }
          }
       }
 
