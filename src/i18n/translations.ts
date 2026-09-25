@@ -3006,6 +3006,14 @@ export const translations: Record<string, { id: string; en: string }> = {
   'feedback.contact_placeholder': { id: 'Email atau username GitHub…', en: 'Email or GitHub username…' },
   'feedback.submit': { id: 'Buka di GitHub', en: 'Open on GitHub' },
   'feedback.close': { id: 'Tutup', en: 'Close' },
+
+  // --- Giants batch: QR ---
+  'label.logo_center': { id: 'Logo di Tengah (Opsional)', en: 'Center Logo (Optional)' },
+  'label.logo_size': { id: 'Ukuran Logo', en: 'Logo Size' },
+  'label.qr_size_px': { id: 'Ukuran QR', en: 'QR Size' },
+  'label.hex_color': { id: 'Kode hex warna', en: 'Color hex code' },
+  'btn.upload_logo': { id: 'Unggah Logo', en: 'Upload Logo' },
+  'btn.remove_logo': { id: 'Hapus Logo', en: 'Remove Logo' },
 };
 
 export function t(key, fallback) {

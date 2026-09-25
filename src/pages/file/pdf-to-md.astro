@@ -71,6 +71,7 @@ import DropZone from '../../components/DropZone.astro';
 </BaseLayout>
 
 <script is:inline>
+  const __page = (location.pathname.replace(/\/+$/, '') || '/');
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
     const fileInput = document.getElementById('file-input');

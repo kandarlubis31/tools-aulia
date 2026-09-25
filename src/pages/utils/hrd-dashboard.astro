@@ -166,7 +166,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <!-- ===== Tab: Karyawan ===== -->
       <section id="tab-karyawan" class="tab-panel hidden space-y-4">
         <div class="card-base p-4 flex flex-col sm:flex-row gap-2">
-          <input id="emp-search" type="text" placeholder="Cari nama / jabatan / divisi..." class="flex-1 p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
+          <input id="emp-search" type="text" placeholder="Cari nama / jabatan / divisi..." aria-label="Cari karyawan" class="flex-1 p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
           <button id="emp-add-btn" class="bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold py-3 px-6 rounded-lg transition-all active:scale-95 whitespace-nowrap">+ Tambah Karyawan</button>
         </div>
         <div class="card-base p-4 flex flex-col sm:flex-row sm:items-center gap-2">
@@ -202,7 +202,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <!-- ===== Tab: Absensi ===== -->
       <section id="tab-absensi" class="tab-panel hidden space-y-4">
         <div class="card-base p-4 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-          <input id="att-date" type="date" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
+          <input id="att-date" type="date" aria-label="Tanggal absensi" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue transition-colors" />
           <button id="att-all-present" class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/10 rounded-lg px-4 py-3 transition-colors">Tandai Semua Hadir</button>
         </div>
         <div class="card-base overflow-hidden">
@@ -216,16 +216,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <div class="card-base p-4 md:p-5">
           <h3 class="font-bold text-matte-900 dark:text-white mb-3">Ajukan Cuti / Izin</h3>
           <form id="leave-form" class="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <select id="leave-emp" required class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue"></select>
-            <select id="leave-type" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue">
+            <select id="leave-emp" required aria-label="Pilih karyawan" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue"></select>
+            <select id="leave-type" aria-label="Jenis cuti" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue">
               <option value="Tahunan">Cuti Tahunan</option>
               <option value="Sakit">Sakit</option>
               <option value="Melahirkan">Melahirkan</option>
               <option value="Izin">Izin Lainnya</option>
             </select>
             <div></div>
-            <input id="leave-start" type="date" required class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
-            <input id="leave-end" type="date" required class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            <input id="leave-start" type="date" required aria-label="Mulai cuti" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+            <input id="leave-end" type="date" required aria-label="Selesai cuti" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
             <div></div>
             <input id="leave-reason" type="text" placeholder="Alasan (opsional)" class="col-span-2 md:col-span-2 p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
             <button type="submit" class="bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-semibold py-3 rounded-lg transition-all active:scale-95">Ajukan</button>
@@ -258,7 +258,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <!-- ===== Tab: Payroll ===== -->
       <section id="tab-payroll" class="tab-panel hidden space-y-4">
         <div class="card-base p-4 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
-          <input id="payroll-month" type="month" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
+          <input id="payroll-month" type="month" aria-label="Bulan payroll" class="p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
           <button id="payroll-export-btn" class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/10 rounded-lg px-4 py-3 transition-colors">Export CSV</button>
         </div>
         <div class="card-base overflow-hidden">
@@ -294,7 +294,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <div class="border-t border-matte-100 dark:border-surface-border pt-4">
             <h3 class="font-bold text-matte-900 dark:text-white mb-1">Restore Data</h3>
             <p class="text-sm text-matte-400 mb-3">Impor file backup JSON. Data saat ini akan diganti dengan isi file.</p>
-            <input id="import-json-input" type="file" accept=".json,application/json" class="block w-full text-sm text-matte-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-matte-900 dark:file:bg-white file:text-white dark:file:text-matte-900 file:font-semibold file:cursor-pointer" />
+            <input id="import-json-input" type="file" accept=".json,application/json" aria-label="File backup JSON" class="block w-full text-sm text-matte-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-matte-900 dark:file:bg-white file:text-white dark:file:text-matte-900 file:font-semibold file:cursor-pointer" />
           </div>
           <div class="border-t border-matte-100 dark:border-surface-border pt-4">
             <h3 class="font-bold text-matte-900 dark:text-white mb-1">Reset Kredensial</h3>
@@ -317,23 +317,23 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <form id="emp-form" class="space-y-3">
           <input type="hidden" id="emp-id" />
           <div>
-            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Nama Lengkap *</label>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="emp-name">Nama Lengkap *</label>
             <input id="emp-name" type="text" required class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Jabatan</label>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="emp-position">Jabatan</label>
               <input id="emp-position" type="text" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Divisi</label>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="emp-division">Divisi</label>
               <input id="emp-division" type="text" list="division-options" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
               <datalist id="division-options"></datalist>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Status</label>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="emp-status">Status</label>
               <select id="emp-status" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue">
                 <option value="Tetap">Tetap</option>
                 <option value="Kontrak">Kontrak</option>
@@ -342,25 +342,25 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Tgl Masuk</label>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="emp-join">Tgl Masuk</label>
               <input id="emp-join" type="date" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
             </div>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Akhir Kontrak (khusus PKWT, opsional)</label>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="emp-contract-end">Akhir Kontrak (khusus PKWT, opsional)</label>
             <input id="emp-contract-end" type="date" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Gaji Pokok / bulan (Rp)</label>
+            <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="emp-salary">Gaji Pokok / bulan (Rp)</label>
             <input id="emp-salary" type="number" min="0" step="100000" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Email</label>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="emp-email">Email</label>
               <input id="emp-email" type="email" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1">Telepon</label>
+              <label class="block text-xs font-semibold text-matte-500 dark:text-matte-300 mb-1" for="emp-phone">Telepon</label>
               <input id="emp-phone" type="tel" class="w-full p-3 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border outline-none focus:border-accent-blue" />
             </div>
           </div>
@@ -441,14 +441,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
   function checkIdle() {
     if (sessionStorage.getItem(SESSION_KEY) !== '1') return;
+    // Guard SPA: interval jalan terus walau user udah pindah halaman —
+    // jangan sentuh DOM dashboard yang udah gak ada.
+    if (!$('auth-screen')) return;
     const last = parseInt(localStorage.getItem(LAST_ACTIVITY_KEY) || '0', 10);
     if (last > 0 && Date.now() - last > IDLE_MS) {
       sessionStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(LAST_ACTIVITY_KEY);
-      $('app-screen').classList.add('hidden');
-      $('auth-screen').classList.remove('hidden');
+      const app = $('app-screen'); const auth = $('auth-screen');
+      if (app) app.classList.add('hidden');
+      if (auth) auth.classList.remove('hidden');
       showLogin();
-      toast('Sesi berakhir karena tidak ada aktivitas. Silakan login kembali.');
+      toast('Sesi berakhir karena tidak ada aktivitas. Silakan login kembali.', 'info');
     }
   }
 
@@ -480,13 +484,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }
 
-  function toast(msg: string) {
-    document.querySelectorAll('.hrd-toast').forEach(t => t.remove());
-    const el = document.createElement('div');
-    el.className = 'hrd-toast fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] bg-matte-900 dark:bg-white text-white dark:text-matte-900 text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg animate-fade-in';
-    el.textContent = msg;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 2500);
+  // Toast via konvensi global (#17/#18) — dilarang bikin elemen toast sendiri.
+  function toast(msg: string, type: 'success' | 'error' | 'info' = 'success') {
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
   }
 
   // ==================== State ====================
@@ -747,8 +747,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   function handleEmpSubmit(e: Event) {
     e.preventDefault();
     const id = ($('emp-id') as HTMLInputElement).value;
+    const err = $('emp-error');
+    err.classList.add('hidden');
     const name = ($('emp-name') as HTMLInputElement).value.trim();
-    if (!name) return;
+    const email = ($('emp-email') as HTMLInputElement).value.trim();
+    if (!name) { err.textContent = 'Nama wajib diisi.'; err.classList.remove('hidden'); return; }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.textContent = 'Format email tidak valid.'; err.classList.remove('hidden'); return; }
     const payload: Employee = {
       id: id ? +id : Date.now(),
       name,
@@ -774,7 +778,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
 
   function exportEmployeesCsv() {
-    if (data.employees.length === 0) { toast('Belum ada data karyawan'); return; }
+    if (data.employees.length === 0) { toast('Belum ada data karyawan', 'info'); return; }
     const header = ['Nama', 'Jabatan', 'Divisi', 'Status', 'Tanggal Masuk', 'Akhir Kontrak', 'Gaji Pokok', 'Email', 'Telepon'];
     const rows = data.employees.map(e => [e.name, e.position, e.division, e.status, e.joinDate, e.contractEnd, e.salary, e.email, e.phone]);
     const csv = '\uFEFF' + [header, ...rows].map(r => r.map(csvCell).join(';')).join('\n');
@@ -1006,10 +1010,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   function handleLeaveSubmit(e: Event) {
     e.preventDefault();
     const empId = +(($('leave-emp') as HTMLSelectElement).value);
-    if (!empId) { toast('Pilih karyawan dulu'); return; }
+    if (!empId) { toast('Pilih karyawan dulu', 'error'); return; }
     const start = ($('leave-start') as HTMLInputElement).value;
     const end = ($('leave-end') as HTMLInputElement).value;
-    if (start && end && end < start) { toast('Tanggal selesai < tanggal mulai'); return; }
+    if (start && end && end < start) { toast('Tanggal selesai < tanggal mulai', 'error'); return; }
     data.leaves.push({
       id: Date.now(), empId,
       type: ($('leave-type') as HTMLSelectElement).value,
@@ -1051,7 +1055,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
                 <p class="text-xs text-matte-400 truncate">${esc(c.position) || '—'}${c.contact ? ' · ' + esc(c.contact) : ''}</p>
                 ${c.note ? `<p class="text-xs text-matte-500 dark:text-matte-300 mt-1">${esc(c.note)}</p>` : ''}
                 <div class="flex items-center gap-1 mt-2">
-                  <select data-cand-move="${c.id}" class="flex-1 text-xs p-1.5 rounded-md bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border text-matte-600 dark:text-matte-300 outline-none">
+                  <select data-cand-move="${c.id}" aria-label="Pindahkan kandidat ke tahap" class="flex-1 text-xs p-1.5 rounded-md bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border text-matte-600 dark:text-matte-300 outline-none">
                     <option value="">→ pindah ke...</option>
                     ${STAGES.filter(s => s.key !== c.stage).map(s => `<option value="${s.key}">${s.label}</option>`).join('')}
                   </select>
@@ -1126,7 +1130,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   function exportPayrollCsv() {
     const month = ($('payroll-month') as HTMLInputElement).value || todayStr().slice(0, 7);
-    if (data.employees.length === 0) { toast('Belum ada data'); return; }
+    if (data.employees.length === 0) { toast('Belum ada data', 'info'); return; }
     const header = ['Nama', 'Divisi', 'Bulan', 'Gaji Pokok', 'Hadir', 'Alpha', 'Potongan', 'Gaji Bersih'];
     const rows = data.employees.map(e => {
       const att = data.attendance.filter(a => a.empId === e.id && a.date.startsWith(month));
@@ -1151,7 +1155,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     reader.onload = () => {
       try {
         const parsed = JSON.parse(String(reader.result));
-        if (!parsed || !Array.isArray(parsed.employees)) { toast('File tidak valid'); return; }
+        if (!parsed || !Array.isArray(parsed.employees)) { toast('File tidak valid', 'error'); return; }
         if (!confirm('Ganti data saat ini dengan isi backup?')) return;
         data = {
           employees: (parsed.employees ?? []).map((e: Employee) => ({ contractEnd: '', ...e })),
@@ -1160,7 +1164,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           candidates: parsed.candidates ?? [],
         };
         save(); renderAll(); toast('Data berhasil diimpor');
-      } catch { toast('File tidak valid'); }
+      } catch { toast('File tidak valid', 'error'); }
     };
     reader.readAsText(file);
   }
@@ -1273,16 +1277,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       }
     });
 
-    // Esc = tutup modal
+    // Esc = tutup modal (guard null: setelah pindah halaman elemen gak ada lagi)
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') $('emp-modal').classList.add('hidden');
+      if (e.key === 'Escape') { const m = $('emp-modal'); if (m) m.classList.add('hidden'); }
     });
   }
 
-  // Init
-  bindEvents();
-
-  // Auto-lock: aktivitas memperpanjang sesi; cek idle tiap 30 detik
+  // ==================== Boot (SPA-safe, konvensi #14) ====================
+  // Auto-lock: aktivitas memperpanjang sesi; cek idle tiap 30 detik.
+  // Listener & interval dipasang SEKALI di level modul (gak ikut navigasi SPA)
+  // supaya gak numpuk tiap visit; yang perlu DOM fresh cuma bindEvents + render.
   let lastStamp = 0;
   ['click', 'keydown', 'mousemove', 'touchstart'].forEach(ev =>
     document.addEventListener(ev, () => {
@@ -1292,10 +1296,22 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   checkIdle();
   setInterval(checkIdle, 30000);
 
-  if (sessionStorage.getItem(SESSION_KEY) === '1' && loadAuth()) {
-    enterApp();
-  } else {
-    showLogin();
-    switchTab('ringkasan');
+  function boot() {
+    bindEvents();
+    if (sessionStorage.getItem(SESSION_KEY) === '1' && loadAuth()) {
+      enterApp();
+    } else {
+      showLogin();
+      switchTab('ringkasan');
+    }
   }
+
+  const __hrdPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __hrdPage) return;
+    const root = document.getElementById('auth-screen');
+    if (!root || root.dataset.hrdBound === 'true') return;
+    root.dataset.hrdBound = 'true';
+    boot();
+  });
 </script>
