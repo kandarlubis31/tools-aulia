@@ -112,6 +112,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
       </div>
 
+      <div class="card-base p-8" id="history-card">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-matte-800 dark:text-white">Riwayat Surat</h3>
+          <button id="letter-history-clear" class="text-xs text-matte-400 hover:text-red-500 font-medium">Hapus Semua</button>
+        </div>
+        <div id="letter-history-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+          <p class="text-sm text-matte-400 text-center py-4">Belum ada riwayat</p>
+        </div>
+      </div>
+
       <div class="text-xs text-matte-400 bg-matte-100 dark:bg-surface-hover rounded-xl p-4 leading-relaxed">
         <p class="font-bold text-matte-600 dark:text-matte-300 mb-1">Yang perlu diketahui</p>
         <ul class="list-disc list-inside space-y-0.5">
@@ -128,6 +138,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <script>
   import { loadCdnLib } from '../../composables/useCdnLib';
+  import { useLocalHistory } from '../../composables/useLocalHistory';
 
   // ===== Data karyawan dari HRD Dashboard (localStorage, browser yang sama)
   const DATA_KEY = 'hrd_data_v1';
@@ -156,7 +167,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
   (document.getElementById('btn-autofill') as HTMLButtonElement).onclick = () => {
     const emp = hrdEmps.find(e => e.id === parseInt(empSelect.value, 10));
-    if (!emp) { alert('Pilih karyawan dari daftar dulu.'); return; }
+    if (!emp) { window.showToast?.(window._tToast ? window._tToast('Pilih karyawan dari daftar dulu.') : 'Pilih karyawan dari daftar dulu.', 'error'); return; }
     const set = (id: string, val: string) => { const el = document.getElementById(id) as HTMLInputElement | undefined; if (el) el.value = val; };
     // Semua jenis surat: nama, jabatan, divisi
     set('skk-name', emp.name); set('skk-position', emp.position); set('skk-division', emp.division); set('skk-join', emp.joinDate || '');
@@ -169,6 +180,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     hrdStatus.innerHTML = `<span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">✓ Form terisi otomatis: ${emp.name}</span>`;
   };
 
+  const escHtml = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+
+  // Riwayat form-snapshot per jenis surat (konvensi riwayat lokal, maks 10)
+  const letterHistory = useLocalHistory<{ id: number; kind: string; name: string; date: string; snapshot: Record<string, string> }>('hist:surat-hr', 10);
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load guard
+  // path (#14). Dulu top-level: mati begitu navigasi SPA balik ke halaman ini.
+  function init() {
   const fmtRp = (n: number) => 'Rp ' + Math.round(n).toLocaleString('id-ID');
   const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const fmtDateID = (iso: string) => {
@@ -216,13 +235,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   // ===== SKK Massal: 1 PDF multi-halaman untuk semua karyawan HRD Dashboard
   (document.getElementById('btn-batch') as HTMLButtonElement).onclick = async () => {
-    if (hrdEmps.length === 0) { alert('Tidak ada data karyawan HRD Dashboard di browser ini.'); return; }
+    if (hrdEmps.length === 0) { window.showToast?.(window._tToast ? window._tToast('Tidak ada data karyawan HRD Dashboard di browser ini.') : 'Tidak ada data karyawan HRD Dashboard di browser ini.', 'error'); return; }
     const cdnReady = await loadCdnLib('html2pdf', [
       'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
       'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
       'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
     ]);
-    if (!cdnReady) { alert('Library PDF gagal dimuat — cek koneksi internet.'); return; }
+    if (!cdnReady) { window.showToast?.(window._tToast ? window._tToast('Library PDF gagal dimuat — cek koneksi internet.') : 'Library PDF gagal dimuat — cek koneksi internet.', 'error'); return; }
     const holder = document.createElement('div');
     holder.style.cssText = 'position:fixed;left:-10000px;top:0;';
     for (const emp of hrdEmps) {
@@ -366,7 +385,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   function buildLetter(): HTMLElement | null {
     const required = activeType === 'skk' ? v('skk-name') : activeType === 'sp' ? v('sp-name') : v('pk-name');
     if (!required) {
-      alert(activeType === 'skk' ? 'Isi nama karyawan di form Surat Keterangan Kerja.' : activeType === 'sp' ? 'Isi nama karyawan di form Surat Peringatan.' : 'Isi nama karyawan di form PKWT.');
+      const msg = activeType === 'skk' ? 'Isi nama karyawan di form Surat Keterangan Kerja.' : activeType === 'sp' ? 'Isi nama karyawan di form Surat Peringatan.' : 'Isi nama karyawan di form PKWT.';
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, 'error');
       return null;
     }
     const div = document.createElement('div');
@@ -392,6 +412,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     scaled.style.height = `${1165 * k}px`;
     scaled.style.overflow = 'hidden';
     previewWrap.classList.remove('hidden');
+    addLetterHistory();
+    window.showToast?.(window._tToast ? window._tToast('Preview surat siap.') : 'Preview surat siap.', 'info');
   };
 
   (document.getElementById('btn-pdf') as HTMLButtonElement).onclick = async () => {
@@ -402,7 +424,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
       'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
     ]);
-    if (!cdnReady) { alert('Library PDF gagal dimuat — cek koneksi internet.'); return; }
+    if (!cdnReady) { window.showToast?.(window._tToast ? window._tToast('Library PDF gagal dimuat — cek koneksi internet.') : 'Library PDF gagal dimuat — cek koneksi internet.', 'error'); return; }
     const holder = document.createElement('div');
     holder.style.cssText = 'position:fixed;left:-10000px;top:0;';
     holder.appendChild(letter);
@@ -419,5 +441,103 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     } finally {
       holder.remove();
     }
+    addLetterHistory();
+    window.showToast?.(window._tToast ? window._tToast('Surat diunduh sebagai PDF!') : 'Letter downloaded as PDF!', 'success');
   };
+
+  // ===== Riwayat form-snapshot surat =====
+  const LETTER_FIELDS: Record<string, string[]> = {
+    skk: ['skk-name', 'skk-nik', 'skk-position', 'skk-division', 'skk-join', 'skk-status', 'skk-purpose'],
+    sp: ['sp-level', 'sp-name', 'sp-position', 'sp-division', 'sp-date-incident', 'sp-pasal', 'sp-violation'],
+    pkwt: ['pk-name', 'pk-nik', 'pk-addr', 'pk-position', 'pk-division', 'pk-start', 'pk-dur', 'pk-salary', 'pk-allow', 'pk-payday', 'pk-probation'],
+  };
+  const COMMON_FIELDS = ['c-company', 'c-addr', 'c-num', 'c-city', 'c-date', 'c-sign-name', 'c-sign-title'];
+
+  function snapshotLetter(kind: string): Record<string, string> {
+    const o: Record<string, string> = { __kind: kind };
+    COMMON_FIELDS.concat(LETTER_FIELDS[kind] || []).forEach(id => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+      if (el) o[id] = el.value;
+    });
+    return o;
+  }
+
+  function restoreLetter(o: Record<string, string>) {
+    const kind = o.__kind;
+    if (kind === 'skk' || kind === 'sp' || kind === 'pkwt') setTab(kind);
+    Object.entries(o).forEach(([id, val]) => {
+      if (id === '__kind') return;
+      const el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+      if (el) el.value = val;
+    });
+  }
+
+  function renderLetterHistory() {
+    const list = document.getElementById('letter-history-list');
+    if (!list) return;
+    const items = letterHistory.getAll();
+    if (items.length === 0) {
+      list.innerHTML = '<p class="text-sm text-matte-400 text-center py-4">Belum ada riwayat</p>';
+      return;
+    }
+    const KIND_LABEL: Record<string, string> = { skk: 'SKK', sp: 'SP', pkwt: 'PKWT' };
+    list.innerHTML = items.map(it => `
+      <div class="flex items-center justify-between gap-2 p-3 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border">
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-matte-700 dark:text-white truncate">${escHtml(it.kind.toUpperCase())} — ${escHtml(it.name)}</p>
+          <p class="text-[10px] text-matte-400">${escHtml(it.date)}</p>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button data-load="${it.id}" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline px-2 py-1">Muat</button>
+          <button data-del="${it.id}" aria-label="Hapus dari riwayat" class="text-matte-400 hover:text-red-500 p-1 font-bold">×</button>
+        </div>
+      </div>`).join('');
+    list.querySelectorAll<HTMLButtonElement>('[data-load]').forEach(b => b.addEventListener('click', () => {
+      const it = letterHistory.getAll().find(x => x.id === +(b.dataset.load || 0));
+      if (it) { restoreLetter(it.snapshot); window.showToast?.(window._tToast ? window._tToast('Form dimuat dari riwayat.') : 'Form loaded from history.', 'info'); }
+    }));
+    list.querySelectorAll<HTMLButtonElement>('[data-del]').forEach(b => b.addEventListener('click', () => {
+      letterHistory.remove(x => x.id === +(b.dataset.del || 0));
+      renderLetterHistory();
+    }));
+  }
+
+  function addLetterHistory() {
+    const name = activeType === 'skk' ? v('skk-name') : activeType === 'sp' ? v('sp-name') : v('pk-name');
+    try {
+      letterHistory.add({ id: Date.now(), kind: activeType, name: name || 'Surat', date: new Date().toLocaleString('id-ID'), snapshot: snapshotLetter(activeType) });
+    } catch { /* kuota penuh — skip riwayat */ }
+    renderLetterHistory();
+  }
+
+  document.getElementById('letter-history-clear')?.addEventListener('click', () => {
+    letterHistory.clear();
+    renderLetterHistory();
+    window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus!') : 'History cleared!', 'success');
+  });
+
+  renderLetterHistory();
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __letterPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __letterPage) return;
+    const btn = document.getElementById('btn-preview');
+    if (!btn || btn.dataset.letterBound === 'true') return;
+    btn.dataset.letterBound = 'true';
+    init();
+  });
 </script>
+
+<style is:global>
+  /* Print-friendly (DoD HR suite): sidebar/nav hilang, preview & surat tampil bersih */
+  @media print {
+    header, nav, footer, #search-modal { display: none !important; }
+    main { padding: 0 !important; max-width: none !important; }
+    .card-base { box-shadow: none !important; border: none !important; background: #fff !important; }
+    #preview-wrap { display: block !important; }
+    #preview > div { transform: none !important; height: auto !important; overflow: visible !important; }
+    button { display: none !important; }
+  }
+</style>

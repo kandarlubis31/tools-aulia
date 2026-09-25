@@ -72,6 +72,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
       </div>
 
+      <div class="card-base p-8" id="history-card">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-matte-800 dark:text-white">Riwayat Slip</h3>
+          <button id="slip-history-clear" class="text-xs text-matte-400 hover:text-red-500 font-medium">Hapus Semua</button>
+        </div>
+        <div id="slip-history-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+          <p class="text-sm text-matte-400 text-center py-4">Belum ada riwayat</p>
+        </div>
+      </div>
+
       <div class="text-xs text-matte-400 bg-matte-100 dark:bg-surface-hover rounded-xl p-4 leading-relaxed">
         <p class="font-bold text-matte-600 dark:text-matte-300 mb-1">Yang perlu diketahui</p>
         <ul class="list-disc list-inside space-y-0.5">
@@ -84,8 +94,21 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 </BaseLayout>
 
+<style is:global>
+  /* Print-friendly (DoD HR suite): sidebar/nav hilang, preview & slip tampil bersih */
+  @media print {
+    header, nav, footer, #search-modal { display: none !important; }
+    main { padding: 0 !important; max-width: none !important; }
+    .card-base { box-shadow: none !important; border: none !important; background: #fff !important; }
+    #preview-wrap { display: block !important; }
+    #preview > div { transform: none !important; height: auto !important; overflow: visible !important; }
+    button { display: none !important; }
+  }
+</style>
+
 <script>
   import { loadCdnLib } from '../../composables/useCdnLib';
+  import { useLocalHistory } from '../../composables/useLocalHistory';
 
   const DATA_KEY = 'hrd_data_v1';
   interface Emp { id: number; name: string; position: string; division: string; salary: number; }
@@ -102,6 +125,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   const fmtRp = (n: number) => 'Rp ' + Math.round(n).toLocaleString('id-ID');
   const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  const escHtml = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+
+  // Riwayat form-snapshot (konvensi riwayat lokal, maks 10)
+  const slipHistory = useLocalHistory<{ id: number; name: string; period: string; date: string; snapshot: Record<string, string> }>('hist:slip-gaji', 10);
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const periodEl = document.getElementById('period') as HTMLInputElement;
   periodEl.value = new Date().toISOString().slice(0, 7);
 
@@ -147,7 +178,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   function buildSlip(): HTMLElement | null {
     const emp = resolveEmployee();
-    if (!emp) { alert('Pilih karyawan dari HRD Dashboard (dengan gaji terisi), atau isi nama & gaji manual.'); return null; }
+    if (!emp) { window.showToast?.(window._tToast ? window._tToast('Pilih karyawan (dengan gaji terisi) atau isi nama & gaji manual.') : 'Pilih karyawan (dengan gaji terisi) atau isi nama & gaji manual.', 'error'); return null; }
 
     const period = periodEl.value || new Date().toISOString().slice(0, 7);
     const [y, m] = period.split('-').map(Number);
@@ -263,6 +294,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     scaled.style.height = `${1123 * Math.min(1, w / 794)}px`;
     scaled.style.overflow = 'hidden';
     previewWrap.classList.remove('hidden');
+    addToSlipHistory();
+    window.showToast?.(window._tToast ? window._tToast('Preview slip siap.') : 'Preview slip siap.', 'info');
   };
 
   (document.getElementById('btn-pdf') as HTMLButtonElement).onclick = async () => {
@@ -273,7 +306,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
       'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
     ]);
-    if (!cdnReady) { alert('Library PDF gagal dimuat — cek koneksi internet.'); return; }
+    if (!cdnReady) { window.showToast?.(window._tToast ? window._tToast('Library PDF gagal dimuat — cek koneksi internet.') : 'Library PDF gagal dimuat — cek koneksi internet.', 'error'); return; }
     const holder = document.createElement('div');
     holder.style.cssText = 'position:fixed;left:-10000px;top:0;';
     holder.appendChild(slip);
@@ -292,5 +325,83 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     } finally {
       holder.remove();
     }
+    addToSlipHistory();
+    window.showToast?.(window._tToast ? window._tToast('Slip gaji diunduh sebagai PDF!') : 'Slip gaji diunduh sebagai PDF!', 'success');
   };
+
+  // ===== Riwayat form-snapshot =====
+  function snapshot(): Record<string, string> {
+    const o: Record<string, string> = {};
+    ['co-name', 'co-addr', 'period', 'sign-name', 'sign-title', 'emp-select', 'man-name', 'man-pos', 'man-salary', 'f-tunjangan', 'f-lembur', 'f-bonus', 'f-bpjs', 'f-pph', 'f-lain'].forEach(id => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
+      if (el) o[id] = el.value;
+    });
+    o['f-auto-alpha'] = (document.getElementById('f-auto-alpha') as HTMLInputElement)?.checked ? '1' : '0';
+    return o;
+  }
+
+  function restore(o: Record<string, string>) {
+    Object.entries(o).forEach(([id, val]) => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
+      if (!el) return;
+      if (id === 'f-auto-alpha') { (el as HTMLInputElement).checked = val === '1'; return; }
+      el.value = val;
+    });
+  }
+
+  function renderSlipHistory() {
+    const list = document.getElementById('slip-history-list');
+    if (!list) return;
+    const items = slipHistory.getAll();
+    if (items.length === 0) {
+      list.innerHTML = '<p class="text-sm text-matte-400 text-center py-4">Belum ada riwayat</p>';
+      return;
+    }
+    list.innerHTML = items.map(it => `
+      <div class="flex items-center justify-between gap-2 p-3 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border">
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-matte-700 dark:text-white truncate">${escHtml(it.name)}</p>
+          <p class="text-[10px] text-matte-400">${escHtml(it.period)} · ${escHtml(it.date)}</p>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button data-load="${it.id}" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline px-2 py-1">Muat</button>
+          <button data-del="${it.id}" aria-label="Hapus dari riwayat" class="text-matte-400 hover:text-red-500 p-1 font-bold">×</button>
+        </div>
+      </div>`).join('');
+    list.querySelectorAll<HTMLButtonElement>('[data-load]').forEach(b => b.addEventListener('click', () => {
+      const it = slipHistory.getAll().find(x => x.id === +(b.dataset.load || 0));
+      if (it) { restore(it.snapshot); window.showToast?.(window._tToast ? window._tToast('Form dimuat dari riwayat.') : 'Form dimuat dari riwayat.', 'info'); }
+    }));
+    list.querySelectorAll<HTMLButtonElement>('[data-del]').forEach(b => b.addEventListener('click', () => {
+      slipHistory.remove(x => x.id === +(b.dataset.del || 0));
+      renderSlipHistory();
+    }));
+  }
+
+  function addToSlipHistory() {
+    const emp = resolveEmployee();
+    try {
+      slipHistory.add({ id: Date.now(), name: emp?.name || 'Slip manual', period: periodEl.value || '—', date: new Date().toLocaleString('id-ID'), snapshot: snapshot() });
+    } catch { /* kuota localStorage penuh — riwayat skip, jangan ganggu alur utama */ }
+    renderSlipHistory();
+  }
+
+  document.getElementById('slip-history-clear')?.addEventListener('click', () => {
+    slipHistory.clear();
+    renderSlipHistory();
+    window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus!') : 'Riwayat dihapus!', 'success');
+  });
+
+  renderSlipHistory();
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __slipPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __slipPage) return;
+    const btn = document.getElementById('btn-preview');
+    if (!btn || btn.dataset.slipBound === 'true') return;
+    btn.dataset.slipBound = 'true';
+    init();
+  });
 </script>
