@@ -46,6 +46,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           📤 <span data-i18n="ws.send">Send</span>
         </button>
       </div>
+
+      <div class="flex justify-end mt-3">
+        <button id="export-log-btn" type="button" class="px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="ws.export_log">⬇ Export Log</button>
+      </div>
     </div>
 
     <div class="card-base p-4 mt-4 animate-fade-in">
@@ -76,6 +80,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     let ws: WebSocket | null = null;
     let msgIdx = 0;
+    const logLines: string[] = [];
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
     function addLog(text: string, dir: 'sent' | 'received' | 'system') {
       msgIdx++;
@@ -88,6 +96,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const p = document.createElement('p');
       p.className = `border-l-2 pl-2 py-0.5 ${colors[dir]}`;
       p.innerHTML = `<span class="text-matte-400 text-2xs">[${new Date().toLocaleTimeString()}]</span> ${escHtml(text)}`;
+      logLines.push(`[${new Date().toISOString()}] ${dir.toUpperCase()}: ${text}`);
       msgLog.appendChild(p);
       msgLog.scrollTop = msgLog.scrollHeight;
     }
@@ -121,9 +130,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       }
 
       const url = wsUrl.value.trim();
-      if (!url) { showToast('Masukkan URL WebSocket', 'error'); return; }
+      if (!url) { toast('Masukkan URL WebSocket.', 'error'); return; }
       if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
-        showToast('URL harus diawali ws:// atau wss://', 'error'); return;
+        toast('URL harus diawali ws:// atau wss://', 'error'); return;
       }
 
       msgIdx = 0;
@@ -175,6 +184,24 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       btn.addEventListener('click', () => {
         wsUrl.value = (btn as HTMLElement).dataset.url || '';
       });
+    });
+
+    // Export log (DoD Network: export laporan)
+    document.getElementById('export-log-btn')?.addEventListener('click', () => {
+      if (!logLines.length) { toast('Belum ada log untuk diexport.', 'error'); return; }
+      try {
+        const blob = new Blob([logLines.join('\n')], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const d = new Date();
+        const p = (n: number) => String(n).padStart(2, '0');
+        a.download = `ws-log-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.txt`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        toast('Diunduh!');
+      } catch {
+        toast('Gagal mengunduh!', 'error');
+      }
     });
   });
 </script>

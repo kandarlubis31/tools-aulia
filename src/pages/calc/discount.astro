@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
-<BaseLayout pageTitle="Discount Calculator — Kalkulator Diskon Online">
+<BaseLayout pageTitle="Discount Calculator — Kalkulator Diskon Bertingkat Online">
   <div class="max-w-md mx-auto px-4 min-h-[60vh]">
     <ToolPageHeader title="Discount Calculator" titleKey="header.discount_calc"
       desc="Hitung diskon bertingkat + harga akhir. Cocok untuk belanja online."
@@ -11,47 +11,302 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       icon='<path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>'
       gradient="from-pink-500 to-rose-600" />
 
-    <div class="card-base p-5 animate-fade-in space-y-3">
-      <div><label class="text-2xs text-matte-400 font-bold block mb-1">Harga Awal</label>
-        <div class="flex"><span class="px-3 py-2.5 rounded-l-lg bg-matte-100 dark:bg-surface-elevated text-sm font-bold border border-r-0 border-matte-200 dark:border-matte-700">Rp</span>
-          <input id="price-input" type="number" value="500000" min="0" class="flex-1 px-3 py-2.5 rounded-r-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40" /></div>
+    <div class="card-base p-5 animate-fade-in space-y-4">
+      <!-- Harga awal -->
+      <div>
+        <label for="price-input" class="text-2xs text-matte-400 font-bold block mb-1" data-i18n="calc.discount.label_price">Harga Awal</label>
+        <div class="flex">
+          <span class="px-3 py-2.5 rounded-l-lg bg-matte-100 dark:bg-surface-elevated text-sm font-bold border border-r-0 border-matte-200 dark:border-matte-700">Rp</span>
+          <input id="price-input" type="number" value="500000" min="0" inputmode="numeric"
+            class="flex-1 px-3 py-2.5 rounded-r-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40" />
+        </div>
       </div>
 
-      <div><label class="text-2xs text-matte-400 font-bold block mb-1">Diskon (%)</label>
-        <div class="flex gap-1.5 flex-wrap mb-2">{['5','10','15','20','25','30','40','50'].map(p=>
-          <button class="disc-btn px-3 py-1.5 rounded text-xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-pink-100 dark:hover:bg-pink-900/30 transition-all" data-pct={p}>{p}%</button>)}</div>
-        <input id="disc-input" type="range" min="0" max="90" value="15" class="w-full accent-pink-500" />
-        <span id="disc-val" class="text-2xs text-pink-500 font-bold">15%</span>
+      <!-- Diskon bertingkat -->
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-2xs text-matte-400 font-bold" data-i18n="calc.discount.label_tiers">Diskon Bertingkat (%)</span>
+          <button id="add-tier-btn" type="button" class="text-2xs font-bold text-pink-500 hover:text-pink-600 px-2 py-1 rounded hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors" data-i18n="calc.discount.add_tier">+ Tambah Tingkat</button>
+        </div>
+        <div id="tiers-list" class="space-y-2">
+          <div class="flex items-center gap-2">
+            <input type="number" class="tier-input flex-1 px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40" min="0" max="100" value="10" inputmode="numeric" aria-label="Diskon tingkat 1" />
+            <button type="button" class="tier-del w-8 h-8 shrink-0 rounded-lg text-matte-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center" aria-label="Hapus tingkat" data-i18n-attr="aria-label" data-i18n="calc.discount.remove_tier">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="number" class="tier-input flex-1 px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40" min="0" max="100" value="0" inputmode="numeric" aria-label="Diskon tingkat 2" />
+            <button type="button" class="tier-del w-8 h-8 shrink-0 rounded-lg text-matte-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center" aria-label="Hapus tingkat" data-i18n-attr="aria-label" data-i18n="calc.discount.remove_tier">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
 
+      <!-- Hasil -->
       <div class="grid grid-cols-2 gap-2">
         <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated text-center">
-          <span class="text-2xs text-matte-400 block">Kamu Hemat</span>
-          <span id="saved-val" class="font-bold text-pink-600 dark:text-pink-400 text-sm">Rp 75,000</span></div>
+          <span class="text-2xs text-matte-400 block" data-i18n="calc.discount.saved">Kamu Hemat</span>
+          <span id="saved-val" class="font-bold text-pink-600 dark:text-pink-400 text-sm">—</span>
+        </div>
         <div class="p-3 rounded-lg bg-pink-50 dark:bg-pink-900/20 text-center">
-          <span class="text-2xs text-pink-500 block">Harga Akhir</span>
-          <span id="final-val" class="font-bold text-pink-700 dark:text-pink-300 text-lg">Rp 425,000</span></div>
+          <span class="text-2xs text-pink-500 block" data-i18n="calc.discount.final">Harga Akhir</span>
+          <span id="final-val" class="font-bold text-pink-700 dark:text-pink-300 text-lg">—</span>
+        </div>
       </div>
+
+      <!-- Breakdown bertingkat -->
+      <div id="breakdown-box" class="hidden rounded-lg border border-matte-200 dark:border-matte-700 p-3">
+        <span class="text-2xs text-matte-400 font-bold block mb-2" data-i18n="calc.discount.breakdown">Rincian Bertingkat</span>
+        <ol id="breakdown-list" class="space-y-1 text-xs font-mono text-matte-600 dark:text-matte-300"></ol>
+      </div>
+
+      <!-- Aksi -->
+      <div class="flex flex-wrap gap-2">
+        <button id="save-history-btn" type="button" class="flex-1 min-w-[110px] px-3 py-2 rounded-lg bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold transition-colors" data-i18n="calc.discount.save_history">Simpan ke Riwayat</button>
+        <button id="copy-btn" type="button" class="flex-1 min-w-[90px] px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.copy_result">Copy Hasil</button>
+        <button id="share-btn" type="button" class="flex-1 min-w-[90px] px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.share_result">Bagikan Hasil</button>
+      </div>
+
+      <!-- Preset -->
+      <div class="rounded-lg bg-matte-50 dark:bg-surface-elevated p-3">
+        <span class="text-2xs text-matte-400 font-bold block mb-2" data-i18n="common.presets">Preset</span>
+        <div class="flex gap-2 mb-2">
+          <input id="preset-name" type="text" maxlength="24" placeholder="Nama preset…"
+            class="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-pink-500/40"
+            data-i18n-attr="placeholder" data-i18n="common.preset_name" />
+          <button id="preset-save" type="button" class="px-3 py-2 rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-300 hover:bg-pink-500/20 text-xs font-bold transition-colors" data-i18n="common.save_preset">Simpan Preset</button>
+        </div>
+        <div class="flex gap-2">
+          <select id="preset-select" class="flex-1 px-2 py-2 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none" aria-label="Pilih preset" data-i18n-attr="aria-label" data-i18n="calc.discount.select_preset">
+            <option value="">—</option>
+          </select>
+          <button id="preset-apply" type="button" class="px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.apply">Terapkan</button>
+          <button id="preset-del" type="button" class="px-3 py-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-xs font-bold transition-colors" data-i18n="common.delete">Hapus</button>
+        </div>
+        <p id="preset-empty" class="text-2xs text-matte-400 mt-2" data-i18n="common.no_presets">Belum ada preset.</p>
+      </div>
+    </div>
+
+    <!-- Riwayat -->
+    <div class="card-base p-5 animate-fade-in mt-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="section-title" data-i18n="calc.discount.history_title">Riwayat Perhitungan</h2>
+        <button id="history-clear" type="button" class="hidden text-2xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" data-i18n="common.clear_history">Hapus Riwayat</button>
+      </div>
+      <p id="history-empty" class="text-xs text-matte-400 py-2" data-i18n="calc.discount.history_empty">Belum ada riwayat. Atur harga &amp; diskon, lalu simpan.</p>
+      <ul id="history-list" class="space-y-2"></ul>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
+import { shareContent } from '../../composables/useShare';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load',()=>{if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
-    const priceInput=document.getElementById('price-input') as HTMLInputElement;
-    const discInput=document.getElementById('disc-input') as HTMLInputElement;
-    const discVal=document.getElementById('disc-val')!,savedVal=document.getElementById('saved-val')!,finalVal=document.getElementById('final-val')!;
-    function fmt(n:number):string{return 'Rp '+n.toLocaleString('id-ID');}
-    function calc(){
-      const price=parseInt(priceInput.value)||0,disc=parseInt(discInput.value);
-      discVal.textContent=disc+'%';const saved=Math.round(price*disc/100),final=price-saved;
-      savedVal.textContent=fmt(saved);finalVal.textContent=fmt(final);
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
+  const priceInput = $('price-input') as HTMLInputElement | null;
+  const tiersList = $('tiers-list');
+  const savedVal = $('saved-val');
+  const finalVal = $('final-val');
+  const breakdownBox = $('breakdown-box');
+  const breakdownList = $('breakdown-list');
+  if (!priceInput || !tiersList || !savedVal || !finalVal || !breakdownBox || !breakdownList) return;
+
+  const idr = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+  const fmt = (n: number) => idr.format(n);
+
+  // ── Tingkat diskon ──
+  const readTiers = (): number[] =>
+    Array.from(tiersList.querySelectorAll('.tier-input'))
+      .map((el) => Math.min(100, Math.max(0, parseFloat((el as HTMLInputElement).value) || 0)))
+      .filter((p) => p > 0);
+
+  const setTiers = (pcts: number[]) => {
+    tiersList.innerHTML = '';
+    pcts.forEach((pct, i) => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2';
+      row.innerHTML = `
+        <input type="number" class="tier-input flex-1 px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500/40" min="0" max="100" value="${pct}" inputmode="numeric" aria-label="Diskon tingkat ${i + 1}" />
+        <button type="button" class="tier-del w-8 h-8 shrink-0 rounded-lg text-matte-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center" aria-label="Hapus tingkat">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>`;
+      tiersList.appendChild(row);
+    });
+    if (!pcts.length) addTier(0);
+    bindTierEvents();
+  };
+
+  const addTier = (pct = 0) => {
+    const count = tiersList.querySelectorAll('.tier-input').length;
+    if (count >= 5) return;
+    setTiers([...readTiers(), pct]);
+  };
+
+  const bindTierEvents = () => {
+    tiersList.querySelectorAll('.tier-input').forEach((el) => el.addEventListener('input', calc));
+    tiersList.querySelectorAll('.tier-del').forEach((el) =>
+      el.addEventListener('click', () => {
+        (el.closest('.flex') as HTMLElement)?.remove();
+        if (!tiersList.querySelectorAll('.tier-input').length) addTier(0);
+        calc();
+      }),
+    );
+  };
+
+  // ── Kalkulasi ──
+  const price = () => Math.max(0, parseInt(priceInput.value) || 0);
+
+  function calc() {
+    try {
+      const p0 = price();
+      const tiers = readTiers();
+      let cur = p0;
+      const rows: string[] = [];
+      tiers.forEach((pct) => {
+        const before = cur;
+        cur = Math.round(cur * (1 - pct / 100));
+        rows.push(`<li class="flex justify-between gap-3"><span>−${pct}%</span><span>${fmt(before)} → <b>${fmt(cur)}</b></span></li>`);
+      });
+      const saved = p0 - cur;
+      savedVal.textContent = fmt(saved);
+      finalVal.textContent = fmt(cur);
+      if (tiers.length > 1) {
+        breakdownBox.classList.remove('hidden');
+        breakdownList.innerHTML = `<li class="flex justify-between gap-3"><span>0%</span><span>${fmt(p0)}</span></li>` + rows.join('');
+      } else {
+        breakdownBox.classList.add('hidden');
+      }
+    } catch {
+      window.showToast?.(window._tToast ? window._tToast('Terjadi kesalahan perhitungan.') : 'Terjadi kesalahan perhitungan.', 'error');
     }
-    priceInput.addEventListener('input',calc);discInput.addEventListener('input',calc);
-    document.querySelectorAll('.disc-btn').forEach(b=>b.addEventListener('click',()=>{discInput.value=(b as HTMLElement).dataset.pct!;calc();}));
+  }
+
+  const summary = () => {
+    const tiers = readTiers();
+    return [
+      'Discount Calculator — MasAul Tools',
+      `Harga: ${fmt(price())}`,
+      `Diskon: ${tiers.length ? tiers.map((t) => t + '%').join(' + ') : '0%'}`,
+      `Harga akhir: ${finalVal.textContent}`,
+    ].join('\n') + `\n${location.origin}/calc/discount`;
+  };
+
+  // ── Riwayat (max 20) ──
+  const history = useLocalHistory<{ t: string; p: number; d: number[]; f: number }>('hist:calc-discount', 20);
+  const historyList = $('history-list')!;
+  const historyEmpty = $('history-empty')!;
+  const historyClear = $('history-clear')!;
+
+  const renderHistory = () => {
+    const items = history.getAll();
+    historyEmpty.classList.toggle('hidden', items.length > 0);
+    historyClear.classList.toggle('hidden', items.length === 0);
+    historyList.innerHTML = '';
+    items.forEach((it, idx) => {
+      const li = document.createElement('li');
+      li.className = 'flex items-center justify-between gap-2 p-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated text-xs';
+      const dt = new Date(it.t);
+      li.innerHTML = `
+        <div class="min-w-0">
+          <div class="font-mono font-bold text-matte-700 dark:text-matte-200 truncate">${fmt(it.p)} → ${fmt(it.f)}</div>
+          <div class="text-2xs text-matte-400">${dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · ${it.d.length ? it.d.map((d) => d + '%').join(' + ') : '0%'}</div>
+        </div>
+        <button type="button" class="h-del w-7 h-7 shrink-0 rounded-lg text-matte-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center" aria-label="Hapus" data-i18n-attr="aria-label" data-i18n="common.delete">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>`;
+      li.querySelector('.h-del')?.addEventListener('click', () => {
+        history.update(history.getAll().filter((_, i) => i !== idx));
+        renderHistory();
+      });
+      historyList.appendChild(li);
+    });
+  };
+
+  $('save-history-btn')?.addEventListener('click', () => {
+    try {
+      const tiers = readTiers();
+      history.add({ t: new Date().toISOString(), p: price(), d: tiers, f: price() - Math.round(price() * (1 - tiers.reduce((a, b) => a * (1 - b / 100), 1))) });
+      renderHistory();
+      window.showToast?.(window._tToast ? window._tToast('Tersimpan ke riwayat!') : 'Tersimpan ke riwayat!', 'success');
+    } catch {
+      window.showToast?.(window._tToast ? window._tToast('Gagal menyimpan.') : 'Gagal menyimpan.', 'error');
+    }
+  });
+
+  historyClear.addEventListener('click', () => {
+    history.clear();
+    renderHistory();
+  });
+
+  // ── Preset ──
+  const presets = useLocalHistory<{ n: string; p: number; d: number[] }>('preset:calc-discount', 10);
+  const presetSelect = $('preset-select') as HTMLSelectElement;
+  const presetEmpty = $('preset-empty')!;
+
+  const renderPresets = () => {
+    const items = presets.getAll();
+    presetEmpty.classList.toggle('hidden', items.length > 0);
+    presetSelect.innerHTML = '<option value="">—</option>' + items.map((it, i) => `<option value="${i}">${it.n}</option>`).join('');
+  };
+
+  $('preset-save')?.addEventListener('click', () => {
+    try {
+      const name = ($('preset-name') as HTMLInputElement).value.trim() || `Preset ${presets.getAll().length + 1}`;
+      presets.add({ n: name, p: price(), d: readTiers() });
+      ($('preset-name') as HTMLInputElement).value = '';
+      renderPresets();
+      window.showToast?.(window._tToast ? window._tToast('Tersimpan!') : 'Tersimpan!', 'success');
+    } catch {
+      window.showToast?.(window._tToast ? window._tToast('Gagal menyimpan.') : 'Gagal menyimpan.', 'error');
+    }
+  });
+
+  $('preset-apply')?.addEventListener('click', () => {
+    const it = presets.getAll()[parseInt(presetSelect.value)];
+    if (!it) return;
+    priceInput.value = String(it.p);
+    setTiers(it.d);
     calc();
   });
+
+  $('preset-del')?.addEventListener('click', () => {
+    const idx = parseInt(presetSelect.value);
+    if (isNaN(idx)) return;
+    presets.update(presets.getAll().filter((_, i) => i !== idx));
+    renderPresets();
+  });
+
+  // ── Copy & share ──
+  $('copy-btn')?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(summary());
+      window.showToast?.(window._tToast ? window._tToast('Disalin!') : 'Disalin!', 'success');
+    } catch {
+      window.showToast?.(window._tToast ? window._tToast('Gagal menyalin.') : 'Gagal menyalin.', 'error');
+    }
+  });
+
+  $('share-btn')?.addEventListener('click', () => {
+    (window as any).umami?.track?.('share', { tool: '/calc/discount' });
+    shareContent(summary(), 'Discount Calculator', 'Disalin!', 'Gagal membagikan!', location.href);
+  });
+
+  $('add-tier-btn')?.addEventListener('click', () => addTier(0));
+
+  priceInput.addEventListener('input', calc);
+
+  // Init
+  bindTierEvents();
+  calc();
+  renderHistory();
+  renderPresets();
+});
 </script>

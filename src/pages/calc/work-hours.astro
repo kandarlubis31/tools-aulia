@@ -18,31 +18,31 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div class="card-base p-8">
         <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">Jam Kerja Harian</h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div><label class="text-xs text-matte-500 mb-1 block">Masuk</label><input id="start" type="time" value="08:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
-          <div><label class="text-xs text-matte-500 mb-1 block">Istirahat Mulai</label><input id="break-start" type="time" value="12:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
-          <div><label class="text-xs text-matte-500 mb-1 block">Istirahat Selesai</label><input id="break-end" type="time" value="13:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
-          <div><label class="text-xs text-matte-500 mb-1 block">Pulang</label><input id="end" type="time" value="17:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label for="start" class="text-xs text-matte-500 mb-1 block" data-i18n="calc.wh.start">Masuk</label><input id="start" type="time" value="08:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label for="break-start" class="text-xs text-matte-500 mb-1 block" data-i18n="calc.wh.break_start">Istirahat Mulai</label><input id="break-start" type="time" value="12:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label for="break-end" class="text-xs text-matte-500 mb-1 block" data-i18n="calc.wh.break_end">Istirahat Selesai</label><input id="break-end" type="time" value="13:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+          <div><label for="end" class="text-xs text-matte-500 mb-1 block" data-i18n="calc.wh.end">Pulang</label><input id="end" type="time" value="17:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
         </div>
-        <button id="calc-daily" class="w-full py-3 bg-cyan-600 text-white rounded-xl font-bold hover:bg-cyan-700 transition-colors">Hitung Jam Kerja</button>
+        <button id="calc-daily" class="w-full py-3 bg-cyan-600 text-white rounded-xl font-bold hover:bg-cyan-700 transition-colors" data-i18n="calc.wh.calc_daily">Hitung Jam Kerja</button>
         <div id="result-daily" class="mt-6 p-4 bg-matte-50 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border hidden"></div>
       </div>
 
       <div class="card-base p-8">
         <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">Lembur Mingguan</h3>
         <div class="grid grid-cols-7 gap-2 mb-4">
-          <input type="number" id="h-mon" placeholder="Sen" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
-          <input type="number" id="h-tue" placeholder="Sel" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
-          <input type="number" id="h-wed" placeholder="Rab" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
-          <input type="number" id="h-thu" placeholder="Kam" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
-          <input type="number" id="h-fri" placeholder="Jum" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
-          <input type="number" id="h-sat" placeholder="Sab" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="0" />
-          <input type="number" id="h-sun" placeholder="Min" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="0" />
+          <input type="number" id="h-mon" aria-label="Senin" data-i18n-attr="aria-label" data-i18n="calc.wh.mon" placeholder="Sen" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
+          <input type="number" id="h-tue" aria-label="Selasa" data-i18n-attr="aria-label" data-i18n="calc.wh.tue" placeholder="Sel" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
+          <input type="number" id="h-wed" aria-label="Rabu" data-i18n-attr="aria-label" data-i18n="calc.wh.wed" placeholder="Rab" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
+          <input type="number" id="h-thu" aria-label="Kamis" data-i18n-attr="aria-label" data-i18n="calc.wh.thu" placeholder="Kam" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
+          <input type="number" id="h-fri" aria-label="Jumat" data-i18n-attr="aria-label" data-i18n="calc.wh.fri" placeholder="Jum" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
+          <input type="number" id="h-sat" aria-label="Sabtu" data-i18n-attr="aria-label" data-i18n="calc.wh.sat" placeholder="Sab" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="0" />
+          <input type="number" id="h-sun" aria-label="Minggu" data-i18n-attr="aria-label" data-i18n="calc.wh.sun" placeholder="Min" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="0" />
         </div>
         <div class="flex items-center gap-4 mb-4">
-          <label class="text-sm text-matte-500">Jam kerja normal/minggu: <input id="normal-hrs" type="number" value="40" class="w-16 p-2 border rounded-lg text-center dark:bg-surface-hover dark:border-surface-border" /></label>
-          <label class="text-sm text-matte-500">Upah/jam (Rp): <input id="rate" type="number" value="50000" class="w-32 p-2 border rounded-lg text-center dark:bg-surface-hover dark:border-surface-border" /></label>
+          <label class="text-sm text-matte-500" data-i18n="calc.wh.normal">Jam kerja normal/minggu: <input id="normal-hrs" type="number" value="40" class="w-16 p-2 border rounded-lg text-center dark:bg-surface-hover dark:border-surface-border" /></label>
+          <label class="text-sm text-matte-500" data-i18n="calc.wh.rate">Upah/jam (Rp): <input id="rate" type="number" value="50000" class="w-32 p-2 border rounded-lg text-center dark:bg-surface-hover dark:border-surface-border" /></label>
         </div>
-        <button id="calc-weekly" class="w-full py-3 bg-cyan-600 text-white rounded-xl font-bold hover:bg-cyan-700 transition-colors">Hitung Mingguan</button>
+        <button id="calc-weekly" class="w-full py-3 bg-cyan-600 text-white rounded-xl font-bold hover:bg-cyan-700 transition-colors" data-i18n="calc.wh.calc_weekly">Hitung Mingguan</button>
         <div id="result-weekly" class="mt-6 p-4 bg-matte-50 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border hidden"></div>
       </div>
     </div>

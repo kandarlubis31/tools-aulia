@@ -22,7 +22,30 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <div class="flex flex-wrap gap-3 justify-center mb-4" id="mood-buttons"></div>
         <textarea id="mood-note" rows="2" placeholder="Catatan (opsional)…"
           class="w-full max-w-sm mx-auto px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm outline-none focus:ring-2 focus:ring-amber-500/40 resize-none"
-          data-i18n-attrs="placeholder|mood.note_placeholder"></textarea>
+          data-i18n-attr="placeholder" data-i18n="mood.note_placeholder"></textarea>
+        <div class="flex justify-center mt-3">
+          <button id="undo-btn" type="button" class="hidden px-4 py-2 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 transition-colors" data-i18n="mood.undo_today">↩ Undo Mood Hari Ini</button>
+        </div>
+      </div>
+
+      <!-- Statistik -->
+      <div class="card-base p-5">
+        <h3 class="text-xs font-bold text-matte-400 uppercase tracking-wider mb-3" data-i18n="mood.stats">Statistik</h3>
+        <div class="grid grid-cols-3 gap-2 text-center mb-3">
+          <div class="p-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated">
+            <span id="stat-total" class="block text-lg font-bold text-matte-700 dark:text-matte-200">0</span>
+            <span class="text-2xs text-matte-400" data-i18n="mood.stat_days">hari tercatat</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+            <span id="stat-streak" class="block text-lg font-bold text-amber-600 dark:text-amber-300">0</span>
+            <span class="text-2xs text-amber-500" data-i18n="mood.stat_streak">streak beruntun</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated">
+            <span id="stat-avg" class="block text-lg font-bold text-matte-700 dark:text-matte-200">—</span>
+            <span class="text-2xs text-matte-400" data-i18n="mood.stat_avg">rata-rata mood</span>
+          </div>
+        </div>
+        <div id="stat-dist" class="flex justify-center gap-2"></div>
       </div>
 
       <!-- History -->
@@ -43,6 +66,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const moodButtons = document.getElementById('mood-buttons')!;
     const moodNote = document.getElementById('mood-note') as HTMLTextAreaElement;
     const moodHistory = document.getElementById('mood-history')!;
+    const undoBtn = document.getElementById('undo-btn') as HTMLButtonElement;
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
     const STORAGE_KEY = 'ta-mood-tracker';
     const MOODS = [
@@ -92,6 +119,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         });
         btn.className = 'mood-btn flex flex-col items-center gap-1 p-3 rounded-xl text-center transition-all active:scale-95 ring-2 ring-amber-500 scale-110 bg-matte-100 dark:bg-surface-elevated';
         renderHistory();
+        renderStats();
       });
       moodButtons.appendChild(btn);
     });
@@ -101,6 +129,57 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const h = getHistory();
       if (h[today]) { h[today].note = moodNote.value.trim(); localStorage.setItem(STORAGE_KEY, JSON.stringify(h)); }
     });
+
+    // Undo hari ini (DoD Life: undo input)
+    undoBtn.addEventListener('click', () => {
+      try {
+        const h = getHistory();
+        if (!h[today]) return;
+        delete h[today];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(h));
+        moodNote.value = '';
+        document.querySelectorAll('.mood-btn').forEach((b) => {
+          b.className = 'mood-btn flex flex-col items-center gap-1 p-3 rounded-xl text-center transition-all active:scale-95 bg-matte-50 dark:bg-surface-elevated hover:bg-matte-100 dark:hover:bg-surface-hover';
+        });
+        renderHistory();
+        renderStats();
+        toast('Mood hari ini dihapus.');
+      } catch {
+        toast('Gagal menghapus.', 'error');
+      }
+    });
+
+    // Streak: hari beruntun terakhir (termasuk hari ini kalau tercatat)
+    function computeStreak(dates: string[]): number {
+      const set = new Set(dates);
+      let streak = 0;
+      const d = new Date();
+      if (!set.has(getToday())) d.setDate(d.getDate() - 1); // streak kemarin masih dihitung
+      for (;;) {
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        if (!set.has(key)) break;
+        streak++;
+        d.setDate(d.getDate() - 1);
+      }
+      return streak;
+    }
+
+    function renderStats() {
+      const h = getHistory();
+      const entries = Object.values(h);
+      const total = entries.length;
+      (document.getElementById('stat-total') as HTMLElement).textContent = String(total);
+      (document.getElementById('stat-streak') as HTMLElement).textContent = String(computeStreak(Object.keys(h)));
+      const avg = total ? entries.reduce((a, e) => a + e.value, 0) / total : 0;
+      (document.getElementById('stat-avg') as HTMLElement).textContent = total ? avg.toFixed(1) : '—';
+      // Distribusi emoji
+      const dist = document.getElementById('stat-dist')!;
+      dist.innerHTML = MOODS.slice().reverse().map((m) => {
+        const n = entries.filter((e) => e.value === m.value).length;
+        return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-matte-50 dark:bg-surface-elevated text-2xs" title="${m.label}: ${n}"><span>${m.emoji}</span><b class="text-matte-600 dark:text-matte-300">${n}</b></span>`;
+      }).join('');
+      undoBtn.classList.toggle('hidden', !h[today]);
+    }
 
     function renderHistory() {
       const h = getHistory();
@@ -137,5 +216,6 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     }
 
     renderHistory();
+    renderStats();
   });
 </script>

@@ -22,27 +22,35 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <p class="text-2xs text-matte-400 mt-1" id="file-info">—</p>
       </div>
 
+      <div id="opt-progress-wrap" class="hidden mb-4">
+        <div class="flex justify-between text-2xs text-matte-400 mb-1">
+          <span data-i18n="pdf.optimizer.processing">Mengoptimasi…</span>
+          <span id="opt-progress-label"></span>
+        </div>
+        <div class="h-1.5 rounded-full bg-matte-100 dark:bg-surface-elevated overflow-hidden">
+          <div id="opt-progress-bar" class="h-full bg-teal-500 transition-all duration-150" style="width:0%"></div>
+        </div>
+      </div>
+
       <div id="result-area" class="hidden">
         <div class="grid grid-cols-2 gap-3 mb-4">
           <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated">
-            <span class="text-2xs text-matte-400 block">Ukuran Asli</span>
+            <span class="text-2xs text-matte-400 block" data-i18n="pdf.optimizer.orig_size">Ukuran Asli</span>
             <span id="orig-size" class="font-bold text-sm">—</span>
           </div>
           <div class="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
-            <span class="text-2xs text-emerald-500 block">Setelah Optimasi</span>
+            <span class="text-2xs text-emerald-500 block" data-i18n="pdf.optimizer.opt_size">Setelah Optimasi</span>
             <span id="opt-size" class="font-bold text-sm text-emerald-600 dark:text-emerald-300">—</span>
           </div>
         </div>
         <div class="mb-4">
           <span class="text-2xs text-matte-400" id="savings-text">—</span>
         </div>
-        <button id="download-btn" class="gradient-brand px-6 py-3 rounded-lg text-sm font-bold">
-          💾 Download PDF Optimized
-        </button>
+        <button id="download-btn" class="gradient-brand px-6 py-3 rounded-lg text-sm font-bold" data-i18n="pdf.optimizer.download">💾 Download PDF Optimized</button>
       </div>
     </div>
 
-    <p class="text-center text-xs text-matte-400 mt-6">
+    <p class="text-center text-xs text-matte-400 mt-6" data-i18n="pdf.optimizer.note">
       ⚠️ Optimasi via pdf-lib: strip metadata, remove unused objects, deflate compression.
     </p>
   </div>
@@ -51,60 +59,63 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
-    const dropZone = document.getElementById('drop-zone')!;
-    const fileInput = document.getElementById('file-input') as HTMLInputElement;
-    const fileInfo = document.getElementById('file-info')!;
-    const resultArea = document.getElementById('result-area')!;
-    const origSize = document.getElementById('orig-size')!;
-    const optSize = document.getElementById('opt-size')!;
-    const savingsText = document.getElementById('savings-text')!;
-    const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+  const dropZone = document.getElementById('drop-zone')!;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const fileInfo = document.getElementById('file-info')!;
+  const progressWrap = document.getElementById('opt-progress-wrap')!;
+  const progressBar = document.getElementById('opt-progress-bar')!;
+  const progressLabel = document.getElementById('opt-progress-label')!;
+  const resultArea = document.getElementById('result-area')!;
+  const origSize = document.getElementById('orig-size')!;
+  const optSize = document.getElementById('opt-size')!;
+  const savingsText = document.getElementById('savings-text')!;
+  const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
 
-    let optimizedBytes: Uint8Array | null = null;
+  const toast = (m: string, t: 'success' | 'error' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
-    async function loadPdfLib() {
-      if ((window as any).PDFLib) return (window as any).PDFLib;
-      return new Promise((resolve) => {
-        const s = document.createElement('script');
-        s.src = '/vendor/pdf-lib/pdf-lib.min.js';
-        s.onload = () => resolve((window as any).PDFLib);
-        document.head.appendChild(s);
-      });
-    }
+  let optimizedBytes: Uint8Array | null = null;
+  let origName = 'document';
 
-    function fmtSize(bytes: number): string {
-      return bytes < 1024 ? bytes + ' B' : bytes < 1048576 ? (bytes / 1024).toFixed(1) + ' KB' : (bytes / 1048576).toFixed(2) + ' MB';
-    }
+  async function loadScript(src: string, globalName: string): Promise<any> {
+    if ((window as any)[globalName]) return (window as any)[globalName];
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = () => resolve((window as any)[globalName]);
+      s.onerror = () => reject(new Error('load ' + src));
+      document.head.appendChild(s);
+    });
+  }
 
-    async function processFile(file: File) {
-      fileInfo.textContent = `${file.name} (${fmtSize(file.size)})`;
-      origSize.textContent = fmtSize(file.size);
-      resultArea.classList.add('hidden');
+  function fmtSize(bytes: number): string {
+    return bytes < 1024 ? bytes + ' B' : bytes < 1048576 ? (bytes / 1024).toFixed(1) + ' KB' : (bytes / 1048576).toFixed(2) + ' MB';
+  }
 
-      const PDFLib = await loadPdfLib();
+  function baseName(name: string): string {
+    return name.replace(/\.pdf$/i, '').replace(/[^\w\-]+/g, '-').slice(0, 40) || 'document';
+  }
+
+  async function processFile(file: File) {
+    fileInfo.textContent = `${file.name} (${fmtSize(file.size)})`;
+    origName = baseName(file.name);
+    origSize.textContent = fmtSize(file.size);
+    resultArea.classList.add('hidden');
+    progressWrap.classList.remove('hidden');
+    progressLabel.textContent = '…';
+
+    try {
+      const PDFLib = await loadScript('/vendor/pdf-lib/pdf-lib.min.js', 'PDFLib');
       const buffer = await file.arrayBuffer();
       const pdfDoc = await PDFLib.PDFDocument.load(buffer);
 
-      // Optimizations
-      pdfDoc.setTitle('');
-      pdfDoc.setAuthor('');
-      pdfDoc.setSubject('');
-      pdfDoc.setKeywords([]);
+      // Optimasi: strip metadata + object streams (deflate via save options)
+      pdfDoc.setTitle(''); pdfDoc.setAuthor(''); pdfDoc.setSubject('');
+      pdfDoc.setKeywords([]); pdfDoc.setCreator('');
       pdfDoc.setProducer('MasAul Tools PDF Optimizer');
-      pdfDoc.setCreator('');
-
-      const pages = pdfDoc.getPages();
-      for (const page of pages) {
-        // Minimize resources per page
-        const resources = page.node.Resources();
-        if (resources) {
-          // Remove unused font references
-          const fonts = resources.lookup(PDFLib.PDFName.of('Font'));
-          // Minimal page content reduction
-        }
-      }
 
       const optBytes = await pdfDoc.save({ useObjectStreams: true });
       optimizedBytes = optBytes;
@@ -117,31 +128,42 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         : '⚠️ Tidak ada penghematan signifikan';
       resultArea.classList.remove('hidden');
       resultArea.scrollIntoView({ behavior: 'smooth' });
+    } catch {
+      toast('Gagal memproses PDF.', 'error');
+    } finally {
+      progressWrap.classList.add('hidden');
+      progressBar.style.width = '0%';
     }
+  }
 
-    dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-teal-400'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-teal-400'));
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-teal-400');
-      const file = e.dataTransfer?.files?.[0];
-      if (file) processFile(file);
-    });
-    fileInput.addEventListener('change', () => {
-      const file = fileInput.files?.[0];
-      if (file) processFile(file);
-    });
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-teal-400', 'bg-teal-50/50', 'dark:bg-teal-900/10'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-teal-400', 'bg-teal-50/50', 'dark:bg-teal-900/10'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-teal-400', 'bg-teal-50/50', 'dark:bg-teal-900/10');
+    const file = (e as DragEvent).dataTransfer?.files?.[0];
+    if (file) processFile(file);
+  });
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (file) processFile(file);
+    fileInput.value = '';
+  });
 
-    downloadBtn.addEventListener('click', () => {
-      if (!optimizedBytes) return;
+  downloadBtn.addEventListener('click', () => {
+    if (!optimizedBytes) return;
+    try {
       const blob = new Blob([optimizedBytes], { type: 'application/pdf' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `optimized-${Date.now()}.pdf`;
+      a.download = `${origName}-optimized.pdf`;
       a.click();
       URL.revokeObjectURL(a.href);
-      showToast('PDF teroptimasi didownload!');
-    });
+      toast('PDF teroptimasi didownload!');
+    } catch {
+      toast('Gagal mengunduh!', 'error');
+    }
   });
+});
 </script>

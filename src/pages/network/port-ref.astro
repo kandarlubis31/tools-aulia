@@ -19,9 +19,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div class="card-base p-4">
         <div class="flex gap-2">
           <input id="search-input" type="text" placeholder="Cari port atau service… (contoh: 443, https, mysql)"
-            class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-teal-500/40 outline-none" />
+            class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm focus:ring-2 focus:ring-teal-500/40 outline-none"
+            data-i18n-attr="placeholder" data-i18n="net.port.search" />
         </div>
-        <span id="result-count" class="text-2xs text-matte-400 mt-2 block"></span>
+        <div class="flex items-center justify-between mt-2">
+          <span id="result-count" class="text-2xs text-matte-400"></span>
+          <button id="copy-btn" type="button" class="px-3 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-2xs font-bold transition-colors" data-i18n="media.scaleref.copy_table">Copy Tabel</button>
+        </div>
       </div>
 
       <!-- Port table -->
@@ -30,10 +34,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <table class="w-full text-sm">
             <thead>
               <tr class="bg-matte-50 dark:bg-surface-elevated text-left">
-                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider w-16">Port</th>
-                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider w-20">Proto</th>
-                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider">Service</th>
-                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider hidden sm:table-cell">Deskripsi</th>
+                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider w-16" data-i18n="net.port.col_port">Port</th>
+                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider w-20" data-i18n="net.port.col_proto">Proto</th>
+                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider" data-i18n="net.port.col_svc">Service</th>
+                <th class="px-4 py-2.5 text-2xs font-bold text-matte-400 uppercase tracking-wider hidden sm:table-cell" data-i18n="net.port.col_desc">Deskripsi</th>
               </tr>
             </thead>
             <tbody id="port-tbody" class="divide-y divide-matte-100 dark:divide-matte-800"></tbody>
@@ -135,6 +139,19 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     }
 
     searchInput.addEventListener('input', () => render(searchInput.value));
+
+    document.getElementById('copy-btn')?.addEventListener('click', async () => {
+      try {
+        const q = searchInput.value.toLowerCase().trim();
+        const filtered = q ? PORTS.filter(p => String(p.port).includes(q) || p.proto.toLowerCase().includes(q) || p.svc.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q)) : PORTS;
+        const csv = ['port,proto,service,description', ...filtered.map(p => `${p.port},${p.proto},"${p.svc}","${p.desc}"`)].join('\n');
+        await navigator.clipboard.writeText(csv);
+        window.showToast?.(window._tToast ? window._tToast('Disalin!') : 'Disalin!', 'success');
+      } catch {
+        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin.') : 'Gagal menyalin.', 'error');
+      }
+    });
+
     render('');
   });
 </script>

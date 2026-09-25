@@ -51,8 +51,37 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div class="flex items-center gap-3 max-w-xs mx-auto">
         <span class="text-2xs text-matte-400">🔈</span>
         <input id="volume-slider" type="range" min="1" max="100" value="30" step="1"
-          class="flex-1 h-1.5 rounded-full appearance-none bg-matte-200 dark:bg-matte-700 accent-violet-500 cursor-pointer" />
+          class="flex-1 h-1.5 rounded-full appearance-none bg-matte-200 dark:bg-matte-700 accent-violet-500 cursor-pointer" aria-label="Volume" data-i18n-attr="aria-label" data-i18n="media.scaleref.volume" />
         <span class="text-2xs text-matte-400">🔊</span>
+      </div>
+
+      <!-- Sleep timer -->
+      <div class="flex items-center justify-center gap-2 mt-4">
+        <label for="timer-select" class="text-2xs text-matte-400 font-bold" data-i18n="media.tone.timer">Timer Stop</label>
+        <select id="timer-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none">
+          <option value="0" data-i18n="media.tone.timer_off">Nonaktif</option>
+          <option value="60">1 min</option><option value="300">5 min</option>
+          <option value="900">15 min</option><option value="1800">30 min</option>
+        </select>
+        <span id="timer-countdown" class="hidden text-2xs font-mono font-bold text-violet-500"></span>
+      </div>
+
+      <!-- Preset -->
+      <div class="rounded-lg bg-matte-50 dark:bg-surface-elevated p-3 mt-5 text-left">
+        <div class="flex gap-2 mb-2">
+          <input id="preset-name" type="text" maxlength="24" placeholder="Nama preset…"
+            class="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-violet-500/40"
+            data-i18n-attr="placeholder" data-i18n="common.preset_name" />
+          <button id="preset-save" type="button" class="px-3 py-2 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-300 hover:bg-violet-500/20 text-xs font-bold transition-colors" data-i18n="common.save_preset">Simpan Preset</button>
+        </div>
+        <div class="flex gap-2">
+          <select id="preset-select" class="flex-1 px-2 py-2 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none" aria-label="Pilih preset" data-i18n-attr="aria-label" data-i18n="common.select_preset">
+            <option value="">—</option>
+          </select>
+          <button id="preset-apply" type="button" class="px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.apply">Terapkan</button>
+          <button id="preset-del" type="button" class="px-3 py-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-xs font-bold transition-colors" data-i18n="common.delete">Hapus</button>
+        </div>
+        <p id="preset-empty" class="text-2xs text-matte-400 mt-2" data-i18n="common.no_presets">Belum ada preset.</p>
       </div>
     </div>
 
@@ -73,6 +102,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -83,11 +114,19 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
     const stopBtn = document.getElementById('stop-btn') as HTMLButtonElement;
     const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
+    const timerSelect = document.getElementById('timer-select') as HTMLSelectElement;
+    const timerCountdown = document.getElementById('timer-countdown')!;
+    const presetSelect = document.getElementById('preset-select') as HTMLSelectElement;
+    const presetEmpty = document.getElementById('preset-empty')!;
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
     let audioCtx: AudioContext | null = null;
     let osc: OscillatorNode | null = null;
     let gainNode: GainNode | null = null;
     let waveType: OscillatorType = 'sine';
+    let timerHandle: number | null = null, tickerHandle: number | null = null, timerEnd = 0;
 
     const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 
@@ -126,7 +165,27 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       }
       osc = null;
       gainNode = null;
+      clearTimer();
     }
+
+    function clearTimer() {
+      if (timerHandle) { clearTimeout(timerHandle); timerHandle = null; }
+      if (tickerHandle) { clearInterval(tickerHandle); tickerHandle = null; }
+      timerCountdown.classList.add('hidden');
+    }
+
+    timerSelect.addEventListener('change', () => {
+      const secs = parseInt(timerSelect.value) || 0;
+      clearTimer();
+      if (!secs || !osc) return;
+      timerEnd = Date.now() + secs * 1000;
+      timerCountdown.classList.remove('hidden');
+      tickerHandle = window.setInterval(() => {
+        const left = Math.max(0, Math.round((timerEnd - Date.now()) / 1000));
+        timerCountdown.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+      }, 500);
+      timerHandle = window.setTimeout(() => { stop(); toast('Selesai!'); }, secs * 1000);
+    });
 
     function updateFreq(val: number) {
       freqDisplay.textContent = String(val);
@@ -159,6 +218,48 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     document.querySelectorAll('.note-btn').forEach(btn => {
       btn.addEventListener('click', () => updateFreq(parseInt((btn as HTMLElement).dataset.freq!)));
     });
+
+    // ── Preset ──
+    const presets = useLocalHistory<{ n: string; f: number; w: string; v: number }>('preset:tone-generator', 10);
+    const renderPresets = () => {
+      const items = presets.getAll();
+      presetEmpty.classList.toggle('hidden', items.length > 0);
+      presetSelect.innerHTML = '<option value="">—</option>' + items.map((it, i) => `<option value="${i}">${it.n.replace(/</g, '&lt;')}</option>`).join('');
+    };
+    document.getElementById('preset-save')?.addEventListener('click', () => {
+      try {
+        const nameEl = document.getElementById('preset-name') as HTMLInputElement;
+        const name = nameEl.value.trim() || `Preset ${presets.getAll().length + 1}`;
+        presets.add({ n: name, f: parseInt(freqSlider.value), w: waveType, v: parseInt(volumeSlider.value) });
+        nameEl.value = '';
+        renderPresets();
+        toast('Tersimpan!');
+      } catch {
+        toast('Gagal menyimpan.', 'error');
+      }
+    });
+    document.getElementById('preset-apply')?.addEventListener('click', () => {
+      const it = presets.getAll()[parseInt(presetSelect.value)];
+      if (!it) return;
+      updateFreq(it.f);
+      waveType = it.w as OscillatorType;
+      volumeSlider.value = String(it.v);
+      document.querySelectorAll('.wave-btn').forEach((b) => {
+        const el = b as HTMLElement;
+        const active = el.dataset.type === waveType;
+        el.className = active
+          ? 'wave-btn px-4 py-2 rounded-lg text-xs font-bold bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300'
+          : 'wave-btn px-4 py-2 rounded-lg text-xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 transition-all';
+      });
+      toast('Diterapkan!');
+    });
+    document.getElementById('preset-del')?.addEventListener('click', () => {
+      const idx = parseInt(presetSelect.value);
+      if (isNaN(idx)) return;
+      presets.update(presets.getAll().filter((_, i) => i !== idx));
+      renderPresets();
+    });
+    renderPresets();
 
     updateFreq(440);
   });

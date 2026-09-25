@@ -24,6 +24,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <button id="paste-btn" class="px-4 py-2 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 transition-all">
             📋 Paste
           </button>
+          <button id="sample-btn" class="px-4 py-2 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 transition-all" data-i18n="data.sample">📦 Sample Data</button>
+          <div class="ml-auto flex items-center gap-1.5">
+            <select id="fmt-select" class="px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-2xs font-bold outline-none" aria-label="Format" data-i18n-attr="aria-label" data-i18n="dev.codeimg.format">
+              <option value="pretty" data-i18n="data.pretty">Pretty</option>
+              <option value="minify" data-i18n="data.minify">Minify</option>
+            </select>
+            <button id="copy-btn" class="px-3 py-2 rounded-lg text-xs font-bold bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 transition-colors" data-i18n="common.copy">📋 Copy</button>
+          </div>
         </div>
         <textarea id="geojson-input" rows="6" placeholder='{"type": "FeatureCollection", "features": [...]}'
           class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-blue-500/40 resize-y hidden"></textarea>
@@ -55,6 +63,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     let map: any = null;
     let geoLayer: any = null;
+    let lastValid: any = null;
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
     // Multi-CDN fallback (pola sama seperti qrious): kalau CDN utama gagal/blokir,
     // coba CDN cadangan. CSS ikut dari CDN yang sama dengan JS yang berhasil.
@@ -113,24 +125,43 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const features = data.type === 'FeatureCollection' ? data.features : [data];
         geojsonInfo.textContent = `${features.length} feature(s)`;
         geojsonInfo.classList.remove('hidden');
-        showToast('GeoJSON ditampilkan!');
+        lastValid = data;
+        toast('GeoJSON ditampilkan!');
       } catch (e: any) {
-        showToast('GeoJSON tidak valid: ' + e.message, 'error');
+        toast('GeoJSON tidak valid: ' + (e.message || 'unknown'), 'error');
       }
     }
 
     async function handleGeoJSON(text: string) {
       try {
         const data = JSON.parse(text);
+        // Validasi spesifik (DoD Data): cek struktur GeoJSON
+        if (!data.type) throw new Error('missing "type" property');
+        const types = ['FeatureCollection', 'Feature', 'Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon', 'GeometryCollection'];
+        if (!types.includes(data.type)) throw new Error(`unknown type "${data.type}"`);
+        if (data.type === 'FeatureCollection' && !Array.isArray(data.features)) {
+          throw new Error('FeatureCollection needs "features" array');
+        }
+        if (data.type === 'Feature' && !data.geometry) {
+          throw new Error('Feature needs "geometry" property');
+        }
         await loadLeaflet();
         initMap();
         renderGeoJSON(data);
         geojsonInput.value = text;
         geojsonInput.classList.remove('hidden');
-      } catch {
-        showToast('JSON tidak valid', 'error');
+      } catch (e: any) {
+        // Pesan error spesifik: JSON parse error + posisi line/column dari V8
+        const m = e instanceof SyntaxError ? String(e.message).replace(/\n/g, ' ') : e.message || 'Invalid JSON';
+        toast('Error: ' + m, 'error');
       }
     }
+
+    const SAMPLE = { type: 'FeatureCollection', features: [
+      { type: 'Feature', properties: { name: 'Monas' }, geometry: { type: 'Point', coordinates: [106.8272, -6.1754] } },
+      { type: 'Feature', properties: { name: 'Bandung' }, geometry: { type: 'Point', coordinates: [107.6098, -6.9147] } },
+      { type: 'Feature', properties: { name: 'Surabaya' }, geometry: { type: 'Point', coordinates: [112.7521, -7.2575] } },
+    ] };
 
     uploadBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', () => {
@@ -147,6 +178,24 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         geojsonInput.focus();
       } else {
         handleGeoJSON(geojsonInput.value.trim());
+      }
+    });
+
+    document.getElementById('sample-btn')?.addEventListener('click', () => {
+      const fmt = (document.getElementById('fmt-select') as HTMLSelectElement).value;
+      geojsonInput.classList.remove('hidden');
+      geojsonInput.value = fmt === 'minify' ? JSON.stringify(SAMPLE) : JSON.stringify(SAMPLE, null, 2);
+      handleGeoJSON(geojsonInput.value);
+    });
+
+    document.getElementById('copy-btn')?.addEventListener('click', async () => {
+      if (!lastValid) { toast('Belum ada data valid.', 'error'); return; }
+      try {
+        const fmt = (document.getElementById('fmt-select') as HTMLSelectElement).value;
+        await navigator.clipboard.writeText(fmt === 'minify' ? JSON.stringify(lastValid) : JSON.stringify(lastValid, null, 2));
+        toast('Disalin!');
+      } catch {
+        toast('Gagal menyalin.', 'error');
       }
     });
 

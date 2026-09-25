@@ -19,11 +19,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <div class="grid sm:grid-cols-3 gap-3 mb-4">
           <div>
             <label class="block text-2xs font-bold text-matte-400 uppercase mb-1"><span data-i18n="rtext.type">Tipe</span></label>
-            <select id="type-select" class="w-full px-2.5 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold outline-none focus:ring-2 focus:ring-teal-500/40">
-              <option value="sentence">Kalimat</option>
-              <option value="paragraph">Paragraf</option>
-              <option value="words">Kata Acak</option>
-              <option value="lorem">Lorem Ipsum</option>
+            <select id="type-select" class="w-full px-2.5 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold outline-none focus:ring-2 focus:ring-teal-500/40" aria-label="Tipe" data-i18n-attr="aria-label" data-i18n="rtext.type">
+              <option value="sentence" data-i18n="rtext.type_sentence">Kalimat</option>
+              <option value="paragraph" data-i18n="rtext.type_paragraph">Paragraf</option>
+              <option value="words" data-i18n="rtext.type_words">Kata Acak</option>
+              <option value="lorem" data-i18n="rtext.type_lorem">Lorem Ipsum</option>
             </select>
           </div>
           <div>
@@ -36,7 +36,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
 
         <div class="flex items-center gap-2 mb-3">
-          <label class="text-2xs text-matte-400 font-bold">Format:</label>
+          <label for="format-select" class="text-2xs text-matte-400 font-bold" data-i18n="rtext.format">Format:</label>
           <select id="format-select" class="px-2 py-1 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none focus:ring-2 focus:ring-teal-500/40">
             <option value="plain">Plain</option>
             <option value="json">JSON</option>
@@ -46,19 +46,31 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
         <div id="output-area" class="relative">
           <textarea id="output-text" rows="10" readonly
-            class="w-full px-4 py-3 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none resize-y"
-            data-i18n-attrs="placeholder|rtext.placeholder"></textarea>
+            class="w-full px-4 py-3 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none resize-y"></textarea>
           <button id="copy-btn" class="absolute top-2 right-2 px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">
             📋 <span data-i18n="rtext.copy">Copy</span>
           </button>
         </div>
         <p id="stats-text" class="text-2xs text-matte-400 mt-2 font-mono"></p>
+        <button id="save-history-btn" type="button" class="hidden mt-3 w-full px-4 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.save_to_history">Simpan ke Riwayat</button>
+      </div>
+
+      <!-- Riwayat -->
+      <div class="card-base p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="section-title" data-i18n="common.history">Riwayat</h2>
+          <button id="history-clear" type="button" class="hidden text-2xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" data-i18n="common.clear_history">Hapus Riwayat</button>
+        </div>
+        <p id="history-empty" class="text-xs text-matte-400" data-i18n="rtext.history_empty">Belum ada riwayat. Generate teks, lalu simpan.</p>
+        <ul id="history-list" class="space-y-2"></ul>
       </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -70,6 +82,45 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const outputText = document.getElementById('output-text') as HTMLTextAreaElement;
     const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
     const statsText = document.getElementById('stats-text')!;
+    const saveHistoryBtn = document.getElementById('save-history-btn') as HTMLButtonElement;
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
+
+    // ── Riwayat (max 10) ──
+    const history = useLocalHistory<{ t: string; type: string; out: string }>('hist:random-text', 10);
+    const historyList = document.getElementById('history-list')!;
+    const historyEmpty = document.getElementById('history-empty')!;
+    const historyClear = document.getElementById('history-clear')!;
+
+    const renderHistory = () => {
+      const items = history.getAll();
+      historyEmpty.classList.toggle('hidden', items.length > 0);
+      historyClear.classList.toggle('hidden', items.length === 0);
+      historyList.innerHTML = '';
+      items.forEach((it, idx) => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between gap-2 p-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated text-xs cursor-pointer hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors';
+        const dt = new Date(it.t);
+        li.innerHTML = `
+          <div class="min-w-0 flex-1">
+            <div class="font-mono text-matte-700 dark:text-matte-200 truncate">${it.out.replace(/</g, '&lt;').slice(0, 120)}</div>
+            <div class="text-2xs text-matte-400">${it.type} · ${dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+          </div>
+          <button type="button" class="h-del w-7 h-7 shrink-0 rounded-lg text-matte-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center" aria-label="Hapus" data-i18n-attr="aria-label" data-i18n="common.delete">×</button>`;
+        li.addEventListener('click', () => {
+          outputText.value = it.out;
+          updateStats(it.out);
+        });
+        li.querySelector('.h-del')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          history.update(history.getAll().filter((_, i) => i !== idx));
+          renderHistory();
+        });
+        historyList.appendChild(li);
+      });
+    };
+    historyClear.addEventListener('click', () => { history.clear(); renderHistory(); });
 
     const WORDS = ['langit','biru','awan','putih','angin','sepoi','daun','hijau','bunga','mekar','air','jernih','batu','gunung','tinggi','rumah','kayu','jalan','lurus','pohon','rindang','sungai','deras','pantai','indah','senja','merah','bulan','purnama','bintang','gemerlap','malam','tenang','pagi','cerah','hujan','rintik','tanah','basah','kopi','hangat','buku','cerita','kucing','lucu','musik','indah','lukisan','cantik','robot','cepat','teknologi','modern','digital','kreatif','inovasi','ide','brilian','masa','depan','waktu','singkat','teman','setia','cinta','abadi','harapan','baru','mimpi','indah','karya','seni','data','akurat','kode','bersih','server','responsif'];
 
@@ -135,13 +186,38 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       }
 
       outputText.value = output;
-      const chars = output.length;
-      const words = output.split(/\s+/).filter(Boolean).length;
-      const lines = output.split('\n').length;
+      updateStats(output);
+      saveHistoryBtn.classList.remove('hidden');
+      (outputText as any).__lastOutput = output;
+    }
+
+    function updateStats(out: string) {
+      const chars = out.length;
+      const words = out.split(/\s+/).filter(Boolean).length;
+      const lines = out.split('\n').length;
       statsText.textContent = `${words} kata · ${chars} karakter · ${lines} baris`;
     }
 
+    copyBtn.addEventListener('click', async () => {
+      if (!outputText.value) { toast('Belum ada teks.', 'error'); return; }
+      try { await navigator.clipboard.writeText(outputText.value); toast('Disalin!'); }
+      catch { toast('Gagal menyalin.', 'error'); }
+    });
+
+    saveHistoryBtn.addEventListener('click', () => {
+      const out = outputText.value;
+      if (!out) { toast('Belum ada teks.', 'error'); return; }
+      try {
+        history.add({ t: new Date().toISOString(), type: typeSelect.value, out });
+        renderHistory();
+        toast('Tersimpan ke riwayat!');
+      } catch {
+        toast('Gagal menyimpan.', 'error');
+      }
+    });
+
     generateBtn.addEventListener('click', generate);
     generate();
+    renderHistory();
   });
 </script>

@@ -14,22 +14,34 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <div class="card-base p-6 text-center animate-fade-in">
       <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 hover:border-teal-400 transition-colors cursor-pointer mb-4" id="drop-zone">
         <input type="file" id="file-input" accept="image/*" multiple class="hidden" />
-        <p class="text-sm font-bold text-matte-500 dark:text-matte-300">Upload gambar (banyak)</p>
+        <p class="text-sm font-bold text-matte-500 dark:text-matte-300" data-i18n="file.batch.upload">Upload gambar (banyak)</p>
         <p class="text-2xs text-matte-400 mt-1">PNG, JPG, WEBP</p>
       </div>
 
-      <div class="flex gap-3 justify-center mb-4 flex-wrap">
-        <select id="format-select" class="px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold outline-none">
+      <div class="flex gap-3 justify-center mb-4 flex-wrap items-center">
+        <select id="format-select" class="px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold outline-none" aria-label="Format target" data-i18n-attr="aria-label" data-i18n="file.batch.target_format">
           <option value="image/png">PNG</option><option value="image/jpeg">JPG</option><option value="image/webp">WEBP</option></select>
-        <span class="text-xs text-matte-400 self-center">Quality:</span>
+        <label for="quality-input" class="text-xs text-matte-400" data-i18n="file.batch.quality">Quality:</label>
         <input id="quality-input" type="range" min="10" max="100" value="80" class="w-24 accent-teal-500" />
       </div>
 
       <div id="files-area" class="flex flex-wrap gap-2 justify-center mb-4"></div>
       <span id="count-text" class="text-2xs text-matte-400 block mb-3"></span>
 
-      <button id="convert-btn" class="gradient-brand px-8 py-3 rounded-lg text-sm font-bold disabled:opacity-50" disabled>🔄 Convert All</button>
-      <button id="download-all" class="hidden gradient-brand px-8 py-3 rounded-lg text-sm font-bold mt-3">💾 Download All</button>
+      <!-- Progress -->
+      <div id="bc-progress-wrap" class="hidden mb-4">
+        <div class="flex justify-between text-2xs text-matte-400 mb-1">
+          <span data-i18n="file.batch.converting">Mengonversi…</span>
+          <span id="bc-progress-label">0/0</span>
+        </div>
+        <div class="h-1.5 rounded-full bg-matte-100 dark:bg-surface-elevated overflow-hidden">
+          <div id="bc-progress-bar" class="h-full bg-teal-500 transition-all duration-150" style="width:0%"></div>
+        </div>
+      </div>
+
+      <button id="convert-btn" class="gradient-brand px-8 py-3 rounded-lg text-sm font-bold disabled:opacity-50" disabled data-i18n="file.batch.convert_all">🔄 Convert All</button>
+      <button id="zip-btn" class="hidden gradient-brand px-8 py-3 rounded-lg text-sm font-bold mt-3" data-i18n="file.batch.download_zip">💾 Download ZIP</button>
+      <button id="retry-btn" type="button" class="hidden mt-3 ml-2 px-6 py-3 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-300 hover:bg-rose-500/20 text-sm font-bold transition-colors" data-i18n="file.batch.retry_failed">↻ Retry Gagal</button>
     </div>
   </div>
 </BaseLayout>
@@ -37,40 +49,165 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load',()=>{if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+  if (!document.getElementById('drop-zone')) return;
 
-    const dropZone=document.getElementById('drop-zone')!,fileInput=document.getElementById('file-input') as HTMLInputElement;
-    const filesArea=document.getElementById('files-area')!,countText=document.getElementById('count-text')!;
-    const formatSelect=document.getElementById('format-select') as HTMLSelectElement;
-    const convertBtn=document.getElementById('convert-btn') as HTMLButtonElement,downloadAll=document.getElementById('download-all') as HTMLButtonElement;
-    const toast=(m:string)=>window.showToast?.(window._tToast?window._tToast(m):m);
-    let files:File[]=[],results:{name:string,blob:Blob}[]=[];
+  const dropZone = document.getElementById('drop-zone')!;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const filesArea = document.getElementById('files-area')!;
+  const countText = document.getElementById('count-text')!;
+  const formatSelect = document.getElementById('format-select') as HTMLSelectElement;
+  const qualityInput = document.getElementById('quality-input') as HTMLInputElement;
+  const convertBtn = document.getElementById('convert-btn') as HTMLButtonElement;
+  const zipBtn = document.getElementById('zip-btn') as HTMLButtonElement;
+  const retryBtn = document.getElementById('retry-btn') as HTMLButtonElement;
+  const progressWrap = document.getElementById('bc-progress-wrap')!;
+  const progressBar = document.getElementById('bc-progress-bar')!;
+  const progressLabel = document.getElementById('bc-progress-label')!;
 
-    function addFiles(fl:FileList|File[]){const arr=Array.from(fl).filter(f=>f.type.startsWith('image/'));files.push(...arr);countText.textContent=files.length+' gambar';convertBtn.disabled=files.length===0;renderFiles();}
+  const toast = (m: string, t: 'success' | 'error' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
-    function renderFiles(){
-      filesArea.innerHTML=files.map((f,i)=>`<div class=\"relative group\"><img src=\"${URL.createObjectURL(f)}\" alt=\"\" class=\"w-16 h-16 object-cover rounded-lg border-2 border-matte-200 dark:border-matte-700\" /><span class=\"absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-teal-500 text-white text-2xs flex items-center justify-center font-bold\">${i+1}</span><button class=\"del-btn absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-2xs flex items-center justify-center opacity-0 group-hover:opacity-100\" data-idx=\"${i}\">x</button></div>`).join('');
-      filesArea.querySelectorAll('.del-btn').forEach(b=>b.addEventListener('click',()=>{files.splice(parseInt((b as HTMLElement).dataset.idx!),1);countText.textContent=files.length+' gambar';convertBtn.disabled=files.length===0;results=[];downloadAll.classList.add('hidden');renderFiles();}));
-    }
+  interface Slot { file: File; status: 'pending' | 'ok' | 'fail'; blob?: Blob; outName?: string }
+  let slots: Slot[] = [];
 
-    async function convert(){
-      results=[];convertBtn.disabled=true;convertBtn.innerHTML='⏳…';const fmt=formatSelect.value,quality=parseInt((document.getElementById('quality-input') as HTMLInputElement).value)/100;
-      for(const file of files){
-        const img=await new Promise<HTMLImageElement>(r=>{const i=new Image();i.onload=()=>r(i);i.src=URL.createObjectURL(file);});
-        const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d')!.drawImage(img,0,0);
-        const ext=fmt==='image/jpeg'?'jpg':fmt==='image/webp'?'webp':'png';
-        const blob=await new Promise<Blob>(r=>c.toBlob(b=>r(b!),fmt,quality));
-        results.push({name:file.name.replace(/\.[^.]+$/,'.'+ext),blob});
+  const extOf = (mime: string) => (mime === 'image/jpeg' ? 'jpg' : mime === 'image/webp' ? 'webp' : 'png');
+
+  function addFiles(fl: FileList | File[]) {
+    const arr = Array.from(fl).filter((f) => f.type.startsWith('image/'));
+    arr.forEach((f) => slots.push({ file: f, status: 'pending' }));
+    refresh();
+  }
+
+  function refresh() {
+    countText.innerHTML = `<b>${slots.length}</b> <span class="cnt-label">gambar</span>`;
+    convertBtn.disabled = slots.length === 0;
+    zipBtn.classList.add('hidden');
+    retryBtn.classList.toggle('hidden', !slots.some((s) => s.status === 'fail'));
+    renderFiles();
+  }
+
+  function renderFiles() {
+    filesArea.innerHTML = '';
+    slots.forEach((s, i) => {
+      const div = document.createElement('div');
+      div.className = 'relative group';
+      const badge =
+        s.status === 'ok' ? 'bg-emerald-500' : s.status === 'fail' ? 'bg-rose-500' : 'bg-teal-500';
+      const icon = s.status === 'ok' ? '✓' : s.status === 'fail' ? '✕' : String(i + 1);
+      div.innerHTML = `
+        <img src="${URL.createObjectURL(s.file)}" alt="" class="w-16 h-16 object-cover rounded-lg border-2 border-matte-200 dark:border-matte-700" />
+        <span class="absolute -top-1.5 -right-1.5 ${badge} w-5 h-5 rounded-full text-white text-2xs flex items-center justify-center font-bold">${icon}</span>
+        <button type="button" class="del-btn absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-2xs flex items-center justify-center opacity-0 group-hover:opacity-100" aria-label="Hapus" data-i18n-attr="aria-label" data-i18n="common.delete">×</button>`;
+      div.querySelector('.del-btn')?.addEventListener('click', () => {
+        slots.splice(i, 1);
+        refresh();
+      });
+      filesArea.appendChild(div);
+    });
+  }
+
+  async function convertOne(s: Slot): Promise<void> {
+    const fmt = formatSelect.value;
+    const quality = parseInt(qualityInput.value) / 100;
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error('decode'));
+      i.src = URL.createObjectURL(s.file);
+    });
+    const c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    c.getContext('2d')!.drawImage(img, 0, 0);
+    const blob = await new Promise<Blob>((resolve, reject) =>
+      c.toBlob((b) => (b ? resolve(b) : reject(new Error('encode'))), fmt, quality),
+    );
+    s.blob = blob;
+    s.outName = s.file.name.replace(/\.[^.]+$/, '') + '.' + extOf(fmt);
+    s.status = 'ok';
+  }
+
+  async function convert(onlyFailed = false) {
+    const targets = onlyFailed ? slots.filter((s) => s.status === 'fail') : slots;
+    if (!targets.length) return;
+    convertBtn.disabled = true;
+    progressWrap.classList.remove('hidden');
+    let done = 0;
+    let okCount = 0;
+
+    for (const s of targets) {
+      try {
+        await convertOne(s);
+        okCount++;
+      } catch {
+        s.status = 'fail';
+        s.blob = undefined;
       }
-      downloadAll.classList.remove('hidden');convertBtn.innerHTML='✅ Done';convertBtn.disabled=false;
-      toast(results.length+' file dikonversi!');
+      done++;
+      progressBar.style.width = Math.round((done / targets.length) * 100) + '%';
+      progressLabel.textContent = `${done}/${targets.length}`;
+      renderFiles();
     }
 
-    dropZone.addEventListener('click',()=>fileInput.click());
-    dropZone.addEventListener('dragover',e=>{e.preventDefault();});
-    dropZone.addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer?.files)addFiles(e.dataTransfer.files);});
-    fileInput.addEventListener('change',()=>{if(fileInput.files)addFiles(fileInput.files);fileInput.value='';});
-    convertBtn.addEventListener('click',convert);
-    downloadAll.addEventListener('click',()=>{results.forEach((r,i)=>{setTimeout(()=>{const a=document.createElement('a');a.href=URL.createObjectURL(r.blob);a.download=r.name;a.click();URL.revokeObjectURL(a.href);},i*300);});});
+    const totalOk = slots.filter((s) => s.status === 'ok').length;
+    const failed = slots.filter((s) => s.status === 'fail').length;
+    convertBtn.disabled = false;
+    setTimeout(() => { progressWrap.classList.add('hidden'); progressBar.style.width = '0%'; }, 600);
+
+    if (totalOk > 0) zipBtn.classList.remove('hidden');
+    retryBtn.classList.toggle('hidden', failed === 0);
+    if (failed > 0) toast('Beberapa file gagal dikonversi.', 'error');
+    else toast('Konversi selesai!');
+  }
+
+  async function downloadZip() {
+    const done = slots.filter((s) => s.status === 'ok' && s.blob);
+    if (!done.length) return;
+    try {
+      const JSZip = await new Promise<any>((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = '/vendor/jszip/jszip.min.js';
+        s.onload = () => resolve((window as any).JSZip);
+        s.onerror = () => reject(new Error('jszip'));
+        document.head.appendChild(s);
+      });
+      const zip = new JSZip();
+      const stamp = new Date().toISOString().slice(0, 10);
+      const used = new Map<string, number>();
+      done.forEach((s) => {
+        let name = s.outName!;
+        const n = used.get(name) || 0;
+        if (n > 0) name = name.replace(/(\.[^.]+)$/, `-${n}$1`);
+        used.set(s.outName!, n + 1);
+        zip.file(name, s.blob!);
+      });
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `batch-convert-${stamp}.zip`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast('Diunduh!');
+    } catch {
+      toast('Gagal membuat ZIP.', 'error');
+    }
+  }
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-teal-400', 'bg-teal-50/50', 'dark:bg-teal-900/10'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-teal-400', 'bg-teal-50/50', 'dark:bg-teal-900/10'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-teal-400', 'bg-teal-50/50', 'dark:bg-teal-900/10');
+    if (e.dataTransfer?.files) addFiles(e.dataTransfer.files);
   });
+  fileInput.addEventListener('change', () => { if (fileInput.files) addFiles(fileInput.files); fileInput.value = ''; });
+  convertBtn.addEventListener('click', () => convert(false));
+  retryBtn.addEventListener('click', () => convert(true));
+  zipBtn.addEventListener('click', downloadZip);
+
+  refresh();
+});
 </script>
