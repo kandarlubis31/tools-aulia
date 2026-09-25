@@ -14,18 +14,40 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <div class="card-base p-6 text-center animate-fade-in">
       <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 hover:border-cyan-400 transition-colors cursor-pointer mb-4" id="drop-zone">
         <input type="file" id="file-input" accept=".pdf" class="hidden" />
-        <p class="text-sm font-bold text-matte-500 dark:text-matte-300">Upload PDF</p>
+        <p class="text-sm font-bold text-matte-500 dark:text-matte-300" data-i18n="pdf.textsearch.upload">Upload PDF</p>
         <p class="text-2xs text-matte-400 mt-1" id="file-name">—</p>
       </div>
 
-      <div class="flex gap-2 mb-4">
-        <input id="ts-search-input" type="text" placeholder="Kata kunci…" class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm outline-none focus:ring-2 focus:ring-cyan-500/40" />
-        <button id="ts-search-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold">🔍 Search</button>
+      <div class="flex gap-2 mb-3">
+        <input id="ts-search-input" type="text" placeholder="Kata kunci…"
+          class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm outline-none focus:ring-2 focus:ring-cyan-500/40"
+          data-i18n-attr="placeholder" data-i18n="pdf.textsearch.keyword" />
+        <button id="ts-search-btn" class="gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold" data-i18n="pdf.textsearch.search">🔍 Search</button>
+      </div>
+
+      <div class="flex items-center gap-2 mb-4">
+        <label for="ts-range" class="text-2xs text-matte-400 font-bold whitespace-nowrap" data-i18n="pdf.textsearch.range_label">Rentang halaman</label>
+        <input id="ts-range" type="text" placeholder="mis. 1-10, 15 (kosong = semua)"
+          class="flex-1 px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-cyan-500/40"
+          data-i18n-attr="placeholder" data-i18n="pdf.textsearch.range_hint" />
+      </div>
+
+      <!-- Progress -->
+      <div id="ts-progress-wrap" class="hidden mb-4">
+        <div class="flex justify-between text-2xs text-matte-400 mb-1">
+          <span data-i18n="pdf.textsearch.scanning">Memindai…</span>
+          <span id="ts-progress-label">0%</span>
+        </div>
+        <div class="h-1.5 rounded-full bg-matte-100 dark:bg-surface-elevated overflow-hidden">
+          <div id="ts-progress-bar" class="h-full bg-cyan-500 transition-all duration-150" style="width:0%"></div>
+        </div>
       </div>
 
       <div id="results-area" class="text-left">
-        <p class="text-xs text-matte-400 text-center py-4">Upload PDF & cari kata kunci.</p>
+        <p class="text-xs text-matte-400 text-center py-4" data-i18n="pdf.textsearch.empty">Upload PDF &amp; cari kata kunci.</p>
       </div>
+
+      <button id="ts-copy-btn" type="button" class="hidden mt-4 px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.copy_result">Copy Hasil</button>
     </div>
   </div>
 </BaseLayout>
@@ -33,45 +55,150 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load',()=>{if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
-    // Guard SPA leak: listener ini hanya boleh jalan di halaman ini (drop-zone unik di sini).
-    // Tanpa guard, listener bocor & crash di halaman lain saat navigasi (null.addEventListener).
-    if(!document.getElementById('drop-zone')) return;
-    const dropZone=document.getElementById('drop-zone')!,fileInput=document.getElementById('file-input') as HTMLInputElement;
-    const fileName=document.getElementById('file-name')!,searchInput=document.getElementById('ts-search-input') as HTMLInputElement;
-    const searchBtn=document.getElementById('ts-search-btn') as HTMLButtonElement;
-    const resultsArea=document.getElementById('results-area')!;
-    let pdfDoc:any=null;
+  // Guard SPA leak: listener ini hanya boleh jalan di halaman ini (drop-zone unik di sini).
+  if (!document.getElementById('drop-zone')) return;
 
-    async function loadPdfJs(){if((window as any).pdfjsLib)return(window as any).pdfjsLib;return new Promise(r=>{const s=document.createElement('script');s.src='/vendor/pdfjs/pdf.min.js';s.onload=()=>r((window as any).pdfjsLib);document.head.appendChild(s);})}
+  const dropZone = document.getElementById('drop-zone')!;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const fileName = document.getElementById('file-name')!;
+  const searchInput = document.getElementById('ts-search-input') as HTMLInputElement;
+  const searchBtn = document.getElementById('ts-search-btn') as HTMLButtonElement;
+  const rangeInput = document.getElementById('ts-range') as HTMLInputElement;
+  const progressWrap = document.getElementById('ts-progress-wrap')!;
+  const progressBar = document.getElementById('ts-progress-bar')!;
+  const progressLabel = document.getElementById('ts-progress-label')!;
+  const resultsArea = document.getElementById('results-area')!;
+  const copyBtn = document.getElementById('ts-copy-btn')!;
+  let pdfDoc: any = null;
+  let lastResults: { page: number; count: number; text: string }[] = [];
 
-    async function processFile(file:File){
-      fileName.textContent=file.name;resultsArea.innerHTML='<p class=\"text-xs text-matte-400 text-center py-4\">Loading PDF…</p>';
-      const pdfjsLib=await loadPdfJs();pdfjsLib.GlobalWorkerOptions.workerSrc='/vendor/pdfjs/pdf.worker.min.js';
-      pdfDoc=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
-      resultsArea.innerHTML=`<p class=\"text-xs text-matte-400 text-center py-4\">✅ ${pdfDoc.numPages} halaman siap. Cari kata kunci.</p>`;
-    }
+  const toast = (m: string, t: 'success' | 'error' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
-    dropZone.addEventListener('click',()=>fileInput.click());
-    dropZone.addEventListener('dragover',e=>{e.preventDefault();});
-    dropZone.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer?.files?.[0];if(f)processFile(f);});
-    fileInput.addEventListener('change',()=>{const f=fileInput.files?.[0];if(f)processFile(f);});
+  function escHtml(s: string): string {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
 
-    searchBtn.addEventListener('click',async()=>{
-      const q=searchInput.value.trim().toLowerCase();if(!q||!pdfDoc){showToast('Upload PDF & masukkan kata kunci','error');return;}
-      searchBtn.disabled=true;searchBtn.innerHTML='⏳…';const results:{page:number,text:string}[]=[];
-      for(let p=1;p<=pdfDoc.numPages;p++){
-        const page=await pdfDoc.getPage(p);const tc=await page.getTextContent();
-        const text=tc.items.map((i:any)=>i.str).join(' ');
-        if(text.toLowerCase().includes(q)){const idx=text.toLowerCase().indexOf(q);const ctx=text.slice(Math.max(0,idx-40),idx+q.length+40);results.push({page:p,text:'…'+ctx+'…'});}
+  // Parse "1-10, 15" → [1..10, 15]; kosong = null (semua halaman)
+  function parseRanges(spec: string, max: number): number[] | null {
+    const s = spec.trim();
+    if (!s) return null;
+    const pages = new Set<number>();
+    for (const part of s.split(',')) {
+      const m = part.trim().match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+      if (!m) throw new Error('range');
+      const a = parseInt(m[1]);
+      const b = m[2] ? parseInt(m[2]) : a;
+      for (let i = Math.min(a, b); i <= Math.max(a, b); i++) {
+        if (i >= 1 && i <= max) pages.add(i);
       }
-      resultsArea.innerHTML=results.length
-        ?`<div class=\"space-y-2\"><span class=\"text-xs text-matte-400\">Ditemukan di ${results.length} halaman:</span>`+results.map(r=>`<div class=\"p-2 rounded bg-matte-50 dark:bg-surface-elevated\"><span class=\"text-xs font-bold text-cyan-600 dark:text-cyan-400\">Hal. ${r.page}</span><p class=\"text-xs text-matte-600 dark:text-matte-300 font-mono mt-0.5\">${escHtml(r.text)}</p></div>`).join('')+'</div>'
-        :'<p class=\"text-xs text-matte-400 text-center py-4\">Tidak ditemukan.</p>';
-      searchBtn.disabled=false;searchBtn.innerHTML='🔍 Search';
-    });
+    }
+    return pages.size ? Array.from(pages).sort((x, y) => x - y) : null;
+  }
 
-    function escHtml(s:string):string{return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  async function loadPdfJs(): Promise<any> {
+    if ((window as any).pdfjsLib) return (window as any).pdfjsLib;
+    return new Promise((r) => {
+      const s = document.createElement('script');
+      s.src = '/vendor/pdfjs/pdf.min.js';
+      s.onload = () => r((window as any).pdfjsLib);
+      document.head.appendChild(s);
+    });
+  }
+
+  async function processFile(file: File) {
+    try {
+      fileName.textContent = file.name;
+      resultsArea.innerHTML = `<p class="text-xs text-matte-400 text-center py-4">${escHtml(window._tToast ? window._tToast('Memuat...') : 'Memuat...')}</p>`;
+      const pdfjsLib = await loadPdfJs();
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
+      pdfDoc = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+      resultsArea.innerHTML = `<p class="text-xs text-matte-400 text-center py-4">✅ <b>${pdfDoc.numPages}</b> <span class="ready-label">halaman siap. Cari kata kunci.</span></p>`;
+    } catch {
+      pdfDoc = null;
+      resultsArea.innerHTML = '';
+      toast('Gagal memuat PDF. File mungkin rusak atau terproteksi.', 'error');
+    }
+  }
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-cyan-400', 'bg-cyan-50/50', 'dark:bg-cyan-900/10'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-cyan-400', 'bg-cyan-50/50', 'dark:bg-cyan-900/10'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-cyan-400', 'bg-cyan-50/50', 'dark:bg-cyan-900/10');
+    const f = (e as DragEvent).dataTransfer?.files?.[0];
+    if (f) processFile(f);
   });
+  fileInput.addEventListener('change', () => { const f = fileInput.files?.[0]; if (f) processFile(f); });
+
+  function countOccurrences(haystack: string, needle: string): number {
+    let n = 0, idx = 0;
+    while ((idx = haystack.indexOf(needle, idx)) !== -1) { n++; idx += needle.length; }
+    return n;
+  }
+
+  searchBtn.addEventListener('click', async () => {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q || !pdfDoc) { toast('Upload PDF & masukkan kata kunci', 'error'); return; }
+    let pages: number[] | null;
+    try {
+      pages = parseRanges(rangeInput.value, pdfDoc.numPages);
+    } catch {
+      toast('Format rentang halaman tidak valid.', 'error');
+      return;
+    }
+    const all = pages || Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1);
+
+    searchBtn.disabled = true;
+    searchBtn.innerHTML = '⏳…';
+    progressWrap.classList.remove('hidden');
+    lastResults = [];
+
+    try {
+      for (let i = 0; i < all.length; i++) {
+        const p = all[i];
+        const page = await pdfDoc.getPage(p);
+        const tc = await page.getTextContent();
+        const text = tc.items.map((it: any) => it.str).join(' ');
+        const count = countOccurrences(text.toLowerCase(), q);
+        if (count > 0) {
+          const idx = text.toLowerCase().indexOf(q);
+          const ctx = text.slice(Math.max(0, idx - 40), idx + q.length + 40);
+          lastResults.push({ page: p, count, text: '…' + ctx + '…' });
+        }
+        const pct = Math.round(((i + 1) / all.length) * 100);
+        progressBar.style.width = pct + '%';
+        progressLabel.textContent = `${i + 1}/${all.length}`;
+      }
+
+      resultsArea.innerHTML = lastResults.length
+        ? `<div class="space-y-2"><span class="text-xs text-matte-400">Ditemukan di <b>${lastResults.length}</b> <span class="found-label">halaman:</span></span>` +
+          lastResults.map((r) =>
+            `<div class="p-2 rounded bg-matte-50 dark:bg-surface-elevated"><span class="text-xs font-bold text-cyan-600 dark:text-cyan-400">Hal. ${r.page}</span> <span class="text-2xs text-matte-400">(${r.count}×)</span><p class="text-xs text-matte-600 dark:text-matte-300 font-mono mt-0.5">${escHtml(r.text)}</p></div>`).join('') +
+          '</div>'
+        : `<p class="text-xs text-matte-400 text-center py-4">Tidak ditemukan.</p>`;
+      copyBtn.classList.toggle('hidden', lastResults.length === 0);
+    } catch {
+      toast('Gagal memindai PDF.', 'error');
+    } finally {
+      searchBtn.disabled = false;
+      searchBtn.innerHTML = '🔍 Search';
+      setTimeout(() => { progressWrap.classList.add('hidden'); progressBar.style.width = '0%'; }, 600);
+    }
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    try {
+      const txt = lastResults.map((r) => `Hal. ${r.page} (${r.count}×): ${r.text}`).join('\n');
+      await navigator.clipboard.writeText(txt);
+      toast('Disalin!');
+    } catch {
+      toast('Gagal menyalin.', 'error');
+    }
+  });
+});
 </script>

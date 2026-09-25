@@ -73,6 +73,20 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-matte-400 text-2xs block" data-i18n="speed.min_ping">Ping Minimum</span><span id="min-ping" class="font-bold tabular-nums">—</span> ms</div>
         <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-matte-400 text-2xs block" data-i18n="speed.jitter">Jitter</span><span id="jitter-val" class="font-bold tabular-nums">—</span> ms</div>
       </div>
+      <div class="flex gap-2 mt-4">
+        <button id="share-btn" type="button" class="flex-1 px-4 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.share_result">Bagikan Hasil</button>
+        <button id="copy-json-btn" type="button" class="flex-1 px-4 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="net.copy_json">Copy JSON</button>
+      </div>
+    </div>
+
+    <!-- Riwayat tes -->
+    <div class="card-base p-5 mt-4 animate-fade-in">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-bold text-matte-400 uppercase tracking-wider" data-i18n="common.history">Riwayat</h3>
+        <button id="history-clear" type="button" class="hidden text-2xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" data-i18n="common.clear_history">Hapus Riwayat</button>
+      </div>
+      <p id="history-empty" class="text-xs text-matte-400" data-i18n="net.hist_empty">Belum ada tes. Jalankan tes untuk menyimpan riwayat.</p>
+      <ul id="history-list" class="space-y-1.5"></ul>
     </div>
 
     <p class="text-center text-xs text-matte-400 mt-6" data-i18n="speed.note">
@@ -82,6 +96,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
+import { shareContent } from '../../composables/useShare';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -99,6 +116,40 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const avgUl = document.getElementById('avg-ul')!;
     const minPing = document.getElementById('min-ping')!;
     const jitterVal = document.getElementById('jitter-val')!;
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
+
+    // ── Riwayat tes (max 8) ──
+    const history = useLocalHistory<{ t: string; dl: number; ul: number; ping: number; jitter: number }>('hist:speed-test', 8);
+    const historyList = document.getElementById('history-list')!;
+    const historyEmpty = document.getElementById('history-empty')!;
+    const historyClear = document.getElementById('history-clear')!;
+
+    const renderHistory = () => {
+      const items = history.getAll();
+      historyEmpty.classList.toggle('hidden', items.length > 0);
+      historyClear.classList.toggle('hidden', items.length === 0);
+      historyList.innerHTML = '';
+      items.forEach((it, idx) => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center gap-2 p-2 rounded-lg bg-matte-50 dark:bg-surface-elevated text-2xs font-mono';
+        const dt = new Date(it.t);
+        li.innerHTML = `
+          <span class="font-bold text-blue-500">${it.dl.toFixed(1)}</span>
+          <span class="text-matte-400">/ ${it.ul > 0 ? it.ul.toFixed(1) : '—'} Mbps</span>
+          <span class="text-emerald-500">${it.ping}ms</span>
+          <span class="text-matte-400">jitter ${it.jitter}</span>
+          <span class="ml-auto text-matte-400 shrink-0">${dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+          <button type="button" class="h-del w-6 h-6 shrink-0 rounded text-matte-400 hover:text-rose-500 flex items-center justify-center" aria-label="Hapus" data-i18n-attr="aria-label" data-i18n="common.delete">×</button>`;
+        li.querySelector('.h-del')?.addEventListener('click', () => {
+          history.update(history.getAll().filter((_, i) => i !== idx));
+          renderHistory();
+        });
+        historyList.appendChild(li);
+      });
+    };
+    historyClear.addEventListener('click', () => { history.clear(); renderHistory(); });
 
     const CIRCUMFERENCE = 2 * Math.PI * 52; // ~327
 
@@ -191,6 +242,36 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       startBtn.disabled = false;
       startBtn.innerHTML = '🔄 <span data-i18n="speed.retest">Tes Ulang</span>';
       (window as any).processI18n?.();
+
+      // Riwayat + last result untuk share/copy
+      try {
+        history.add({ t: new Date().toISOString(), dl: dlMbps, ul: ulMbps, ping: pingMin, jitter: pingJitter });
+        renderHistory();
+      } catch { /* quota — abaikan */ }
+      (window as any).__lastSpeed = { dl: dlMbps, ul: ulMbps, ping: pingMin, jitter: pingJitter };
     });
+
+    document.getElementById('share-btn')?.addEventListener('click', () => {
+      const r = (window as any).__lastSpeed;
+      if (!r) return;
+      (window as any).umami?.track?.('share', { tool: '/network/speed-test' });
+      shareContent(
+        `Speed Test — MasAul Tools\n↓ ${r.dl.toFixed(1)} Mbps\n↑ ${r.ul > 0 ? r.ul.toFixed(1) : '—'} Mbps\nPing ${r.ping} ms · jitter ${r.jitter} ms\n${location.origin}/network/speed-test`,
+        'Speed Test', 'Disalin!', 'Gagal membagikan!', location.href,
+      );
+    });
+
+    document.getElementById('copy-json-btn')?.addEventListener('click', async () => {
+      const r = (window as any).__lastSpeed;
+      if (!r) return;
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(r, null, 2));
+        toast('Disalin!');
+      } catch {
+        toast('Gagal menyalin.', 'error');
+      }
+    });
+
+    renderHistory();
   });
 </script>

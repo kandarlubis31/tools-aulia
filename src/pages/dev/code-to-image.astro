@@ -13,22 +13,33 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <div class="grid md:grid-cols-2 gap-4 animate-fade-in">
       <div class="card-base p-5">
-        <textarea id="code-input" rows="12" placeholder="Paste kode di sini…" class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-slate-500/40 resize-y"></textarea>
+        <textarea id="code-input" rows="12" placeholder="Paste kode di sini…"
+          class="w-full px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-slate-500/40 resize-y"
+          data-i18n-attr="placeholder" data-i18n="dev.codeimg.placeholder"></textarea>
         <div class="flex flex-wrap gap-2 mt-3">
-          <select id="theme-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none">
-            <option value="dark">Dark</option><option value="light">Light</option><option value="dracula">Dracula</option></select>
-          <select id="lang-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none">
+          <select id="theme-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none" aria-label="Tema" data-i18n-attr="aria-label" data-i18n="dev.codeimg.theme">
+            <option value="dark">Dark</option><option value="light">Light</option><option value="dracula">Dracula</option><option value="terminal">Terminal</option></select>
+          <select id="lang-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none" aria-label="Bahasa" data-i18n-attr="aria-label" data-i18n="dev.codeimg.lang">
             <option value="javascript">JS</option><option value="typescript">TS</option><option value="python">Python</option><option value="html">HTML</option><option value="css">CSS</option></select>
-          <div class="flex items-center gap-1 ml-auto"><label class="text-2xs text-matte-400">Padding</label>
+          <div class="flex items-center gap-1"><label for="pad-input" class="text-2xs text-matte-400" data-i18n="dev.codeimg.padding">Padding</label>
             <input id="pad-input" type="number" value="20" min="0" max="80" class="w-14 px-1.5 py-1 rounded bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none" /></div>
+          <div class="flex items-center gap-1"><label for="radius-input" class="text-2xs text-matte-400" data-i18n="dev.codeimg.radius">Radius</label>
+            <input id="radius-input" type="number" value="12" min="0" max="40" class="w-14 px-1.5 py-1 rounded bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none" /></div>
         </div>
-        <button id="render-btn" class="gradient-brand w-full mt-3 py-2.5 rounded-lg text-sm font-bold">Render to Image</button>
+        <div class="flex gap-2 mt-3">
+          <button id="render-btn" class="gradient-brand flex-1 py-2.5 rounded-lg text-sm font-bold" data-i18n="dev.codeimg.render">Render to Image</button>
+          <select id="format-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none" aria-label="Format" data-i18n-attr="aria-label" data-i18n="dev.codeimg.format">
+            <option value="png">PNG</option><option value="jpeg">JPG</option></select>
+        </div>
       </div>
 
       <div class="card-base p-5 text-center">
-        <span class="text-2xs text-matte-400 font-bold uppercase tracking-wider block mb-2">Preview</span>
+        <span class="text-2xs text-matte-400 font-bold uppercase tracking-wider block mb-2" data-i18n="dev.codeimg.preview">Preview</span>
         <img id="preview-img" alt="" class="max-w-full rounded-lg shadow-lg" />
-        <button id="download-btn" class="hidden gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold mt-3">Download PNG</button>
+        <div class="flex gap-2 justify-center mt-3">
+          <button id="download-btn" class="hidden gradient-brand px-6 py-2.5 rounded-lg text-sm font-bold" data-i18n="common.download">Download</button>
+          <button id="copy-btn" class="hidden px-4 py-2.5 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-sm font-bold transition-colors" data-i18n="dev.codeimg.copy_clipboard">Copy</button>
+        </div>
       </div>
     </div>
   </div>
@@ -37,52 +48,138 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load',()=>{if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
-    const codeInput=document.getElementById('code-input') as HTMLTextAreaElement;
-    const themeSelect=document.getElementById('theme-select') as HTMLSelectElement;
-    const padInput=document.getElementById('pad-input') as HTMLInputElement;
-    const renderBtn=document.getElementById('render-btn') as HTMLButtonElement;
-    const previewImg=document.getElementById('preview-img') as HTMLImageElement;
-    const downloadBtn=document.getElementById('download-btn') as HTMLButtonElement;
-    const toast=(m:string)=>window.showToast?.(window._tToast?window._tToast(m):m);
+  const codeInput = document.getElementById('code-input') as HTMLTextAreaElement;
+  const themeSelect = document.getElementById('theme-select') as HTMLSelectElement;
+  const padInput = document.getElementById('pad-input') as HTMLInputElement;
+  const radiusInput = document.getElementById('radius-input') as HTMLInputElement;
+  const formatSelect = document.getElementById('format-select') as HTMLSelectElement;
+  const renderBtn = document.getElementById('render-btn') as HTMLButtonElement;
+  const previewImg = document.getElementById('preview-img') as HTMLImageElement;
+  const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+  const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
 
-    const THEMES:Record<string,{bg:string,text:string,keyword:string,string:string,comment:string}> = {
-      dark:{bg:'#1e1e1e',text:'#d4d4d4',keyword:'#569cd6',string:'#ce9178',comment:'#6a9955'},
-      light:{bg:'#ffffff',text:'#333333',keyword:'#0000ff',string:'#a31515',comment:'#008000'},
-      dracula:{bg:'#282a36',text:'#f8f8f2',keyword:'#ff79c6',string:'#f1fa8c',comment:'#6272a4'},
-    };
+  const toast = (m: string, t: 'success' | 'error' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
-    const KEYWORDS=['function','const','let','var','if','else','return','class','import','export','from','async','await','for','while','def','print'];
+  const THEMES: Record<string, { bg: string; text: string; keyword: string; string: string; comment: string }> = {
+    dark: { bg: '#1e1e1e', text: '#d4d4d4', keyword: '#569cd6', string: '#ce9178', comment: '#6a9955' },
+    light: { bg: '#ffffff', text: '#333333', keyword: '#0000ff', string: '#a31515', comment: '#008000' },
+    dracula: { bg: '#282a36', text: '#f8f8f2', keyword: '#ff79c6', string: '#f1fa8c', comment: '#6272a4' },
+    terminal: { bg: '#0c0c0c', text: '#33ff33', keyword: '#00ffff', string: '#ffff55', comment: '#00aa00' },
+  };
 
-    function tokenize(line:string):{text:string,color:string}[]{
-      const tokens:{text:string,color:string}[]=[];let i=0;
-      while(i<line.length){
-        if(line[i]==='/'&&line[i+1]==='/'){tokens.push({text:line.slice(i),color:'comment'});break;}
-        if(line[i]==='"'||line[i]==="'"||line[i]==='`'){const q=line[i];let j=i+1;while(j<line.length&&line[j]!==q){if(line[j]==='\\')j++;j++;}tokens.push({text:line.slice(i,j+1),color:'string'});i=j+1;continue;}
-        if(/[a-zA-Z_]/.test(line[i])){let j=i;while(j<line.length&&/[a-zA-Z0-9_]/.test(line[j]))j++;const word=line.slice(i,j);tokens.push({text:word,color:KEYWORDS.includes(word)?'keyword':'text'});i=j;continue;}
-        tokens.push({text:line[i],color:'text'});i++;
-      }return tokens;
+  const KEYWORDS = ['function', 'const', 'let', 'var', 'if', 'else', 'return', 'class', 'import', 'export', 'from', 'async', 'await', 'for', 'while', 'def', 'print'];
+
+  function tokenize(line: string): { text: string; color: string }[] {
+    const tokens: { text: string; color: string }[] = [];
+    let i = 0;
+    while (i < line.length) {
+      if (line[i] === '/' && line[i + 1] === '/') { tokens.push({ text: line.slice(i), color: 'comment' }); break; }
+      if (line[i] === '"' || line[i] === "'" || line[i] === '`') {
+        const q = line[i]; let j = i + 1;
+        while (j < line.length && line[j] !== q) { if (line[j] === '\\') j++; j++; }
+        tokens.push({ text: line.slice(i, j + 1), color: 'string' }); i = j + 1; continue;
+      }
+      if (/[a-zA-Z_]/.test(line[i])) {
+        let j = i;
+        while (j < line.length && /[a-zA-Z0-9_]/.test(line[j])) j++;
+        const word = line.slice(i, j);
+        tokens.push({ text: word, color: KEYWORDS.includes(word) ? 'keyword' : 'text' }); i = j; continue;
+      }
+      tokens.push({ text: line[i], color: 'text' }); i++;
     }
+    return tokens;
+  }
 
-    function render(){
-      const code=codeInput.value.trim();if(!code){toast('Paste kode dulu');return;}
-      const theme=THEMES[themeSelect.value],pad=parseInt(padInput.value)||20;
-      const fontSize=14,lineHeight=20;const lines=code.split('\n');
-      const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d')!;
-      ctx.font=`${fontSize}px "JetBrains Mono","Fira Code",monospace`;
-      const maxW=Math.max(...lines.map(l=>ctx.measureText(l).width));
-      canvas.width=maxW+pad*2+40;canvas.height=lines.length*lineHeight+pad*2;
-      ctx.fillStyle=theme.bg;ctx.fillRect(0,0,canvas.width,canvas.height);
-      lines.forEach((line,li)=>{
-        const y=pad+lineHeight*(li+1)-3;let x=pad+10;
-        tokenize(line).forEach(tok=>{ctx.fillStyle=theme[tok.color as keyof typeof theme]||theme.text;ctx.fillText(tok.text,x,y);x+=ctx.measureText(tok.text).width;});
+  function roundRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+    if (r <= 0) return;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  let lastCanvas: HTMLCanvasElement | null = null;
+
+  function render() {
+    try {
+      const code = codeInput.value.trim();
+      if (!code) { toast('Paste kode dulu', 'error'); return; }
+      const theme = THEMES[themeSelect.value] || THEMES.dark;
+      const pad = Math.min(80, Math.max(0, parseInt(padInput.value) || 20));
+      const radius = Math.min(40, Math.max(0, parseInt(radiusInput.value) || 0));
+      const fontSize = 14, lineHeight = 20;
+      const lines = code.split('\n');
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      ctx.font = `${fontSize}px "JetBrains Mono","Fira Code",monospace`;
+      const maxW = Math.max(...lines.map((l) => ctx.measureText(l).width));
+      canvas.width = Math.ceil(maxW + pad * 2 + 40);
+      canvas.height = lines.length * lineHeight + pad * 2;
+      // Rounded background: area luar transparan
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = theme.bg;
+      roundRectPath(ctx, 0, 0, canvas.width, canvas.height, radius);
+      ctx.fill();
+      lines.forEach((line, li) => {
+        const y = pad + lineHeight * (li + 1) - 3;
+        let x = pad + 10;
+        tokenize(line).forEach((tok) => {
+          ctx.fillStyle = theme[tok.color as keyof typeof theme] || theme.text;
+          ctx.fillText(tok.text, x, y);
+          x += ctx.measureText(tok.text).width;
+        });
       });
-      previewImg.src=canvas.toDataURL('image/png');downloadBtn.classList.remove('hidden');
+      lastCanvas = canvas;
+      previewImg.src = canvas.toDataURL('image/png');
+      downloadBtn.classList.remove('hidden');
+      copyBtn.classList.remove('hidden');
+    } catch {
+      toast('Gagal merender gambar.', 'error');
     }
+  }
 
-    renderBtn.addEventListener('click',render);
-    downloadBtn.addEventListener('click',()=>{if(!previewImg.src)return;const a=document.createElement('a');a.href=previewImg.src;a.download='code-'+Date.now()+'.png';a.click();});
-    codeInput.value='function hello() {\n  console.log("Hello, World!");\n}\n\nhello();';render();
+  function stamp(): string {
+    const d = new Date();
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+  }
+
+  renderBtn.addEventListener('click', render);
+  [padInput, radiusInput].forEach((el) => el.addEventListener('input', render));
+
+  downloadBtn.addEventListener('click', () => {
+    if (!lastCanvas) return;
+    try {
+      const a = document.createElement('a');
+      a.href = lastCanvas.toDataURL(formatSelect.value === 'jpeg' ? 'image/jpeg' : 'image/png', 0.92);
+      a.download = `code-${stamp()}.${formatSelect.value === 'jpeg' ? 'jpg' : 'png'}`;
+      a.click();
+      toast('Diunduh!');
+    } catch {
+      toast('Gagal mengunduh!', 'error');
+    }
   });
+
+  copyBtn.addEventListener('click', async () => {
+    if (!lastCanvas) return;
+    try {
+      const blob = await new Promise<Blob>((resolve, reject) =>
+        lastCanvas!.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob'))), 'image/png'));
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      toast('Disalin!');
+    } catch {
+      toast('Gagal menyalin. Izin clipboard ditolak.', 'error');
+    }
+  });
+
+  codeInput.value = 'function hello() {\n  console.log("Hello, World!");\n}\n\nhello();';
+  render();
+});
 </script>

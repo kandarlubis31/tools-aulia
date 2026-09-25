@@ -15,18 +15,20 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     />
 
     <div class="card-base p-6 text-center animate-fade-in">
-      <!-- Tempo display -->
+      <!-- Tempo display + LED -->
       <div class="flex flex-col items-center mb-6">
+        <div id="led-row" class="flex gap-2 mb-3" aria-hidden="true"></div>
         <span class="text-6xl font-extrabold tabular-nums text-matte-800 dark:text-white" id="bpm-display">120</span>
         <span class="text-sm font-bold text-matte-400 uppercase tracking-widest mt-1" data-i18n="metro.bpm">BPM</span>
+        <span id="session-time" class="text-2xs text-matte-400 font-mono mt-1"></span>
       </div>
 
       <!-- BPM slider -->
       <div class="flex items-center gap-3 mb-4">
-        <button id="bpm-dec" class="w-10 h-10 rounded-full bg-matte-100 dark:bg-surface-elevated text-xl font-bold text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all active:scale-90">−</button>
+        <button id="bpm-dec" class="w-10 h-10 rounded-full bg-matte-100 dark:bg-surface-elevated text-xl font-bold text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all active:scale-90" aria-label="BPM minus">−</button>
         <input id="bpm-slider" type="range" min="20" max="240" value="120" step="1"
-          class="flex-1 h-2 rounded-full appearance-none bg-matte-200 dark:bg-matte-700 accent-rose-500 cursor-pointer" />
-        <button id="bpm-inc" class="w-10 h-10 rounded-full bg-matte-100 dark:bg-surface-elevated text-xl font-bold text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all active:scale-90">+</button>
+          class="flex-1 h-2 rounded-full appearance-none bg-matte-200 dark:bg-matte-700 accent-rose-500 cursor-pointer" aria-label="BPM" data-i18n-attr="aria-label" data-i18n="metro.bpm" />
+        <button id="bpm-inc" class="w-10 h-10 rounded-full bg-matte-100 dark:bg-surface-elevated text-xl font-bold text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all active:scale-90" aria-label="BPM plus">+</button>
       </div>
 
       <!-- Quick BPM -->
@@ -36,105 +38,218 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         ))}
       </div>
 
-      <!-- Time signature -->
-      <div class="flex items-center justify-center gap-1.5 mb-5">
+      <!-- Time signature + volume -->
+      <div class="flex items-center justify-center gap-3 mb-5 flex-wrap">
         <span class="text-2xs text-matte-400 font-bold"><span data-i18n="metro.beats">Beats</span>:</span>
-        <select id="beats-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold outline-none focus:ring-2 focus:ring-rose-500/40">
+        <select id="beats-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold outline-none focus:ring-2 focus:ring-rose-500/40" aria-label="Beats" data-i18n-attr="aria-label" data-i18n="metro.beats">
           {[1,2,3,4,5,6,7,8].map(n => <option value={n} selected={n === 4}>{n}/4</option>)}
         </select>
+        <span class="text-2xs text-matte-400 font-bold" data-i18n="media.scaleref.volume">Volume</span>
+        <input id="volume-slider" type="range" min="0" max="100" value="60" class="w-24 accent-rose-500" aria-label="Volume" data-i18n-attr="aria-label" data-i18n="media.scaleref.volume" />
       </div>
 
       <!-- Play/Stop -->
       <button id="play-btn" class="gradient-brand px-12 py-4 rounded-full text-lg font-bold shadow-lg shadow-rose-500/20 hover:shadow-rose-500/30 transition-all active:scale-95">
         ▶️ <span data-i18n="metro.start">Mulai</span>
       </button>
+
+      <!-- Presets -->
+      <div class="rounded-lg bg-matte-50 dark:bg-surface-elevated p-3 mt-5 text-left">
+        <div class="flex gap-2 mb-2">
+          <input id="preset-name" type="text" maxlength="24" placeholder="Nama preset…"
+            class="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-rose-500/40"
+            data-i18n-attr="placeholder" data-i18n="common.preset_name" />
+          <button id="preset-save" type="button" class="px-3 py-2 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-300 hover:bg-rose-500/20 text-xs font-bold transition-colors" data-i18n="common.save_preset">Simpan Preset</button>
+        </div>
+        <div class="flex gap-2">
+          <select id="preset-select" class="flex-1 px-2 py-2 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none" aria-label="Pilih preset" data-i18n-attr="aria-label" data-i18n="common.select_preset">
+            <option value="">—</option>
+          </select>
+          <button id="preset-apply" type="button" class="px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.apply">Terapkan</button>
+          <button id="preset-del" type="button" class="px-3 py-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-xs font-bold transition-colors" data-i18n="common.delete">Hapus</button>
+        </div>
+        <p id="preset-empty" class="text-2xs text-matte-400 mt-2" data-i18n="common.no_presets">Belum ada preset.</p>
+      </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
-    const bpmDisplay = document.getElementById('bpm-display')!;
-    const bpmSlider = document.getElementById('bpm-slider') as HTMLInputElement;
-    const bpmDec = document.getElementById('bpm-dec')!;
-    const bpmInc = document.getElementById('bpm-inc')!;
-    const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
-    const beatsSelect = document.getElementById('beats-select') as HTMLSelectElement;
+  const bpmDisplay = document.getElementById('bpm-display')!;
+  const bpmSlider = document.getElementById('bpm-slider') as HTMLInputElement;
+  const bpmDec = document.getElementById('bpm-dec')!;
+  const bpmInc = document.getElementById('bpm-inc')!;
+  const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
+  const beatsSelect = document.getElementById('beats-select') as HTMLSelectElement;
+  const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
+  const ledRow = document.getElementById('led-row')!;
+  const sessionTime = document.getElementById('session-time')!;
+  const presetSelect = document.getElementById('preset-select') as HTMLSelectElement;
+  const presetEmpty = document.getElementById('preset-empty')!;
 
-    let bpm = 120;
-    let playing = false;
-    let timer: number | null = null;
-    let audioCtx: AudioContext | null = null;
-    let beatCount = 0;
-    let beatsPerMeasure = 4;
+  const toast = (m: string, t: 'success' | 'error' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
-    function getAudioCtx() {
-      if (!audioCtx) audioCtx = new AudioContext();
-      return audioCtx;
+  let bpm = 120, playing = false, timer: number | null = null;
+  let audioCtx: AudioContext | null = null;
+  let beatCount = 0, beatsPerMeasure = 4;
+  let ledEls: HTMLElement[] = [];
+  let startTime = 0, sessionTicker: number | null = null;
+
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new AudioContext();
+    return audioCtx;
+  }
+
+  function buildLeds() {
+    ledRow.innerHTML = '';
+    ledEls = [];
+    for (let i = 0; i < beatsPerMeasure; i++) {
+      const d = document.createElement('div');
+      d.className = 'w-3 h-3 rounded-full bg-matte-200 dark:bg-matte-700 transition-all duration-100';
+      ledRow.appendChild(d);
+      ledEls.push(d);
     }
+  }
 
-    function click(accent: boolean) {
+  function flashLed(idx: number) {
+    ledEls.forEach((el, i) => {
+      if (i === idx % beatsPerMeasure) {
+        el.classList.add('!bg-rose-500', 'scale-125');
+      } else {
+        el.classList.remove('!bg-rose-500', 'scale-125');
+      }
+    });
+  }
+
+  function resetLeds() {
+    ledEls.forEach((el) => el.classList.remove('!bg-rose-500', 'scale-125'));
+  }
+
+  function click(accent: boolean) {
+    try {
       const ctx = getAudioCtx();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
-
+      const vol = (parseInt(volumeSlider.value) || 0) / 100;
       const freq = accent ? 1200 : 800;
       osc.frequency.setValueAtTime(freq, ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05);
-      gain.gain.setValueAtTime(accent ? 0.25 : 0.15, ctx.currentTime);
+      gain.gain.setValueAtTime((accent ? 0.25 : 0.15) * vol, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.08);
+    } catch {
+      /* audio gagal — biarkan visual LED tetap jalan */
     }
+  }
 
-    function tick() {
-      const isAccent = beatCount % beatsPerMeasure === 0;
-      click(isAccent);
-      beatCount++;
-      if (!timer) return;
-      timer = window.setTimeout(tick, (60 / bpm) * 1000);
-    }
+  function tick() {
+    const isAccent = beatCount % beatsPerMeasure === 0;
+    click(isAccent);
+    flashLed(beatCount);
+    beatCount++;
+    if (!timer) return;
+    timer = window.setTimeout(tick, (60 / bpm) * 1000);
+  }
 
-    function start() {
-      if (playing) return;
-      getAudioCtx().resume();
-      playing = true;
-      beatCount = 0;
-      click(true);
-      beatCount = 1;
-      timer = window.setTimeout(tick, (60 / bpm) * 1000);
-      playBtn.innerHTML = '⏸️ <span data-i18n="metro.stop">Berhenti</span>';
-      (window as any).processI18n?.();
-    }
+  function fmtSession(ms: number): string {
+    const s = Math.floor(ms / 1000);
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  }
 
-    function stop() {
-      playing = false;
-      if (timer) { clearTimeout(timer); timer = null; }
-      playBtn.innerHTML = '▶️ <span data-i18n="metro.start">Mulai</span>';
-      (window as any).processI18n?.();
-    }
+  function start() {
+    if (playing) return;
+    try { getAudioCtx().resume(); } catch { /* ignore */ }
+    playing = true;
+    beatCount = 0;
+    click(true);
+    flashLed(0);
+    beatCount = 1;
+    timer = window.setTimeout(tick, (60 / bpm) * 1000);
+    playBtn.innerHTML = '⏸️ <span data-i18n="metro.stop">Berhenti</span>';
+    (window as any).processI18n?.();
+    startTime = Date.now();
+    sessionTicker = window.setInterval(() => {
+      sessionTime.textContent = fmtSession(Date.now() - startTime);
+    }, 500);
+  }
 
-    function updateBpm(val: number) {
-      bpm = val;
-      bpmDisplay.textContent = String(bpm);
-      bpmSlider.value = String(bpm);
-    }
+  function stop() {
+    playing = false;
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (sessionTicker) { clearInterval(sessionTicker); sessionTicker = null; }
+    resetLeds();
+    sessionTime.textContent = '';
+    playBtn.innerHTML = '▶️ <span data-i18n="metro.start">Mulai</span>';
+    (window as any).processI18n?.();
+  }
 
-    bpmSlider.addEventListener('input', () => updateBpm(parseInt(bpmSlider.value)));
-    bpmDec.addEventListener('click', () => { if (bpm > 20) updateBpm(bpm - 1); });
-    bpmInc.addEventListener('click', () => { if (bpm < 240) updateBpm(bpm + 1); });
+  function updateBpm(val: number) {
+    bpm = val;
+    bpmDisplay.textContent = String(bpm);
+    bpmSlider.value = String(bpm);
+  }
 
-    document.querySelectorAll('.quick-bpm').forEach(btn => {
-      btn.addEventListener('click', () => updateBpm(parseInt((btn as HTMLElement).dataset.bpm!)));
-    });
-
-    playBtn.addEventListener('click', () => playing ? stop() : start());
-    beatsSelect.addEventListener('change', () => { beatsPerMeasure = parseInt(beatsSelect.value); });
+  bpmSlider.addEventListener('input', () => updateBpm(parseInt(bpmSlider.value)));
+  bpmDec.addEventListener('click', () => { if (bpm > 20) updateBpm(bpm - 1); });
+  bpmInc.addEventListener('click', () => { if (bpm < 240) updateBpm(bpm + 1); });
+  document.querySelectorAll('.quick-bpm').forEach((btn) => {
+    btn.addEventListener('click', () => updateBpm(parseInt((btn as HTMLElement).dataset.bpm!)));
   });
+  playBtn.addEventListener('click', () => (playing ? stop() : start()));
+  beatsSelect.addEventListener('change', () => {
+    beatsPerMeasure = parseInt(beatsSelect.value);
+    buildLeds();
+  });
+
+  // ── Preset ──
+  const presets = useLocalHistory<{ n: string; b: number; beats: number; v: number }>('preset:metronome', 10);
+  const renderPresets = () => {
+    const items = presets.getAll();
+    presetEmpty.classList.toggle('hidden', items.length > 0);
+    presetSelect.innerHTML = '<option value="">—</option>' + items.map((it, i) => `<option value="${i}">${it.n.replace(/</g, '&lt;')}</option>`).join('');
+  };
+  document.getElementById('preset-save')?.addEventListener('click', () => {
+    try {
+      const nameEl = document.getElementById('preset-name') as HTMLInputElement;
+      const name = nameEl.value.trim() || `Preset ${presets.getAll().length + 1}`;
+      presets.add({ n: name, b: bpm, beats: beatsPerMeasure, v: parseInt(volumeSlider.value) });
+      nameEl.value = '';
+      renderPresets();
+      toast('Tersimpan!');
+    } catch {
+      toast('Gagal menyimpan.', 'error');
+    }
+  });
+  document.getElementById('preset-apply')?.addEventListener('click', () => {
+    const it = presets.getAll()[parseInt(presetSelect.value)];
+    if (!it) return;
+    updateBpm(it.b);
+    beatsPerMeasure = it.beats;
+    beatsSelect.value = String(it.beats);
+    volumeSlider.value = String(it.v);
+    buildLeds();
+    toast('Diterapkan!');
+  });
+  document.getElementById('preset-del')?.addEventListener('click', () => {
+    const idx = parseInt(presetSelect.value);
+    if (isNaN(idx)) return;
+    presets.update(presets.getAll().filter((_, i) => i !== idx));
+    renderPresets();
+  });
+
+  // Init
+  buildLeds();
+  renderPresets();
+});
 </script>

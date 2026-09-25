@@ -36,6 +36,20 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div id="results-area" class="space-y-2">
         <p class="text-xs text-matte-400 text-center py-6" data-i18n="latency.idle">Ketik host (pisahkan dengan koma) lalu klik Ping.</p>
       </div>
+
+      <div class="flex justify-end mt-3">
+        <button id="copy-json-btn" type="button" class="hidden px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="net.copy_json">Copy JSON</button>
+      </div>
+    </div>
+
+    <!-- Riwayat tes -->
+    <div class="card-base p-4 mt-4 animate-fade-in">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-xs font-bold text-matte-400 uppercase tracking-wider" data-i18n="common.history">Riwayat</h3>
+        <button id="history-clear" type="button" class="hidden text-2xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" data-i18n="common.clear_history">Hapus Riwayat</button>
+      </div>
+      <p id="history-empty" class="text-2xs text-matte-400" data-i18n="net.hist_empty">Belum ada tes. Ping host untuk menyimpan riwayat.</p>
+      <ul id="history-list" class="space-y-1.5"></ul>
     </div>
 
     <p class="text-center text-xs text-matte-400 mt-6" data-i18n="latency.note">
@@ -45,6 +59,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -53,6 +69,42 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const pingBtn = document.getElementById('ping-btn') as HTMLButtonElement;
     const countSelect = document.getElementById('count-select') as HTMLSelectElement;
     const resultsArea = document.getElementById('results-area')!;
+    const copyJsonBtn = document.getElementById('copy-json-btn') as HTMLButtonElement;
+    const historyList = document.getElementById('history-list')!;
+    const historyEmpty = document.getElementById('history-empty')!;
+    const historyClear = document.getElementById('history-clear')!;
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
+
+    let lastJson = '';
+
+    // ── Riwayat tes (max 8) ──
+    const history = useLocalHistory<{ t: string; hosts: string; avg: number; min: number; max: number }>('hist:latency', 8);
+    const renderHistory = () => {
+      const items = history.getAll();
+      historyEmpty.classList.toggle('hidden', items.length > 0);
+      historyClear.classList.toggle('hidden', items.length === 0);
+      historyList.innerHTML = '';
+      items.forEach((it, idx) => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center gap-2 p-2 rounded-lg bg-matte-50 dark:bg-surface-elevated text-2xs font-mono cursor-pointer hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors';
+        const dt = new Date(it.t);
+        li.innerHTML = `
+          <span class="font-bold ${it.avg < 50 ? 'text-emerald-500' : it.avg < 100 ? 'text-amber-500' : 'text-red-500'}">${it.avg}ms</span>
+          <span class="min-w-0 flex-1 truncate">${it.hosts.replace(/</g, '&lt;')}</span>
+          <span class="text-matte-400 shrink-0">min ${it.min} · max ${it.max} · ${dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+          <button type="button" class="h-del w-6 h-6 shrink-0 rounded text-matte-400 hover:text-rose-500 flex items-center justify-center" aria-label="Hapus" data-i18n-attr="aria-label" data-i18n="common.delete">×</button>`;
+        li.addEventListener('click', () => { hostInput.value = it.hosts; pingBtn.click(); });
+        li.querySelector('.h-del')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          history.update(history.getAll().filter((_, i) => i !== idx));
+          renderHistory();
+        });
+        historyList.appendChild(li);
+      });
+    };
+    historyClear.addEventListener('click', () => { history.clear(); renderHistory(); });
 
     function latencyColor(ms: number): string {
       if (ms < 20) return 'text-emerald-500';
@@ -111,12 +163,13 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     pingBtn.addEventListener('click', async () => {
       const hosts = hostInput.value.split(',').map(h => h.trim()).filter(Boolean);
-      if (!hosts.length) { showToast('Masukkan host dulu', 'error'); return; }
+      if (!hosts.length) { toast('Masukkan host dulu.', 'error'); return; }
 
       pingBtn.disabled = true;
       pingBtn.innerHTML = '⏳ …';
       resultsArea.innerHTML = '';
 
+      const allResults: { host: string; times: number[] }[] = [];
       const count = parseInt(countSelect.value);
       for (const host of hosts) {
         const row = document.createElement('div');
@@ -131,11 +184,30 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           row.innerHTML = renderResult(host, times).innerHTML;
           await new Promise(r => setTimeout(r, 150));
         }
+        allResults.push({ host, times });
       }
+
+      // Riwayat + JSON agregat
+      try {
+        const avgs = allResults.map((r) => Math.round(r.times.reduce((a, b) => a + b, 0) / r.times.length));
+        lastJson = JSON.stringify(Object.fromEntries(allResults.map((r) => [r.host, { avg: Math.round(r.times.reduce((a, b) => a + b, 0) / r.times.length), min: Math.min(...r.times), max: Math.max(...r.times), samples: r.times }])), null, 2);
+        copyJsonBtn.classList.remove('hidden');
+        const hostsStr = allResults.map((r) => r.host).join(', ');
+        history.add({ t: new Date().toISOString(), hosts: hostsStr, avg: Math.round(avgs.reduce((a, b) => a + b, 0) / avgs.length), min: Math.min(...avgs), max: Math.max(...avgs) });
+        renderHistory();
+      } catch { /* quota — abaikan */ }
 
       pingBtn.disabled = false;
       pingBtn.innerHTML = '🔄 <span data-i18n="latency.retry">Ulangi</span>';
       (window as any).processI18n?.();
     });
+
+    copyJsonBtn.addEventListener('click', async () => {
+      if (!lastJson) return;
+      try { await navigator.clipboard.writeText(lastJson); toast('Disalin!'); }
+      catch { toast('Gagal menyalin.', 'error'); }
+    });
+
+    renderHistory();
   });
 </script>

@@ -13,54 +13,173 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <div class="card-base p-5 animate-fade-in">
       <div class="flex gap-2 mb-3">
-        <input id="text-input" type="text" placeholder="Judul artikel atau teks apa pun…" class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm outline-none focus:ring-2 focus:ring-sky-500/40" />
+        <input id="text-input" type="text" placeholder="Judul artikel atau teks apa pun…"
+          class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm outline-none focus:ring-2 focus:ring-sky-500/40"
+          data-i18n-attr="placeholder" data-i18n="text.slug.placeholder" />
       </div>
-      <div class="flex items-center gap-3 mb-4 flex-wrap">
-        <label class="text-2xs text-matte-400 font-bold">Separator:</label>
+
+      <div class="flex items-center gap-3 mb-3 flex-wrap">
+        <label class="text-2xs text-matte-400 font-bold" data-i18n="text.slug.separator">Separator:</label>
         <button class="sep-btn px-3 py-1 rounded text-xs font-bold font-mono bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300" data-sep="-">-</button>
         <button class="sep-btn px-3 py-1 rounded text-xs font-bold font-mono bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300" data-sep="_">_</button>
         <button class="sep-btn px-3 py-1 rounded text-xs font-bold font-mono bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300" data-sep="~">~</button>
       </div>
+
+      <div class="flex items-center gap-4 mb-4 flex-wrap">
+        <label class="inline-flex items-center gap-1.5 text-2xs text-matte-400 cursor-pointer">
+          <input id="lowercase-check" type="checkbox" class="rounded" checked />
+          <span data-i18n="text.slug.lowercase">Lowercase</span>
+        </label>
+        <label class="inline-flex items-center gap-1.5 text-2xs text-matte-400 cursor-pointer">
+          <input id="unicode-check" type="checkbox" class="rounded" />
+          <span data-i18n="text.slug.unicode">Unicode (pertahankan huruf non-ASCII)</span>
+        </label>
+      </div>
+
       <div class="relative mb-3">
-        <label class="text-2xs text-matte-400 font-bold block mb-1">Hasil Slug</label>
+        <label for="slug-output" class="text-2xs text-matte-400 font-bold block mb-1" data-i18n="text.slug.result">Hasil Slug</label>
         <input id="slug-output" type="text" readonly class="w-full px-3 py-2.5 rounded-lg bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 text-sm font-mono font-bold text-sky-700 dark:text-sky-300 outline-none" />
-        <button id="copy-btn" class="absolute top-6 right-2 px-3 py-1 rounded-lg text-2xs font-bold bg-sky-100 dark:bg-sky-800/40 text-sky-700 dark:text-sky-300 hover:bg-sky-200 transition-all">📋 Copy</button>
+        <button id="copy-btn" class="absolute top-6 right-2 px-3 py-1 rounded-lg text-2xs font-bold bg-sky-100 dark:bg-sky-800/40 text-sky-700 dark:text-sky-300 hover:bg-sky-200 transition-all" data-i18n="common.copy">📋 Copy</button>
       </div>
+
       <div class="flex items-center gap-2">
-        <input id="lowercase-check" type="checkbox" class="rounded" checked />
-        <label class="text-2xs text-matte-400">Lowercase</label>
-        <span id="char-count" class="ml-auto text-2xs text-matte-400 font-mono"></span>
+        <span id="char-count" class="text-2xs text-matte-400 font-mono"></span>
+        <button id="save-history-btn" type="button" class="ml-auto px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 transition-colors" data-i18n="common.save_to_history">Simpan ke Riwayat</button>
       </div>
+    </div>
+
+    <!-- Riwayat -->
+    <div class="card-base p-5 animate-fade-in mt-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="section-title" data-i18n="common.history">Riwayat</h2>
+        <button id="history-clear" type="button" class="hidden text-2xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" data-i18n="common.clear_history">Hapus Riwayat</button>
+      </div>
+      <p id="history-empty" class="text-xs text-matte-400 py-2" data-i18n="text.slug.history_empty">Belum ada riwayat. Generate slug, lalu simpan.</p>
+      <ul id="history-list" class="space-y-2"></ul>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load',()=>{if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
-    const textInput=document.getElementById('text-input') as HTMLInputElement;
-    const slugOutput=document.getElementById('slug-output') as HTMLInputElement;
-    const charCount=document.getElementById('char-count')!;
-    const lowercaseCheck=document.getElementById('lowercase-check') as HTMLInputElement;
-    const toast=(m:string)=>window.showToast?.(window._tToast?window._tToast(m):m);
-    let separator='-';
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
+  const textInput = $('text-input') as HTMLInputElement | null;
+  const slugOutput = $('slug-output') as HTMLInputElement | null;
+  const charCount = $('char-count');
+  const lowercaseCheck = $('lowercase-check') as HTMLInputElement | null;
+  const unicodeCheck = $('unicode-check') as HTMLInputElement | null;
+  if (!textInput || !slugOutput || !charCount || !lowercaseCheck || !unicodeCheck) return;
 
-    function slugify(text:string):string{
-      let s=text.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-      s=s.replace(/[^a-zA-Z0-9\s_-]/g,'').trim().replace(/[\s_]+/g,separator).replace(new RegExp(separator+'+','g'),separator);
-      if(lowercaseCheck.checked)s=s.toLowerCase();return s;
+  let separator = '-';
+
+  function slugify(text: string): string {
+    try {
+      let s = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (unicodeCheck!.checked) {
+        // Unicode mode: pertahankan huruf & angka apapun bahasa
+        s = s.replace(/[^\p{L}\p{N}\s_-]/gu, '').trim().replace(/[\s_]+/g, separator);
+        s = s.replace(new RegExp(separator + '+', 'g'), separator);
+      } else {
+        s = s.replace(/[^a-zA-Z0-9\s_-]/g, '').trim().replace(/[\s_]+/g, separator);
+        s = s.replace(new RegExp(separator + '+', 'g'), separator);
+      }
+      if (lowercaseCheck!.checked) s = s.toLowerCase();
+      return s;
+    } catch {
+      return '';
     }
+  }
 
-    function update(){const slug=slugify(textInput.value);slugOutput.value=slug;charCount.textContent=slug.length+' char';}
+  function update() {
+    const slug = slugify(textInput!.value);
+    slugOutput!.value = slug;
+    charCount!.textContent = slug.length + ' char';
+  }
 
-    textInput.addEventListener('input',update);lowercaseCheck.addEventListener('change',update);
-    document.querySelectorAll('.sep-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.sep-btn').forEach(x=>x.className='sep-btn px-3 py-1 rounded text-xs font-bold font-mono bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300');
-      (b as HTMLElement).className='sep-btn px-3 py-1 rounded text-xs font-bold font-mono bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300';separator=(b as HTMLElement).dataset.sep!;update();}));
+  const toast = (m: string, t: 'success' | 'error' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
-    document.getElementById('copy-btn')!.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(slugOutput.value);toast('Slug tersalin!');}catch{toast('Gagal');}});
+  // ── Riwayat (max 20) ──
+  const history = useLocalHistory<{ t: string; src: string; slug: string; sep: string }>('hist:text-slug', 20);
+  const historyList = $('history-list')!;
+  const historyEmpty = $('history-empty')!;
+  const historyClear = $('history-clear')!;
 
-    textInput.value='Cara Membuat Website dengan Astro JS';update();
+  const renderHistory = () => {
+    const items = history.getAll();
+    historyEmpty.classList.toggle('hidden', items.length > 0);
+    historyClear.classList.toggle('hidden', items.length === 0);
+    historyList.innerHTML = '';
+    items.forEach((it, idx) => {
+      const li = document.createElement('li');
+      li.className = 'flex items-center justify-between gap-2 p-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated text-xs';
+      li.innerHTML = `
+        <div class="min-w-0 cursor-pointer h-restore flex-1">
+          <div class="font-mono font-bold text-sky-600 dark:text-sky-300 truncate">${it.slug.replace(/</g, '&lt;')}</div>
+          <div class="text-2xs text-matte-400 truncate">${it.src.replace(/</g, '&lt;')}</div>
+        </div>
+        <button type="button" class="h-del w-7 h-7 shrink-0 rounded-lg text-matte-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center" aria-label="Hapus" data-i18n-attr="aria-label" data-i18n="common.delete">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>`;
+      li.querySelector('.h-restore')?.addEventListener('click', () => {
+        textInput!.value = it.src;
+        separator = it.sep;
+        syncSepButtons();
+        update();
+      });
+      li.querySelector('.h-del')?.addEventListener('click', () => {
+        history.update(history.getAll().filter((_, i) => i !== idx));
+        renderHistory();
+      });
+      historyList.appendChild(li);
+    });
+  };
+
+  $('save-history-btn')?.addEventListener('click', () => {
+    if (!slugOutput.value) { toast('Tidak ada slug untuk disimpan.', 'error'); return; }
+    try {
+      history.add({ t: new Date().toISOString(), src: textInput.value, slug: slugOutput.value, sep: separator });
+      renderHistory();
+      toast('Tersimpan ke riwayat!');
+    } catch {
+      toast('Gagal menyimpan.', 'error');
+    }
   });
+
+  historyClear.addEventListener('click', () => { history.clear(); renderHistory(); });
+
+  // ── Events ──
+  const sepBtns = Array.from(document.querySelectorAll<HTMLButtonElement>('.sep-btn'));
+  const sepClasses = 'sep-btn px-3 py-1 rounded text-xs font-bold font-mono bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300';
+  const sepClassesActive = 'sep-btn px-3 py-1 rounded text-xs font-bold font-mono bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300';
+  const syncSepButtons = () => sepBtns.forEach((b) => {
+    b.className = b.dataset.sep === separator ? sepClassesActive : sepClasses;
+  });
+
+  sepBtns.forEach((b) => b.addEventListener('click', () => { separator = b.dataset.sep!; syncSepButtons(); update(); }));
+  textInput.addEventListener('input', update);
+  lowercaseCheck.addEventListener('change', update);
+  unicodeCheck.addEventListener('change', update);
+
+  $('copy-btn')?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(slugOutput.value);
+      toast('Disalin!');
+    } catch {
+      toast('Gagal menyalin.', 'error');
+    }
+  });
+
+  // Init
+  textInput.value = 'Cara Membuat Website dengan Astro JS';
+  syncSepButtons();
+  update();
+  renderHistory();
+});
 </script>

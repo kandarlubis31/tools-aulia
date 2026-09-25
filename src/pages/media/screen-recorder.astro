@@ -70,6 +70,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const previewVideo = document.getElementById('preview-video') as HTMLVideoElement;
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
 
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
+
     let mediaRecorder: MediaRecorder | null = null;
     let stream: MediaStream | null = null;
     let chunks: Blob[] = [];
@@ -109,7 +112,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           previewArea.classList.remove('hidden');
           stopTimer();
           recDot.innerHTML = '<span class="w-3 h-3 rounded-full bg-matte-400"></span>';
-          recStatus.textContent = 'Selesai';
+          recStatus.textContent = window._tToast ? window._tToast('Selesai.') : 'Selesai.';
           startBtn.innerHTML = '🔄 <span data-i18n="screen.rerecord">Rekam Ulang</span>';
           (startBtn.querySelector('[data-i18n]') || startBtn).textContent = 'Rekam Ulang';
           stopBtn.disabled = true;
@@ -122,7 +125,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         recTime.textContent = '00:00';
         startTimer();
         recDot.innerHTML = '<span class="animate-pulse w-3 h-3 rounded-full bg-red-500"></span>';
-        recStatus.textContent = 'Recording…';
+        recStatus.textContent = window._tToast ? window._tToast('Merekam…') : 'Merekam…';
         startBtn.innerHTML = '⏳ …';
         stopBtn.disabled = false;
         previewArea.classList.add('hidden');
@@ -133,7 +136,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         };
       } catch (e: any) {
         if (e.name === 'AbortError') return;
-        showToast('Gagal mulai rekam: ' + e.message, 'error');
+        toast('Gagal mulai rekam.', 'error');
       }
     }
 
@@ -160,11 +163,17 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     downloadBtn.addEventListener('click', () => {
       if (!previewVideo.src) return;
-      const a = document.createElement('a');
-      a.href = previewVideo.src;
-      a.download = `screen-record-${Date.now()}.webm`;
-      a.click();
-      showToast('Video didownload!');
+      try {
+        const d = new Date();
+        const p = (n: number) => String(n).padStart(2, '0');
+        const a = document.createElement('a');
+        a.href = previewVideo.src;
+        a.download = `screen-record-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.webm`;
+        a.click();
+        toast('Diunduh!');
+      } catch {
+        toast('Gagal mengunduh!', 'error');
+      }
     });
   });
 </script>

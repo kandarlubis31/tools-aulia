@@ -8,9 +8,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <div class="card-base p-5 space-y-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="space-y-2">
-        <div><label class="text-xs text-matte-500 mb-1 block">Server Name</label><input id="server-name" type="text" class="input-field w-full text-sm" value="tools.paklubis.my.id"></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Proxy Pass (backend)</label><input id="proxy-pass" type="text" class="input-field w-full text-sm" value="http://localhost:3000" placeholder="http://localhost:3000"></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Listen Port</label><input id="port" type="number" class="input-field w-24 text-sm" value="443"></div>
+        <div><label for="server-name" class="text-xs text-matte-500 mb-1 block" data-i18n="dev.nginx.server_name">Server Name</label><input id="server-name" type="text" class="input-field w-full text-sm" value="tools.paklubis.my.id"></div>
+        <div><label for="proxy-pass" class="text-xs text-matte-500 mb-1 block" data-i18n="dev.nginx.proxy_pass">Proxy Pass (backend)</label><input id="proxy-pass" type="text" class="input-field w-full text-sm" value="http://localhost:3000" placeholder="http://localhost:3000"></div>
+        <div><label for="port" class="text-xs text-matte-500 mb-1 block" data-i18n="dev.nginx.port">Listen Port</label><input id="port" type="number" class="input-field w-24 text-sm" value="443"></div>
 
         <div class="space-y-1 text-sm">
           <label class="flex items-center gap-2"><input type="checkbox" id="en-ssl" checked> SSL (HTTPS)</label>
@@ -22,9 +22,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
 
       <div>
-        <label class="text-sm text-matte-500 mb-1 block font-medium">Output</label>
+        <label for="output" class="text-sm text-matte-500 mb-1 block font-medium" data-i18n="dev.nginx.output">Output</label>
         <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-96 overflow-auto text-xs font-mono whitespace-pre-wrap"></pre>
-        <div class="flex gap-2 mt-2"><button id="copy-btn" class="btn-secondary text-xs">📋 Copy</button><button id="download-btn" class="btn-secondary text-xs">⬇️ nginx.conf</button></div>
+        <div class="flex gap-2 mt-2"><button id="copy-btn" class="btn-secondary text-xs" data-i18n="common.copy">📋 Copy</button><button id="download-btn" class="btn-secondary text-xs" data-i18n="common.download">⬇️ nginx.conf</button></div>
       </div>
     </div>
   </div>

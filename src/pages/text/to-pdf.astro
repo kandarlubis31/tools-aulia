@@ -15,30 +15,35 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     />
 
     <div class="card-base p-5 animate-fade-in">
-      <textarea id="text-input" rows="12" placeholder="Tulis atau paste teks di sini…
-Kamu bisa tulis bebas, gunakan
-line break untuk paragraf baru."
-        class="w-full px-4 py-3 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-teal-500/40 resize-y mb-4"></textarea>
+      <textarea id="text-input" rows="12" placeholder="Tulis atau paste teks di sini…\nKamu bisa tulis bebas, gunakan\nline break untuk paragraf baru."
+        class="w-full px-4 py-3 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-teal-500/40 resize-y mb-4"
+        data-i18n-attr="placeholder" data-i18n="tpdf.placeholder"></textarea>
 
       <div class="grid grid-cols-3 gap-3 mb-4">
         <div>
-          <label class="text-2xs text-matte-400 font-bold block mb-1">Font Size</label>
+          <label for="size-input" class="text-2xs text-matte-400 font-bold block mb-1" data-i18n="tpdf.font_size">Font Size</label>
           <input id="size-input" type="number" value="12" min="8" max="24" class="w-full px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-teal-500/40" />
         </div>
         <div>
-          <label class="text-2xs text-matte-400 font-bold block mb-1">Margin (px)</label>
+          <label for="margin-input" class="text-2xs text-matte-400 font-bold block mb-1" data-i18n="tpdf.margin">Margin (px)</label>
           <input id="margin-input" type="number" value="50" min="20" max="100" class="w-full px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-teal-500/40" />
         </div>
         <div class="flex items-end">
-          <button id="convert-btn" class="w-full gradient-brand px-4 py-2 rounded-lg text-sm font-bold">
+          <button id="convert-btn" class="w-full gradient-brand px-4 py-2 rounded-lg text-sm font-bold" data-i18n="tpdf.convert">
             🔄 Convert to PDF
           </button>
         </div>
       </div>
 
-      <button id="download-btn" class="hidden gradient-brand px-6 py-3 rounded-lg text-sm font-bold">
+      <button id="download-btn" class="hidden gradient-brand px-6 py-3 rounded-lg text-sm font-bold" data-i18n="common.download">
         💾 Download PDF
       </button>
+
+      <!-- Preview halaman 1 -->
+      <div id="tpdf-preview-box" class="hidden mt-4">
+        <span class="text-2xs text-matte-400 font-bold uppercase tracking-wider block mb-2" data-i18n="pdf.bates.preview_page1">Preview (halaman 1)</span>
+        <canvas id="tpdf-preview-canvas" class="max-w-full max-h-[420px] mx-auto rounded-lg border border-matte-200 dark:border-matte-700 shadow"></canvas>
+      </div>
     </div>
 
     <p class="text-center text-xs text-matte-400 mt-6">
@@ -57,6 +62,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const marginInput = document.getElementById('margin-input') as HTMLInputElement;
     const convertBtn = document.getElementById('convert-btn') as HTMLButtonElement;
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+    const previewBox = document.getElementById('tpdf-preview-box')!;
+    const previewCanvas = document.getElementById('tpdf-preview-canvas') as HTMLCanvasElement;
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
     let pdfBytes: Uint8Array | null = null;
 
@@ -93,11 +103,14 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     async function convert() {
       const text = textInput.value.trim();
-      if (!text) { showToast('Tulis teks dulu', 'error'); return; }
+      if (!text) { toast('Tulis teks dulu.', 'error'); return; }
 
       convertBtn.disabled = true;
       convertBtn.innerHTML = '⏳ …';
       downloadBtn.classList.add('hidden');
+      previewBox.classList.add('hidden');
+
+      try {
 
       const PDFLib = await loadPdfLib();
       const doc = await PDFLib.PDFDocument.create();
@@ -130,19 +143,56 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       downloadBtn.classList.remove('hidden');
       convertBtn.innerHTML = '✅ Converted';
       convertBtn.disabled = false;
-      showToast(`${totalPages} halaman PDF dibuat!`);
+      toast('PDF dibuat!');
+      await previewFirstPage(pdfBytes);
+      } catch {
+        toast('Gagal membuat PDF.', 'error');
+        convertBtn.innerHTML = '🔄 Convert to PDF';
+        convertBtn.disabled = false;
+      }
+    }
+
+    async function previewFirstPage(bytes: Uint8Array) {
+      try {
+        const pdfjsLib = await new Promise<any>((resolve, reject) => {
+          if ((window as any).pdfjsLib) return resolve((window as any).pdfjsLib);
+          const s = document.createElement('script');
+          s.src = '/vendor/pdfjs/pdf.min.js';
+          s.onload = () => resolve((window as any).pdfjsLib);
+          s.onerror = () => reject(new Error('pdfjs'));
+          document.head.appendChild(s);
+        });
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
+        const doc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
+        const page = await doc.getPage(1);
+        const vp = page.getViewport({ scale: 1 });
+        const scale = Math.min(1.2, 420 / vp.height);
+        const viewport = page.getViewport({ scale });
+        previewCanvas.width = viewport.width;
+        previewCanvas.height = viewport.height;
+        await page.render({ canvasContext: previewCanvas.getContext('2d')!, viewport }).promise;
+        previewBox.classList.remove('hidden');
+      } catch {
+        // preview non-blocking
+      }
     }
 
     convertBtn.addEventListener('click', convert);
     downloadBtn.addEventListener('click', () => {
       if (!pdfBytes) return;
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `text-${Date.now()}.pdf`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      showToast('PDF didownload!');
+      try {
+        const d = new Date();
+        const p = (n: number) => String(n).padStart(2, '0');
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `text-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.pdf`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        toast('Diunduh!');
+      } catch {
+        toast('Gagal mengunduh!', 'error');
+      }
     });
   });
 </script>

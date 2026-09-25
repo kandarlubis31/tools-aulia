@@ -14,117 +14,244 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <div class="card-base p-6 text-center animate-fade-in">
       <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 hover:border-blue-400 transition-colors cursor-pointer mb-4" id="drop-zone">
         <input type="file" id="file-input" accept="image/*" class="hidden" />
-        <p class="text-sm font-bold text-matte-500 dark:text-matte-300">Upload gambar</p>
+        <p class="text-sm font-bold text-matte-500 dark:text-matte-300" data-i18n="img.upscaler.upload">Upload gambar</p>
         <p class="text-2xs text-matte-400 mt-1" id="file-name">—</p>
       </div>
 
       <div class="flex items-center gap-3 justify-center mb-4 flex-wrap">
-        <label class="text-2xs text-matte-400 font-bold">Scale: <span id="scale-val">2x</span></label>
+        <label for="scale-slider" class="text-2xs text-matte-400 font-bold"><span data-i18n="img.upscaler.scale">Scale</span>: <span id="scale-val">2x</span></label>
         <input id="scale-slider" type="range" min="1.5" max="4" value="2" step="0.5" class="w-32 accent-blue-500" />
-        <label class="text-2xs text-matte-400 font-bold"><input id="sharpen-check" type="checkbox" class="rounded mr-1" checked /> Sharpen</label>
+        <label class="text-2xs text-matte-400 font-bold inline-flex items-center gap-1 cursor-pointer"><input id="sharpen-check" type="checkbox" class="rounded" checked /> <span data-i18n="img.upscaler.sharpen">Sharpen</span></label>
       </div>
 
       <div class="grid grid-cols-2 gap-3 mb-4">
-        <div class="p-2 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Original</span>
+        <div class="p-2 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block" data-i18n="img.upscaler.original">Original</span>
           <canvas id="orig-canvas" class="max-w-full mx-auto rounded max-h-48"></canvas></div>
-        <div class="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20"><span class="text-2xs text-blue-500 block">Upscaled</span>
+        <div class="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20"><span class="text-2xs text-blue-500 block" data-i18n="img.upscaler.upscaled">Upscaled</span>
           <canvas id="up-canvas" class="max-w-full mx-auto rounded max-h-48"></canvas></div>
       </div>
 
-      <button id="download-btn" class="hidden gradient-brand px-6 py-3 rounded-lg text-sm font-bold">💾 Download</button>
+      <div class="flex items-center gap-3 justify-center mb-4 flex-wrap">
+        <label for="format-select" class="text-2xs text-matte-400 font-bold" data-i18n="img.upscaler.format">Format</label>
+        <select id="format-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none">
+          <option value="png">PNG</option><option value="jpeg">JPG</option><option value="webp">WEBP</option></select>
+        <label for="quality-input" class="text-2xs text-matte-400 font-bold" data-i18n="img.upscaler.quality">Quality</label>
+        <input id="quality-input" type="range" min="40" max="100" value="90" class="w-24 accent-blue-500" />
+      </div>
+
+      <button id="download-btn" class="hidden gradient-brand px-6 py-3 rounded-lg text-sm font-bold" data-i18n="common.download">💾 Download</button>
+      <button id="save-history-btn" type="button" class="hidden ml-2 px-4 py-3 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.save_to_history">Simpan ke Riwayat</button>
+    </div>
+
+    <!-- Riwayat -->
+    <div class="card-base p-5 animate-fade-in mt-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="section-title" data-i18n="common.history">Riwayat</h2>
+        <button id="history-clear" type="button" class="hidden text-2xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" data-i18n="common.clear_history">Hapus Riwayat</button>
+      </div>
+      <p id="history-empty" class="text-xs text-matte-400 py-2" data-i18n="img.upscaler.history_empty">Belum ada riwayat. Simpan hasil upscale ke riwayat.</p>
+      <ul id="history-list" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></ul>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+import { sharpenPixels } from '../../composables/useImageWorker';
+import { useLocalHistory } from '../../composables/useLocalHistory';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  import { sharpenPixels } from '../../composables/useImageWorker';
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
-  document.addEventListener('astro:page-load',()=>{if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+  // Guard SPA leak: hanya jalan di halaman ini (orig-canvas unik di upscaler).
+  if (!document.getElementById('orig-canvas')) return;
+  const dropZone = document.getElementById('drop-zone')!;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const fileName = document.getElementById('file-name')!;
+  const scaleVal = document.getElementById('scale-val')!;
+  const scaleSlider = document.getElementById('scale-slider') as HTMLInputElement;
+  const origCanvas = document.getElementById('orig-canvas') as HTMLCanvasElement;
+  const upCanvas = document.getElementById('up-canvas') as HTMLCanvasElement;
+  const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+  const saveHistoryBtn = document.getElementById('save-history-btn') as HTMLButtonElement;
+  const sharpenCheck = document.getElementById('sharpen-check') as HTMLInputElement;
+  const formatSelect = document.getElementById('format-select') as HTMLSelectElement;
+  const qualityInput = document.getElementById('quality-input') as HTMLInputElement;
 
-    // Guard SPA leak: hanya jalan di halaman ini (orig-canvas unik di upscaler).
-    // Tanpa guard, listener bocor & crash di halaman lain (dropZone null → addEventListener).
-    if(!document.getElementById('orig-canvas')) return;
-    const dropZone=document.getElementById('drop-zone')!,fileInput=document.getElementById('file-input') as HTMLInputElement;
-    const fileName=document.getElementById('file-name')!,scaleVal=document.getElementById('scale-val')!;
-    const scaleSlider=document.getElementById('scale-slider') as HTMLInputElement;
-    const origCanvas=document.getElementById('orig-canvas') as HTMLCanvasElement;
-    const upCanvas=document.getElementById('up-canvas') as HTMLCanvasElement;
-    const downloadBtn=document.getElementById('download-btn') as HTMLButtonElement;
-    const sharpenCheck=document.getElementById('sharpen-check') as HTMLInputElement;
-    const toast=(m:string)=>window.showToast?.(window._tToast?window._tToast(m):m);
+  const toast = (m: string, t: 'success' | 'error' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
-    let origImg:ImageData|null=null,origW=0,origH=0,upscaledDataUrl='';
+  let origImg: ImageData | null = null, origW = 0, origH = 0, origName = 'image';
+  const MAX_PIXELS = 24 * 1024 * 1024; // ~24MP — cap output biar gak OOM di HP low-end
+  let upscaleReq = 0; // race guard: slider input bisa nembak cepat
+  let warnedCap = false;
+  let upscaleBusy = false, upscaleQueued = false;
 
-    const MAX_PIXELS = 24 * 1024 * 1024; // ~24MP — cap output biar gak OOM di HP low-end
-    let upscaleReq = 0; // race guard: slider input bisa nembak cepat
-    let warnedCap = false;
-    let upscaleBusy = false, upscaleQueued = false;
-
-    // Gate: cuma 1 upscale jalan sekaligus (getImageData 24MP ≈ 96MB copy).
-    // Event berikutnya di-coalesce jadi satu — hindari numpuk buffer besar di low-end.
-    function upscale(){
-      if(upscaleBusy){upscaleQueued=true;return;}
-      upscaleBusy=true;
-      doUpscale().finally(()=>{
-        upscaleBusy=false;
-        if(upscaleQueued){upscaleQueued=false;upscale();}
-      });
-    }
-
-    async function doUpscale(){
-      if(!origImg)return;
-      let scale=parseFloat(scaleSlider.value);
-      // Clamp: 4x dari 12MP = 192MP = tab crash. Batasi ke max pixel aman.
-      const maxScale=Math.sqrt(MAX_PIXELS/(origW*origH));
-      if(scale>maxScale){
-        scale=Math.max(1,Math.floor(maxScale*10)/10);
-        scaleSlider.value=String(scale);
-        if(!warnedCap){warnedCap=true;toast('Skala dibatasi '+scale+'x agar aman di perangkat ini');}
-      }
-      scaleVal.textContent=scale+'x';
-      const w=Math.round(origW*scale),h=Math.round(origH*scale);
-      upCanvas.width=w;upCanvas.height=h;const octx=upCanvas.getContext('2d')!;
-      octx.imageSmoothingEnabled=true;octx.imageSmoothingQuality='high';
-      origCanvas.width=origW;origCanvas.height=origH;origCanvas.getContext('2d')!.putImageData(origImg,0,0);
-      octx.drawImage(origCanvas,0,0,w,h);
-
-      const reqId=++upscaleReq;
-      if(sharpenCheck.checked){
-        try{
-          const imgData=octx.getImageData(0,0,w,h);
-          const sharpened=await sharpenPixels(imgData.data,w,h); // off-main-thread
-          if(reqId!==upscaleReq)return; // ada upscale lebih baru — buang hasil stale
-          octx.putImageData(new ImageData(sharpened,w,h),0,0);
-        }catch(err){/* fallback: hasil tetap upscale, tanpa sharpen */}
-      }
-      if(reqId!==upscaleReq)return;
-      upscaledDataUrl=upCanvas.toDataURL('image/png');
-    }
-
-    function processFile(file:File){
-      fileName.textContent=file.name;const reader=new FileReader();
-      reader.onload=()=>{const img=new Image();img.onload=()=>{
-        origW=img.width;origH=img.height;const c=document.createElement('canvas');c.width=origW;c.height=origH;const ctx=c.getContext('2d')!;
-        ctx.drawImage(img,0,0);origImg=ctx.getImageData(0,0,origW,origH);upscale();downloadBtn.classList.remove('hidden');
-      };img.src=reader.result as string};reader.readAsDataURL(file);
-    }
-
-    dropZone.addEventListener('click',()=>fileInput.click());
-    dropZone.addEventListener('dragover',e=>{e.preventDefault();});
-    dropZone.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer?.files?.[0];if(f)processFile(f);});
-    fileInput.addEventListener('change',()=>{const f=fileInput.files?.[0];if(f)processFile(f);});
-    // Debounce slider: tiap input = getImageData 24MP (~96MB copy). Debounce biar gak numpuk.
-    let upscaleTimer: ReturnType<typeof setTimeout> | null = null;
-    scaleSlider.addEventListener('input',()=>{
-      if(upscaleTimer)clearTimeout(upscaleTimer);
-      upscaleTimer=setTimeout(()=>{upscaleTimer=null;upscale();},80);
+  // Gate: cuma 1 upscale jalan sekaligus (getImageData 24MP ≈ 96MB copy).
+  function upscale() {
+    if (upscaleBusy) { upscaleQueued = true; return; }
+    upscaleBusy = true;
+    doUpscale().finally(() => {
+      upscaleBusy = false;
+      if (upscaleQueued) { upscaleQueued = false; upscale(); }
     });
-    sharpenCheck.addEventListener('change',()=>upscale());
+  }
 
-    downloadBtn.addEventListener('click',()=>{
-      if(!upscaledDataUrl)return;const a=document.createElement('a');a.href=upscaledDataUrl;a.download='upscaled-'+Date.now()+'.png';a.click();
-    });
+  async function doUpscale() {
+    if (!origImg) return;
+    let scale = parseFloat(scaleSlider.value);
+    const maxScale = Math.sqrt(MAX_PIXELS / (origW * origH));
+    if (scale > maxScale) {
+      scale = Math.max(1, Math.floor(maxScale * 10) / 10);
+      scaleSlider.value = String(scale);
+      if (!warnedCap) { warnedCap = true; toast('Skala dibatasi agar aman di perangkat ini'); }
+    }
+    scaleVal.textContent = scale + 'x';
+    const w = Math.round(origW * scale), h = Math.round(origH * scale);
+    upCanvas.width = w; upCanvas.height = h;
+    const octx = upCanvas.getContext('2d')!;
+    octx.imageSmoothingEnabled = true; octx.imageSmoothingQuality = 'high';
+    origCanvas.width = origW; origCanvas.height = origH;
+    origCanvas.getContext('2d')!.putImageData(origImg, 0, 0);
+    octx.drawImage(origCanvas, 0, 0, w, h);
+
+    const reqId = ++upscaleReq;
+    if (sharpenCheck.checked) {
+      try {
+        const imgData = octx.getImageData(0, 0, w, h);
+        const sharpened = await sharpenPixels(imgData.data, w, h); // off-main-thread
+        if (reqId !== upscaleReq) return; // ada upscale lebih baru — buang hasil stale
+        octx.putImageData(new ImageData(sharpened, w, h), 0, 0);
+      } catch { /* fallback: hasil tetap upscale, tanpa sharpen */ }
+    }
+    if (reqId !== upscaleReq) return;
+  }
+
+  function processFile(file: File) {
+    fileName.textContent = file.name;
+    origName = file.name.replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '-').slice(0, 40) || 'image';
+    const reader = new FileReader();
+    reader.onerror = () => toast('Gagal membaca file.', 'error');
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => toast('Gagal memuat gambar. Format mungkin tidak didukung.', 'error');
+      img.onload = () => {
+        try {
+          origW = img.width; origH = img.height;
+          const c = document.createElement('canvas');
+          c.width = origW; c.height = origH;
+          const ctx = c.getContext('2d')!;
+          ctx.drawImage(img, 0, 0);
+          origImg = ctx.getImageData(0, 0, origW, origH);
+          warnedCap = false;
+          upscale();
+          downloadBtn.classList.remove('hidden');
+          saveHistoryBtn.classList.remove('hidden');
+        } catch {
+          toast('Gagal memproses gambar.', 'error');
+        }
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-blue-400', 'bg-blue-50/50', 'dark:bg-blue-900/10'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-blue-400', 'bg-blue-50/50', 'dark:bg-blue-900/10'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-blue-400', 'bg-blue-50/50', 'dark:bg-blue-900/10');
+    const f = (e as DragEvent).dataTransfer?.files?.[0];
+    if (f) processFile(f);
   });
+  fileInput.addEventListener('change', () => { const f = fileInput.files?.[0]; if (f) processFile(f); fileInput.value = ''; });
+
+  let upscaleTimer: ReturnType<typeof setTimeout> | null = null;
+  scaleSlider.addEventListener('input', () => {
+    if (upscaleTimer) clearTimeout(upscaleTimer);
+    upscaleTimer = setTimeout(() => { upscaleTimer = null; upscale(); }, 80);
+  });
+  sharpenCheck.addEventListener('change', () => upscale());
+
+  function currentBlob(): Promise<Blob> {
+    const fmt = formatSelect.value;
+    const mime = fmt === 'png' ? 'image/png' : fmt === 'jpeg' ? 'image/jpeg' : 'image/webp';
+    const quality = parseInt(qualityInput.value) / 100;
+    return new Promise((resolve, reject) =>
+      upCanvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob'))), mime, fmt === 'png' ? undefined : quality));
+  }
+
+  downloadBtn.addEventListener('click', async () => {
+    if (!origImg) return;
+    try {
+      const blob = await currentBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${origName}-${scaleVal.textContent}.${formatSelect.value === 'jpeg' ? 'jpg' : formatSelect.value}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('Diunduh!');
+    } catch {
+      toast('Gagal mengunduh!', 'error');
+    }
+  });
+
+  // ── Riwayat (max 6, thumbnail ≤400px JPEG, quota-safe — Keputusan #15) ──
+  const history = useLocalHistory<{ t: string; src: string; w: number; h: number; thumb?: string }>('hist:image-upscaler', 6);
+  const historyList = document.getElementById('history-list')!;
+  const historyEmpty = document.getElementById('history-empty')!;
+  const historyClear = document.getElementById('history-clear')!;
+
+  function renderHistory() {
+    const all = history.getAll();
+    historyEmpty.classList.toggle('hidden', all.length > 0);
+    historyClear.classList.toggle('hidden', all.length === 0);
+    historyList.innerHTML = '';
+    all.forEach((it, idx) => {
+      const li = document.createElement('li');
+      li.className = 'relative rounded-lg overflow-hidden border border-matte-200 dark:border-matte-700 bg-matte-50 dark:bg-surface-elevated';
+      li.innerHTML = `
+        ${it.thumb ? `<img src="${it.thumb}" alt="" class="w-full aspect-square object-cover" />` : `<div class="w-full aspect-square flex items-center justify-center text-2xs text-matte-400">—</div>`}
+        <div class="p-2 text-2xs">
+          <div class="font-bold font-mono text-matte-700 dark:text-matte-200">${it.w}×${it.h}</div>
+          <div class="text-matte-400">${it.src.replace(/</g, '&lt;')}</div>
+        </div>
+        <button type="button" class="h-del absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-white/90 dark:bg-matte-800/90 shadow flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/40 transition-colors" aria-label="Hapus" data-i18n-attr="aria-label" data-i18n="common.delete"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+      li.querySelector('.h-del')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        history.update(history.getAll().filter((_, i) => i !== idx));
+        renderHistory();
+      });
+      historyList.appendChild(li);
+    });
+  }
+
+  saveHistoryBtn.addEventListener('click', () => {
+    try {
+      const thumb = (() => {
+        try {
+          const scale = Math.min(400 / upCanvas.width, 400 / upCanvas.height, 1);
+          const tc = document.createElement('canvas');
+          tc.width = Math.max(1, Math.round(upCanvas.width * scale));
+          tc.height = Math.max(1, Math.round(upCanvas.height * scale));
+          tc.getContext('2d')!.drawImage(upCanvas, 0, 0, tc.width, tc.height);
+          return tc.toDataURL('image/jpeg', 0.6);
+        } catch { return undefined; }
+      })();
+      history.add({ t: new Date().toISOString(), src: origName, w: upCanvas.width, h: upCanvas.height, thumb });
+      renderHistory();
+      toast('Tersimpan ke riwayat!');
+    } catch {
+      toast('Gagal menyimpan.', 'error');
+    }
+  });
+
+  historyClear.addEventListener('click', () => { history.clear(); renderHistory(); });
+
+  // Init
+  renderHistory();
+});
 </script>

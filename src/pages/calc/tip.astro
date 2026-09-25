@@ -11,55 +11,241 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       icon='<path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
       gradient="from-emerald-500 to-green-600" />
 
-    <div class="card-base p-5 animate-fade-in space-y-3">
-      <div><label class="text-2xs text-matte-400 font-bold block mb-1">Total Tagihan</label>
-        <div class="flex"><span class="px-3 py-2.5 rounded-l-lg bg-matte-100 dark:bg-surface-elevated text-sm font-bold border border-r-0 border-matte-200 dark:border-matte-700">Rp</span>
-          <input id="bill-input" type="number" value="150000" min="0" class="flex-1 px-3 py-2.5 rounded-r-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-emerald-500/40" /></div>
+    <div class="card-base p-5 animate-fade-in space-y-4">
+      <!-- Total tagihan -->
+      <div>
+        <label for="bill-input" class="text-2xs text-matte-400 font-bold block mb-1" data-i18n="calc.tip.label_bill">Total Tagihan</label>
+        <div class="flex">
+          <span class="px-3 py-2.5 rounded-l-lg bg-matte-100 dark:bg-surface-elevated text-sm font-bold border border-r-0 border-matte-200 dark:border-matte-700">Rp</span>
+          <input id="bill-input" type="number" value="150000" min="0" inputmode="numeric"
+            class="flex-1 px-3 py-2.5 rounded-r-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-emerald-500/40" />
+        </div>
       </div>
 
-      <div><label class="text-2xs text-matte-400 font-bold block mb-1">Tip: <span id="tip-pct-val" class="text-emerald-500">15%</span></label>
+      <!-- Tip -->
+      <div>
+        <label for="tip-pct" class="text-2xs text-matte-400 font-bold block mb-1"><span data-i18n="calc.tip.label_tip">Tip</span>: <span id="tip-pct-val" class="text-emerald-500">15%</span></label>
         <input id="tip-pct" type="range" min="0" max="30" value="15" class="w-full accent-emerald-500" />
         <div class="flex flex-wrap gap-1.5 mt-1">{['5','10','15','20','25'].map(p=>
           <button class="tip-btn px-2.5 py-1 rounded text-2xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all" data-pct={p}>{p}%</button>)}</div>
       </div>
 
-      <div><label class="text-2xs text-matte-400 font-bold block mb-1">Jumlah Orang</label>
-        <div class="flex items-center gap-2"><button id="people-dec" class="w-8 h-8 rounded-full bg-matte-100 dark:bg-surface-elevated font-bold text-sm">−</button>
-        <input id="people-input" type="number" value="4" min="1" max="50" class="w-16 px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none text-center focus:ring-2 focus:ring-emerald-500/40" />
-        <button id="people-inc" class="w-8 h-8 rounded-full bg-matte-100 dark:bg-surface-elevated font-bold text-sm">+</button></div>
+      <!-- Jumlah orang -->
+      <div>
+        <span class="text-2xs text-matte-400 font-bold block mb-1" data-i18n="calc.tip.label_people">Jumlah Orang</span>
+        <div class="flex items-center gap-2">
+          <button id="people-dec" type="button" class="w-8 h-8 rounded-full bg-matte-100 dark:bg-surface-elevated font-bold text-sm" aria-label="Kurangi orang" data-i18n-attr="aria-label" data-i18n="calc.tip.dec_people">−</button>
+          <input id="people-input" type="number" value="4" min="1" max="50" class="w-16 px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none text-center focus:ring-2 focus:ring-emerald-500/40" />
+          <button id="people-inc" type="button" class="w-8 h-8 rounded-full bg-matte-100 dark:bg-surface-elevated font-bold text-sm" aria-label="Tambah orang" data-i18n-attr="aria-label" data-i18n="calc.tip.inc_people">+</button>
+        </div>
       </div>
 
-      <div id="result-card" class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 space-y-2 mt-3">
-        <div class="flex justify-between"><span class="text-xs text-emerald-600 dark:text-emerald-400">Tip</span><span id="tip-amount" class="font-bold text-emerald-700 dark:text-emerald-300">Rp 22,500</span></div>
-        <div class="flex justify-between"><span class="text-xs text-emerald-600 dark:text-emerald-400">Total + Tip</span><span id="total-amount" class="font-bold text-emerald-700 dark:text-emerald-300">Rp 172,500</span></div>
-        <div class="flex justify-between border-t border-emerald-200 dark:border-emerald-800 pt-2"><span class="text-xs font-bold text-emerald-700 dark:text-emerald-300">Per Orang</span><span id="per-person" class="font-bold text-lg text-emerald-700 dark:text-emerald-300">Rp 43,125</span></div>
+      <!-- Hasil (breakdown visual) -->
+      <div id="result-card" class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 space-y-2">
+        <div class="flex justify-between"><span class="text-xs text-emerald-600 dark:text-emerald-400" data-i18n="calc.tip.tip_amount">Tip</span><span id="tip-amount" class="font-bold text-emerald-700 dark:text-emerald-300">—</span></div>
+        <div class="flex justify-between"><span class="text-xs text-emerald-600 dark:text-emerald-400" data-i18n="calc.tip.total_tip">Total + Tip</span><span id="total-amount" class="font-bold text-emerald-700 dark:text-emerald-300">—</span></div>
+        <div class="flex justify-between border-t border-emerald-200 dark:border-emerald-800 pt-2"><span class="text-xs font-bold text-emerald-700 dark:text-emerald-300" data-i18n="calc.tip.per_person">Per Orang</span><span id="per-person" class="font-bold text-lg text-emerald-700 dark:text-emerald-300">—</span></div>
       </div>
+
+      <!-- Aksi -->
+      <div class="flex flex-wrap gap-2">
+        <button id="save-history-btn" type="button" class="flex-1 min-w-[110px] px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-colors" data-i18n="common.save_to_history">Simpan ke Riwayat</button>
+        <button id="copy-btn" type="button" class="flex-1 min-w-[90px] px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.copy_result">Copy Hasil</button>
+        <button id="share-btn" type="button" class="flex-1 min-w-[90px] px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.share_result">Bagikan Hasil</button>
+      </div>
+
+      <!-- Preset -->
+      <div class="rounded-lg bg-matte-50 dark:bg-surface-elevated p-3">
+        <span class="text-2xs text-matte-400 font-bold block mb-2" data-i18n="common.presets">Preset</span>
+        <div class="flex gap-2 mb-2">
+          <input id="preset-name" type="text" maxlength="24" placeholder="Nama preset…"
+            class="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none focus:ring-2 focus:ring-emerald-500/40"
+            data-i18n-attr="placeholder" data-i18n="common.preset_name" />
+          <button id="preset-save" type="button" class="px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 hover:bg-emerald-500/20 text-xs font-bold transition-colors" data-i18n="common.save_preset">Simpan Preset</button>
+        </div>
+        <div class="flex gap-2">
+          <select id="preset-select" class="flex-1 px-2 py-2 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs outline-none" aria-label="Pilih preset" data-i18n-attr="aria-label" data-i18n="common.select_preset">
+            <option value="">—</option>
+          </select>
+          <button id="preset-apply" type="button" class="px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="common.apply">Terapkan</button>
+          <button id="preset-del" type="button" class="px-3 py-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-xs font-bold transition-colors" data-i18n="common.delete">Hapus</button>
+        </div>
+        <p id="preset-empty" class="text-2xs text-matte-400 mt-2" data-i18n="common.no_presets">Belum ada preset.</p>
+      </div>
+    </div>
+
+    <!-- Riwayat -->
+    <div class="card-base p-5 animate-fade-in mt-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="section-title" data-i18n="common.history">Riwayat</h2>
+        <button id="history-clear" type="button" class="hidden text-2xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" data-i18n="common.clear_history">Hapus Riwayat</button>
+      </div>
+      <p id="history-empty" class="text-xs text-matte-400 py-2" data-i18n="calc.tip.history_empty">Belum ada riwayat. Atur tagihan &amp; tip, lalu simpan.</p>
+      <ul id="history-list" class="space-y-2"></ul>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
+import { shareContent } from '../../composables/useShare';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load',()=>{if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
-    const billInput=document.getElementById('bill-input') as HTMLInputElement;
-    const tipPct=document.getElementById('tip-pct') as HTMLInputElement;
-    const tipPctVal=document.getElementById('tip-pct-val')!;
-    const peopleInput=document.getElementById('people-input') as HTMLInputElement;
-    const tipAmount=document.getElementById('tip-amount')!,totalAmount=document.getElementById('total-amount')!,perPerson=document.getElementById('per-person')!;
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
+  const billInput = $('bill-input') as HTMLInputElement | null;
+  const tipPct = $('tip-pct') as HTMLInputElement | null;
+  const tipPctVal = $('tip-pct-val');
+  const peopleInput = $('people-input') as HTMLInputElement | null;
+  const tipAmount = $('tip-amount');
+  const totalAmount = $('total-amount');
+  const perPerson = $('per-person');
+  if (!billInput || !tipPct || !tipPctVal || !peopleInput || !tipAmount || !totalAmount || !perPerson) return;
 
-    function fmt(n:number):string{return 'Rp '+n.toLocaleString('id-ID');}
-    function calc(){
-      const bill=parseInt(billInput.value)||0, pct=parseInt(tipPct.value), people=Math.max(1,parseInt(peopleInput.value)||1);
-      tipPctVal.textContent=pct+'%';const tip=Math.round(bill*pct/100),total=bill+tip;
-      tipAmount.textContent=fmt(tip);totalAmount.textContent=fmt(total);perPerson.textContent=fmt(Math.round(total/people));
+  const idr = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+  const fmt = (n: number) => idr.format(n);
+
+  const bill = () => Math.max(0, parseInt(billInput.value) || 0);
+  const people = () => Math.min(50, Math.max(1, parseInt(peopleInput.value) || 1));
+  const pct = () => parseInt(tipPct.value) || 0;
+
+  function calc() {
+    try {
+      const p = pct(), ppl = people();
+      tipPctVal.textContent = p + '%';
+      const tip = Math.round(bill() * p / 100);
+      const total = bill() + tip;
+      tipAmount.textContent = fmt(tip);
+      totalAmount.textContent = fmt(total);
+      perPerson.textContent = fmt(Math.round(total / ppl));
+    } catch {
+      window.showToast?.(window._tToast ? window._tToast('Terjadi kesalahan perhitungan.') : 'Terjadi kesalahan perhitungan.', 'error');
     }
-    billInput.addEventListener('input',calc);tipPct.addEventListener('input',calc);
-    peopleInput.addEventListener('input',calc);
-    document.getElementById('people-dec')!.addEventListener('click',()=>{peopleInput.value=String(Math.max(1,(parseInt(peopleInput.value)||1)-1));calc();});
-    document.getElementById('people-inc')!.addEventListener('click',()=>{peopleInput.value=String(Math.min(50,(parseInt(peopleInput.value)||1)+1));calc();});
-    document.querySelectorAll('.tip-btn').forEach(b=>b.addEventListener('click',()=>{tipPct.value=(b as HTMLElement).dataset.pct!;calc();}));
-    calc();
+  }
+
+  const summary = () => [
+    'Tip Calculator — MasAul Tools',
+    `Tagihan: ${fmt(bill())}`,
+    `Tip (${pct()}%): ${tipAmount.textContent}`,
+    `Total: ${totalAmount.textContent}`,
+    `Per orang (${people()}): ${perPerson.textContent}`,
+  ].join('\n') + `\n${location.origin}/calc/tip`;
+
+  // ── Riwayat (max 20) ──
+  const history = useLocalHistory<{ t: string; b: number; p: number; ppl: number; tot: number }>('hist:calc-tip', 20);
+  const historyList = $('history-list')!;
+  const historyEmpty = $('history-empty')!;
+  const historyClear = $('history-clear')!;
+
+  const renderHistory = () => {
+    const items = history.getAll();
+    historyEmpty.classList.toggle('hidden', items.length > 0);
+    historyClear.classList.toggle('hidden', items.length === 0);
+    historyList.innerHTML = '';
+    items.forEach((it, idx) => {
+      const li = document.createElement('li');
+      li.className = 'flex items-center justify-between gap-2 p-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated text-xs';
+      const dt = new Date(it.t);
+      li.innerHTML = `
+        <div class="min-w-0">
+          <div class="font-mono font-bold text-matte-700 dark:text-matte-200 truncate">${fmt(it.b)} + ${it.p}% → ${fmt(it.tot)}</div>
+          <div class="text-2xs text-matte-400">${dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · ${it.ppl} org · ${fmt(Math.round(it.tot / it.ppl))}/org</div>
+        </div>
+        <button type="button" class="h-del w-7 h-7 shrink-0 rounded-lg text-matte-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center" aria-label="Hapus" data-i18n-attr="aria-label" data-i18n="common.delete">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>`;
+      li.querySelector('.h-del')?.addEventListener('click', () => {
+        history.update(history.getAll().filter((_, i) => i !== idx));
+        renderHistory();
+      });
+      historyList.appendChild(li);
+    });
+  };
+
+  $('save-history-btn')?.addEventListener('click', () => {
+    try {
+      history.add({ t: new Date().toISOString(), b: bill(), p: pct(), ppl: people(), tot: bill() + Math.round(bill() * pct() / 100) });
+      renderHistory();
+      window.showToast?.(window._tToast ? window._tToast('Tersimpan ke riwayat!') : 'Tersimpan ke riwayat!', 'success');
+    } catch {
+      window.showToast?.(window._tToast ? window._tToast('Gagal menyimpan.') : 'Gagal menyimpan.', 'error');
+    }
   });
+
+  historyClear.addEventListener('click', () => {
+    history.clear();
+    renderHistory();
+  });
+
+  // ── Preset ──
+  const presets = useLocalHistory<{ n: string; b: number; p: number; ppl: number }>('preset:calc-tip', 10);
+  const presetSelect = $('preset-select') as HTMLSelectElement;
+  const presetEmpty = $('preset-empty')!;
+
+  const renderPresets = () => {
+    const items = presets.getAll();
+    presetEmpty.classList.toggle('hidden', items.length > 0);
+    presetSelect.innerHTML = '<option value="">—</option>' + items.map((it, i) => `<option value="${i}">${it.n}</option>`).join('');
+  };
+
+  $('preset-save')?.addEventListener('click', () => {
+    try {
+      const name = ($('preset-name') as HTMLInputElement).value.trim() || `Preset ${presets.getAll().length + 1}`;
+      presets.add({ n: name, b: bill(), p: pct(), ppl: people() });
+      ($('preset-name') as HTMLInputElement).value = '';
+      renderPresets();
+      window.showToast?.(window._tToast ? window._tToast('Tersimpan!') : 'Tersimpan!', 'success');
+    } catch {
+      window.showToast?.(window._tToast ? window._tToast('Gagal menyimpan.') : 'Gagal menyimpan.', 'error');
+    }
+  });
+
+  $('preset-apply')?.addEventListener('click', () => {
+    const it = presets.getAll()[parseInt(presetSelect.value)];
+    if (!it) return;
+    billInput.value = String(it.b);
+    tipPct.value = String(it.p);
+    peopleInput.value = String(it.ppl);
+    calc();
+    window.showToast?.(window._tToast ? window._tToast('Diterapkan!') : 'Diterapkan!', 'success');
+  });
+
+  $('preset-del')?.addEventListener('click', () => {
+    const idx = parseInt(presetSelect.value);
+    if (isNaN(idx)) return;
+    presets.update(presets.getAll().filter((_, i) => i !== idx));
+    renderPresets();
+  });
+
+  // ── Copy & share ──
+  $('copy-btn')?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(summary());
+      window.showToast?.(window._tToast ? window._tToast('Disalin!') : 'Disalin!', 'success');
+    } catch {
+      window.showToast?.(window._tToast ? window._tToast('Gagal menyalin.') : 'Gagal menyalin.', 'error');
+    }
+  });
+
+  $('share-btn')?.addEventListener('click', () => {
+    (window as any).umami?.track?.('share', { tool: '/calc/tip' });
+    shareContent(summary(), 'Tip Calculator', 'Disalin!', 'Gagal membagikan!', location.href);
+  });
+
+  // ── Events ──
+  billInput.addEventListener('input', calc);
+  tipPct.addEventListener('input', calc);
+  peopleInput.addEventListener('input', calc);
+  $('people-dec')?.addEventListener('click', () => { peopleInput.value = String(Math.max(1, people() - 1)); calc(); });
+  $('people-inc')?.addEventListener('click', () => { peopleInput.value = String(Math.min(50, people() + 1)); calc(); });
+  document.querySelectorAll('.tip-btn').forEach((b) => b.addEventListener('click', () => { tipPct.value = (b as HTMLElement).dataset.pct!; calc(); }));
+
+  // Init
+  calc();
+  renderHistory();
+  renderPresets();
+});
 </script>

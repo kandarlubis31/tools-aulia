@@ -24,10 +24,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       <div class="flex gap-2 mb-5">
         <textarea id="ua-input" rows="2" placeholder="Paste User-Agent string di sini…"
-          class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono focus:ring-2 focus:ring-sky-500/40 outline-none resize-y"></textarea>
+          class="flex-1 px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono focus:ring-2 focus:ring-sky-500/40 outline-none resize-y"
+          data-i18n-attr="placeholder" data-i18n="ua.placeholder"></textarea>
         <button id="parse-btn" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 hover:bg-sky-200 dark:hover:bg-sky-900/60 transition-all self-start">
           🔍 <span data-i18n="ua.parse">Parse</span>
         </button>
+      </div>
+
+      <div class="flex items-center gap-2 mt-3">
+        <label for="sample-select" class="text-2xs text-matte-400 font-bold whitespace-nowrap" data-i18n="ua.sample">Contoh UA:</label>
+        <select id="sample-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none">
+          <option value="">—</option>
+        </select>
       </div>
 
       <div id="result-area">
@@ -138,10 +146,41 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         <summary class="cursor-pointer text-2xs font-bold text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors select-none" data-i18n="ua.raw">Raw UA String</summary>
         <pre class="mt-2 p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated text-xs font-mono text-matte-500 dark:text-matte-300 overflow-x-auto whitespace-pre-wrap">${escHtml(ua)}</pre>
       </details>`;
+      html += `<div class="flex justify-end mt-3"><button id="ua-copy-json" type="button" class="px-3 py-2 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200 hover:bg-matte-200 dark:hover:bg-matte-600 text-xs font-bold transition-colors" data-i18n="net.copy_json">Copy JSON</button></div>`;
 
       resultArea.innerHTML = html;
       (window as any).processI18n?.();
+      document.getElementById('ua-copy-json')?.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(JSON.stringify({ ...info, userAgent: ua }, null, 2));
+          window.showToast?.(window._tToast ? window._tToast('Disalin!') : 'Disalin!', 'success');
+        } catch {
+          window.showToast?.(window._tToast ? window._tToast('Gagal menyalin.') : 'Gagal menyalin.', 'error');
+        }
+      });
     }
+
+    // Sample UA dropdown (DoD: dokumentasi ringkas inline)
+    const SAMPLES: [string, string][] = [
+      ['iPhone Safari', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'],
+      ['Android Chrome', 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36'],
+      ['Windows Edge', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'],
+      ['macOS Firefox', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:127.0) Gecko/20100101 Firefox/127.0'],
+    ];
+    const sampleSelect = document.getElementById('sample-select') as HTMLSelectElement;
+    SAMPLES.forEach(([label, ua], i) => {
+      const opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = label;
+      sampleSelect?.appendChild(opt);
+    });
+    sampleSelect?.addEventListener('change', () => {
+      const s = SAMPLES[parseInt(sampleSelect.value)];
+      if (!s) return;
+      uaInput.value = s[1];
+      renderResult(parseUA(s[1]), s[1]);
+      sampleSelect.value = '';
+    });
 
     detectBtn.addEventListener('click', () => {
       const ua = navigator.userAgent;

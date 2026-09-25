@@ -18,7 +18,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 hover:border-blue-400 transition-colors cursor-pointer mb-4" id="drop-zone">
         <input type="file" id="file-input" accept="image/*" multiple class="hidden" />
         <svg class="w-12 h-12 mx-auto mb-3 text-matte-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <p class="text-sm font-bold text-matte-500 dark:text-matte-300">Pilih gambar untuk digabung ke PDF</p>
+        <p class="text-sm font-bold text-matte-500 dark:text-matte-300" data-i18n="img.topdf.upload">Pilih gambar untuk digabung ke PDF</p>
         <p class="text-2xs text-matte-400 mt-1">PNG, JPG, WEBP</p>
       </div>
 
@@ -28,11 +28,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div class="flex items-center justify-center gap-4 mb-4 flex-wrap">
         <label class="flex items-center gap-1.5 text-2xs text-matte-400 font-bold">
           <input id="fit-check" type="checkbox" class="rounded" checked />
-          Fit to page (A4)
+          <span data-i18n="img.topdf.fit">Fit to page (A4)</span>
         </label>
+        <div class="flex items-center gap-1.5">
+          <label for="margin-select" class="text-2xs text-matte-400 font-bold" data-i18n="img.topdf.margin">Margin</label>
+          <select id="margin-select" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-2xs font-bold outline-none">
+            <option value="10" selected>10</option><option value="20">20</option><option value="30">30</option>
+          </select>
+        </div>
       </div>
 
-      <button id="convert-btn" class="gradient-brand px-8 py-3 rounded-lg text-sm font-bold disabled:opacity-50" disabled>
+      <button id="convert-btn" class="gradient-brand px-8 py-3 rounded-lg text-sm font-bold disabled:opacity-50" disabled data-i18n="img.topdf.convert">
         🔄 Convert to PDF
       </button>
 
@@ -55,6 +61,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const convertBtn = document.getElementById('convert-btn') as HTMLButtonElement;
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
     const fitCheck = document.getElementById('fit-check') as HTMLInputElement;
+    const marginSelect = document.getElementById('margin-select') as HTMLSelectElement;
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
     let imageFiles: File[] = [];
     let pdfBytes: Uint8Array | null = null;
@@ -98,34 +108,50 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     async function convert() {
       if (!imageFiles.length) return;
       convertBtn.disabled = true;
-      convertBtn.innerHTML = '⏳ Converting…';
-      const PDFLib = await loadPdfLib();
-      const doc = await PDFLib.PDFDocument.create();
+      convertBtn.innerHTML = '⏳ ' + (window._tToast ? window._tToast('Memproses...') : 'Memproses...');
+      try {
+        const PDFLib = await loadPdfLib();
+        const doc = await PDFLib.PDFDocument.create();
+        const margin = parseInt(marginSelect.value) || 10;
 
-      for (const file of imageFiles) {
-        const buffer = await file.arrayBuffer();
-        let img;
-        if (file.type === 'image/png') {
-          img = await doc.embedPng(new Uint8Array(buffer));
-        } else {
-          img = await doc.embedJpg(new Uint8Array(buffer));
+        for (const file of imageFiles) {
+          const buffer = await file.arrayBuffer();
+          let img;
+          if (file.type === 'image/png') {
+            img = await doc.embedPng(new Uint8Array(buffer));
+          } else if (file.type === 'image/webp') {
+            // pdf-lib gak support webp langsung → decode via canvas ke PNG
+            const bmp = await createImageBitmap(file);
+            const c = document.createElement('canvas');
+            c.width = bmp.width; c.height = bmp.height;
+            c.getContext('2d')!.drawImage(bmp, 0, 0);
+            const pngBlob = await new Promise<Blob>((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('webp'))), 'image/png'));
+            img = await doc.embedPng(new Uint8Array(await pngBlob.arrayBuffer()));
+          } else {
+            img = await doc.embedJpg(new Uint8Array(buffer));
+          }
+
+          const page = doc.addPage(fitCheck.checked ? [595, 842] : [img.width + margin * 2, img.height + margin * 2]);
+          if (fitCheck.checked) {
+            const scale = Math.min((595 - margin * 2) / img.width, (842 - margin * 2) / img.height);
+            const x = (595 - img.width * scale) / 2;
+            const y = (842 - img.height * scale) / 2;
+            page.drawImage(img, { x, y, width: img.width * scale, height: img.height * scale });
+          } else {
+            page.drawImage(img, { x: margin, y: margin, width: img.width, height: img.height });
+          }
         }
 
-        const page = doc.addPage(fitCheck.checked ? [595, 842] : [img.width, img.height]);
-        if (fitCheck.checked) {
-          const scale = Math.min(575 / img.width, 822 / img.height);
-          const x = (595 - img.width * scale) / 2;
-          const y = (842 - img.height * scale) / 2;
-          page.drawImage(img, { x, y, width: img.width * scale, height: img.height * scale });
-        } else {
-          page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
-        }
+        pdfBytes = await doc.save();
+        convertBtn.innerHTML = '✅ ' + (window._tToast ? window._tToast('Selesai!') : 'Selesai!');
+        downloadBtn.classList.remove('hidden');
+        toast('PDF siap didownload!');
+      } catch {
+        toast('Gagal memproses gambar.', 'error');
+        convertBtn.innerHTML = '🔄 Convert to PDF';
+      } finally {
+        convertBtn.disabled = false;
       }
-
-      pdfBytes = await doc.save();
-      convertBtn.innerHTML = '✅ Converted';
-      downloadBtn.classList.remove('hidden');
-      showToast(`${imageFiles.length} gambar → PDF`);
     }
 
     dropZone.addEventListener('click', () => fileInput.click());
@@ -144,13 +170,19 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     convertBtn.addEventListener('click', convert);
     downloadBtn.addEventListener('click', () => {
       if (!pdfBytes) return;
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `images-${Date.now()}.pdf`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      showToast('PDF didownload!');
+      try {
+        const d = new Date();
+        const p = (n: number) => String(n).padStart(2, '0');
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `images-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.pdf`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        toast('Diunduh!');
+      } catch {
+        toast('Gagal mengunduh!', 'error');
+      }
     });
   });
 </script>

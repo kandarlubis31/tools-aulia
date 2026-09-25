@@ -46,13 +46,28 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           </div>
         </div>
 
-        <!-- Color picker -->
-        <div class="flex items-center gap-2">
-          <input id="picker" type="color" value="#3b82f6" class="w-10 h-10 rounded-lg cursor-pointer border border-matte-200 dark:border-matte-700" />
-          <span class="text-2xs text-matte-400">Color picker</span>
-          <button id="copy-btn" class="ml-auto px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 transition-all">
-            📋 Copy HEX
-          </button>
+        <!-- Color picker + copy format -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <input id="picker" type="color" value="#3b82f6" class="w-10 h-10 rounded-lg cursor-pointer border border-matte-200 dark:border-matte-700" aria-label="Color picker" data-i18n-attr="aria-label" data-i18n="img.color.picker" />
+          <span class="text-2xs text-matte-400" data-i18n="img.color.picker">Color picker</span>
+          <div class="ml-auto flex items-center gap-1.5">
+            <select id="copy-format" class="px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-2xs font-bold outline-none" aria-label="Format" data-i18n-attr="aria-label" data-i18n="dev.codeimg.format">
+              <option value="hex">HEX</option><option value="rgb">RGB</option><option value="hsl">HSL</option>
+            </select>
+            <button id="copy-btn" class="px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 transition-all" data-i18n="common.copy">
+              📋 Copy
+            </button>
+          </div>
+        </div>
+
+        <!-- Warna terakhir (riwayat) -->
+        <div class="mt-4">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-2xs text-matte-400 font-bold" data-i18n="img.color.recent">Warna Terakhir</span>
+            <button id="recent-clear" type="button" class="hidden text-2xs font-bold text-rose-500 hover:text-rose-600 px-2 py-0.5 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" data-i18n="common.clear">Bersihkan</button>
+          </div>
+          <p id="recent-empty" class="text-2xs text-matte-400" data-i18n="img.color.recent_empty">Belum ada. Warna otomatis tersimpan saat diubah.</p>
+          <div id="recent-list" class="flex flex-wrap gap-1.5"></div>
         </div>
       </div>
     </div>
@@ -60,6 +75,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -74,8 +91,48 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const picker = document.getElementById('picker') as HTMLInputElement;
     const preview = document.getElementById('color-preview')!;
     const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
+    const copyFormat = document.getElementById('copy-format') as HTMLSelectElement;
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
     let updating = false;
+    let curHsl: [number, number, number] = [217, 91, 60];
+
+    // ── Riwayat warna (max 12) ──
+    const recent = useLocalHistory<{ hex: string }>('hist:color-convert', 12);
+    const recentList = document.getElementById('recent-list')!;
+    const recentEmpty = document.getElementById('recent-empty')!;
+    const recentClear = document.getElementById('recent-clear')!;
+
+    const renderRecent = () => {
+      const items = recent.getAll();
+      recentEmpty.classList.toggle('hidden', items.length > 0);
+      recentClear.classList.toggle('hidden', items.length === 0);
+      recentList.innerHTML = '';
+      items.forEach((it, idx) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'w-8 h-8 rounded-lg border border-matte-200 dark:border-matte-700 shadow-sm hover:scale-110 transition-transform';
+        b.style.background = '#' + it.hex;
+        b.setAttribute('aria-label', '#' + it.hex);
+        b.title = '#' + it.hex;
+        b.addEventListener('click', () => {
+          hexInput.value = it.hex;
+          hexInput.dispatchEvent(new Event('input'));
+        });
+        recentList.appendChild(b);
+      });
+    };
+    const pushRecent = (hex: string) => {
+      try {
+        if (recent.getAll()[0]?.hex === hex) return; // dedupe berurutan
+        recent.remove((it) => it.hex === hex);
+        recent.add({ hex });
+        renderRecent();
+      } catch { /* quota — abaikan */ }
+    };
+    recentClear.addEventListener('click', () => { recent.clear(); renderRecent(); });
 
     function rgbToHex(r: number, g: number, b: number): string {
       return [r, g, b].map(x => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('');
@@ -118,6 +175,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       updating = true;
       const hex = rgbToHex(r, g, b);
       const [h, s, l] = rgbToHsl(r, g, b);
+      curHsl = [h, s, l];
       hexInput.value = hex;
       rInput.value = String(r);
       gInput.value = String(g);
@@ -129,6 +187,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       picker.value = color;
       preview.style.background = color;
       updating = false;
+      pushRecent(hex);
     }
 
     hexInput.addEventListener('input', () => {
@@ -168,9 +227,18 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     copyBtn.addEventListener('click', async () => {
       try {
-        await navigator.clipboard.writeText('#' + hexInput.value);
-        showToast('HEX tersalin!');
-      } catch { showToast('Gagal menyalin', 'error'); }
+        const hex = hexInput.value;
+        let text = '#' + hex;
+        if (copyFormat.value === 'rgb') {
+          text = `rgb(${parseInt(hex.slice(0, 2), 16)}, ${parseInt(hex.slice(2, 4), 16)}, ${parseInt(hex.slice(4, 6), 16)})`;
+        } else if (copyFormat.value === 'hsl') {
+          text = `hsl(${curHsl[0]}, ${curHsl[1]}%, ${curHsl[2]}%)`;
+        }
+        await navigator.clipboard.writeText(text);
+        toast('Disalin!');
+      } catch { toast('Gagal menyalin.', 'error'); }
     });
+
+    renderRecent();
   });
 </script>

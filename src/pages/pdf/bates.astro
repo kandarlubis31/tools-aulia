@@ -14,19 +14,26 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <div class="card-base p-6 text-center animate-fade-in">
       <div class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 hover:border-amber-400 transition-colors cursor-pointer mb-4" id="drop-zone">
         <input type="file" id="file-input" accept=".pdf" class="hidden" />
-        <p class="text-sm font-bold text-matte-500 dark:text-matte-300">Upload PDF</p>
+        <p class="text-sm font-bold text-matte-500 dark:text-matte-300" data-i18n="pdf.bates.upload">Upload PDF</p>
         <p class="text-2xs text-matte-400 mt-1" id="file-name">—</p>
       </div>
 
-      <div class="grid grid-cols-3 gap-3 mb-4">
-        <div><label class="text-2xs text-matte-400 font-bold block mb-1">Prefix</label>
+      <div class="grid grid-cols-3 gap-3 mb-3">
+        <div><label for="prefix-input" class="text-2xs text-matte-400 font-bold block mb-1" data-i18n="pdf.bates.prefix">Prefix</label>
           <input id="prefix-input" type="text" value="DOC-" maxlength="10" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-amber-500/40" /></div>
-        <div><label class="text-2xs text-matte-400 font-bold block mb-1">Digits</label>
+        <div><label for="digits-select" class="text-2xs text-matte-400 font-bold block mb-1" data-i18n="pdf.bates.digits">Digits</label>
           <select id="digits-select" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold outline-none focus:ring-2 focus:ring-amber-500/40">
             {[3,4,5,6].map(n => <option value={n} selected={n===4}>{n} digit (0001)</option>)}
           </select></div>
-        <div><label class="text-2xs text-matte-400 font-bold block mb-1">Start</label>
+        <div><label for="start-input" class="text-2xs text-matte-400 font-bold block mb-1" data-i18n="pdf.bates.start">Start</label>
           <input id="start-input" type="number" value="1" min="1" max="999999" class="w-full px-2 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono outline-none focus:ring-2 focus:ring-amber-500/40" /></div>
+      </div>
+
+      <div class="flex items-center gap-2 mb-4">
+        <label for="range-input" class="text-2xs text-matte-400 font-bold whitespace-nowrap" data-i18n="pdf.textsearch.range_label">Rentang halaman</label>
+        <input id="range-input" type="text" placeholder="mis. 1-10, 15 (kosong = semua)"
+          class="flex-1 px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-amber-500/40"
+          data-i18n-attr="placeholder" data-i18n="pdf.textsearch.range_hint" />
       </div>
 
       <div class="flex flex-wrap gap-2 justify-center mb-4">
@@ -35,10 +42,27 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         ))}
       </div>
 
-      <button id="apply-btn" class="gradient-brand px-8 py-3 rounded-lg text-sm font-bold disabled:opacity-50" disabled>
+      <!-- Progress -->
+      <div id="bates-progress-wrap" class="hidden mb-4">
+        <div class="flex justify-between text-2xs text-matte-400 mb-1">
+          <span data-i18n="pdf.bates.processing">Memproses…</span>
+          <span id="bates-progress-label">0%</span>
+        </div>
+        <div class="h-1.5 rounded-full bg-matte-100 dark:bg-surface-elevated overflow-hidden">
+          <div id="bates-progress-bar" class="h-full bg-amber-500 transition-all duration-150" style="width:0%"></div>
+        </div>
+      </div>
+
+      <button id="apply-btn" class="gradient-brand px-8 py-3 rounded-lg text-sm font-bold disabled:opacity-50" disabled data-i18n="pdf.bates.apply">
         🔢 Apply Bates Numbers
       </button>
-      <button id="download-btn" class="hidden gradient-brand px-8 py-3 rounded-lg text-sm font-bold mt-3">💾 Download PDF</button>
+      <button id="download-btn" class="hidden gradient-brand px-8 py-3 rounded-lg text-sm font-bold mt-3" data-i18n="common.download">💾 Download PDF</button>
+
+      <!-- Preview halaman 1 -->
+      <div id="preview-box" class="hidden mt-4">
+        <span class="text-2xs text-matte-400 font-bold uppercase tracking-wider block mb-2" data-i18n="pdf.bates.preview_page1">Preview (halaman 1)</span>
+        <canvas id="preview-canvas" class="max-w-full max-h-[420px] mx-auto rounded-lg border border-matte-200 dark:border-matte-700 shadow"></canvas>
+      </div>
     </div>
   </div>
 </BaseLayout>
@@ -46,60 +70,173 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
-    // Guard SPA leak: hanya jalan di halaman ini (digits-select unik di bates).
-    // Tanpa guard, listener bocor & crash di halaman lain (dropZone null → addEventListener).
-    if (!document.getElementById('digits-select')) return;
-    const dropZone = document.getElementById('drop-zone')!, fileInput = document.getElementById('file-input') as HTMLInputElement;
-    const fileName = document.getElementById('file-name')!, applyBtn = document.getElementById('apply-btn') as HTMLButtonElement;
-    const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
-    const prefixInput = document.getElementById('prefix-input') as HTMLInputElement;
-    const digitsSelect = document.getElementById('digits-select') as HTMLSelectElement;
-    const startInput = document.getElementById('start-input') as HTMLInputElement;
+  // Guard SPA leak: hanya jalan di halaman ini (digits-select unik di bates).
+  if (!document.getElementById('digits-select')) return;
+  const dropZone = document.getElementById('drop-zone')!;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const fileName = document.getElementById('file-name')!;
+  const applyBtn = document.getElementById('apply-btn') as HTMLButtonElement;
+  const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+  const prefixInput = document.getElementById('prefix-input') as HTMLInputElement;
+  const digitsSelect = document.getElementById('digits-select') as HTMLSelectElement;
+  const startInput = document.getElementById('start-input') as HTMLInputElement;
+  const rangeInput = document.getElementById('range-input') as HTMLInputElement;
+  const progressWrap = document.getElementById('bates-progress-wrap')!;
+  const progressBar = document.getElementById('bates-progress-bar')!;
+  const progressLabel = document.getElementById('bates-progress-label')!;
+  const previewBox = document.getElementById('preview-box')!;
+  const previewCanvas = document.getElementById('preview-canvas') as HTMLCanvasElement;
 
-    let pdfBytes: Uint8Array|null = null, pdfFile: File|null = null, position = 'bottom-right';
+  const toast = (m: string, t: 'success' | 'error' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(m) : m, t);
 
-    async function loadPdfLib() {
-      if ((window as any).PDFLib) return (window as any).PDFLib;
-      return new Promise(r => { const s = document.createElement('script'); s.src = '/vendor/pdf-lib/pdf-lib.min.js'; s.onload = () => r((window as any).PDFLib); document.head.appendChild(s); });
+  let pdfBytes: Uint8Array | null = null, pdfFile: File | null = null, position = 'bottom-right';
+
+  async function loadScript(src: string, globalName: string): Promise<any> {
+    if ((window as any)[globalName]) return (window as any)[globalName];
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = () => resolve((window as any)[globalName]);
+      s.onerror = () => reject(new Error('load ' + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  function parseRanges(spec: string, max: number): number[] | null {
+    const s = spec.trim();
+    if (!s) return null;
+    const pages = new Set<number>();
+    for (const part of s.split(',')) {
+      const m = part.trim().match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+      if (!m) throw new Error('range');
+      const a = parseInt(m[1]);
+      const b = m[2] ? parseInt(m[2]) : a;
+      for (let i = Math.min(a, b); i <= Math.max(a, b); i++) {
+        if (i >= 1 && i <= max) pages.add(i);
+      }
     }
+    return pages.size ? Array.from(pages).sort((x, y) => x - y) : null;
+  }
 
-    dropZone.addEventListener('click',()=>fileInput.click());
-    dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('border-amber-400')});
-    dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('border-amber-400'));
-    dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('border-amber-400'); const f=e.dataTransfer?.files?.[0]; if(f){pdfFile=f;fileName.textContent=f.name;applyBtn.disabled=false;}});
-    fileInput.addEventListener('change',()=>{const f=fileInput.files?.[0];if(f){pdfFile=f;fileName.textContent=f.name;applyBtn.disabled=false;}});
+  function baseName(name: string): string {
+    return name.replace(/\.pdf$/i, '').replace(/[^\w\-]+/g, '-').slice(0, 40) || 'document';
+  }
 
-    document.querySelectorAll('.pos-btn').forEach(b=>b.addEventListener('click',()=>{
-      document.querySelectorAll('.pos-btn').forEach(x=>x.className='pos-btn px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all');
-      (b as HTMLElement).className='pos-btn px-3 py-1.5 rounded-lg text-2xs font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300';
-      position=(b as HTMLElement).dataset.pos!;
-    }));
-
-    applyBtn.addEventListener('click',async()=>{
-      if(!pdfFile)return;
-      applyBtn.disabled=true;applyBtn.innerHTML='⏳…';
-      const PDFLib=await loadPdfLib();
-      const doc=await PDFLib.PDFDocument.load(await pdfFile.arrayBuffer());
-      const font=await doc.embedFont(PDFLib.StandardFonts.Helvetica);
-      const pages=doc.getPages();const digits=parseInt(digitsSelect.value);const start=parseInt(startInput.value);
-      const prefix=prefixInput.value;
-      pages.forEach((page,i)=>{
-        const num=String(start+i).padStart(digits,'0');const text=prefix+num;
-        const {width,height}=page.getSize();const margin=40;let x=margin,y=margin;const tw=text.length*6;
-        if(position.includes('right'))x=width-margin-tw;else if(position.includes('center'))x=(width-tw)/2;
-        if(position.includes('top'))y=height-margin-15;
-        page.drawText(text,{x,y,size:10,font,color:PDFLib.rgb(0.3,0.3,0.3)});
-      });
-      pdfBytes=await doc.save();
-      downloadBtn.classList.remove('hidden');applyBtn.innerHTML='✅ Done';applyBtn.disabled=false;
-      showToast('Bates numbers applied!');
-    });
-
-    downloadBtn.addEventListener('click',()=>{
-      if(!pdfBytes)return;const b=new Blob([pdfBytes],{type:'application/pdf'});
-      const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='bates-'+Date.now()+'.pdf';a.click();URL.revokeObjectURL(a.href);
-    });
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-amber-400', 'bg-amber-50/50', 'dark:bg-amber-900/10'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-amber-400', 'bg-amber-50/50', 'dark:bg-amber-900/10'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-amber-400', 'bg-amber-50/50', 'dark:bg-amber-900/10');
+    const f = (e as DragEvent).dataTransfer?.files?.[0];
+    if (f && f.type === 'application/pdf') { pdfFile = f; fileName.textContent = f.name; applyBtn.disabled = false; pdfBytes = null; previewBox.classList.add('hidden'); }
+    else if (f) toast('Hanya file PDF yang didukung.', 'error');
   });
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files?.[0];
+    if (f) { pdfFile = f; fileName.textContent = f.name; applyBtn.disabled = false; pdfBytes = null; previewBox.classList.add('hidden'); }
+    fileInput.value = '';
+  });
+
+  document.querySelectorAll('.pos-btn').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('.pos-btn').forEach((x) => x.className = 'pos-btn px-3 py-1.5 rounded-lg text-2xs font-bold bg-matte-50 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all');
+    (b as HTMLElement).className = 'pos-btn px-3 py-1.5 rounded-lg text-2xs font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300';
+    position = (b as HTMLElement).dataset.pos!;
+  }));
+
+  async function previewFirstPage(bytes: Uint8Array) {
+    try {
+      const pdfjsLib = await loadScript('/vendor/pdfjs/pdf.min.js', 'pdfjsLib');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
+      const doc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
+      const page = await doc.getPage(1);
+      const vp = page.getViewport({ scale: 1 });
+      const scale = Math.min(1.2, 420 / vp.height);
+      const viewport = page.getViewport({ scale });
+      previewCanvas.width = viewport.width;
+      previewCanvas.height = viewport.height;
+      await page.render({ canvasContext: previewCanvas.getContext('2d')!, viewport }).promise;
+      previewBox.classList.remove('hidden');
+    } catch {
+      // Preview gagal = non-blocking, tombol download tetap ada
+    }
+  }
+
+  applyBtn.addEventListener('click', async () => {
+    if (!pdfFile) return;
+    applyBtn.disabled = true;
+    applyBtn.innerHTML = '⏳…';
+    progressWrap.classList.remove('hidden');
+    previewBox.classList.add('hidden');
+
+    try {
+      const PDFLib = await loadScript('/vendor/pdf-lib/pdf-lib.min.js', 'PDFLib');
+      const doc = await PDFLib.PDFDocument.load(await pdfFile.arrayBuffer());
+      const font = await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+      const pages = doc.getPages();
+      let targets: number[] | null;
+      try {
+        targets = parseRanges(rangeInput.value, pages.length);
+      } catch {
+        toast('Format rentang halaman tidak valid.', 'error');
+        return;
+      }
+      const list = targets || pages.map((_: any, i: number) => i);
+      const digits = parseInt(digitsSelect.value);
+      const start = Math.max(1, parseInt(startInput.value) || 1);
+      const prefix = prefixInput.value;
+
+      for (let n = 0; n < list.length; n++) {
+        const page = pages[list[n]];
+        const num = String(start + n).padStart(digits, '0');
+        const text = prefix + num;
+        const { width, height } = page.getSize();
+        const margin = 40;
+        let x = margin, y = margin;
+        const tw = text.length * 6;
+        if (position.includes('right')) x = width - margin - tw;
+        else if (position.includes('center')) x = (width - tw) / 2;
+        if (position.includes('top')) y = height - margin - 15;
+        page.drawText(text, { x, y, size: 10, font, color: PDFLib.rgb(0.3, 0.3, 0.3) });
+        if (n % 20 === 19 || n === list.length - 1) {
+          const pct = Math.round(((n + 1) / list.length) * 100);
+          progressBar.style.width = pct + '%';
+          progressLabel.textContent = pct + '%';
+          await new Promise((r) => setTimeout(r, 0));
+        }
+      }
+
+      pdfBytes = await doc.save();
+      downloadBtn.classList.remove('hidden');
+      applyBtn.innerHTML = '✅ Done';
+      toast('Nomor bates diterapkan!');
+      await previewFirstPage(pdfBytes);
+    } catch {
+      toast('Gagal memproses PDF.', 'error');
+      applyBtn.innerHTML = '🔢 Apply Bates Numbers';
+    } finally {
+      applyBtn.disabled = false;
+      setTimeout(() => { progressWrap.classList.add('hidden'); progressBar.style.width = '0%'; }, 600);
+    }
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    if (!pdfBytes || !pdfFile) return;
+    try {
+      const b = new Blob([pdfBytes], { type: 'application/pdf' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = `${baseName(pdfFile.name)}-bates.pdf`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast('Diunduh!');
+    } catch {
+      toast('Gagal mengunduh!', 'error');
+    }
+  });
+});
 </script>

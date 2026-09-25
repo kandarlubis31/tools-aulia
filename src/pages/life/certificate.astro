@@ -57,10 +57,22 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
       </div>
     </div>
+
+    <!-- Riwayat -->
+    <div class="card-base p-5 mt-4 animate-fade-in">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="section-title" data-i18n="common.history">Riwayat</h2>
+        <button id="history-clear" type="button" class="hidden text-2xs font-bold text-rose-500 hover:text-rose-600 px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors" data-i18n="common.clear_history">Hapus Riwayat</button>
+      </div>
+      <p id="history-empty" class="text-xs text-matte-400" data-i18n="cert.history_empty">Belum ada riwayat. Download sertifikat, lalu otomatis tersimpan.</p>
+      <ul id="history-list" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></ul>
+    </div>
   </div>
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -71,6 +83,51 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const orgInput = document.getElementById('org-input') as HTMLInputElement;
     const canvas = document.getElementById('cert-canvas') as HTMLCanvasElement;
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
+
+    // ── Riwayat (max 8, thumbnail JPEG ≤400px — Keputusan #15) ──
+    const history = useLocalHistory<{ t: string; name: string; event: string; thumb?: string }>('hist:certificate', 8);
+    const historyList = document.getElementById('history-list')!;
+    const historyEmpty = document.getElementById('history-empty')!;
+    const historyClear = document.getElementById('history-clear')!;
+
+    const renderHistory = () => {
+      const items = history.getAll();
+      historyEmpty.classList.toggle('hidden', items.length > 0);
+      historyClear.classList.toggle('hidden', items.length === 0);
+      historyList.innerHTML = '';
+      items.forEach((it, idx) => {
+        const li = document.createElement('li');
+        li.className = 'relative rounded-lg overflow-hidden border border-matte-200 dark:border-matte-700 bg-matte-50 dark:bg-surface-elevated';
+        li.innerHTML = `
+          ${it.thumb ? `<img src="${it.thumb}" alt="" class="w-full aspect-[600/424] object-cover object-top" />` : `<div class="w-full aspect-[600/424] flex items-center justify-center text-2xs text-matte-400">—</div>`}
+          <div class="p-2">
+            <div class="text-2xs font-bold text-matte-700 dark:text-matte-200 truncate">${it.name.replace(/</g, '&lt;')}</div>
+            <div class="text-2xs text-matte-400 truncate">${it.event.replace(/</g, '&lt;')}</div>
+          </div>
+          <button type="button" class="h-del absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-white/90 dark:bg-matte-800/90 shadow flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/40 transition-colors" aria-label="Hapus" data-i18n-attr="aria-label" data-i18n="common.delete">×</button>`;
+        li.querySelector('.h-del')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          history.update(history.getAll().filter((_, i) => i !== idx));
+          renderHistory();
+        });
+        historyList.appendChild(li);
+      });
+    };
+    historyClear.addEventListener('click', () => { history.clear(); renderHistory(); });
+
+    const makeThumb = (): string | undefined => {
+      try {
+        const scale = Math.min(400 / canvas.width, 400 / canvas.height, 1);
+        const tc = document.createElement('canvas');
+        tc.width = Math.max(1, Math.round(canvas.width * scale));
+        tc.height = Math.max(1, Math.round(canvas.height * scale));
+        tc.getContext('2d')!.drawImage(canvas, 0, 0, tc.width, tc.height);
+        return tc.toDataURL('image/jpeg', 0.6);
+      } catch { return undefined; }
+    };
 
     let borderColor = '#1e40af';
 
@@ -170,15 +227,27 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     });
 
     downloadBtn.addEventListener('click', () => {
-      const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/png');
-      a.download = `sertifikat-${Date.now()}.png`;
-      a.click();
+      try {
+        const slug = (nameInput.value || 'sertifikat').replace(/[^\w\-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'sertifikat';
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `sertifikat-${slug}.png`;
+        a.click();
+        // Riwayat setelah download sukses (quota-safe)
+        try {
+          history.add({ t: new Date().toISOString(), name: nameInput.value || '—', event: eventInput.value || '—', thumb: makeThumb() });
+          renderHistory();
+        } catch { /* quota — abaikan */ }
+        toast('Diunduh!');
+      } catch {
+        toast('Gagal mengunduh!', 'error');
+      }
     });
 
     // Default active
     const defaultBtn = document.querySelector('.border-color-btn[data-color="#1e40af"]');
     if (defaultBtn) defaultBtn.style.outline = '3px solid #1e40af';
     update();
+    renderHistory();
   });
 </script>

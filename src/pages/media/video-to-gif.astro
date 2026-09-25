@@ -29,13 +29,24 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
         <div class="flex flex-wrap gap-3 items-center justify-center" id="controls">
           <div class="flex items-center gap-1.5">
-            <label class="text-2xs text-matte-400 font-bold">FPS:</label>
+            <label for="fps-input" class="text-2xs text-matte-400 font-bold">FPS:</label>
             <input id="fps-input" type="number" value="10" min="2" max="30" class="w-16 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-rose-500/40" />
           </div>
           <div class="flex items-center gap-1.5">
-            <label class="text-2xs text-matte-400 font-bold">Max duration:</label>
+            <label for="dur-input" class="text-2xs text-matte-400 font-bold" data-i18n="vid.max_dur">Max duration:</label>
             <input id="dur-input" type="number" value="5" min="1" max="30" class="w-16 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono outline-none focus:ring-2 focus:ring-rose-500/40" />
-            <span class="text-2xs text-matte-400">detik</span>
+            <span class="text-2xs text-matte-400" data-i18n="vid.seconds">detik</span>
+          </div>
+        </div>
+
+        <!-- Progress ekstraksi -->
+        <div id="gif-progress-wrap" class="hidden mt-4">
+          <div class="flex justify-between text-2xs text-matte-400 mb-1">
+            <span data-i18n="vid.extracting">Mengekstrak…</span>
+            <span id="gif-progress-label">0/0</span>
+          </div>
+          <div class="h-1.5 rounded-full bg-matte-100 dark:bg-surface-elevated overflow-hidden">
+            <div id="gif-progress-bar" class="h-full bg-rose-500 transition-all duration-150" style="width:0%"></div>
           </div>
         </div>
       </div>
@@ -47,7 +58,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             🎞️ <span data-i18n="vid.extract">Ekstrak Frame</span>
           </button>
           <button id="download-frames" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 transition-all">
-            💾 Download Frame (PNG)
+            💾 <span data-i18n="vid.download_zip">Download ZIP</span>
           </button>
         </div>
       </div>
@@ -77,17 +88,26 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     let frames: string[] = [];
     let animInterval: number | null = null;
+    let videoName = 'video';
+
+    const toast = (m: string, t: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
+
+    const progressWrap = document.getElementById('gif-progress-wrap')!;
+    const progressBar = document.getElementById('gif-progress-bar')!;
+    const progressLabel = document.getElementById('gif-progress-label')!;
 
     function loadVideo(file: File) {
-      if (file.size > 50 * 1024 * 1024) { showToast('Max 50MB', 'error'); return; }
+      if (file.size > 50 * 1024 * 1024) { toast('Ukuran file maksimal 50MB.', 'error'); return; }
+      videoName = file.name.replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '-').slice(0, 40) || 'video';
       const url = URL.createObjectURL(file);
       sourceVideo.src = url;
       sourceVideo.onloadedmetadata = () => {
         videoPreview.classList.remove('hidden');
         outputArea.classList.add('hidden');
         frames = [];
-        showToast(`Video: ${sourceVideo.videoWidth}x${sourceVideo.videoHeight}, ${sourceVideo.duration.toFixed(1)}s`);
       };
+      sourceVideo.onerror = () => toast('Gagal memuat video. Format mungkin tidak didukung.', 'error');
     }
 
     function extractFrames() {
@@ -103,18 +123,25 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       video.currentTime = 0;
       let frameIdx = 0;
+      progressWrap.classList.remove('hidden');
+      extractBtn.disabled = true;
 
       video.onseeked = () => {
         ctx.drawImage(video, 0, 0, previewCanvas.width, previewCanvas.height);
         frames.push(previewCanvas.toDataURL('image/png'));
         frameIdx++;
+        progressBar.style.width = Math.round((frameIdx / totalFrames) * 100) + '%';
+        progressLabel.textContent = `${frameIdx}/${totalFrames}`;
 
         if (frameIdx < totalFrames) {
           video.currentTime = frameIdx / fps;
         } else {
+          progressWrap.classList.add('hidden');
+          progressBar.style.width = '0%';
+          extractBtn.disabled = false;
           outputArea.classList.remove('hidden');
           outputArea.scrollIntoView({ behavior: 'smooth' });
-          showToast(`${frames.length} frame diekstrak!`);
+          toast('Ekstraksi selesai!');
           previewFrame(0);
         }
       };
@@ -148,17 +175,30 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     });
 
     extractBtn.addEventListener('click', extractFrames);
-    downloadFrames.addEventListener('click', () => {
-      if (!frames.length) { showToast('Ekstrak frame dulu', 'error'); return; }
-      frames.forEach((dataUrl, i) => {
-        setTimeout(() => {
-          const a = document.createElement('a');
-          a.href = dataUrl;
-          a.download = `frame-${String(i+1).padStart(3,'0')}.png`;
-          a.click();
-        }, i * 250);
-      });
-      showToast(`Mendownload ${frames.length} frame…`);
+    downloadFrames.addEventListener('click', async () => {
+      if (!frames.length) { toast('Ekstrak frame dulu.', 'error'); return; }
+      try {
+        const JSZip = await new Promise<any>((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = '/vendor/jszip/jszip.min.js';
+          s.onload = () => resolve((window as any).JSZip);
+          s.onerror = () => reject(new Error('jszip'));
+          document.head.appendChild(s);
+        });
+        const zip = new JSZip();
+        frames.forEach((dataUrl, i) => {
+          zip.file(`frame-${String(i + 1).padStart(3, '0')}.png`, dataUrl.split(',')[1], { base64: true });
+        });
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${videoName}-frames.zip`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        toast('Diunduh!');
+      } catch {
+        toast('Gagal membuat ZIP.', 'error');
+      }
     });
   });
 </script>
