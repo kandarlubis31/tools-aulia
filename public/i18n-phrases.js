@@ -677,4 +677,18 @@ window._i18nPhrases = {
   ' match':' match',
   'Belum ada perubahan untuk diterapkan.':'No changes to apply yet.',
   'Teks diganti!':'Text replaced!',
+  // W6 batch 4
+  'Paste email headers dulu!':'Paste email headers first!',
+  'Headers dikosongkan':'Headers cleared',
+  'JSON tidak valid — cek sintaks':'Invalid JSON — check the syntax',
+  'Pilih video dulu!':'Select a video first!',
+  'File harus video!':'File must be a video!',
+  'Waktu melebihi durasi video':'Time exceeds video duration',
+  'Video gagal diproses — codec mungkin tidak didukung':'Failed to process video — codec may not be supported',
+  'Frame di-capture!':'Frames captured!',
+  'Klik untuk download':'Click to download',
+  'SSL biasanya di port 443':'SSL usually runs on port 443',
+  'nginx.conf diunduh!':'nginx.conf downloaded!',
+  'Gagal membuat file':'Failed to create file',
+  'Belum ada config.':'No config yet.',
 };

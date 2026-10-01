@@ -8,63 +8,84 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <ToolPageHeader title="JSON Schema Validator" titleKey="header.json_schema" desc="Validasi JSON dengan skema custom." descKey="header.json_schema_desc" icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/>' gradient="from-rose-500 to-pink-600" />
     <div class="card-base p-8 animate-fade-in">
       <div class="grid grid-cols-2 gap-4 mb-4">
-        <div><label class="text-xs text-matte-500 mb-1 block">Schema (JSON)</label><textarea id="schema" rows="8" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-xs resize-y" placeholder='{"type": "object", "properties": {"name": {"type": "string"}, "age": {"type": "number", "minimum": 0}}}'></textarea></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Data (JSON)</label><textarea id="data" rows="8" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-xs resize-y" placeholder='{"name": "Budi", "age": 25}'></textarea></div>
+        <div><label for="schema" class="text-xs text-matte-500 mb-1 block" data-i18n="label.schema_json">Schema (JSON)</label><textarea id="schema" rows="8" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-xs resize-y" placeholder='{"type": "object", "properties": {"name": {"type": "string"}, "age": {"type": "number", "minimum": 0}}}'></textarea></div>
+        <div><label for="data" class="text-xs text-matte-500 mb-1 block" data-i18n="label.data_json">Data (JSON)</label><textarea id="data" rows="8" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-xs resize-y" placeholder='{"name": "Budi", "age": 25}'></textarea></div>
       </div>
-      <button id="validate" class="w-full py-3 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-colors mb-4">✅ Validasi</button>
+      <div class="flex gap-2 mb-4">
+        <button id="validate" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-colors" data-i18n="btn.validate">✅ Validasi</button>
+        <button id="copy-err" class="btn-secondary text-sm" data-i18n="btn.copy_errors">📋 Copy Errors</button>
+      </div>
       <div id="result" class="p-4 rounded-xl font-mono text-sm hidden"></div>
     </div>
   </div>
 </BaseLayout>
 <script>
+import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  function validate(schema, data, path) {
-    const errors = [];
-    path = path || '';
+  const schemaEl = document.getElementById('schema') as HTMLTextAreaElement;
+  const dataEl = document.getElementById('data') as HTMLTextAreaElement;
+  const resultEl = document.getElementById('result')!;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+  let lastErrors: string[] = [];
+
+  function validate(schema: any, data: any, path = ''): string[] {
+    const errors: string[] = [];
     if (schema.type) {
       const types = Array.isArray(schema.type) ? schema.type : [schema.type];
       const actual = Array.isArray(data) ? 'array' : typeof data;
-      if (!types.includes(actual)) errors.push(path + ': expected ' + types.join('|') + ', got ' + actual);
+      if (!types.includes(actual)) errors.push(path + ': ' + t('schema.expected_got', 'expected {a}, got {b}').replace('{a}', types.join('|')).replace('{b}', actual));
     }
-    if (schema.properties && typeof data === 'object' && !Array.isArray(data)) {
+    if (schema.properties && typeof data === 'object' && data !== null && !Array.isArray(data)) {
       for (const [key, subSchema] of Object.entries(schema.properties)) {
-        if (data.hasOwnProperty(key)) {
-          errors.push(...validate(subSchema, data[key], path ? path+'.'+key : key));
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+          errors.push(...validate(subSchema, data[key], path ? path + '.' + key : key));
         } else if (schema.required && schema.required.includes(key)) {
-          errors.push(path + '.' + key + ': required but missing');
+          errors.push(path + '.' + key + ': ' + t('schema.required_missing', 'required but missing'));
         }
       }
     }
-    if (schema.minimum !== undefined && typeof data === 'number' && data < schema.minimum) errors.push(path + ': must be >= ' + schema.minimum);
-    if (schema.maximum !== undefined && typeof data === 'number' && data > schema.maximum) errors.push(path + ': must be <= ' + schema.maximum);
-    if (schema.minLength !== undefined && typeof data === 'string' && data.length < schema.minLength) errors.push(path + ': length must be >= ' + schema.minLength);
-    if (schema.maxLength !== undefined && typeof data === 'string' && data.length > schema.maxLength) errors.push(path + ': length must be <= ' + schema.maxLength);
-    if (schema.enum && !schema.enum.includes(data)) errors.push(path + ': must be one of [' + schema.enum.join(', ') + ']');
+    if (schema.minimum !== undefined && typeof data === 'number' && data < schema.minimum) errors.push(path + ': ' + t('schema.must_gte', 'must be >= {n}').replace('{n}', String(schema.minimum)));
+    if (schema.maximum !== undefined && typeof data === 'number' && data > schema.maximum) errors.push(path + ': ' + t('schema.must_lte', 'must be <= {n}').replace('{n}', String(schema.maximum)));
+    if (schema.minLength !== undefined && typeof data === 'string' && data.length < schema.minLength) errors.push(path + ': ' + t('schema.len_gte', 'length must be >= {n}').replace('{n}', String(schema.minLength)));
+    if (schema.maxLength !== undefined && typeof data === 'string' && data.length > schema.maxLength) errors.push(path + ': ' + t('schema.len_lte', 'length must be <= {n}').replace('{n}', String(schema.maxLength)));
+    if (schema.enum && !schema.enum.includes(data)) errors.push(path + ': ' + t('schema.must_one_of', 'must be one of [{list}]').replace('{list}', schema.enum.join(', ')));
     return errors;
   }
-  document.getElementById('validate').onclick = () => {
-    const resultEl = document.getElementById('result');
+
+  document.getElementById('validate')!.addEventListener('click', () => {
+    resultEl.classList.remove('hidden');
     try {
-      const schema = JSON.parse(document.getElementById('schema').value);
-      const data = JSON.parse(document.getElementById('data').value);
+      const schema = JSON.parse(schemaEl.value);
+      const data = JSON.parse(dataEl.value);
       const errors = validate(schema, data);
-      resultEl.classList.remove('hidden');
+      lastErrors = errors;
       if (errors.length === 0) {
-        resultEl.className = 'p-4 rounded-xl font-mono text-sm bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border border-emerald-200 dark:border-emerald-800';
-        resultEl.textContent = '✅ Valid! Tidak ada error.';
+        resultEl.className = 'p-4 rounded-xl font-mono text-sm bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border border-emerald-200 dark:border-emerald-800 whitespace-pre-wrap';
+        resultEl.textContent = '✅ ' + t('schema.valid', 'Valid! Tidak ada error.');
       } else {
-        resultEl.className = 'p-4 rounded-xl font-mono text-sm bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-800';
-        resultEl.textContent = errors.length + ' error(s):\n' + errors.join('\n');
+        resultEl.className = 'p-4 rounded-xl font-mono text-sm bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-800 whitespace-pre-wrap';
+        const shown = errors.slice(0, 20);
+        resultEl.textContent = errors.length + ' ' + t('schema.errors_suffix', 'error(s):') + '\n' + shown.join('\n') + (errors.length > shown.length ? '\n… +' + (errors.length - shown.length) + ' ' + t('schema.more', 'more') : '');
       }
-    } catch(e) {
-      resultEl.classList.remove('hidden');
+    } catch (e: any) {
+      lastErrors = [];
       resultEl.className = 'p-4 rounded-xl font-mono text-sm bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-800';
-      resultEl.textContent = 'Parse error: ' + e.message;
+      resultEl.textContent = t('schema.parse_error', 'Parse error') + ': ' + (e?.message || e);
+      toast('JSON tidak valid — cek sintaks', 'error');
     }
-  };
+  });
+
+  document.getElementById('copy-err')!.addEventListener('click', async () => {
+    try {
+      if (!lastErrors.length) { toast(t('schema.no_errors', 'Belum ada error untuk disalin.'), 'info'); return; }
+      await navigator.clipboard.writeText(lastErrors.join('\n'));
+      toast('Disalin!');
+    } catch { toast('Gagal menyalin', 'error'); }
+  });
 
   }
 
