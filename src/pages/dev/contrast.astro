@@ -22,6 +22,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 import { t } from '../../i18n/translations';
 
+// Re-render i18n dinamis: kartu hasil WCAG di-bake via t(), jadi saat bahasa
+// diganti (window 'langchange' dari BaseLayout) render ulang dengan label baru.
+// Satu listener di module scope (persist lintas SPA nav); init() selalu
+// meng-update referensi ke closure render terbaru.
+let __contrastRender: (() => void) | null = null;
+window.addEventListener('langchange', () => { __contrastRender?.(); });
+
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
@@ -67,6 +74,7 @@ import { t } from '../../i18n/translations';
   bgInp.oninput = e => { bgHex.value = e.target.value; render(); };
   fgHex.oninput = e => { if (/^#[0-9a-f]{6}$/i.test(e.target.value)) { fgInp.value = e.target.value; render(); } };
   bgHex.oninput = e => { if (/^#[0-9a-f]{6}$/i.test(e.target.value)) { bgInp.value = e.target.value; render(); } };
+  __contrastRender = render;
   render();
 
   }
@@ -74,7 +82,7 @@ import { t } from '../../i18n/translations';
   // SPA boot (#14): guard path + guard dobel-bind
   const __devContrastPage = (location.pathname.replace(/\/+$/, '') || '/');
   document.addEventListener('astro:page-load', () => {
-    if ((location.pathname.replace(/\/+$/, '') || '/') !== __devContrastPage) return;
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __devContrastPage) { __contrastRender = null; return; }
     const anchor = document.querySelector('main button, main input, main select, main textarea');
     if (!anchor || anchor.dataset.autoBound === 'true') return;
     anchor.dataset.autoBound = 'true';
