@@ -8,26 +8,104 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <ToolPageHeader title="ROT13 & Caesar Cipher" titleKey="header.rot13" desc="Enkripsi dan dekripsi dengan ROT13 atau Caesar cipher." descKey="header.rot13_desc" icon='<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>' gradient="from-lime-500 to-green-600" />
     <div class="card-base p-8 animate-fade-in">
       <div class="flex gap-4 mb-4 items-center">
-        <select id="mode" class="p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold"><option value="13">ROT13</option><option value="custom">Caesar (custom shift)</option></select>
-        <input id="shift" type="number" value="13" min="1" max="25" class="w-20 p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold text-center hidden" />
+        <select id="mode" class="p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" aria-label="Mode">
+          <option value="13">ROT13</option>
+          <option value="custom" data-i18n="label.caesar_custom">Caesar (custom shift)</option>
+        </select>
+        <input id="shift" type="number" value="13" min="1" max="25" class="w-20 p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold text-center hidden" aria-label="Shift" />
       </div>
-      <textarea id="input" rows="5" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4" placeholder="Masukkan teks..."></textarea>
+      <textarea id="input" rows="5" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4" placeholder="Masukkan teks..." data-i18n-attr="placeholder" data-i18n="ph.enter_text"></textarea>
       <div class="flex gap-2 mb-4">
-        <button id="encode" class="flex-1 py-3 bg-lime-600 text-white rounded-xl font-bold hover:bg-lime-700 transition-colors">🔒 Encode</button>
-        <button id="decode" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-lime-100 transition-colors">🔓 Decode</button>
+        <button id="encode" class="flex-1 py-3 bg-lime-600 text-white rounded-xl font-bold hover:bg-lime-700 transition-colors" data-i18n="btn.encode">🔒 Encode</button>
+        <button id="decode" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-lime-100 transition-colors" data-i18n="btn.decode">🔓 Decode</button>
       </div>
-      <textarea id="output" rows="5" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4" placeholder="Hasil..." readonly></textarea>
-      <button id="copy-btn" class="w-full py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-lime-100 transition-colors" data-i18n="btn.copy_emoji">📋 Copy</button>
+      <textarea id="output" rows="5" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4" placeholder="Hasil..." readonly data-i18n-attr="placeholder" data-i18n="ph.result"></textarea>
+      <div class="flex gap-2">
+        <button id="copy-btn" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-lime-100 transition-colors" data-i18n="btn.copy_emoji">📋 Copy</button>
+        <button id="swap-btn" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-lime-100 transition-colors" data-i18n="btn.swap">⇄ Swap</button>
+      </div>
+
+      <div id="hist-wrap" class="hidden mt-6 pt-4 border-t border-matte-200 dark:border-surface-border">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-sm font-bold text-matte-600 dark:text-matte-300" data-i18n="hist.title">Riwayat Perhitungan</h3>
+          <button id="hist-clear" class="text-xs font-bold text-rose-500 hover:underline" data-i18n="btn.clear_history">Hapus Riwayat</button>
+        </div>
+        <div id="hist-list" class="space-y-1.5">
+          <p class="text-xs text-matte-400" data-i18n="common.no_history">Belum ada riwayat</p>
+        </div>
+      </div>
     </div>
   </div>
 </BaseLayout>
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  document.getElementById('mode').onchange = e => { document.getElementById('shift').classList.toggle('hidden', e.target.value !== 'custom'); };
-  function caesar(text, shift, decode) {
+  const input = document.getElementById('input') as HTMLTextAreaElement;
+  const output = document.getElementById('output') as HTMLTextAreaElement;
+  const shiftInp = document.getElementById('shift') as HTMLInputElement;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  interface HistEntry { input: string; output: string; shift: number; at: number; }
+  const history = useLocalHistory<HistEntry>('hist:rot13', 10);
+
+  function esc(s: unknown) { return String(s ?? '').replace(/</g, '&lt;'); }
+
+  function renderHistory() {
+    const wrap = document.getElementById('hist-wrap')!;
+    const list = document.getElementById('hist-list')!;
+    const items = history.getAll();
+    wrap.classList.toggle('hidden', items.length === 0);
+    list.innerHTML = items.length === 0
+      ? '<p class="text-xs text-matte-400" data-i18n="common.no_history">Belum ada riwayat</p>'
+      : items.map((it, i) =>
+        `<div class="flex items-center gap-2 text-xs card-base p-2">
+          <button data-load="${i}" class="font-bold text-lime-600 hover:underline shrink-0" data-i18n="hist.load">Muat</button>
+          <span class="font-mono truncate flex-1">in: ${esc(it.input)} → out: ${esc(it.output)}</span>
+          <button data-del="${i}" class="text-rose-500 hover:text-rose-600 font-bold shrink-0" aria-label="Delete">✕</button>
+        </div>`).join('');
+  }
+
+  document.getElementById('hist-list')!.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const loadIdx = target.dataset.load;
+    const delIdx = target.dataset.del;
+    if (loadIdx !== undefined) {
+      const it = history.getAll()[Number(loadIdx)];
+      if (!it) return;
+      input.value = it.input;
+      output.value = it.output;
+      toast('Entri riwayat dimuat.', 'info');
+    } else if (delIdx !== undefined) {
+      const items = history.getAll();
+      items.splice(Number(delIdx), 1);
+      history.update(items);
+      renderHistory();
+    }
+  });
+
+  document.getElementById('hist-clear')!.addEventListener('click', () => {
+    history.clear();
+    renderHistory();
+    toast('Riwayat dihapus!');
+  });
+
+  function currentShift(): number {
+    const mode = (document.getElementById('mode') as HTMLSelectElement).value;
+    if (mode === '13') return 13;
+    const n = parseInt(shiftInp.value, 10);
+    if (isNaN(n) || n < 1 || n > 25) { shiftInp.value = '13'; return 13; }
+    return n;
+  }
+
+  document.getElementById('mode')!.addEventListener('change', (e) => {
+    shiftInp.classList.toggle('hidden', (e.target as HTMLSelectElement).value !== 'custom');
+  });
+
+  function caesar(text: string, shift: number, decode: boolean) {
     if (decode) shift = 26 - shift;
     return text.split('').map(c => {
       if (c >= 'A' && c <= 'Z') return String.fromCharCode(((c.charCodeAt(0) - 65 + shift) % 26) + 65);
@@ -35,15 +113,36 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       return c;
     }).join('');
   }
-  document.getElementById('encode').onclick = () => {
-    const shift = document.getElementById('mode').value === '13' ? 13 : parseInt(document.getElementById('shift').value);
-    document.getElementById('output').value = caesar(document.getElementById('input').value, shift, false);
-  };
-  document.getElementById('decode').onclick = () => {
-    const shift = document.getElementById('mode').value === '13' ? 13 : parseInt(document.getElementById('shift').value);
-    document.getElementById('output').value = caesar(document.getElementById('input').value, shift, true);
-  };
-  document.getElementById('copy-btn').onclick = () => { navigator.clipboard.writeText(document.getElementById('output').value); };
+
+  function run(decode: boolean) {
+    const text = input.value;
+    if (!text.trim()) { toast('Input masih kosong!', 'error'); return; }
+    const shift = currentShift();
+    output.value = caesar(text, shift, decode);
+    const items = history.getAll().filter(it => !(it.input === text && it.output === output.value));
+    items.unshift({ input: text, output: output.value, shift, at: Date.now() });
+    history.update(items);
+    renderHistory();
+  }
+
+  document.getElementById('encode')!.addEventListener('click', () => run(false));
+  document.getElementById('decode')!.addEventListener('click', () => run(true));
+
+  document.getElementById('copy-btn')!.addEventListener('click', async () => {
+    try {
+      if (!output.value) { toast('Belum ada hasil untuk disalin.', 'info'); return; }
+      await navigator.clipboard.writeText(output.value);
+      toast('Hasil disalin!');
+    } catch { toast('Gagal menyalin', 'error'); }
+  });
+
+  document.getElementById('swap-btn')!.addEventListener('click', () => {
+    if (!output.value) { toast('Belum ada hasil untuk di-swap.', 'info'); return; }
+    input.value = output.value;
+    output.value = '';
+  });
+
+  renderHistory();
 
   }
 

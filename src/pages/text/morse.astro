@@ -8,47 +8,145 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <ToolPageHeader title="Morse Code Converter" titleKey="header.morse_code" desc="Konversi teks ke kode Morse dan sebaliknya." descKey="header.morse_code_desc" icon='<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/><circle cx="6" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>' gradient="from-cyan-500 to-blue-600" />
     <div class="card-base p-8 animate-fade-in">
       <div class="flex gap-2 mb-4">
-        <button id="to-morse" class="flex-1 py-2 bg-cyan-600 text-white rounded-xl font-bold text-sm">Teks → Morse</button>
-        <button id="to-text" class="flex-1 py-2 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold text-sm">Morse → Teks</button>
+        <button id="to-morse" class="flex-1 py-2 bg-cyan-600 text-white rounded-xl font-bold text-sm" data-i18n="btn.text_to_morse">Teks → Morse</button>
+        <button id="to-text" class="flex-1 py-2 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold text-sm" data-i18n="btn.morse_to_text">Morse → Teks</button>
       </div>
-      <textarea id="input" rows="4" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4" placeholder="Masukkan teks..."></textarea>
-      <textarea id="output" rows="4" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4" placeholder="Hasil..." readonly></textarea>
+      <textarea id="input" rows="4" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4" placeholder="Masukkan teks..." data-i18n-attr="placeholder" data-i18n="ph.enter_text"></textarea>
+      <textarea id="output" rows="4" readonly class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4" placeholder="Hasil..." data-i18n-attr="placeholder" data-i18n="ph.result"></textarea>
       <div class="flex gap-2">
         <button id="copy-btn" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-cyan-100 transition-colors" data-i18n="btn.copy_emoji">📋 Copy</button>
-        <button id="play-btn" class="flex-1 py-3 bg-cyan-600 text-white rounded-xl font-bold hover:bg-cyan-700 transition-colors">🔊 Play Audio</button>
+        <button id="play-btn" class="flex-1 py-3 bg-cyan-600 text-white rounded-xl font-bold hover:bg-cyan-700 transition-colors" data-i18n="btn.play_audio">🔊 Play Audio</button>
+        <button id="swap-btn" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-cyan-100 transition-colors" data-i18n="btn.swap">⇄ Swap</button>
+      </div>
+
+      <div id="hist-wrap" class="hidden mt-6 pt-4 border-t border-matte-200 dark:border-surface-border">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-sm font-bold text-matte-600 dark:text-matte-300" data-i18n="hist.title">Riwayat Perhitungan</h3>
+          <button id="hist-clear" class="text-xs font-bold text-rose-500 hover:underline" data-i18n="btn.clear_history">Hapus Riwayat</button>
+        </div>
+        <div id="hist-list" class="space-y-1.5">
+          <p class="text-xs text-matte-400" data-i18n="common.no_history">Belum ada riwayat</p>
+        </div>
       </div>
     </div>
   </div>
 </BaseLayout>
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  const CHAR_TO_MORSE = { 'A':'.-', 'B':'-...', 'C':'-.-.', 'D':'-..', 'E':'.', 'F':'..-.', 'G':'--.', 'H':'....', 'I':'..', 'J':'.---', 'K':'-.-', 'L':'.-..', 'M':'--', 'N':'-.', 'O':'---', 'P':'.--.', 'Q':'--.-', 'R':'.-.', 'S':'...', 'T':'-', 'U':'..-', 'V':'...-', 'W':'.--', 'X':'-..-', 'Y':'-.--', 'Z':'--..', '0':'-----', '1':'.----', '2':'..---', '3':'...--', '4':'....-', '5':'.....', '6':'-....', '7':'--...', '8':'---..', '9':'----.', '.':'.-.-.-', ',':'--..--', '?':'..--..', '!':'-.-.--', '/':'-..-.', '(':'.--.-.', ')':'-.--.-', '&':'.-...', ':':'---...', ';':'-.-.-.', '=':'-...-', '+':'.-.-.', '-':'-....-', '_':'..--.-', '"':'.-..-.', '$':'...-..-', '@':'.--.-.', ' ':'/'};
-  const MORSE_TO_CHAR = {};
+  const input = document.getElementById('input') as HTMLTextAreaElement;
+  const output = document.getElementById('output') as HTMLTextAreaElement;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  interface HistEntry { input: string; output: string; at: number; }
+  const history = useLocalHistory<HistEntry>('hist:morse', 10);
+
+  function esc(s: unknown) { return String(s ?? '').replace(/</g, '&lt;'); }
+
+  function renderHistory() {
+    const wrap = document.getElementById('hist-wrap')!;
+    const list = document.getElementById('hist-list')!;
+    const items = history.getAll();
+    wrap.classList.toggle('hidden', items.length === 0);
+    list.innerHTML = items.length === 0
+      ? '<p class="text-xs text-matte-400" data-i18n="common.no_history">Belum ada riwayat</p>'
+      : items.map((it, i) =>
+        `<div class="flex items-center gap-2 text-xs card-base p-2">
+          <button data-load="${i}" class="font-bold text-cyan-600 hover:underline shrink-0" data-i18n="hist.load">Muat</button>
+          <span class="font-mono truncate flex-1">in: ${esc(it.input)} → out: ${esc(it.output)}</span>
+          <button data-del="${i}" class="text-rose-500 hover:text-rose-600 font-bold shrink-0" aria-label="Delete">✕</button>
+        </div>`).join('');
+  }
+
+  document.getElementById('hist-list')!.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const loadIdx = target.dataset.load;
+    const delIdx = target.dataset.del;
+    if (loadIdx !== undefined) {
+      const it = history.getAll()[Number(loadIdx)];
+      if (!it) return;
+      input.value = it.input;
+      output.value = it.output;
+      toast('Entri riwayat dimuat.', 'info');
+    } else if (delIdx !== undefined) {
+      const items = history.getAll();
+      items.splice(Number(delIdx), 1);
+      history.update(items);
+      renderHistory();
+    }
+  });
+
+  document.getElementById('hist-clear')!.addEventListener('click', () => {
+    history.clear();
+    renderHistory();
+    toast('Riwayat dihapus!');
+  });
+
+  function saveHistory(inp: string, out: string) {
+    if (!inp.trim() || !out.trim()) return;
+    const items = history.getAll().filter(it => !(it.input === inp && it.output === out));
+    items.unshift({ input: inp, output: out, at: Date.now() });
+    history.update(items);
+    renderHistory();
+  }
+
+  const CHAR_TO_MORSE: Record<string, string> = { 'A':'.-', 'B':'-...', 'C':'-.-.', 'D':'-..', 'E':'.', 'F':'..-.', 'G':'--.', 'H':'....', 'I':'..', 'J':'.---', 'K':'-.-', 'L':'.-..', 'M':'--', 'N':'-.', 'O':'---', 'P':'.--.', 'Q':'--.-', 'R':'.-.', 'S':'...', 'T':'-', 'U':'..-', 'V':'...-', 'W':'.--', 'X':'-..-', 'Y':'-.--', 'Z':'--..', '0':'-----', '1':'.----', '2':'..---', '3':'...--', '4':'....-', '5':'.....', '6':'-....', '7':'--...', '8':'---..', '9':'----.', '.':'.-.-.-', ',':'--..--', '?':'..--..', '!':'-.-.--', '/':'-..-.', '(':'.--.-.', ')':'-.--.-', '&':'.-...', ':':'---...', ';':'-.-.-.', '=':'-...-', '+':'.-.-.', '-':'-....-', '_':'..--.-', '"':'.-..-.', '$':'...-..-', '@':'.--.-.', ' ':'/' };
+  const MORSE_TO_CHAR: Record<string, string> = {};
   for (const [k, v] of Object.entries(CHAR_TO_MORSE)) MORSE_TO_CHAR[v] = k;
-  function textToMorse(text) {
+
+  function textToMorse(text: string) {
     return text.toUpperCase().split('').map(c => CHAR_TO_MORSE[c] || c).join(' ');
   }
-  function morseToText(morse) {
+  function morseToText(morse: string) {
     return morse.split(' ').map(c => MORSE_TO_CHAR[c] || (c === '/' ? ' ' : c)).join('');
   }
-  document.getElementById('to-morse').onclick = () => { document.getElementById('output').value = textToMorse(document.getElementById('input').value); };
-  document.getElementById('to-text').onclick = () => { document.getElementById('output').value = morseToText(document.getElementById('input').value); };
-  document.getElementById('copy-btn').onclick = () => { navigator.clipboard.writeText(document.getElementById('output').value); };
-  document.getElementById('play-btn').onclick = () => {
-    const morse = document.getElementById('output').value;
-    if (!morse) return;
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    let t = ctx.currentTime;
-    for (const c of morse) {
-      if (c === '.') { const o = ctx.createOscillator(); o.connect(ctx.destination); o.start(t); o.stop(t + 0.1); t += 0.15; }
-      else if (c === '-') { const o = ctx.createOscillator(); o.connect(ctx.destination); o.start(t); o.stop(t + 0.3); t += 0.35; }
-      else if (c === ' ') t += 0.2;
-      else if (c === '/') t += 0.4;
-    }
-  };
+
+  document.getElementById('to-morse')!.addEventListener('click', () => {
+    const out = textToMorse(input.value);
+    output.value = out;
+    saveHistory(input.value, out);
+  });
+  document.getElementById('to-text')!.addEventListener('click', () => {
+    const out = morseToText(input.value);
+    output.value = out;
+    saveHistory(input.value, out);
+  });
+
+  document.getElementById('copy-btn')!.addEventListener('click', async () => {
+    try {
+      if (!output.value) { toast('Belum ada hasil untuk disalin.', 'info'); return; }
+      await navigator.clipboard.writeText(output.value);
+      toast('Hasil disalin!');
+    } catch { toast('Gagal menyalin', 'error'); }
+  });
+
+  document.getElementById('swap-btn')!.addEventListener('click', () => {
+    if (!output.value) { toast('Belum ada hasil untuk di-swap.', 'info'); return; }
+    input.value = output.value;
+    output.value = '';
+  });
+
+  let audioCtx: AudioContext | null = null;
+  document.getElementById('play-btn')!.addEventListener('click', () => {
+    const morse = output.value;
+    if (!morse) { toast('Belum ada kode Morse untuk diputar!', 'error'); return; }
+    try {
+      audioCtx = audioCtx ?? new (window.AudioContext || (window as any).webkitAudioContext)();
+      let t = audioCtx.currentTime + 0.05;
+      for (const c of morse) {
+        if (c === '.') { const o = audioCtx.createOscillator(); o.connect(audioCtx.destination); o.start(t); o.stop(t + 0.1); t += 0.15; }
+        else if (c === '-') { const o = audioCtx.createOscillator(); o.connect(audioCtx.destination); o.start(t); o.stop(t + 0.3); t += 0.35; }
+        else if (c === ' ') t += 0.2;
+        else if (c === '/') t += 0.4;
+      }
+    } catch { toast('Gagal memutar audio Morse', 'error'); }
+  });
+
+  renderHistory();
 
   }
 

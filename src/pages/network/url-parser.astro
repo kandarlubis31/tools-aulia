@@ -7,37 +7,131 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <div class="card-base p-5 space-y-4">
     <input id="url-input" type="text" class="input-field w-full font-mono text-sm" value="https://user:pass@tools.paklubis.my.id:8080/img/editor?from=home&hl=id#features" placeholder="https://example.com/path?query=value#hash">
-    <button id="parse-btn" class="btn-primary">Parse URL</button>
+    <div class="flex gap-2">
+      <button id="parse-btn" class="btn-primary flex-1" data-i18n="btn.parse_url">Parse URL</button>
+      <button id="copy-btn" class="px-4 py-2 rounded-xl bg-matte-200 dark:bg-matte-700 font-bold text-sm hover:bg-matte-300 dark:hover:bg-matte-600 transition-colors" data-i18n="btn.copy_emoji">📋 Copy</button>
+      <button id="clear-btn" class="px-4 py-2 rounded-xl bg-matte-200 dark:bg-matte-700 font-bold text-sm hover:bg-matte-300 dark:hover:bg-matte-600 transition-colors" data-i18n="btn.clear">Bersihkan</button>
+    </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm" id="parsed"></div>
+
+    <div id="hist-wrap" class="hidden pt-2 border-t border-matte-200 dark:border-surface-border">
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="text-sm font-bold text-matte-600 dark:text-matte-300" data-i18n="hist.title">Riwayat Perhitungan</h3>
+        <button id="hist-clear" class="text-xs font-bold text-rose-500 hover:underline" data-i18n="btn.clear_history">Hapus Riwayat</button>
+      </div>
+      <div id="hist-list" class="space-y-1.5">
+        <p class="text-xs text-matte-400" data-i18n="common.no_history">Belum ada riwayat</p>
+      </div>
+    </div>
   </div>
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  document.getElementById('parse-btn').addEventListener('click', parse);
-  parse();
+  const input = document.getElementById('url-input') as HTMLInputElement;
+  const parsedEl = document.getElementById('parsed')!;
+  const histWrap = document.getElementById('hist-wrap')!;
+  const histList = document.getElementById('hist-list')!;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  interface HistEntry { url: string; fields: number; at: number; }
+  const history = useLocalHistory<HistEntry>('hist:url-parser', 10);
+  let lastFields: [string, string][] = [];
+
+  function esc(s: unknown) { return String(s ?? '').replace(/</g, '&lt;'); }
+
+  function renderHistory() {
+    const items = history.getAll();
+    histWrap.classList.toggle('hidden', items.length === 0);
+    histList.innerHTML = items.length === 0
+      ? '<p class="text-xs text-matte-400" data-i18n="common.no_history">Belum ada riwayat</p>'
+      : items.map((it, i) =>
+        `<div class="flex items-center gap-2 text-xs card-base p-2">
+          <button data-load="${i}" class="font-bold text-violet-500 hover:underline shrink-0" data-i18n="hist.load">Muat</button>
+          <span class="font-mono truncate flex-1" title="${esc(it.url)}">${esc(it.url)}</span>
+          <button data-del="${i}" class="text-rose-500 hover:text-rose-600 font-bold shrink-0" aria-label="Delete">✕</button>
+        </div>`).join('');
+  }
+
+  histList.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const loadIdx = target.dataset.load;
+    const delIdx = target.dataset.del;
+    if (loadIdx !== undefined) {
+      const it = history.getAll()[Number(loadIdx)];
+      if (!it) return;
+      input.value = it.url;
+      parse();
+      toast('URL dimuat dari riwayat.', 'info');
+    } else if (delIdx !== undefined) {
+      const items = history.getAll();
+      items.splice(Number(delIdx), 1);
+      history.update(items);
+      renderHistory();
+    }
+  });
+
+  document.getElementById('hist-clear')!.addEventListener('click', () => {
+    history.clear();
+    renderHistory();
+    toast('Riwayat dihapus!');
+  });
 
   function parse() {
-    const raw = document.getElementById('url-input').value.trim();
-    let u; try { u = new URL(raw); } catch { document.getElementById('parsed').innerHTML = '<p class="text-red-500 col-span-full">URL tidak valid!</p>'; return; }
+    const raw = input.value.trim();
+    let u: URL;
+    try { u = new URL(raw); } catch {
+      parsedEl.innerHTML = '<p class="text-red-500 col-span-full text-sm" data-i18n="error.invalid_url">URL tidak valid!</p>';
+      return;
+    }
 
-    const fields = [
+    const fields: [string, string][] = [
       ['Protocol', u.protocol], ['Host', u.hostname], ['Port', u.port || '(default)'], ['Path', u.pathname],
       ['Search', u.search], ['Hash', u.hash], ['Origin', u.origin], ['Username', u.username || '-'], ['Password', u.password ? '***' : '-'],
     ];
     const params = Array.from(u.searchParams.entries());
-    if (params.length) params.forEach(([k,v]) => fields.push(['Query: '+k, v]));
+    if (params.length) params.forEach(([k, v]) => fields.push(['Query: ' + k, v]));
 
-    document.getElementById('parsed').innerHTML = fields.map(([k,v]) =>
-      '<div class="card-base p-2"><span class="text-xs text-matte-400">'+esc(k)+'</span><p class="font-mono text-sm break-all">'+esc(v)+'</p></div>'
+    lastFields = fields;
+    parsedEl.innerHTML = fields.map(([k, v]) =>
+      '<div class="card-base p-2"><span class="text-xs text-matte-400">' + esc(k) + '</span><p class="font-mono text-sm break-all">' + esc(v) + '</p></div>'
     ).join('');
+
+    const items = history.getAll().filter((it) => it.url !== raw);
+    items.unshift({ url: raw, fields: fields.length, at: Date.now() });
+    history.update(items);
+    renderHistory();
   }
 
-  function esc(s) { return String(s||'').replace(/</g,'&lt;'); }
+  document.getElementById('parse-btn')!.addEventListener('click', parse);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') parse(); });
+
+  document.getElementById('copy-btn')!.addEventListener('click', async () => {
+    try {
+      if (!lastFields.length) { toast('Parse URL dulu — belum ada hasil.', 'info'); return; }
+      const text = lastFields.map(([k, v]) => k + ': ' + v).join('\n');
+      await navigator.clipboard.writeText(text);
+      toast('Hasil parse disalin!');
+    } catch {
+      toast('Gagal menyalin', 'error');
+    }
+  });
+
+  document.getElementById('clear-btn')!.addEventListener('click', () => {
+    input.value = '';
+    parsedEl.innerHTML = '';
+    lastFields = [];
+    toast('URL dikosongkan', 'info');
+  });
+
+  parse();
+  renderHistory();
 
   }
 
