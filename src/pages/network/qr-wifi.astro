@@ -7,58 +7,80 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <div class="card-base p-5 space-y-4">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <div><label class="text-xs text-matte-500 mb-1 block">SSID (Nama WiFi)</label><input id="ssid" type="text" class="input-field w-full text-sm" placeholder="MyWifi"></div>
-      <div><label class="text-xs text-matte-500 mb-1 block" data-i18n="label.password">Password</label><input id="pass" type="text" class="input-field w-full text-sm" placeholder="password123"></div>
+      <div><label for="ssid" class="text-xs text-matte-500 mb-1 block" data-i18n="label.ssid">SSID (Nama WiFi)</label><input id="ssid" type="text" class="input-field w-full text-sm" placeholder="MyWifi" data-i18n-attr="placeholder" data-i18n="ph.ssid_example"></div>
+      <div><label for="pass" class="text-xs text-matte-500 mb-1 block" data-i18n="label.password">Password</label><input id="pass" type="text" class="input-field w-full text-sm" placeholder="password123" data-i18n-attr="placeholder" data-i18n="ph.wifi_password_example"></div>
     </div>
     <div class="flex flex-wrap gap-3">
-      <div><label class="text-xs text-matte-500 mb-1 block">Enkripsi</label><select id="enc" class="input-field text-sm"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">Open (tanpa password)</option></select></div>
-      <div><label class="text-xs text-matte-500 mb-1 block">Ukuran QR</label><input id="size" type="number" class="input-field w-20 text-sm" value="256" min="128" max="512"></div>
-      <div class="self-end"><button id="gen-btn" class="btn-primary text-sm">Generate QR WiFi</button></div>
+      <div><label for="enc" class="text-xs text-matte-500 mb-1 block" data-i18n="label.encryption">Enkripsi</label><select id="enc" class="input-field text-sm"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass" data-i18n="label.open_network">Open (tanpa password)</option></select></div>
+      <div><label for="size" class="text-xs text-matte-500 mb-1 block" data-i18n="label.qr_size">Ukuran QR</label><input id="size" type="number" class="input-field w-20 text-sm" value="256" min="128" max="512"></div>
+      <div class="self-end"><button id="gen-btn" class="btn-primary text-sm" data-i18n="btn.generate_qr">Generate QR WiFi</button></div>
     </div>
 
     <div class="flex justify-center"><canvas id="qr-canvas" width="256" height="256" class="rounded shadow"></canvas></div>
-    <div class="flex gap-2"><button id="download-btn" class="btn-primary flex-1">Download QR PNG</button><button id="copy-cfg" class="btn-secondary text-sm">Copy Config</button></div>
-    <p class="text-xs text-matte-400 text-center">Scan QR ini dari HP untuk langsung konek WiFi tanpa ketik password!</p>
+    <div class="flex gap-2"><button id="download-btn" class="btn-primary flex-1" data-i18n="btn.download_qr">Download QR PNG</button><button id="copy-cfg" class="btn-secondary text-sm" data-i18n="btn.copy_config">Copy Config</button></div>
+    <p class="text-xs text-matte-400 text-center" data-i18n="text.qr_wifi_note">Scan QR ini dari HP untuk langsung konek WiFi tanpa ketik password!</p>
   </div>
 </BaseLayout>
 
 <script>
-
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  const canvas = document.getElementById('qr-canvas');
+  const canvas = document.getElementById('qr-canvas') as HTMLCanvasElement;
+  const ssidInp = document.getElementById('ssid') as HTMLInputElement;
+  const passInp = document.getElementById('pass') as HTMLInputElement;
+  const encSel = document.getElementById('enc') as HTMLSelectElement;
+  const sizeInp = document.getElementById('size') as HTMLInputElement;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
-  document.getElementById('gen-btn').addEventListener('click', generate);
-  generate();
+  // Escape karakter spesial sesuai spec WIFI: — \ ; , : " harus di-escape pakai backslash,
+  // kalau tidak, SSID/password dengan karakter itu bikin payload korup & QR gagal konek.
+  const escWifi = (s: string) => s.replace(/([\\;,:"])/g, '\\$1');
+
+  function buildCfg() {
+    const ssid = ssidInp.value.trim() || 'MyWifi';
+    const pass = passInp.value;
+    const enc = encSel.value;
+    return `WIFI:T:${enc};S:${escWifi(ssid)};P:${escWifi(pass)};;`;
+  }
 
   function generate() {
-    const ssid = document.getElementById('ssid').value.trim() || 'MyWifi';
-    const pass = document.getElementById('pass').value.trim() || 'password';
-    const enc = document.getElementById('enc').value;
-    const size = parseInt(document.getElementById('size').value) || 256;
+    const size = Math.min(512, Math.max(128, parseInt(sizeInp.value, 10) || 256));
     canvas.width = canvas.height = size;
-
-    const cfg = `WIFI:T:${enc};S:${ssid};P:${pass};;`;
+    const cfg = buildCfg();
     const QRCode = (window as any).QRCode;
     try {
+      if (!QRCode) throw new Error('lib not ready');
       new QRCode(canvas, { text: cfg, width: size, height: size, correctLevel: 1 });
     } catch {
-      // fallback: use text display
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#fff'; ctx.fillRect(0,0,size,size);
-      ctx.fillStyle = '#000'; ctx.font = '12px monospace'; ctx.fillText('QR lib loading...', 10, size/2);
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = '#000'; ctx.font = '12px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(window._tToast ? window._tToast('QR lib belum siap...') : 'QR lib loading...', size / 2, size / 2);
     }
   }
 
-  document.getElementById('download-btn').addEventListener('click', () => {
-    canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'qr-wifi.png'; a.click(); }, 'image/png');
+  document.getElementById('gen-btn')!.addEventListener('click', generate);
+  generate();
+
+  document.getElementById('download-btn')!.addEventListener('click', () => {
+    try {
+      canvas.toBlob(b => {
+        if (!b) { toast('Gagal membuat PNG', 'error'); return; }
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'qr-wifi.png'; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        toast('QR diunduh!');
+      }, 'image/png');
+    } catch { toast('Gagal membuat PNG', 'error'); }
   });
-  document.getElementById('copy-cfg').addEventListener('click', () => {
-    const ssid = document.getElementById('ssid').value.trim() || 'MyWifi';
-    const pass = document.getElementById('pass').value.trim();
-    const enc = document.getElementById('enc').value;
-    navigator.clipboard.writeText(`WIFI:T:${enc};S:${ssid};P:${pass};;`).then(() => showToast?.(_tToast?.('Config WiFi disalin!','WiFi config copied!'),'success'));
+
+  document.getElementById('copy-cfg')!.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(buildCfg());
+      toast('Config WiFi disalin!');
+    } catch { toast('Gagal menyalin', 'error'); }
   });
 
   }
