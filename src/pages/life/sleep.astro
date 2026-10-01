@@ -7,62 +7,86 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <div class="card-base p-5 space-y-4">
     <div class="flex gap-4">
-      <button id="mode-wake" class="btn-primary flex-1 text-sm">Saya mau bangun jam...</button>
-      <button id="mode-sleep" class="btn-secondary flex-1 text-sm">Saya mau tidur jam...</button>
+      <button id="mode-wake" class="btn-primary flex-1 text-sm" data-i18n="btn.mode_wake">Saya mau bangun jam...</button>
+      <button id="mode-sleep" class="btn-secondary flex-1 text-sm" data-i18n="btn.mode_sleep">Saya mau tidur jam...</button>
     </div>
 
     <div class="flex gap-2 items-center justify-center">
-      <input id="hour" type="number" min="0" max="23" value="7" class="input-field w-16 text-center text-sm">
+      <input id="hour" type="number" min="0" max="23" value="7" class="input-field w-16 text-center text-sm" aria-label="Jam">
       <span class="text-matte-500">:</span>
-      <input id="min" type="number" min="0" max="59" value="0" class="input-field w-16 text-center text-sm">
+      <input id="min" type="number" min="0" max="59" value="0" class="input-field w-16 text-center text-sm" aria-label="Menit">
       <span id="ampm" class="text-matte-500 text-sm">AM</span>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" id="results"></div>
-    <p class="text-xs text-matte-400 text-center">Sleep cycle rata-rata 90 menit. Tidur 5-6 cycle (7.5-9 jam) ideal.</p>
+    <p class="text-xs text-matte-400 text-center" data-i18n="text.sleep_note">Sleep cycle rata-rata 90 menit. Tidur 5-6 cycle (7.5-9 jam) ideal.</p>
   </div>
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
+// Re-render i18n dinamis: label hasil di-bake via t() → render ulang saat ganti bahasa
+// (pola sama dengan dev/contrast).
+let __sleepRender: (() => void) | null = null;
+window.addEventListener('langchange', () => { __sleepRender?.(); });
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
   let mode = 'wake';
-  document.getElementById('mode-wake').addEventListener('click', function() { mode='wake'; this.className='btn-primary flex-1 text-sm'; document.getElementById('mode-sleep').className='btn-secondary flex-1 text-sm'; calc(); });
-  document.getElementById('mode-sleep').addEventListener('click', function() { mode='sleep'; this.className='btn-primary flex-1 text-sm'; document.getElementById('mode-wake').className='btn-secondary flex-1 text-sm'; calc(); });
-  ['hour','min'].forEach(id => document.getElementById(id).addEventListener('input', calc));
+  const hourInp = document.getElementById('hour') as HTMLInputElement;
+  const minInp = document.getElementById('min') as HTMLInputElement;
+  const ampmEl = document.getElementById('ampm')!;
+  const modeWake = document.getElementById('mode-wake') as HTMLButtonElement;
+  const modeSleep = document.getElementById('mode-sleep') as HTMLButtonElement;
+
+  function setMode(m: 'wake' | 'sleep') {
+    mode = m;
+    modeWake.className = (m === 'wake' ? 'btn-primary' : 'btn-secondary') + ' flex-1 text-sm';
+    modeSleep.className = (m === 'sleep' ? 'btn-primary' : 'btn-secondary') + ' flex-1 text-sm';
+    calc();
+  }
+  modeWake.addEventListener('click', () => setMode('wake'));
+  modeSleep.addEventListener('click', () => setMode('sleep'));
+  [hourInp, minInp].forEach(el => el.addEventListener('input', calc));
+
+  const pad = (n: number) => String(n).padStart(2, '0');
 
   function calc() {
-    let h = parseInt(document.getElementById('hour').value) || 7;
-    let m = parseInt(document.getElementById('min').value) || 0;
-    if (h < 0) h = 0; if (h > 23) h = 23;
-    const totalMin = h*60 + m;
+    let h = parseInt(hourInp.value, 10) || 0;
+    let m = parseInt(minInp.value, 10) || 0;
+    h = Math.min(23, Math.max(0, h));
+    m = Math.min(59, Math.max(0, m));
+    if (String(parseInt(hourInp.value, 10)) !== hourInp.value) hourInp.value = String(h);
+    ampmEl.textContent = h < 12 ? 'AM' : 'PM';
+
+    const totalMin = h * 60 + m;
     const cycle = 90;
-    const results = [];
+    const results: { label: string; time: string; count: number }[] = [];
 
     if (mode === 'wake') {
-      for (let c=6; c>=3; c--) {
-        let t = totalMin - c*cycle;
-        if (t < 0) t += 1440;
-        const hh = Math.floor(t/60)%24, mm = t%60;
-        results.push({ label: (c===6?'Ideal (9 jam)':c+' cycle ('+(c*1.5)+'j)'), time: pad(hh)+':'+pad(mm), count: c });
+      for (let c = 6; c >= 3; c--) {
+        let tm = totalMin - c * cycle;
+        if (tm < 0) tm += 1440;
+        const hh = Math.floor(tm / 60) % 24, mm = tm % 60;
+        results.push({ label: c === 6 ? t('sleep.ideal', 'Ideal (9 jam)') : c + ' ' + t('sleep.cycle_hours', 'cycle ({h}j)').replace('{h}', String(c * 1.5)), time: pad(hh) + ':' + pad(mm), count: c });
       }
     } else {
-      for (let c=3; c<=6; c++) {
-        let t = (totalMin + 15 + c*cycle) % 1440;
-        const hh = Math.floor(t/60), mm = t%60;
-        results.push({ label: (c===5||c===6?'⭐ '+c+' cycle ('+(c*1.5)+'j)':c+' cycle ('+(c*1.5)+'j)'), time: pad(hh)+':'+pad(mm), count: c });
+      for (let c = 3; c <= 6; c++) {
+        const tm = (totalMin + 15 + c * cycle) % 1440;
+        const hh = Math.floor(tm / 60), mm = tm % 60;
+        results.push({ label: (c >= 5 ? '⭐ ' : '') + c + ' ' + t('sleep.cycle_hours', 'cycle ({h}j)').replace('{h}', String(c * 1.5)), time: pad(hh) + ':' + pad(mm), count: c });
       }
     }
 
-    document.getElementById('results').innerHTML = results.map(r =>
-      '<div class="card-base p-3 text-center '+(r.count>=5?'border-2 border-accent-green/30 bg-accent-green/5':'')+'">'+
-      '<p class="text-xs text-matte-400">'+r.label+'</p><p class="text-2xl font-bold font-mono text-accent-blue">'+r.time+'</p></div>'
+    document.getElementById('results')!.innerHTML = results.map(r =>
+      '<div class="card-base p-3 text-center ' + (r.count >= 5 ? 'border-2 border-accent-green/30 bg-accent-green/5' : '') + '">' +
+      '<p class="text-xs text-matte-400">' + r.label + '</p><p class="text-2xl font-bold font-mono text-accent-blue">' + r.time + '</p></div>'
     ).join('');
   }
 
-  function pad(n) { return String(n).padStart(2,'0'); }
+  __sleepRender = calc;
   calc();
 
   }
@@ -70,7 +94,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   // SPA boot (#14): guard path + guard dobel-bind
   const __lifeSleepPage = (location.pathname.replace(/\/+$/, '') || '/');
   document.addEventListener('astro:page-load', () => {
-    if ((location.pathname.replace(/\/+$/, '') || '/') !== __lifeSleepPage) return;
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __lifeSleepPage) { __sleepRender = null; return; }
     const anchor = document.querySelector('main button, main input, main select, main textarea');
     if (!anchor || anchor.dataset.autoBound === 'true') return;
     anchor.dataset.autoBound = 'true';

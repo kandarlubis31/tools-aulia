@@ -660,4 +660,21 @@ window._i18nPhrases = {
   'Tidak ada file untuk digabung':'No files to join',
   'Gagal menggabung file':'Failed to join files',
   'File berhasil digabung!':'Files joined successfully!',
+  // W6 batch 3 — media-info
+  'File harus audio/video!':'File must be audio/video!',
+  'Media gagal dibaca — codec mungkin tidak didukung browser':'Failed to read media — codec may not be supported by the browser',
+  'Gagal memuat metadata (timeout)':'Failed to load metadata (timeout)',
+  // W6 batch 3 — color-harmony
+  'disalin!':'copied!',
+  'Palet disalin!':'Palette copied!',
+  'Belum ada palet.':'No palette yet.',
+  // W6 batch 3 — qr-wifi
+  'QR lib belum siap...':'QR library not ready...',
+  'QR diunduh!':'QR downloaded!',
+  'Config WiFi disalin!':'WiFi config copied!',
+  // W6 batch 3 — find-replace
+  'Regex tidak valid':'Invalid regex',
+  ' match':' match',
+  'Belum ada perubahan untuk diterapkan.':'No changes to apply yet.',
+  'Teks diganti!':'Text replaced!',
 };
