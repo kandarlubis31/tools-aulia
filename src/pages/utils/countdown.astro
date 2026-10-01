@@ -7,68 +7,79 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <div class="card-base p-5 space-y-4">
     <div class="flex gap-2">
-      <input id="ev-name" type="text" class="input-field flex-1 text-sm" placeholder="Nama event...">
-      <input id="ev-date" type="datetime-local" class="input-field text-sm w-48">
-      <button id="add-ev" class="btn-primary text-sm">Tambah</button>
+      <input id="ev-name" type="text" class="input-field flex-1 text-sm" placeholder="Nama event..." data-i18n-attr="placeholder" data-i18n="ph.event_name">
+      <input id="ev-date" type="datetime-local" class="input-field text-sm w-48" aria-label="Tanggal & waktu" data-i18n-attr="aria-label" data-i18n="label.event_date">
+      <button id="add-ev" class="btn-primary text-sm" data-i18n="btn.add">Tambah</button>
     </div>
 
     <div id="events" class="space-y-2"></div>
-    <p id="empty" class="text-sm text-matte-400 text-center">Belum ada countdown. Tambah event di atas.</p>
+    <p id="empty" class="text-sm text-matte-400 text-center" data-i18n="empty.countdown">Belum ada countdown. Tambah event di atas.</p>
   </div>
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
   const KEY = 'countdown_multi';
-  let events = JSON.parse(localStorage.getItem(KEY) || '[]');
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  let events: { name: string; date: string }[] = [];
+  try {
+    const parsed = JSON.parse(localStorage.getItem(KEY) || '[]');
+    if (Array.isArray(parsed)) events = parsed;
+  } catch { events = []; }
 
   function save() { localStorage.setItem(KEY, JSON.stringify(events)); }
+
+  function esc(s: unknown) { return String(s ?? '').replace(/</g, '&lt;'); }
 
   function render() {
     const container = document.getElementById('events');
     const empty = document.getElementById('empty');
-    if (!events.length) { container.innerHTML = ''; empty.classList.remove('hidden'); return; }
-    empty.classList.add('hidden');
-    container.innerHTML = events.map((ev,i) => {
-      const now = Date.now();
-      const target = new Date(ev.date).getTime();
-      const diff = target - now;
-      let text = '';
-      if (diff <= 0) text = '<span class="text-green-500 font-bold">🎉 SUDAH TIBA!</span>';
-      else {
-        const d = Math.floor(diff/86400000);
-        const h = Math.floor((diff%86400000)/3600000);
-        const m = Math.floor((diff%3600000)/60000);
-        const s = Math.floor((diff%60000)/1000);
-        text = (d>0?d+'h ':'') + String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    if (!container) return; // SPA nav — elemen sudah tidak ada, stop render
+    if (!events.length) { container.innerHTML = ''; empty?.classList.remove('hidden'); return; }
+    empty?.classList.add('hidden');
+    container.innerHTML = events.map((ev, i) => {
+      const diff = new Date(ev.date).getTime() - Date.now();
+      let text: string;
+      if (diff <= 0) {
+        text = '<span class="text-green-500 font-bold">' + t('countdown.arrived', '🎉 Sudah tiba!') + '</span>';
+      } else {
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        text = (d > 0 ? d + 'h ' : '') + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
       }
-      return '<div class="card-base p-3 flex justify-between items-center">'+
-        '<div><p class="font-medium text-sm">'+esc(ev.name)+'</p><p class="text-xs text-matte-400">'+new Date(ev.date).toLocaleString('id-ID')+'</p></div>'+
-        '<div class="flex items-center gap-2"><span class="font-mono font-bold text-lg">'+text+'</span>'+
-        '<button data-idx="'+i+'" class="text-red-400 hover:text-red-600 del-ev">✕</button></div></div>';
+      return '<div class="card-base p-3 flex justify-between items-center">' +
+        '<div><p class="font-medium text-sm">' + esc(ev.name) + '</p><p class="text-xs text-matte-400">' + new Date(ev.date).toLocaleString() + '</p></div>' +
+        '<div class="flex items-center gap-2"><span class="font-mono font-bold text-lg">' + text + '</span>' +
+        '<button data-idx="' + i + '" class="text-red-400 hover:text-red-600 del-ev" aria-label="Delete">✕</button></div></div>';
     }).join('');
-    container.querySelectorAll('.del-ev').forEach(b => b.addEventListener('click', function() {
-      events.splice(parseInt(this.dataset.idx), 1); save(); render();
+    container.querySelectorAll('.del-ev').forEach(b => b.addEventListener('click', function (this: HTMLElement) {
+      events.splice(parseInt(this.dataset.idx || '0', 10), 1);
+      save();
+      render();
     }));
   }
 
-  document.getElementById('add-ev').addEventListener('click', () => {
-    const name = document.getElementById('ev-name').value.trim();
-    const date = document.getElementById('ev-date').value;
-    if (!name || !date) { showToast?.(_tToast?.('Isi nama & tanggal', 'Fill name & date'), 'error'); return; }
+  document.getElementById('add-ev')!.addEventListener('click', () => {
+    const name = (document.getElementById('ev-name') as HTMLInputElement).value.trim();
+    const date = (document.getElementById('ev-date') as HTMLInputElement).value;
+    if (!name || !date) { toast('Isi nama & tanggal', 'error'); return; }
     events.push({ name, date });
-    save(); render();
-    document.getElementById('ev-name').value = '';
-    showToast?.(_tToast?.('Countdown ditambah!', 'Countdown added!'), 'success');
+    save();
+    render();
+    (document.getElementById('ev-name') as HTMLInputElement).value = '';
+    toast('Countdown ditambah!');
   });
 
-  setInterval(render, 1000);
   render();
-
-  function esc(s) { return String(s).replace(/</g,'&lt;'); }
+  setInterval(() => { if (document.getElementById('events')) render(); }, 1000);
 
   }
 

@@ -8,13 +8,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <div class="card-base p-5 space-y-4">
     <textarea id="html-input" class="input-field w-full h-32 font-mono text-sm" placeholder='Paste HTML tabel di sini...&#10;<table>&#10;  <tr><th>Nama</th><th>Usia</th></tr>&#10;  <tr><td>Alice</td><td>25</td></tr>&#10;</table>'></textarea>
 
-    <button id="parse-btn" class="btn-primary">Parse ke JSON</button>
+    <button id="parse-btn" class="btn-primary" data-i18n="btn.parse_json">Parse ke JSON</button>
 
     <div class="flex justify-between items-center">
-      <label class="text-sm text-matte-500 font-medium">Output JSON</label>
+      <label class="text-sm text-matte-500 font-medium" data-i18n="label.output_json">Output JSON</label>
       <div class="flex gap-2">
         <button id="copy-btn" class="btn-secondary text-xs" data-i18n="btn.copy_emoji">📋 Copy</button>
-        <button id="download-btn" class="btn-secondary text-xs">⬇️ JSON</button>
+        <button id="download-btn" class="btn-secondary text-xs" data-i18n="btn.download_json">⬇️ JSON</button>
       </div>
     </div>
     <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-40 overflow-auto text-sm font-mono whitespace-pre-wrap"></pre>
@@ -26,18 +26,21 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  document.getElementById('parse-btn').addEventListener('click', () => {
-    const html = document.getElementById('html-input').value;
-    if (!html.trim()) { showToast?.(_tToast?.('Paste HTML tabel dulu','Paste HTML table first'),'error'); return; }
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  document.getElementById('parse-btn')!.addEventListener('click', () => {
+    const html = (document.getElementById('html-input') as HTMLTextAreaElement).value;
+    if (!html.trim()) { toast('Paste HTML tabel dulu', 'error'); return; }
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     const table = doc.querySelector('table');
-    if (!table) { showToast?.(_tToast?.('Tabel tidak ditemukan di HTML','No table found in HTML'),'error'); return; }
+    if (!table) { toast('Tabel tidak ditemukan di HTML', 'error'); return; }
 
     const rows = table.querySelectorAll('tr');
-    const data = [];
-    let headers = [];
+    const data: Record<string, string>[] = [];
+    let headers: string[] = [];
 
     rows.forEach((row, idx) => {
       const cells = row.querySelectorAll('th, td');
@@ -52,23 +55,32 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       }
     });
 
-    document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-    showToast?.(_tToast?.(data.length+' baris diparsing!',data.length+' rows parsed!'),'success');
+    (document.getElementById('output') as HTMLPreElement).textContent = JSON.stringify(data, null, 2);
+    toast(data.length + ' baris diparsing!');
   });
 
-  function toObj(keys, vals) {
-    const obj = {};
-    keys.forEach((k,i) => { obj[k || 'col'+(i+1)] = vals[i] || ''; });
+  function toObj(keys: string[], vals: string[]) {
+    const obj: Record<string, string> = {};
+    keys.forEach((k, i) => { obj[k || 'col' + (i + 1)] = vals[i] || ''; });
     return obj;
   }
 
-  document.getElementById('copy-btn').addEventListener('click', () => {
-    navigator.clipboard.writeText(document.getElementById('output').textContent).then(() => showToast?.(_tToast?.('Disalin!','Copied!'),'success'));
+  document.getElementById('copy-btn')!.addEventListener('click', async () => {
+    try {
+      const out = (document.getElementById('output') as HTMLPreElement).textContent || '';
+      if (!out) { toast('Belum ada hasil.', 'info'); return; }
+      await navigator.clipboard.writeText(out);
+      toast('Disalin!');
+    } catch { toast('Gagal menyalin', 'error'); }
   });
 
-  document.getElementById('download-btn').addEventListener('click', () => {
-    const blob = new Blob([document.getElementById('output').textContent], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'table-data.json'; a.click();
+  document.getElementById('download-btn')!.addEventListener('click', () => {
+    try {
+      const out = (document.getElementById('output') as HTMLPreElement).textContent || '';
+      const blob = new Blob([out], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'table-data.json'; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    } catch { toast('Gagal membuat file', 'error'); }
   });
 
   }

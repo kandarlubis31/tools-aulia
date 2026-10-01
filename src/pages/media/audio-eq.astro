@@ -6,17 +6,30 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <ToolPageHeader title="Audio Equalizer" description="10-band graphic EQ — atur & dengarkan suara" icon='<path d="M4 14l6 6 6-6"/><path d="M12 20v-9"/><path d="M20 10c0-4.418-3.582-8-8-8s-8 3.582-8 8"/>' />
 
   <div class="card-base p-5 space-y-4">
-    <input type="file" id="file-input" accept="audio/*" class="input-field text-sm w-full">
-    <div class="flex gap-2"><button id="play-btn" class="btn-primary text-sm" disabled>▶ Play</button><select id="preset" class="input-field text-sm w-32"><option value="">Flat</option><option value="pop">Pop</option><option value="rock">Rock</option><option value="vocal">Vocal Boost</option><option value="bass">Bass Boost</option></select></div>
+    <div>
+      <label for="file-input" class="text-xs text-matte-500 mb-1 block" data-i18n="label.eq_file">File Audio</label>
+      <input type="file" id="file-input" accept="audio/*" class="input-field text-sm w-full">
+    </div>
+    <div class="flex gap-2 items-end">
+      <button id="play-btn" class="btn-primary text-sm" disabled data-i18n="audio_eq.play">▶ Putar</button>
+      <div>
+        <label for="preset" class="text-xs text-matte-500 mb-1 block" data-i18n="label.eq_preset">Preset</label>
+        <select id="preset" class="input-field text-sm w-32">
+          <option value="" data-i18n="audio_eq.preset_flat">Flat</option>
+          <option value="pop" data-i18n="audio_eq.preset_pop">Pop</option>
+          <option value="rock" data-i18n="audio_eq.preset_rock">Rock</option>
+          <option value="vocal" data-i18n="audio_eq.preset_vocal">Vokal</option>
+          <option value="bass" data-i18n="audio_eq.preset_bass">Bass</option>
+        </select>
+      </div>
+    </div>
 
-    <div class="grid grid-cols-10 gap-1" id="bands">
-      {['32','64','125','250','500','1K','2K','4K','8K','16K'].map((hz,i) => `
+    <div class="grid grid-cols-10 gap-1" id="bands" set:html={['32','64','125','250','500','1K','2K','4K','8K','16K'].map((hz,i) => `
         <div class="text-center">
-          <input type="range" min="-12" max="12" value="0" class="eq-slider w-8 h-32 [writing-mode:vertical-lr] [direction:rtl] mx-auto" data-idx="${i}">
+          <input type="range" min="-12" max="12" value="0" class="eq-slider w-8 h-32 [writing-mode:vertical-lr] [direction:rtl] mx-auto" data-idx="${i}" aria-label="EQ ${hz}Hz">
           <span class="text-xs text-matte-400">${hz}</span>
         </div>
-      `).join('')}
-    </div>
+      `).join('')}></div>
   </div>
 </BaseLayout>
 
@@ -25,50 +38,83 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  let audioCtx, source, filters = [];
+  let audioCtx: AudioContext | undefined, buffer: AudioBuffer | undefined, source: AudioBufferSourceNode | undefined;
+  let filters: BiquadFilterNode[] = [];
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+  const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
 
-  document.getElementById('file-input').addEventListener('change', async function() {
-    const f = this.files[0]; if (!f) return;
-    audioCtx = new AudioContext();
-    filters = [];
-    const bands = [32,64,125,250,500,1000,2000,4000,8000,16000];
-    bands.forEach(() => filters.push(audioCtx.createBiquadFilter()));
-
-    const buf = await audioCtx.decodeAudioData(await f.arrayBuffer());
-    source = audioCtx.createBufferSource(); source.buffer = buf;
-
-    filters.forEach((f,i) => { f.type = 'peaking'; f.frequency.value = bands[i]; f.Q.value = 1; f.gain.value = 0; });
-    let prev = source;
+  function buildChain() {
+    if (!audioCtx || !buffer) return;
+    if (source) { try { source.onended = null; source.stop(); } catch { /* sudah stop */ } }
+    source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    let prev: AudioNode = source;
     filters.forEach(f => { prev.connect(f); prev = f; });
     prev.connect(audioCtx.destination);
-    document.getElementById('play-btn').disabled = false;
+    source.onended = () => { playBtn.disabled = false; };
+  }
+
+  document.getElementById('file-input')!.addEventListener('change', async function (this: HTMLInputElement) {
+    const f = this.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith('audio/')) { toast('File harus audio!', 'error'); return; }
+    try {
+      if (audioCtx) { try { audioCtx.close(); } catch { /* ctx sudah closed */ } }
+      audioCtx = new AudioContext();
+      filters = [];
+      const bands = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+      bands.forEach(() => filters.push(audioCtx!.createBiquadFilter()));
+
+      buffer = await audioCtx.decodeAudioData(await f.arrayBuffer());
+
+      const sliders = document.querySelectorAll<HTMLInputElement>('.eq-slider');
+      filters.forEach((flt, i) => {
+        flt.type = 'peaking';
+        flt.frequency.value = bands[i];
+        flt.Q.value = 1;
+        flt.gain.value = parseInt(sliders[i]?.value || '0', 10) || 0;
+      });
+
+      source = undefined;
+      buildChain();
+      playBtn.disabled = false;
+      toast('Audio siap diputar!');
+    } catch {
+      buffer = undefined; source = undefined;
+      playBtn.disabled = true;
+      toast('Audio gagal diproses — format tidak didukung', 'error');
+    }
   });
 
-  document.getElementById('play-btn').addEventListener('click', () => {
-    if (!source) return; source.start(); this.disabled = true;
+  playBtn.addEventListener('click', () => {
+    if (!buffer || !audioCtx) { toast('Pilih file audio dulu!', 'error'); return; }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    buildChain();
+    try { source!.start(); } catch { /* sudah start */ }
+    playBtn.disabled = true;
   });
 
-  document.querySelectorAll('.eq-slider').forEach(slider => {
-    slider.addEventListener('input', function() {
-      const idx = parseInt(this.dataset.idx);
-      if (filters[idx]) filters[idx].gain.value = parseInt(this.value);
+  document.querySelectorAll<HTMLInputElement>('.eq-slider').forEach(slider => {
+    slider.addEventListener('input', function (this: HTMLInputElement) {
+      const idx = parseInt(this.dataset.idx || '0', 10);
+      if (filters[idx]) filters[idx].gain.value = parseInt(this.value, 10) || 0;
     });
   });
 
-  document.getElementById('preset').addEventListener('change', function() {
-    const presets = {
-      pop: [2,1,0,-1,0,1,2,3,3,2],
-      rock: [4,3,0,-2,0,2,4,3,2,0],
-      vocal: [-1,-1,0,2,4,3,2,0,-1,-2],
-      bass: [6,5,3,1,0,0,0,0,0,0]
+  document.getElementById('preset')!.addEventListener('change', function (this: HTMLSelectElement) {
+    const presets: Record<string, number[]> = {
+      pop: [2, 1, 0, -1, 0, 1, 2, 3, 3, 2],
+      rock: [4, 3, 0, -2, 0, 2, 4, 3, 2, 0],
+      vocal: [-1, -1, 0, 2, 4, 3, 2, 0, -1, -2],
+      bass: [6, 5, 3, 1, 0, 0, 0, 0, 0, 0],
     };
     const vals = presets[this.value];
-    if (vals) {
-      document.querySelectorAll('.eq-slider').forEach((s,i) => {
-        s.value = vals[i] || 0;
-        if (filters[i]) filters[i].gain.value = vals[i];
-      });
-    }
+    if (!vals) return;
+    document.querySelectorAll<HTMLInputElement>('.eq-slider').forEach((s, i) => {
+      s.value = String(vals[i] || 0);
+      if (filters[i]) filters[i].gain.value = vals[i];
+    });
   });
 
   }

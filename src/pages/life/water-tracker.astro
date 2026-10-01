@@ -11,12 +11,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <button id="add-300" class="btn-secondary text-sm px-4">+300ml</button>
       <button id="add-500" class="btn-primary text-sm px-4">+500ml</button>
       <button id="add-custom-btn" class="btn-secondary text-sm px-3">+Custom</button>
-      <input id="custom-amt" type="number" min="50" step="50" value="350" class="input-field w-16 text-sm hidden">
-      <button id="undo-btn" class="btn-secondary text-sm">↩</button>
+      <input id="custom-amt" type="number" min="50" step="50" value="350" class="input-field w-16 text-sm hidden" aria-label="Custom ml">
+      <button id="undo-btn" class="btn-secondary text-sm" aria-label="Undo">↩</button>
     </div>
 
     <div class="text-center">
-      <p class="text-sm text-matte-400">Hari ini</p>
+      <p class="text-sm text-matte-400" data-i18n="label.today">Hari ini</p>
       <p class="text-5xl font-bold text-accent-blue font-mono"><span id="total">0</span><span class="text-2xl text-matte-400">ml</span></p>
       <div class="h-4 bg-matte-200 dark:bg-matte-700 rounded-full mt-2 overflow-hidden">
         <div id="progress" class="h-full bg-gradient-to-r from-accent-blue to-accent-cyan rounded-full transition-all" style="width:0%"></div>
@@ -27,50 +27,92 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <div class="text-xs text-matte-400 text-center space-x-2" id="log"></div>
 
     <div>
-      <label class="text-xs text-matte-500 mb-1 block">Target Harian (ml)</label>
+      <label for="goal" class="text-xs text-matte-500 mb-1 block" data-i18n="water.goal_label">Target Harian (ml)</label>
       <input id="goal" type="number" min="500" step="100" value="2000" class="input-field w-24 text-sm">
     </div>
   </div>
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
+  let __render: (() => void) | null = null;
+  window.addEventListener('langchange', () => __render?.());
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
   const KEY = 'water_tracker';
-  const today = new Date().toISOString().slice(0,10);
-  let data = JSON.parse(localStorage.getItem(KEY) || '{}');
-  if (!data[today]) data[today] = [];
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+  const today = new Date().toISOString().slice(0, 10);
 
-  function save() { localStorage.setItem(KEY, JSON.stringify(data)); update(); }
-  function update() {
-    const total = (data[today]||[]).reduce((s,v) => s+v, 0);
-    const goal = parseInt(document.getElementById('goal').value) || 2000;
-    document.getElementById('total').textContent = total.toLocaleString();
-    document.getElementById('progress').style.width = Math.min(total/goal*100, 100)+'%';
-    document.getElementById('goal-text').textContent = 'Target: '+goal+'ml — '+(total>=goal?'✅ Tercapai!':'Kurang '+(goal-total)+'ml');
-    document.getElementById('log').textContent = (data[today]||[]).map(v => '+'+v+'ml').join(' · ') || 'Belum minum hari ini';
+  let data: Record<string, number[]> = {};
+  try {
+    const parsed = JSON.parse(localStorage.getItem(KEY) || '{}');
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) data = parsed;
+  } catch { data = {}; }
+  if (!Array.isArray(data[today])) data[today] = [];
+
+  function getGoal(): number {
+    return parseInt((document.getElementById('goal') as HTMLInputElement).value, 10) || 2000;
   }
 
-  document.getElementById('add-custom-btn').addEventListener('click', function() {
-    document.getElementById('custom-amt').classList.toggle('hidden');
-  });
-  document.getElementById('custom-amt').addEventListener('keydown', function(e) {
-    if (e.key==='Enter') { data[today].push(parseInt(this.value)||350); this.value='350'; save(); }
+  function update() {
+    const totalEl = document.getElementById('total');
+    const progressEl = document.getElementById('progress');
+    const goalTextEl = document.getElementById('goal-text');
+    const logEl = document.getElementById('log');
+    if (!totalEl || !progressEl || !goalTextEl || !logEl) return; // SPA nav
+    const total = (data[today] || []).reduce((s, v) => s + v, 0);
+    const goal = getGoal();
+    totalEl.textContent = total.toLocaleString();
+    progressEl.style.width = Math.min((total / goal) * 100, 100) + '%';
+    goalTextEl.textContent = t('water.goal_text', 'Target: {n}ml').replace('{n}', String(goal)) + ' — ' +
+      (total >= goal
+        ? t('water.reached', '✅ Tercapai!')
+        : t('water.remaining', 'Kurang {n}ml').replace('{n}', String(goal - total)));
+    logEl.textContent = (data[today] || []).length
+      ? (data[today] || []).map(v => '+' + v + 'ml').join(' · ')
+      : t('water.empty_log', 'Belum minum hari ini');
+  }
+
+  function save() { localStorage.setItem(KEY, JSON.stringify(data)); update(); }
+
+  function addAmount(ml: number) {
+    const before = (data[today] || []).reduce((s, v) => s + v, 0);
+    data[today].push(ml);
+    save();
+    if (before < getGoal() && before + ml >= getGoal()) toast('🎉 Target harian tercapai!');
+  }
+
+  ['add-200', 'add-300', 'add-500'].forEach(id => {
+    document.getElementById(id)!.addEventListener('click', () => addAmount(parseInt(id.replace('add-', ''), 10)));
   });
 
-  ['add-200','add-300','add-500'].forEach(id => {
-    document.getElementById(id).addEventListener('click', () => {
-      data[today].push(parseInt(id.replace('add-','')));
+  document.getElementById('add-custom-btn')!.addEventListener('click', () => {
+    document.getElementById('custom-amt')!.classList.toggle('hidden');
+  });
+
+  document.getElementById('custom-amt')!.addEventListener('keydown', function (this: HTMLInputElement, e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      addAmount(parseInt(this.value, 10) || 350);
+      this.value = '350';
+      toast('Tercatat!');
+    }
+  });
+
+  document.getElementById('undo-btn')!.addEventListener('click', () => {
+    if ((data[today] || []).length) {
+      data[today].pop();
       save();
-    });
+      toast('Dibatalkan', 'info');
+    }
   });
-  document.getElementById('undo-btn').addEventListener('click', () => {
-    data[today].pop(); save();
-  });
-  document.getElementById('goal').addEventListener('input', update);
+
+  document.getElementById('goal')!.addEventListener('input', update);
   update();
+  __render = update;
 
   }
 

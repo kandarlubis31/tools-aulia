@@ -691,4 +691,17 @@ window._i18nPhrases = {
   'nginx.conf diunduh!':'nginx.conf downloaded!',
   'Gagal membuat file':'Failed to create file',
   'Belum ada config.':'No config yet.',
+  // W6 batch 5
+  'Masukkan kata dulu!':'Enter a word first!',
+  'Isi nama & tanggal':'Fill in name & date',
+  'Countdown ditambah!':'Countdown added!',
+  'Paste HTML tabel dulu':'Paste an HTML table first',
+  'Tabel tidak ditemukan di HTML':'No table found in the HTML',
+  'Belum ada hasil.':'No result yet.',
+  'File harus audio!':'File must be audio!',
+  'Audio siap diputar!':'Audio ready to play!',
+  'Audio gagal diproses — format tidak didukung':'Failed to process audio — format may not be supported',
+  'Tercatat!':'Logged!',
+  'Dibatalkan':'Undone',
+  '🎉 Target harian tercapai!':'🎉 Daily goal reached!',
 };

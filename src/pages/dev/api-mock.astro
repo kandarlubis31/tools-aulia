@@ -135,7 +135,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   document.getElementById('copy-output-btn').addEventListener('click', function() {
     navigator.clipboard.writeText(output.textContent || '').then(function() {
-      if (showToast) window.showToast?.(_tToast ? _tToast('JSON disalin!', 'JSON copied!') : 'JSON copied!', 'success');
+      if (showToast) window.showToast?.(window._tToast ? window._tToast('JSON disalin!') : 'JSON copied!', 'success');
     });
   });
 
