@@ -15,60 +15,141 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     />
 
     <div class="card-base p-8 animate-fade-in">
+      <label for="word" class="text-xs text-matte-500 mb-1 block" data-i18n="label.anagram_word">Kata</label>
       <div class="flex gap-4 mb-6">
-        <input id="word" type="text" class="flex-1 p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold text-lg focus:border-sky-500 transition-colors" placeholder="Ketik kata... (contoh: KOTAK)" maxlength="20" />
-        <button id="solve" class="px-6 py-4 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 transition-colors">🔍 Cari</button>
+        <input id="word" type="text" class="flex-1 p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold text-lg focus:border-sky-500 transition-colors" placeholder="Ketik kata... (contoh: KOTAK)" maxlength="20" data-i18n-attr="placeholder" data-i18n="ph.anagram_word" />
+        <button id="solve" class="px-6 py-4 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 transition-colors" data-i18n="btn.anagram_search">🔍 Cari</button>
       </div>
+
+      <label for="custom-input" class="text-xs text-matte-500 mb-1 block" data-i18n="label.anagram_custom">Daftar kata custom</label>
       <div class="flex gap-4 mb-4">
-        <input id="custom-input" type="text" class="flex-1 p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border text-sm" placeholder="Atau masukkan daftar kata sendiri, pisahkan koma (contoh: KOTAK,TOKAT,KATO)" />
-        <button id="solve-custom" class="px-4 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors text-sm">Cari Custom</button>
+        <input id="custom-input" type="text" class="flex-1 p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border text-sm" placeholder="Atau masukkan daftar kata sendiri, pisahkan koma (contoh: KOTAK,TOKAT,KATO)" data-i18n-attr="placeholder" data-i18n="ph.anagram_custom" />
+        <button id="solve-custom" class="px-4 py-3 bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 rounded-xl font-bold hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors text-sm" data-i18n="btn.anagram_search_custom">Cari Custom</button>
       </div>
+
       <div id="result" class="mt-6 hidden"></div>
+
+      <div id="hist-wrap" class="hidden mt-6 pt-4 border-t border-matte-200 dark:border-surface-border">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-sm font-bold text-matte-600 dark:text-matte-300" data-i18n="anagram.hist_title">Riwayat Pencarian</h3>
+          <button id="hist-clear" class="text-xs font-bold text-rose-500 hover:underline" data-i18n="btn.clear_history">Hapus Riwayat</button>
+        </div>
+        <div id="hist-list" class="space-y-1.5"></div>
+      </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+import { useLocalHistory } from '../../composables/useLocalHistory';
+
+  let __render: (() => void) | null = null;
+  window.addEventListener('langchange', () => __render?.());
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  const WORDS = ['AKU','KITA','MEREKA','KAMI','ANDA','DIA','IA','KAMU','BISA','SUDAH','BELUM','HARUS','MAU','TIDAK','JUGA','ADA','JADI','BAIK','BESAR','KECIL','TINGGI','PENDEK','PANJANG','LUAS','SEMPIT','LEBAR','HAMPIR','JAUH','DEKAT','CEPAT','LAMBAT','BARU','LAMA','MUDA','TUA','KAYA','MISKIN','KUAT','LEMAH','SEHAT','SAKIT','CANTIK','JELEK','BAGUS','JAHAT','BENAR','SALAH','MUDAH','SULIT','GAMPANG','KERAS','HALUS','TIPIS','TEBAL','BERAT','RINGAN','PANAS','DINGIN','HANGAT','SEJUK','TERANG','GELAP','BESOK','KEMARIN','HARI','MINGGU','BULAN','TAHUN','JAM','MENIT','DETIK','WAKTU','KINI','SEKARANG','NANTI','KEMUDIAN','AWAL','AKHIR','MASUK','KELUAR','NAIK','TURUN','JALAN','LARI','TERBANG','RENANG','DUDUK','BERDIRI','TIDUR','BANGUN','MAKAN','MINUM','MINUM','BACA','TULIS','Lihat','DENGAR','BAU','RASA','SENTUH','PEGANG','BUKA','TUTUP','NYALAH','MATI','HIDUP','MULAI','SELESAI','LANJUT','HENTI','MUNDUR','MAJU','SIANG','MALAM','PAGI','SORE','SORE','CUACA','HUJAN','PANAS','DINGIN','AWAN','MATAHARI','BULAN','BINTANG','LANGIT','TANAH','AIR','API','ANGIN','GUNUNG','LAUT','SUNGAI','DANAU','HUTAN','PANTAI','PULAU','JALAN','KOTA','DESA','RUMAH','SEKOLAH','KANTOR','PASAR','TOKO','RUMAH','KAMAR','DAPUR','TAMAN','KEBUN','SAWAH','JEMBATAN','JALAN','MOBIL','KERETA','PESAWAT','KAPAL','SEPEDA','BUS','TAKSI','OJEK','BECAK','KERETA','JURU','GURU','DOKTER','POLISI','TENTARA','PETANI','PEDAGANG','INSINYUR','PROGRAMMER','DESAINER','PENULIS','ARTIS','AKTOR','PEMAIN','PELATIH','JUARA','PERAWAT','BERSIH','KOTOR','RAMAI','SEPI','AMAN','BAHAYA','MUDAH','SEHAT','Sakit','GINA','JAHAT','BAIK','JUJUR','DUSTA','SETIA','KHIANAT','RAHASIA','UMUM','KHUSUS','BEBAS','TERBATAS','GRATIS','BERBAYAR','PENUH','KOSONG','LENGKAP','TERPISAH','BERSAMA','SENDIRI','SEMUA','SEBAGIAN','SEMUA','SETIAP','BEberapa','TIDAK ADA','TIDAK SAMA','SAMA','BERBEDA','SERUPA','BERLAWANAN','OPPOSITE','NORMAL','ANEH','BIASA','LUAR BIASA','ISTIMEWA','UMUM','KHUSUS','LOKAL','GLOBAL','PUSAT','PINGGIR','DEPAN','BELAKANG','ATAS','BAWAH','KIRI','KANAN','DALAM','LUAR','MASUK','KELUAR','NAIK','TURUN','BERDIRI','DUDUK','BARING','TIDUR','BANGUN','BERSIAP','BERANGKAT','SAMPAI','PULANG','PERGI','DATANG','BERSAMA','SENDIRIAN','BERDUA','BER3','BER4','BER5'];
+  const WORDS = ['AKU','KITA','MEREKA','KAMI','ANDA','DIA','IA','KAMU','BISA','SUDAH','BELUM','HARUS','MAU','TIDAK','JUGA','ADA','JADI','BAIK','BESAR','KECIL','TINGGI','PENDEK','PANJANG','LUAS','SEMPIT','LEBAR','HAMPIR','JAUH','DEKAT','CEPAT','LAMBAT','BARU','LAMA','MUDA','TUA','KAYA','MISKIN','KUAT','LEMAH','SEHAT','SAKIT','CANTIK','JELEK','BAGUS','JAHAT','BENAR','SALAH','MUDAH','SULIT','GAMPANG','KERAS','HALUS','TIPIS','TEBAL','BERAT','RINGAN','PANAS','DINGIN','HANGAT','SEJUK','TERANG','GELAP','BESOK','KEMARIN','HARI','MINGGU','BULAN','TAHUN','JAM','MENIT','DETIK','WAKTU','KINI','SEKARANG','NANTI','KEMUDIAN','AWAL','AKHIR','MASUK','KELUAR','NAIK','TURUN','JALAN','LARI','TERBANG','RENANG','DUDUK','BERDIRI','TIDUR','BANGUN','MAKAN','MINUM','BACA','TULIS','LIHAT','DENGAR','BAU','RASA','SENTUH','PEGANG','BUKA','TUTUP','HIDUP','MATI','MULAI','SELESAI','LANJUT','HENTI','MUNDUR','MAJU','SIANG','MALAM','PAGI','SORE','CUACA','HUJAN','AWAN','MATAHARI','BINTANG','LANGIT','TANAH','AIR','API','ANGIN','GUNUNG','LAUT','SUNGAI','DANAU','HUTAN','PANTAI','PULAU','KOTA','DESA','RUMAH','SEKOLAH','KANTOR','PASAR','TOKO','KAMAR','DAPUR','TAMAN','KEBUN','SAWAH','JEMBATAN','MOBIL','KERETA','PESAWAT','KAPAL','SEPEDA','BUS','TAKSI','OJEK','BECAK','GURU','DOKTER','POLISI','TENTARA','PETANI','PEDAGANG','INSINYUR','PROGRAMMER','DESAINER','PENULIS','ARTIS','AKTOR','PEMAIN','PELATIH','JUARA','PERAWAT','BERSIH','KOTOR','RAMAI','SEPI','AMAN','BAHAYA','JUJUR','DUSTA','SETIA','KHIANAT','RAHASIA','UMUM','KHUSUS','BEBAS','TERBATAS','GRATIS','BERBAYAR','PENUH','KOSONG','LENGKAP','BERSAMA','SENDIRI','SEMUA','SEBAGIAN','SETIAP','SAMA','BERBEDA','SERUPA','NORMAL','ANEH','BIASA','ISTIMEWA','LOKAL','GLOBAL','PUSAT','PINGGIR','DEPAN','BELAKANG','ATAS','BAWAH','KIRI','KANAN','DALAM','LUAR','SAMPAI','PULANG','PERGI','DATANG'];
 
-  function findAnagrams(word, dict) {
+  function findAnagrams(word: string, dict: string[]): string[] {
     const sorted = word.toUpperCase().split('').sort().join('');
     return dict.filter(w => w.length === word.length && w.toUpperCase().split('').sort().join('') === sorted && w.toUpperCase() !== word.toUpperCase());
   }
 
-  function solve(word, dict) {
-    const anagrams = findAnagrams(word, dict);
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  const history = useLocalHistory<string>('hist:anagram', 10);
+  let last: { word: string; dict: string[] } | null = null;
+
+  function esc(s: unknown) { return String(s ?? '').replace(/</g, '&lt;'); }
+
+  function solve(word: string, dict: string[], track = true) {
     const resultEl = document.getElementById('result');
+    if (!resultEl) return;
+    const anagrams = findAnagrams(word, dict);
+    if (track) {
+      history.remove(w => w.toUpperCase() === word.toUpperCase());
+      history.add(word.toUpperCase());
+      renderHistory();
+    }
+    last = { word, dict };
     resultEl.classList.remove('hidden');
     if (anagrams.length === 0) {
-      resultEl.innerHTML = `<div class="text-center p-6 bg-matte-50 dark:bg-surface-hover rounded-xl"><p class="text-matte-500">Tidak ditemukan anagram untuk "<strong>${word}</strong>" dalam kamus.</p><p class="text-xs text-matte-400 mt-2">Coba kata lain atau masukkan daftar custom.</p></div>`;
+      resultEl.innerHTML = `<div class="text-center p-6 bg-matte-50 dark:bg-surface-hover rounded-xl"><p class="text-matte-500">${esc(t('anagram.not_found', 'Tidak ditemukan anagram untuk "{w}" dalam kamus.').replace('{w}', word))}</p><p class="text-xs text-matte-400 mt-2">${esc(t('anagram.not_found_hint', 'Coba kata lain atau masukkan daftar custom.'))}</p></div>`;
     } else {
       resultEl.innerHTML = `
-        <p class="text-sm text-matte-500 mb-3">Ditemukan <strong class="text-sky-600">${anagrams.length}</strong> anagram dari "${word}":</p>
+        <p class="text-sm text-matte-500 mb-3">${esc(t('anagram.found', 'Ditemukan {n} anagram dari "{w}":').replace('{n}', String(anagrams.length)).replace('{w}', word))}</p>
         <div class="flex flex-wrap gap-2">
-          ${anagrams.map(w => `<span class="px-3 py-1 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 rounded-full text-sm font-bold">${w}</span>`).join('')}
+          ${anagrams.map(w => `<span class="px-3 py-1 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 rounded-full text-sm font-bold">${esc(w)}</span>`).join('')}
         </div>`;
     }
   }
 
-  document.getElementById('solve').onclick = () => {
-    const word = document.getElementById('word').value.trim();
-    if (word) solve(word, WORDS);
-  };
-  document.getElementById('word').onkeydown = (e) => {
-    if (e.key === 'Enter') { const w = e.target.value.trim(); if (w) solve(w, WORDS); }
-  };
-  document.getElementById('solve-custom').onclick = () => {
-    const input = document.getElementById('custom-input').value.trim();
-    const word = document.getElementById('word').value.trim();
-    if (!word || !input) return;
+  function renderHistory() {
+    const wrap = document.getElementById('hist-wrap');
+    const list = document.getElementById('hist-list');
+    if (!wrap || !list) return;
+    const items = history.getAll();
+    wrap.classList.toggle('hidden', items.length === 0);
+    list.innerHTML = items.length === 0
+      ? `<p class="text-xs text-matte-400">${t('common.no_history', 'Belum ada riwayat')}</p>`
+      : items.map((w, i) =>
+        `<div class="flex items-center gap-2 text-xs card-base p-2">
+          <button data-load="${i}" class="font-bold text-sky-500 hover:underline shrink-0">${t('hist.load', 'Muat')}</button>
+          <span class="flex-1 truncate font-bold">${esc(w)}</span>
+          <button data-del="${i}" class="text-rose-500 hover:text-rose-600 font-bold shrink-0" aria-label="Delete">✕</button>
+        </div>`).join('');
+  }
+
+  document.getElementById('hist-list')!.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const loadIdx = target.dataset.load;
+    const delIdx = target.dataset.del;
+    if (loadIdx !== undefined) {
+      const w = history.getAll()[Number(loadIdx)];
+      if (!w) return;
+      (document.getElementById('word') as HTMLInputElement).value = w;
+      solve(w, WORDS);
+    } else if (delIdx !== undefined) {
+      const items = history.getAll();
+      items.splice(Number(delIdx), 1);
+      history.update(items);
+      renderHistory();
+    }
+  });
+
+  document.getElementById('hist-clear')!.addEventListener('click', () => {
+    history.clear();
+    renderHistory();
+    toast('Riwayat dihapus!');
+  });
+
+  document.getElementById('solve')!.addEventListener('click', () => {
+    const word = (document.getElementById('word') as HTMLInputElement).value.trim();
+    if (!word) { toast('Masukkan kata dulu!', 'error'); return; }
+    solve(word, WORDS);
+  });
+
+  document.getElementById('word')!.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const w = (e.target as HTMLInputElement).value.trim();
+      if (!w) { toast('Masukkan kata dulu!', 'error'); return; }
+      solve(w, WORDS);
+    }
+  });
+
+  document.getElementById('solve-custom')!.addEventListener('click', () => {
+    const input = (document.getElementById('custom-input') as HTMLInputElement).value.trim();
+    const word = (document.getElementById('word') as HTMLInputElement).value.trim();
+    if (!word || !input) { toast('Masukkan kata dulu!', 'error'); return; }
     const customDict = input.split(',').map(w => w.trim().toUpperCase()).filter(w => w.length > 0);
     solve(word, customDict);
-  };
+  });
+
+  renderHistory();
+  __render = () => { renderHistory(); if (last) solve(last.word, last.dict, false); };
 
   }
 
