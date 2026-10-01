@@ -96,6 +96,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
       </div>
 
+      <div class="card-base p-8" id="history-card">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-matte-800 dark:text-white" data-i18n="hist.title">Riwayat Perhitungan</h3>
+          <button id="ter-history-clear" class="text-xs text-matte-400 hover:text-red-500 font-medium" data-i18n="common.clear_history">Hapus Riwayat</button>
+        </div>
+        <div id="ter-history-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+          <p class="text-sm text-matte-400 text-center py-4" data-i18n="common.no_history">Belum ada riwayat</p>
+        </div>
+      </div>
+
       <div class="text-xs text-matte-400 bg-matte-100 dark:bg-surface-hover rounded-xl p-4 leading-relaxed">
         <p class="font-bold text-matte-600 dark:text-matte-300 mb-1">Dasar hukum & catatan</p>
         <ul class="list-disc list-inside space-y-0.5">
@@ -110,6 +120,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { useLocalHistory } from '../../composables/useLocalHistory';
+
+  const escHtml = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+
+  // Riwayat form-snapshot (konvensi riwayat lokal, maks 10)
+  const terHistory = useLocalHistory<{ id: number; date: string; snapshot: Record<string, string> }>('hist:pph21-ter', 10);
+
   // ===== Tabel TER (PP 58/2023 lampiran) — batas atas bruto bulanan → tarif %
   const TER_A: [number, number][] = [
     [5400000, 0], [5650000, 0.25], [5950000, 0.5], [6300000, 0.75], [6750000, 1], [7500000, 1.25], [8550000, 1.5], [9650000, 1.75], [10050000, 2], [10350000, 2.25], [10700000, 2.5], [11050000, 3], [11600000, 3.5], [12500000, 4], [13750000, 5], [15100000, 6], [16950000, 7], [19750000, 8], [24150000, 9], [26450000, 10], [28000000, 11], [30050000, 12], [32400000, 13], [35400000, 14], [39100000, 15], [43850000, 16], [47800000, 17], [51400000, 18], [56300000, 19], [62200000, 20], [68600000, 21], [77500000, 22], [89000000, 23], [103000000, 24], [125000000, 25], [157000000, 26], [206000000, 27], [337000000, 28], [454000000, 29], [550000000, 30], [695000000, 31], [910000000, 32], [1400000000, 33], [Infinity, 34],
@@ -156,6 +173,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const brEl = (v: string) => { const n = parseFloat(v); return Number.isFinite(n) && n >= 0 ? n : 0; };
   const box = (cls: string) => cls; // mapping statis (Tailwind scan literal)
 
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
+
   // ===== Card 1: TER
   const calcTerBtn = document.getElementById('calc-ter') as HTMLButtonElement;
   calcTerBtn.onclick = () => {
@@ -178,13 +199,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
       <p class="text-[11px] text-matte-400 mt-3">Rumus: PPh 21 = ${fmtRate(rate)} × ${fmtRp(bruto)}. Berlaku masa pajak Jan–Nov.</p>`;
     el.classList.remove('hidden');
+    addTerHistory();
   };
 
   // ===== Card 2: Pasal 17 (Desember)
   const fillKredit = document.getElementById('p17-fill-kredit') as HTMLButtonElement;
   fillKredit.onclick = () => {
     const bruto = brEl((document.getElementById('ter-bruto') as HTMLInputElement).value);
-    if (bruto <= 0) { alert('Isi dulu bruto di Card 1 (TER) untuk estimasi.'); return; }
+    if (bruto <= 0) { window.showToast?.(window._tToast ? window._tToast('Isi dulu bruto di Card 1 (TER) untuk estimasi.') : 'Fill in the gross income in Card 1 (TER) first for the estimate.', 'error'); return; }
     const st = PTKP_MAP[(document.getElementById('ter-ptkp') as HTMLSelectElement).value];
     const est = Math.round(bruto * terRate(st.cat, bruto) / 100) * 11;
     (document.getElementById('p17-kredit') as HTMLInputElement).value = String(est);
@@ -219,6 +241,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <p class="text-[11px] text-matte-400 mt-1">= PPh setahun ${fmtRp(pphSetahun)} − kredit Jan–Nov ${fmtRp(kredit)}</p>
       </div>`;
     el.classList.remove('hidden');
+    addTerHistory();
   };
 
   // ===== Card 3: Tabel TER
@@ -248,4 +271,84 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     (b as HTMLButtonElement).onclick = () => renderTerTable((b as HTMLButtonElement).dataset.terTab!);
   });
   renderTerTable('A');
+
+  // ===== Riwayat form-snapshot =====
+  const TER_FIELDS = ['ter-bruto', 'ter-ptkp', 'p17-des', 'p17-jannov', 'p17-kredit', 'p17-ptkp'];
+  function snapshot(): Record<string, string> {
+    const o: Record<string, string> = {};
+    TER_FIELDS.forEach(id => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
+      if (el) o[id] = el.value;
+    });
+    return o;
+  }
+
+  function restore(o: Record<string, string>) {
+    Object.entries(o).forEach(([id, val]) => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
+      if (el) el.value = val;
+    });
+  }
+
+  function renderTerHistory() {
+    const list = document.getElementById('ter-history-list');
+    if (!list) return;
+    const items = terHistory.getAll();
+    if (items.length === 0) {
+      list.innerHTML = '<p class="text-sm text-matte-400 text-center py-4" data-i18n="common.no_history">Belum ada riwayat</p>';
+      return;
+    }
+    list.innerHTML = items.map(it => {
+      const bruto = Number(it.snapshot['ter-bruto']) || Number(it.snapshot['p17-des']) || 0;
+      return `
+      <div class="flex items-center justify-between gap-2 p-3 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border">
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-matte-700 dark:text-white truncate">${escHtml(it.snapshot['ter-bruto'] ? 'TER ' + it.snapshot['ter-ptkp'] : 'P17 ' + it.snapshot['p17-ptkp'])}</p>
+          <p class="text-[10px] text-matte-400">${escHtml(bruto > 0 ? fmtRp(bruto) : '—')} · ${escHtml(it.date)}</p>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button data-load="${it.id}" class="text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline px-2 py-1" data-i18n="hist.load">Muat</button>
+          <button data-del="${it.id}" aria-label="Hapus dari riwayat" class="text-matte-400 hover:text-red-500 p-1 font-bold">×</button>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll<HTMLButtonElement>('[data-load]').forEach(b => b.addEventListener('click', () => {
+      const it = terHistory.getAll().find(x => x.id === +(b.dataset.load || 0));
+      if (it) { restore(it.snapshot); window.showToast?.(window._tToast ? window._tToast('Form dimuat dari riwayat.') : 'Form loaded from history.', 'info'); }
+    }));
+    list.querySelectorAll<HTMLButtonElement>('[data-del]').forEach(b => b.addEventListener('click', () => {
+      terHistory.remove(x => x.id === +(b.dataset.del || 0));
+      renderTerHistory();
+    }));
+  }
+
+  function addTerHistory() {
+    const snap = snapshot();
+    try {
+      const items = terHistory.getAll();
+      const top = items[0];
+      if (top && JSON.stringify(top.snapshot) === JSON.stringify(snap)) return; // duplikat setelan sama, skip
+      terHistory.add({ id: Date.now(), date: new Date().toLocaleString('id-ID'), snapshot: snap });
+    } catch { /* kuota localStorage penuh — riwayat skip, jangan ganggu alur utama */ }
+    renderTerHistory();
+  }
+
+  document.getElementById('ter-history-clear')?.addEventListener('click', () => {
+    terHistory.clear();
+    renderTerHistory();
+    window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus!') : 'History cleared!', 'success');
+  });
+
+  renderTerHistory();
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __terPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __terPage) return;
+    const btn = document.getElementById('calc-ter');
+    if (!btn || btn.dataset.terBound === 'true') return;
+    btn.dataset.terBound = 'true';
+    init();
+  });
 </script>

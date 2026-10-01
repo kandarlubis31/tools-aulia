@@ -72,6 +72,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <div id="result-bpjs" class="mt-6 hidden"></div>
       </div>
 
+      <div class="card-base p-8" id="history-card">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-matte-800 dark:text-white" data-i18n="hist.title">Riwayat Perhitungan</h3>
+          <button id="thr-history-clear" class="text-xs text-matte-400 hover:text-red-500 font-medium" data-i18n="common.clear_history">Hapus Riwayat</button>
+        </div>
+        <div id="thr-history-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+          <p class="text-sm text-matte-400 text-center py-4" data-i18n="common.no_history">Belum ada riwayat</p>
+        </div>
+      </div>
+
       <div class="text-xs text-matte-400 bg-matte-100 dark:bg-surface-hover rounded-xl p-4 leading-relaxed">
         <p class="font-bold text-matte-600 dark:text-matte-300 mb-1">Dasar perhitungan & catatan</p>
         <ul class="list-disc list-inside space-y-0.5">
@@ -88,6 +98,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { useLocalHistory } from '../../composables/useLocalHistory';
+
+  const escHtml = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+
+  // Riwayat form-snapshot (konvensi riwayat lokal, maks 10)
+  const thrHistory = useLocalHistory<{ id: number; date: string; snapshot: Record<string, string> }>('hist:thr-bpjs', 10);
+
   const JP_CAP = 11086300;    // batas upah JP per Maret 2026 (info resmi BPJS)
   const JKP_CAP = 5000000;    // cap upah JKP (PP 6/2025)
   const KES_CAP = 12000000;   // batas upah BPJS Kesehatan PPU
@@ -97,6 +114,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   const statBox = (label: string, value: string, cls: string) =>
     `<div class="p-3 rounded-xl ${cls}"><p class="text-[11px] font-bold uppercase opacity-70">${label}</p><p class="font-bold text-sm mt-1">${value}</p></div>`;
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
 
   // ===== THR
   (document.getElementById('calc-thr') as HTMLButtonElement).onclick = () => {
@@ -125,6 +146,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
       <p class="text-[11px] text-matte-400 mt-3">Rumus: ${eligible ? '1 × upah' : `(${months} ÷ 12) × upah`} = ${fmtRp(thr)}. Bayar maksimal H-7 hari raya; denda 5% bila terlambat.</p>`;
     el.classList.remove('hidden');
+    addThrHistory();
   };
 
   // ===== BPJS
@@ -186,5 +208,86 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
       <p class="text-[11px] text-matte-400 mt-3">Potongan karyawan hanya JHT 2% + JP 1% + BPJS Kes 1% (jika disertakan) — program lain ditanggung perusahaan/pemerintah.</p>`;
     el.classList.remove('hidden');
+    addThrHistory();
   };
+
+  // ===== Riwayat form-snapshot =====
+  const THR_FIELDS = ['thr-salary', 'thr-months', 'thr-hari-raya', 'bpjs-salary', 'bpjs-risk'];
+  function snapshot(): Record<string, string> {
+    const o: Record<string, string> = {};
+    THR_FIELDS.forEach(id => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
+      if (el) o[id] = el.value;
+    });
+    o['bpjs-kes'] = (document.getElementById('bpjs-kes') as HTMLInputElement)?.checked ? '1' : '0';
+    return o;
+  }
+
+  function restore(o: Record<string, string>) {
+    Object.entries(o).forEach(([id, val]) => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
+      if (!el) return;
+      if (id === 'bpjs-kes') { (el as HTMLInputElement).checked = val === '1'; return; }
+      el.value = val;
+    });
+  }
+
+  function renderThrHistory() {
+    const list = document.getElementById('thr-history-list');
+    if (!list) return;
+    const items = thrHistory.getAll();
+    if (items.length === 0) {
+      list.innerHTML = '<p class="text-sm text-matte-400 text-center py-4" data-i18n="common.no_history">Belum ada riwayat</p>';
+      return;
+    }
+    list.innerHTML = items.map(it => `
+      <div class="flex items-center justify-between gap-2 p-3 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border">
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-matte-700 dark:text-white truncate">${escHtml(it.date)}</p>
+          <p class="text-[10px] text-matte-400">${escHtml(it.snapshot['thr-salary'] || '—')} · ${escHtml(it.snapshot['bpjs-salary'] || '—')}</p>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button data-load="${it.id}" class="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline px-2 py-1" data-i18n="hist.load">Muat</button>
+          <button data-del="${it.id}" aria-label="Hapus dari riwayat" class="text-matte-400 hover:text-red-500 p-1 font-bold">×</button>
+        </div>
+      </div>`).join('');
+    list.querySelectorAll<HTMLButtonElement>('[data-load]').forEach(b => b.addEventListener('click', () => {
+      const it = thrHistory.getAll().find(x => x.id === +(b.dataset.load || 0));
+      if (it) { restore(it.snapshot); window.showToast?.(window._tToast ? window._tToast('Form dimuat dari riwayat.') : 'Form loaded from history.', 'info'); }
+    }));
+    list.querySelectorAll<HTMLButtonElement>('[data-del]').forEach(b => b.addEventListener('click', () => {
+      thrHistory.remove(x => x.id === +(b.dataset.del || 0));
+      renderThrHistory();
+    }));
+  }
+
+  function addThrHistory() {
+    const snap = snapshot();
+    try {
+      const items = thrHistory.getAll();
+      const top = items[0];
+      if (top && JSON.stringify(top.snapshot) === JSON.stringify(snap)) return; // duplikat setelan sama, skip
+      thrHistory.add({ id: Date.now(), date: new Date().toLocaleString('id-ID'), snapshot: snap });
+    } catch { /* kuota localStorage penuh — riwayat skip, jangan ganggu alur utama */ }
+    renderThrHistory();
+  }
+
+  document.getElementById('thr-history-clear')?.addEventListener('click', () => {
+    thrHistory.clear();
+    renderThrHistory();
+    window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus!') : 'History cleared!', 'success');
+  });
+
+  renderThrHistory();
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __thrPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __thrPage) return;
+    const btn = document.getElementById('calc-thr');
+    if (!btn || btn.dataset.thrBound === 'true') return;
+    btn.dataset.thrBound = 'true';
+    init();
+  });
 </script>
