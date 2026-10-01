@@ -87,6 +87,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const input = document.getElementById('text-input') as HTMLTextAreaElement;
   const clearBtn = document.getElementById('clear-btn');
   const sampleBtn = document.getElementById('sample-btn');
@@ -229,4 +233,17 @@ Kesimpulannya, teknologi adalah pedang bermata dua. Di satu sisi memberikan kemu
 
   // Init
   analyze();
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __utilsWordCounterPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __utilsWordCounterPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

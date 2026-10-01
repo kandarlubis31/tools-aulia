@@ -40,6 +40,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const canvas = document.getElementById('preview');
   const ctx = canvas.getContext('2d');
   let img;
@@ -112,4 +116,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     }, 'image/png'); }, i*200));
     showToast?.(_tToast?.('Download semua tile dimulai!', 'All tiles downloading!'), 'success');
   });
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __imageSplitterPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __imageSplitterPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

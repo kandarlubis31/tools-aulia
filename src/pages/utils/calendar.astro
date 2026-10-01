@@ -48,6 +48,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const canvas = document.getElementById('cal-canvas')! as HTMLCanvasElement;
   const ctx = canvas.getContext('2d')!;
   const dayLabels = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
@@ -155,4 +159,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   // set default month to current
   (document.getElementById('month') as HTMLSelectElement).value = String(new Date().getMonth());
   generate();
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __utilsCalendarPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __utilsCalendarPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

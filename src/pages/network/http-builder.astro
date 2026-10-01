@@ -103,10 +103,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     sendBtn?.addEventListener('click', async () => {
       const url = urlInput.value.trim();
-      if (!url) { showToast('URL wajib diisi', 'error'); return; }
+      if (!url) { window.showToast?.(window._tToast ? window._tToast('URL wajib diisi') : 'URL wajib diisi', 'error'); return; }
       let parsed: URL;
-      try { parsed = new URL(url); } catch { showToast('URL tidak valid', 'error'); return; }
-      if (!/^https?:$/.test(parsed.protocol)) { showToast('Hanya http/https', 'error'); return; }
+      try { parsed = new URL(url); } catch { window.showToast?.(window._tToast ? window._tToast('URL tidak valid') : 'URL tidak valid', 'error'); return; }
+      if (!/^https?:$/.test(parsed.protocol)) { window.showToast?.(window._tToast ? window._tToast('Hanya http/https') : 'Hanya http/https', 'error'); return; }
 
       const method = methodSelect.value;
       const headers: Record<string, string> = {};
@@ -176,9 +176,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       if (!rawResponse) return;
       try {
         await navigator.clipboard.writeText(rawResponse);
-        showToast('Response tersalin!');
+        window.showToast?.(window._tToast ? window._tToast('Response tersalin!') : 'Response tersalin!', 'info');
       } catch {
-        showToast('Gagal menyalin', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin') : 'Gagal menyalin', 'error');
       }
     });
 

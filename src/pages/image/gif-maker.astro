@@ -123,14 +123,14 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     async function addFiles(files: FileList | File[]) {
       const fileArr = Array.from(files).filter(f => f.type.startsWith('image/'));
-      if (!fileArr.length) { showToast('Pilih file gambar (PNG, JPG, WEBP)', 'error'); return; }
+      if (!fileArr.length) { window.showToast?.(window._tToast ? window._tToast('Pilih file gambar (PNG, JPG, WEBP)') : 'Pilih file gambar (PNG, JPG, WEBP)', 'error'); return; }
 
       for (const file of fileArr) {
         try {
           const frame = await resizeImage(file);
           frames.push(frame);
         } catch {
-          showToast(`Gagal baca: ${file.name}`, 'error');
+          window.showToast?.(`Gagal baca: ${file.name}`, 'error');
         }
       }
       frames.sort((a, b) => a.name.localeCompare(b.name));
@@ -216,7 +216,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     downloadBtn.addEventListener('click', () => {
       if (!frames.length) return;
-      showToast('Mendownload frame…');
+      window.showToast?.(window._tToast ? window._tToast('Mendownload frame…') : 'Mendownload frame…', 'info');
       frames.forEach((f, i) => {
         setTimeout(() => {
           const a = document.createElement('a');

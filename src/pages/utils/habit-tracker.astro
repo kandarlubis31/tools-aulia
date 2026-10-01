@@ -184,7 +184,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const name = input.value.trim();
         
         if (!name) {
-          showToast('Masukkan nama habit!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Masukkan nama habit!') : 'Masukkan nama habit!', 'error');
           return;
         }
 
@@ -199,7 +199,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         saveHabits();
         input.value = '';
         renderHabits();
-        showToast('Habit ditambahkan!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Habit ditambahkan!') : 'Habit ditambahkan!', 'success');
       });
 
       // Enter key
@@ -236,7 +236,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           habits = habits.filter(h => h.id !== id);
           saveHabits();
           renderHabits();
-          showToast('Habit dihapus!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('Habit dihapus!') : 'Habit dihapus!', 'success');
         }
       });
 

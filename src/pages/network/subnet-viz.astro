@@ -21,6 +21,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const canvas = document.getElementById('viz-canvas'), ctx = canvas.getContext('2d');
 
   document.getElementById('viz-btn').addEventListener('click', draw);
@@ -75,4 +79,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       `<div class="card-base p-2 text-center"><span class="text-xs text-matte-400">Host Range</span><p class="font-mono text-xs">${[(net+1>>>24)&255,(net+1>>>16)&255,(net+1>>>8)&255,(net+1)&255].join('.')} – ${[(broadcast-1>>>24)&255,(broadcast-1>>>16)&255,(broadcast-1>>>8)&255,(broadcast-1)&255].join('.')}</p></div>`+
       `<div class="card-base p-2 text-center"><span class="text-xs text-matte-400">Broadcast</span><p class="font-mono text-sm">${[(broadcast>>>24)&255,(broadcast>>>16)&255,(broadcast>>>8)&255,broadcast&255].join('.')}</p></div>`;
   }
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __networkSubnetVizPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __networkSubnetVizPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

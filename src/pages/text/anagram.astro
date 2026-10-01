@@ -29,6 +29,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const WORDS = ['AKU','KITA','MEREKA','KAMI','ANDA','DIA','IA','KAMU','BISA','SUDAH','BELUM','HARUS','MAU','TIDAK','JUGA','ADA','JADI','BAIK','BESAR','KECIL','TINGGI','PENDEK','PANJANG','LUAS','SEMPIT','LEBAR','HAMPIR','JAUH','DEKAT','CEPAT','LAMBAT','BARU','LAMA','MUDA','TUA','KAYA','MISKIN','KUAT','LEMAH','SEHAT','SAKIT','CANTIK','JELEK','BAGUS','JAHAT','BENAR','SALAH','MUDAH','SULIT','GAMPANG','KERAS','HALUS','TIPIS','TEBAL','BERAT','RINGAN','PANAS','DINGIN','HANGAT','SEJUK','TERANG','GELAP','BESOK','KEMARIN','HARI','MINGGU','BULAN','TAHUN','JAM','MENIT','DETIK','WAKTU','KINI','SEKARANG','NANTI','KEMUDIAN','AWAL','AKHIR','MASUK','KELUAR','NAIK','TURUN','JALAN','LARI','TERBANG','RENANG','DUDUK','BERDIRI','TIDUR','BANGUN','MAKAN','MINUM','MINUM','BACA','TULIS','Lihat','DENGAR','BAU','RASA','SENTUH','PEGANG','BUKA','TUTUP','NYALAH','MATI','HIDUP','MULAI','SELESAI','LANJUT','HENTI','MUNDUR','MAJU','SIANG','MALAM','PAGI','SORE','SORE','CUACA','HUJAN','PANAS','DINGIN','AWAN','MATAHARI','BULAN','BINTANG','LANGIT','TANAH','AIR','API','ANGIN','GUNUNG','LAUT','SUNGAI','DANAU','HUTAN','PANTAI','PULAU','JALAN','KOTA','DESA','RUMAH','SEKOLAH','KANTOR','PASAR','TOKO','RUMAH','KAMAR','DAPUR','TAMAN','KEBUN','SAWAH','JEMBATAN','JALAN','MOBIL','KERETA','PESAWAT','KAPAL','SEPEDA','BUS','TAKSI','OJEK','BECAK','KERETA','JURU','GURU','DOKTER','POLISI','TENTARA','PETANI','PEDAGANG','INSINYUR','PROGRAMMER','DESAINER','PENULIS','ARTIS','AKTOR','PEMAIN','PELATIH','JUARA','PERAWAT','BERSIH','KOTOR','RAMAI','SEPI','AMAN','BAHAYA','MUDAH','SEHAT','Sakit','GINA','JAHAT','BAIK','JUJUR','DUSTA','SETIA','KHIANAT','RAHASIA','UMUM','KHUSUS','BEBAS','TERBATAS','GRATIS','BERBAYAR','PENUH','KOSONG','LENGKAP','TERPISAH','BERSAMA','SENDIRI','SEMUA','SEBAGIAN','SEMUA','SETIAP','BEberapa','TIDAK ADA','TIDAK SAMA','SAMA','BERBEDA','SERUPA','BERLAWANAN','OPPOSITE','NORMAL','ANEH','BIASA','LUAR BIASA','ISTIMEWA','UMUM','KHUSUS','LOKAL','GLOBAL','PUSAT','PINGGIR','DEPAN','BELAKANG','ATAS','BAWAH','KIRI','KANAN','DALAM','LUAR','MASUK','KELUAR','NAIK','TURUN','BERDIRI','DUDUK','BARING','TIDUR','BANGUN','BERSIAP','BERANGKAT','SAMPAI','PULANG','PERGI','DATANG','BERSAMA','SENDIRIAN','BERDUA','BER3','BER4','BER5'];
 
   function findAnagrams(word, dict) {
@@ -65,4 +69,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const customDict = input.split(',').map(w => w.trim().toUpperCase()).filter(w => w.length > 0);
     solve(word, customDict);
   };
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __textAnagramPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __textAnagramPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

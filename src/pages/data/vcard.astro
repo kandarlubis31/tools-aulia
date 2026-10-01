@@ -70,7 +70,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const address = (document.getElementById('vcard-address') as HTMLTextAreaElement)?.value;
 
         if (!name) {
-          showToast('Masukkan nama!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Masukkan nama!') : 'Masukkan nama!', 'error');
           return;
         }
 
@@ -91,7 +91,7 @@ END:VCARD`;
 
         document.getElementById('vcard-output')!.textContent = vcardContent;
         document.getElementById('result')?.classList.remove('hidden');
-        showToast('vCard digenerate!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('vCard digenerate!') : 'vCard digenerate!', 'success');
       });
 
       document.getElementById('download-btn')?.addEventListener('click', () => {
@@ -103,7 +103,7 @@ END:VCARD`;
         link.download = 'contact.vcf';
         link.click();
         URL.revokeObjectURL(url);
-        showToast('vCard didownload!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('vCard didownload!') : 'vCard didownload!', 'success');
       });
     });
   </script>

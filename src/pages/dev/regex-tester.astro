@@ -185,7 +185,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       patternInput.value = '[\\w.+-]+@[\\w-]+\\.[\\w.]+';
       testInput.value = 'Hubungi kami di support@toolsaulia.com atau admin@paklubis.my.id — balasan dalam 1x24 jam.\nEmail lain: halo@example.co.id, test@mail.org';
       run();
-      showToast('Contoh terisi!');
+      window.showToast?.(window._tToast ? window._tToast('Contoh terisi!') : 'Contoh terisi!', 'info');
     });
   });
 </script>

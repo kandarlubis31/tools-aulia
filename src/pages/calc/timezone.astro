@@ -116,7 +116,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const toTz = (document.getElementById('tz-to') as HTMLSelectElement).value;
 
         if (!time) {
-          showToast('Masukkan waktu!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Masukkan waktu!') : 'Masukkan waktu!', 'error');
           return;
         }
 
@@ -153,9 +153,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           document.getElementById('result-to-tz')!.textContent = toAbbr;
           document.getElementById('tz-result')?.classList.remove('hidden');
 
-          showToast('Konversi berhasil!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('Konversi berhasil!') : 'Konversi berhasil!', 'success');
         } catch (e: any) {
-          showToast('Error konversi: ' + e.message, 'error');
+          window.showToast?.(window._tToast ? window._tToast('Error konversi: ') + e.message : 'Error konversi: ' + e.message, 'error');
         }
       });
 
@@ -166,7 +166,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const temp = fromSelect.value;
         fromSelect.value = toSelect.value;
         toSelect.value = temp;
-        showToast('Zona ditukar!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Zona ditukar!') : 'Zona ditukar!', 'success');
       });
     });
   </script>

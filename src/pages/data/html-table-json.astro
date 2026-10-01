@@ -22,6 +22,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   document.getElementById('parse-btn').addEventListener('click', () => {
     const html = document.getElementById('html-input').value;
     if (!html.trim()) { showToast?.(_tToast?.('Paste HTML tabel dulu','Paste HTML table first'),'error'); return; }
@@ -66,4 +70,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const blob = new Blob([document.getElementById('output').textContent], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'table-data.json'; a.click();
   });
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __dataHtmlTableJsonPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __dataHtmlTableJsonPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

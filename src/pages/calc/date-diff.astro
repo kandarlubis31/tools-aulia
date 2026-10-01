@@ -91,7 +91,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const businessOnly = (document.getElementById('business-days') as HTMLInputElement).checked;
 
         if (!startInput.value || !endInput.value) {
-          showToast('Pilih kedua tanggal!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Pilih kedua tanggal!') : 'Pilih kedua tanggal!', 'error');
           return;
         }
 
@@ -113,7 +113,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         }
 
         document.getElementById('result')?.classList.remove('hidden');
-        showToast('Selisih dihitung!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Selisih dihitung!') : 'Selisih dihitung!', 'success');
       });
     });
   </script>

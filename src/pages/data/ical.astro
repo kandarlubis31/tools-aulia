@@ -114,7 +114,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     function generate(): string {
       const title = (document.getElementById('ev-title') as HTMLInputElement).value.trim();
-      if (!title) { showToast('Judul event wajib diisi', 'error'); return ''; }
+      if (!title) { window.showToast?.(window._tToast ? window._tToast('Judul event wajib diisi') : 'Judul event wajib diisi', 'error'); return ''; }
       const loc = (document.getElementById('ev-loc') as HTMLInputElement).value.trim();
       const desc = (document.getElementById('ev-desc') as HTMLTextAreaElement).value.trim();
       const reminder = parseInt((document.getElementById('ev-reminder') as HTMLSelectElement).value) || 0;
@@ -124,7 +124,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       let dtStart = toIcsDate(startDate, allday ? null : startTime.value);
       let dtEnd = toIcsDate(endDate, allday ? null : endTime.value);
-      if (!dtStart || !dtEnd) { showToast('Tanggal tidak valid', 'error'); return ''; }
+      if (!dtStart || !dtEnd) { window.showToast?.(window._tToast ? window._tToast('Tanggal tidak valid') : 'Tanggal tidak valid', 'error'); return ''; }
       if (allday && dtStart === dtEnd) {
         // RFC 5545: DTEND all-day bersifat exclusive (+1 hari)
         const d = new Date(endDate + 'T00:00:00');
@@ -174,7 +174,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
       a.download = title.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') + '.ics';
       a.click();
-      showToast('File .ics berhasil di-download!');
+      window.showToast?.(window._tToast ? window._tToast('File .ics berhasil di-download!') : 'File .ics berhasil di-download!', 'info');
     });
 
     copyBtn?.addEventListener('click', async () => {
@@ -182,9 +182,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       if (!ics) return;
       try {
         await navigator.clipboard.writeText(ics);
-        showToast('Teks .ics tersalin!');
+        window.showToast?.(window._tToast ? window._tToast('Teks .ics tersalin!') : 'Teks .ics tersalin!', 'info');
       } catch {
-        showToast('Gagal menyalin', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin') : 'Gagal menyalin', 'error');
       }
     });
 

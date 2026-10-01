@@ -107,9 +107,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     hashBtn?.addEventListener('click', async () => {
       const pwd = hashPassword.value;
-      if (!pwd) { showToast('Password kosong', 'error'); return; }
+      if (!pwd) { window.showToast?.(window._tToast ? window._tToast('Password kosong') : 'Password kosong', 'error'); return; }
       const bc = await waitForBcrypt();
-      if (!bc) { showToast('Gagal memuat library bcrypt — cek koneksi', 'error'); return; }
+      if (!bc) { window.showToast?.(window._tToast ? window._tToast('Gagal memuat library bcrypt — cek koneksi') : 'Gagal memuat library bcrypt — cek koneksi', 'error'); return; }
       (hashBtn as HTMLButtonElement).disabled = true;
       hashBtn.textContent = '⏳ Memproses...';
       setTimeout(() => {
@@ -118,9 +118,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           const hashed = bc.hashSync(pwd, salt);
           hashOutput!.textContent = hashed;
           hashResult?.classList.remove('hidden');
-          showToast('Hash berhasil dibuat!');
+          window.showToast?.(window._tToast ? window._tToast('Hash berhasil dibuat!') : 'Hash berhasil dibuat!', 'info');
         } catch (e) {
-          showToast('Gagal membuat hash', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Gagal membuat hash') : 'Gagal membuat hash', 'error');
         } finally {
           (hashBtn as HTMLButtonElement).disabled = false;
           hashBtn.textContent = t('bcrypt.generate_hash', 'Generate Hash');
@@ -131,15 +131,15 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     copyHash?.addEventListener('click', async () => {
       if (!hashOutput?.textContent) return;
       await navigator.clipboard.writeText(hashOutput.textContent);
-      showToast('Hash disalin!');
+      window.showToast?.(window._tToast ? window._tToast('Hash disalin!') : 'Hash disalin!', 'info');
     });
 
     verifyBtn?.addEventListener('click', async () => {
       const pwd = verifyPassword.value;
       const hash = verifyHash.value.trim();
-      if (!pwd || !hash) { showToast('Isi password dan hash', 'error'); return; }
+      if (!pwd || !hash) { window.showToast?.(window._tToast ? window._tToast('Isi password dan hash') : 'Isi password dan hash', 'error'); return; }
       const bc = await waitForBcrypt();
-      if (!bc) { showToast('Gagal memuat library bcrypt — cek koneksi', 'error'); return; }
+      if (!bc) { window.showToast?.(window._tToast ? window._tToast('Gagal memuat library bcrypt — cek koneksi') : 'Gagal memuat library bcrypt — cek koneksi', 'error'); return; }
       try {
         const ok = bc.compareSync(pwd, hash);
         verifyResult?.classList.remove('hidden');
@@ -148,7 +148,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400');
         verifyResult!.textContent = ok ? '✅ Cocok! Password valid untuk hash ini.' : '❌ Tidak cocok! Password salah.';
       } catch {
-        showToast('Hash tidak valid', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Hash tidak valid') : 'Hash tidak valid', 'error');
       }
     });
   });

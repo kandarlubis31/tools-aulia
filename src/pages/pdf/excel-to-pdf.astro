@@ -66,7 +66,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-  import { loadCdnLib } from '../../composables/useCdnLib';
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  async function init() {
 
   const dropZone = document.getElementById('drop-zone') as HTMLDivElement;
   const fileInput = document.getElementById('file-input') as HTMLInputElement;
@@ -217,4 +220,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       convertBtn.disabled = !selectedFile || !workbook;
     }
   });
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __pdfExcelToPdfPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __pdfExcelToPdfPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

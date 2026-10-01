@@ -164,7 +164,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const el = document.getElementById(targetId || '');
         if (!el || !el.textContent || el.textContent === '—') return;
         navigator.clipboard.writeText(el.textContent);
-        showToast(t('common.copied', 'Disalin!'));
+        window.showToast?.(t('common.copied', 'Disalin!'));
       });
     });
   });

@@ -78,7 +78,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       function handleFile(file: File) {
         if (!file.type.startsWith('image/')) {
-          showToast('File harus gambar!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('File harus gambar!') : 'File harus gambar!', 'error');
           return;
         }
         const reader = new FileReader();
@@ -170,7 +170,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           link.download = 'meme.png';
           link.href = canvas.toDataURL('image/png');
           link.click();
-          showToast('Meme didownload!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('Meme didownload!') : 'Meme didownload!', 'success');
         }
       });
     });

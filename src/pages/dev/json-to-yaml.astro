@@ -96,7 +96,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     fileInput?.addEventListener('change', async () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (f.size > 2 * 1024 * 1024) { showToast('File maksimal 2 MB', 'error'); return; }
+      if (f.size > 2 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('File maksimal 2 MB') : 'File maksimal 2 MB', 'error'); return; }
       const text = await f.text();
       // deteksi arah dari ekstensi/isi
       const trimmed = text.trimStart();
@@ -104,7 +104,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       else setMode('toJson');
       inputArea.value = text;
       convert();
-      showToast('File dimuat!');
+      window.showToast?.(window._tToast ? window._tToast('File dimuat!') : 'File dimuat!', 'info');
     });
 
     clearInputBtn?.addEventListener('click', () => { inputArea.value = ''; outputArea!.innerHTML = ''; errorBox!.classList.add('hidden'); });
@@ -120,7 +120,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const text = inputArea.value.trim();
       if (!text) { outputArea!.innerHTML = ''; return; }
       const ready = await window.waitForCdnLib?.('jsyaml', { maxRetries: 40 });
-      if (!ready) { showToast('Library YAML gagal dimuat, cek koneksi', 'error'); return; }
+      if (!ready) { window.showToast?.(window._tToast ? window._tToast('Library YAML gagal dimuat, cek koneksi') : 'Library YAML gagal dimuat, cek koneksi', 'error'); return; }
 
       try {
         let result: string;
@@ -144,9 +144,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       if (!text) return;
       try {
         await navigator.clipboard.writeText(text);
-        showToast('Tersalin!');
+        window.showToast?.(window._tToast ? window._tToast('Tersalin!') : 'Tersalin!', 'info');
       } catch {
-        showToast('Gagal menyalin', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin') : 'Gagal menyalin', 'error');
       }
     });
 

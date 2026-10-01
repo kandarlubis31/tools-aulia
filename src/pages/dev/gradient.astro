@@ -118,7 +118,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       // Add color
       document.getElementById('add-color')?.addEventListener('click', () => {
         if (colorStops.length >= 5) {
-          showToast('Maksimal 5 warna!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Maksimal 5 warna!') : 'Maksimal 5 warna!', 'error');
           return;
         }
         const container = document.getElementById('color-stops');
@@ -159,7 +159,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const css = document.getElementById('css-output')?.textContent;
         if (css) {
           navigator.clipboard.writeText(css);
-          showToast('CSS disalin!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('CSS disalin!') : 'CSS disalin!', 'success');
         }
       });
 

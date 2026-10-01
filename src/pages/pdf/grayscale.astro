@@ -218,6 +218,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  async function init() {
   let PDFDocument: any;
   async function _loadPdfLib() {
     if (!PDFDocument) {
@@ -643,4 +647,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   // Init labels
   updateLabels();
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __pdfGrayscalePage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __pdfGrayscalePage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

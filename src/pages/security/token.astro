@@ -89,18 +89,18 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         listEl!.querySelectorAll('.copy-token').forEach(btn => {
           btn.addEventListener('click', () => {
             navigator.clipboard.writeText((btn as HTMLElement).dataset.token!);
-            showToast('Token disalin!', 'success');
+            window.showToast?.(window._tToast ? window._tToast('Token disalin!') : 'Token disalin!', 'success');
           });
         });
 
         document.getElementById('result')?.classList.remove('hidden');
-        showToast(`${count} token digenerate!`, 'success');
+        window.showToast?.(`${count} token digenerate!`, 'success');
       });
 
       document.getElementById('copy-all')?.addEventListener('click', () => {
         const tokens = Array.from(document.querySelectorAll('.copy-token')).map(btn => (btn as HTMLElement).dataset.token!);
         navigator.clipboard.writeText(tokens.join('\n'));
-        showToast('Semua token disalin!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Semua token disalin!') : 'Semua token disalin!', 'success');
       });
     });
   </script>

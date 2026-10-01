@@ -65,7 +65,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const secret = (document.getElementById('secret') as HTMLInputElement)?.value;
 
         if (!message || !secret) {
-          showToast('Masukkan message dan secret key!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Masukkan message dan secret key!') : 'Masukkan message dan secret key!', 'error');
           return;
         }
 
@@ -83,9 +83,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
           document.getElementById('hmac-output')!.textContent = hashHex;
           document.getElementById('result')?.classList.remove('hidden');
-          showToast('HMAC digenerate!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('HMAC digenerate!') : 'HMAC digenerate!', 'success');
         } catch (e: any) {
-          showToast('Error: ' + e.message, 'error');
+          window.showToast?.(window._tToast ? window._tToast('Error: ') + e.message : 'Error: ' + e.message, 'error');
         }
       });
 
@@ -94,7 +94,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const hmac = document.getElementById('hmac-output')?.textContent;
         if (hmac) {
           navigator.clipboard.writeText(hmac);
-          showToast('HMAC disalin!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('HMAC disalin!') : 'HMAC disalin!', 'success');
         }
       });
     });

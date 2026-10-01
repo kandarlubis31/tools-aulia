@@ -23,6 +23,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const langProfiles = {
     'id': { name: '🇮🇩 Indonesia', common: ['yang','dan','di','ini','untuk','dengan','pada','adalah','dari','itu','tidak','akan','juga','oleh','bisa','sudah','ada','lebih','mereka','saya','kami','anda','ia','belum','karena','jika','atau','hanya','setiap'], weight: 1.0 },
     'en': { name: '🇺🇸 English', common: ['the','of','and','to','a','in','is','you','that','it','he','was','for','on','are','as','with','his','they','i','at','be','this','have','from','or','one','had','by','but','not','what','all','were','we','when','your','can','said','there','use'], weight: 1.0 },
@@ -97,4 +101,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
     `).join('');
   };
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __textLangDetectPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __textLangDetectPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

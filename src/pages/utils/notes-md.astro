@@ -174,7 +174,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
             area.value = h.body || '';
             render();
             save();
-            showToast('Catatan dimuat!');
+            window.showToast?.(window._tToast ? window._tToast('Catatan dimuat!') : 'Catatan dimuat!', 'info');
           });
         });
       } catch { /* ignore */ }
@@ -205,7 +205,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       a.download = (titleInput.value || 'catatan').replace(/[^\w\- ]/g, '').trim() || 'catatan';
       a.download += '.md';
       a.click();
-      showToast('Export berhasil!');
+      window.showToast?.(window._tToast ? window._tToast('Export berhasil!') : 'Export berhasil!', 'info');
     });
 
     newBtn?.addEventListener('click', () => {
@@ -215,7 +215,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       save();
       render();
       area.focus();
-      showToast('Catatan baru dibuat');
+      window.showToast?.(window._tToast ? window._tToast('Catatan baru dibuat') : 'Catatan baru dibuat', 'info');
     });
 
     clearBtn?.addEventListener('click', () => {

@@ -102,7 +102,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const checksumEl = document.getElementById('checksum-value');
 
         if (!input) {
-          showToast('Masukkan nomor kartu!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Masukkan nomor kartu!') : 'Masukkan nomor kartu!', 'error');
           return;
         }
 
@@ -116,7 +116,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         if (checksumEl) checksumEl.textContent = checksum;
         resultEl?.classList.remove('hidden');
 
-        showToast(valid ? 'Nomor valid!' : 'Nomor tidak valid', valid ? 'success' : 'error');
+        window.showToast?.(window._tToast ? window._tToast(valid ? 'Nomor valid!' : 'Nomor tidak valid') : (valid ? 'Nomor valid!' : 'Nomor tidak valid'), valid ? 'success' : 'error');
       });
 
       // Auto-format input

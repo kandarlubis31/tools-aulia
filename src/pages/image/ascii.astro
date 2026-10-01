@@ -101,7 +101,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       function handleFile(file: File) {
         if (!file.type.startsWith('image/')) {
-          showToast('File harus gambar!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('File harus gambar!') : 'File harus gambar!', 'error');
           return;
         }
 
@@ -135,7 +135,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       // Convert button
       document.getElementById('convert-btn')?.addEventListener('click', () => {
         if (!imageData) {
-          showToast('Upload gambar terlebih dahulu!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Upload gambar terlebih dahulu!') : 'Upload gambar terlebih dahulu!', 'error');
           return;
         }
 
@@ -191,7 +191,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           }
         }
         document.getElementById('ascii-container')?.classList.remove('hidden');
-        showToast('ASCII art dibuat!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('ASCII art dibuat!') : 'ASCII art dibuat!', 'success');
       });
 
       // Copy ASCII
@@ -199,7 +199,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const output = document.getElementById('ascii-output');
         if (output) {
           navigator.clipboard.writeText(output.textContent || '');
-          showToast('ASCII disalin!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('ASCII disalin!') : 'ASCII disalin!', 'success');
         }
       });
     });

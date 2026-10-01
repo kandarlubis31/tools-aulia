@@ -15,6 +15,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 </BaseLayout>
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   let imgData = null;
   const dz = document.getElementById('drop-zone');
   const fi = document.getElementById('file-input');
@@ -79,4 +83,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       return '<div class="text-center"><div class="w-full h-16 rounded-xl border border-matte-200 dark:border-matte-700" style="background:' + hex + '"></div><p class="text-xs font-mono mt-1 text-matte-500 cursor-pointer hover:text-pink-500" onclick="navigator.clipboard.writeText(\''+hex+'\');this.textContent=\'Copied!\'">' + hex + '</p></div>';
     }).join('');
   };
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __imagePalettePage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __imagePalettePage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

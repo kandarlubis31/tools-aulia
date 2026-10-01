@@ -91,7 +91,7 @@ import DropZone from '../../components/DropZone.astro';
 
     async function processFile(file) {
       if (!file || file.type !== 'application/pdf') {
-        if (window.showToast) window.showToast(window._tToast ? window._tToast('File harus berformat PDF.') : 'File harus berformat PDF.', 'error');
+        if (window.showToast) window.window.showToast?.(window._tToast ? window._tToast('File harus berformat PDF.') : 'File harus berformat PDF.', 'error');
         return;
       }
 
@@ -111,7 +111,7 @@ import DropZone from '../../components/DropZone.astro';
       try {
         arrayBuffer = await file.arrayBuffer();
       } catch (err) {
-        if (window.showToast) window.showToast(window._tToast ? window._tToast('Gagal membaca file.') : 'Gagal membaca file.', 'error');
+        if (window.showToast) window.window.showToast?.(window._tToast ? window._tToast('Gagal membaca file.') : 'Gagal membaca file.', 'error');
         loader.classList.add('hidden');
         return;
       }

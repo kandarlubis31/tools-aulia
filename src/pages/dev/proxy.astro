@@ -80,6 +80,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const targetUrlInput = document.getElementById('target-url');
   const sendBtn = document.getElementById('send-btn');
   const btnText = document.getElementById('btn-text');
@@ -154,4 +158,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     copyRes.innerText = window._tToast ? window._tToast('Disalin!') : 'Disalin!';
     setTimeout(() => copyRes.innerText = originalText, 2000);
   });
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __devProxyPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __devProxyPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

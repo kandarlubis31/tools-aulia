@@ -98,7 +98,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     fileInput?.addEventListener('change', () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (!f.type.startsWith('image/')) { showToast('File harus berupa gambar', 'error'); return; }
+      if (!f.type.startsWith('image/')) { window.showToast?.(window._tToast ? window._tToast('File harus berupa gambar') : 'File harus berupa gambar', 'error'); return; }
       fileName = f.name;
       const url = URL.createObjectURL(f);
       const image = new Image();
@@ -380,7 +380,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       a.href = out.toDataURL('image/png');
       a.download = fileName.replace(/\.[^.]+$/, '') + '-cropped.png';
       a.click();
-      showToast('Gambar berhasil di-crop!');
+      window.showToast?.(window._tToast ? window._tToast('Gambar berhasil di-crop!') : 'Gambar berhasil di-crop!', 'info');
     });
   });
 </script>

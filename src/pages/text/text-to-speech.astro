@@ -120,7 +120,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     function speak() {
       if (!supported) return;
       const text = ttsText.value.trim();
-      if (!text) { showToast('Teks masih kosong', 'error'); return; }
+      if (!text) { window.showToast?.(window._tToast ? window._tToast('Teks masih kosong') : 'Teks masih kosong', 'error'); return; }
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       const v = voices.find(x => x.name === voiceSelect.value);
@@ -129,7 +129,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       u.rate = parseFloat(rateSlider.value);
       u.pitch = parseFloat(pitchSlider.value);
       window.speechSynthesis.speak(u);
-      showToast('🔊 Membaca...');
+      window.showToast?.(window._tToast ? window._tToast('🔊 Membaca...') : '🔊 Membaca...', 'info');
     }
 
     playBtn?.addEventListener('click', speak);
@@ -137,16 +137,16 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       if (!supported) return;
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
-        showToast('▶️ Lanjut');
+        window.showToast?.(window._tToast ? window._tToast('▶️ Lanjut') : '▶️ Lanjut', 'info');
       } else if (window.speechSynthesis.speaking) {
         window.speechSynthesis.pause();
-        showToast('⏸️ Dijeda');
+        window.showToast?.(window._tToast ? window._tToast('⏸️ Dijeda') : '⏸️ Dijeda', 'info');
       }
     });
     stopBtn?.addEventListener('click', () => {
       if (!supported) return;
       window.speechSynthesis.cancel();
-      showToast('⏹️ Berhenti');
+      window.showToast?.(window._tToast ? window._tToast('⏹️ Berhenti') : '⏹️ Berhenti', 'info');
     });
 
     rateSlider?.addEventListener('input', () => { if (rateVal) rateVal.textContent = parseFloat(rateSlider.value).toFixed(1) + '×'; });

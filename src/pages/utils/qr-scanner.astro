@@ -19,6 +19,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 </BaseLayout>
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   let stream = null;
   async function scanFromImage(img) {
     const canvas = document.getElementById('scan-canvas');
@@ -54,4 +58,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.getElementById('copy-result').onclick = () => {
     navigator.clipboard.writeText(document.getElementById('scan-text').textContent);
   };
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __utilsQrScannerPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __utilsQrScannerPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

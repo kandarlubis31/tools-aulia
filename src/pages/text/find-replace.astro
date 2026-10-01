@@ -25,6 +25,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const input = document.getElementById('input');
   const output = document.getElementById('output');
 
@@ -57,4 +61,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.getElementById('copy-btn').addEventListener('click', () => {
     navigator.clipboard.writeText(output.value).then(() => showToast?.(_tToast?.('Disalin!','Copied!'),'success'));
   });
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __textFindReplacePage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __textFindReplacePage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

@@ -64,19 +64,19 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       document.getElementById('translate-btn')?.addEventListener('click', () => {
         const text = (document.getElementById('text-input') as HTMLTextAreaElement)?.value;
         if (!text) {
-          showToast('Masukkan teks!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Masukkan teks!') : 'Masukkan teks!', 'error');
           return;
         }
         const emoji = translateToEmoji(text);
         (document.getElementById('emoji-output') as HTMLTextAreaElement).value = emoji;
-        showToast('Ditranslate!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Ditranslate!') : 'Ditranslate!', 'success');
       });
 
       document.getElementById('copy-output')?.addEventListener('click', () => {
         const output = (document.getElementById('emoji-output') as HTMLTextAreaElement)?.value;
         if (output) {
           navigator.clipboard.writeText(output);
-          showToast('Disalin!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('Disalin!') : 'Disalin!', 'success');
         }
       });
     });

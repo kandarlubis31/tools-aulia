@@ -248,16 +248,16 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       if (!outputArea!.textContent) return;
       try {
         await navigator.clipboard.writeText(outputArea!.textContent);
-        showToast('Query tersalin!');
+        window.showToast?.(window._tToast ? window._tToast('Query tersalin!') : 'Query tersalin!', 'info');
       } catch {
-        showToast('Gagal menyalin', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin') : 'Gagal menyalin', 'error');
       }
     });
 
     sampleBtn?.addEventListener('click', () => {
       inputArea.value = `select u.id,u.name,count(o.id) as total_orders from users u left join orders o on o.user_id=u.id and o.status='paid' where u.created_at>='2025-01-01' and u.city in ('Jakarta','Bandung') group by u.id,u.name having count(o.id)>=3 order by total_orders desc limit 10;`;
       run();
-      showToast('Contoh dimuat!');
+      window.showToast?.(window._tToast ? window._tToast('Contoh dimuat!') : 'Contoh dimuat!', 'info');
     });
   });
 </script>
