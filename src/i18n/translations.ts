@@ -3049,7 +3049,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'label.dimensions': { id: 'Dimensi', en: 'Dimensions' },
   'label.mime_type': { id: 'Tipe MIME', en: 'MIME Type' },
   'text.contrast_sample': { id: 'Contoh Teks', en: 'Sample Text' },
-  'label.contrast_ratio': { id: 'Contrast Ratio', en: 'Contrast Ratio' },
+  'label.contrast_ratio': { id: 'Rasio Kontras', en: 'Contrast Ratio' },
   'wcag.aa_normal': { id: 'AA Normal', en: 'AA Normal' },
   'wcag.aa_large': { id: 'AA Large', en: 'AA Large' },
   'wcag.aaa_normal': { id: 'AAA Normal', en: 'AAA Normal' },
