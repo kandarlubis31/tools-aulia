@@ -6,11 +6,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <ToolPageHeader title="Subnet Visualizer" description="Visual tree network subnet — lihat struktur IP" icon='<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>' />
 
   <div class="card-base p-5 space-y-4">
-    <div class="flex flex-wrap gap-3">
-      <div><label class="text-xs text-matte-500 mb-1 block">IP Network</label><input id="ip" type="text" class="input-field w-40 text-sm font-mono" value="192.168.1.0"></div>
-      <div><label class="text-xs text-matte-500 mb-1 block">CIDR</label><input id="cidr" type="number" min="8" max="30" value="24" class="input-field w-20 text-sm"></div>
-      <div class="self-end"><button id="viz-btn" class="btn-primary text-sm">Visualisasikan</button></div>
+    <div class="flex flex-wrap gap-3 items-end">
+      <div>
+        <label for="ip" class="text-xs text-matte-500 mb-1 block" data-i18n="label.ip_address">IP Network</label>
+        <input id="ip" type="text" class="input-field w-40 text-sm font-mono" value="192.168.1.0" placeholder="192.168.1.0">
+      </div>
+      <div>
+        <label for="cidr" class="text-xs text-matte-500 mb-1 block">CIDR</label>
+        <input id="cidr" type="number" min="8" max="30" value="24" class="input-field w-20 text-sm">
+      </div>
+      <button id="viz-btn" class="btn-primary text-sm" data-i18n="btn.visualize">Visualisasikan</button>
     </div>
+    <p class="text-xs text-matte-400" data-i18n="tip.cidr_range">CIDR 8–30. Network & broadcast address ikut dihitung.</p>
 
     <div class="bg-matte-50 dark:bg-matte-800 rounded-lg p-3 overflow-auto">
       <canvas id="viz-canvas" width="900" height="400" class="mx-auto"></canvas>
@@ -21,65 +28,100 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 
-  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
-  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  // langchange: render ulang canvas + info-cards dengan label bahasa aktif (pola nullable)
+  let __render: (() => void) | null = null;
+  window.addEventListener('langchange', () => __render?.());
+
   function init() {
-  const canvas = document.getElementById('viz-canvas'), ctx = canvas.getContext('2d');
+    const canvas = document.getElementById('viz-canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+    const ipEl = document.getElementById('ip') as HTMLInputElement;
+    const cidrEl = document.getElementById('cidr') as HTMLInputElement;
 
-  document.getElementById('viz-btn').addEventListener('click', draw);
-  draw();
+    const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
-  function draw() {
-    const ip = document.getElementById('ip').value || '192.168.1.0';
-    const cidr = parseInt(document.getElementById('cidr').value) || 24;
-    const total = Math.pow(2, 32-cidr);
-    const usable = Math.max(0, total - 2);
-    const parts = ip.split('.').map(Number);
-    const net = (parts[0]<<24|parts[1]<<16|parts[2]<<8|parts[3])>>>0;
-    const mask = (~0 << (32-cidr))>>>0;
-    const broadcast = net | ~mask>>>0;
+    const fmtIp = (n: number) => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#1e293b'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign='center';
-    ctx.fillText(`/${cidr} — ${total} alamat (${usable} usable)`, canvas.width/2, 28);
+    function render(ip: string, cidr: number) {
+      const parts = ip.split('.').map(Number);
+      const net = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
+      const mask = (~0 << (32 - cidr)) >>> 0;
+      const broadcast = (net | (~mask >>> 0)) >>> 0;
+      const total = Math.pow(2, 32 - cidr);
+      const usable = Math.max(0, total - 2);
 
-    // Draw subnet bar
-    const barX = 80, barW = canvas.width-160, barY = 60, barH = 40;
-    const grad = ctx.createLinearGradient(barX, 0, barX+barW, 0);
-    grad.addColorStop(0, '#2563eb'); grad.addColorStop(0.6, '#16a34a'); grad.addColorStop(1, '#dc2626');
-    ctx.fillStyle = grad; ctx.fillRect(barX, barY, barW, barH);
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(barX, barY, barW, barH);
+      // Canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#1e293b'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(`/${cidr} — ${total.toLocaleString('id-ID')} ${t('stat.addresses')} (${usable.toLocaleString('id-ID')} usable)`, canvas.width / 2, 28);
 
-    // Labels
-    ctx.fillStyle = '#94a3b8'; ctx.font = '11px monospace';
-    ctx.fillText(`Network`, barX+30, barY+55);
-    ctx.fillText(`Broadcast`, barX+barW-40, barY+55);
+      const barX = 80, barW = canvas.width - 160, barY = 60, barH = 40;
+      const grad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+      grad.addColorStop(0, '#2563eb'); grad.addColorStop(0.6, '#16a34a'); grad.addColorStop(1, '#dc2626');
+      ctx.fillStyle = grad; ctx.fillRect(barX, barY, barW, barH);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(barX, barY, barW, barH);
+      ctx.fillStyle = '#94a3b8'; ctx.font = '11px monospace';
+      ctx.fillText(t('label.network'), barX + 30, barY + 55);
+      ctx.fillText(t('label.broadcast'), barX + barW - 40, barY + 55);
 
-    // Tree nodes
-    if (cidr <= 26) {
-      const subnets = cidr < 24 ? Math.pow(2,24-cidr) : 1;
-      const nodeW = Math.min(barW/subnets-20, 120);
-      const startY = 140;
-      for (let i=0; i<Math.min(subnets, 8); i++) {
-        const x = barX + i*(barW/subnets) + barW/subnets/2;
-        const sub = (net + i*(total/subnets))>>>0;
-        const sParts = [(sub>>>24)&0xFF,(sub>>>16)&0xFF,(sub>>>8)&0xFF,sub&0xFF].join('.');
-        ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.roundRect(x-nodeW/2, startY, nodeW, 35, 6); ctx.fill();
-        ctx.fillStyle = '#e2e8f0'; ctx.font = '11px monospace'; ctx.textAlign='center';
-        ctx.fillText(sParts, x, startY+22);
-        // line
-        ctx.strokeStyle = '#475569'; ctx.beginPath(); ctx.moveTo(x, barY+barH); ctx.lineTo(x, startY); ctx.stroke();
+      if (cidr <= 26) {
+        const subnets = cidr < 24 ? Math.pow(2, 24 - cidr) : 1;
+        const nodeW = Math.min(barW / subnets - 20, 120);
+        const startY = 140;
+        for (let i = 0; i < Math.min(subnets, 8); i++) {
+          const x = barX + i * (barW / subnets) + barW / subnets / 2;
+          const sub = (net + i * (total / subnets)) >>> 0;
+          ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.roundRect(x - nodeW / 2, startY, nodeW, 35, 6); ctx.fill();
+          ctx.fillStyle = '#e2e8f0'; ctx.font = '11px monospace'; ctx.textAlign = 'center';
+          ctx.fillText(fmtIp(sub), x, startY + 22);
+          ctx.strokeStyle = '#475569'; ctx.beginPath(); ctx.moveTo(x, barY + barH); ctx.lineTo(x, startY); ctx.stroke();
+        }
+      }
+
+      // Info cards — DOM API (XSS-proof), label i18n
+      const info = document.getElementById('info-cards') as HTMLElement;
+      info.innerHTML = '';
+      const cards: Array<[string, string, string]> = [
+        [t('label.network'), `${ip}/${cidr}`, 'text-sm'],
+        [t('label.netmask'), fmtIp(mask), 'text-sm'],
+        [t('label.host_range'), `${fmtIp((net + 1) >>> 0)} – ${fmtIp((broadcast - 1) >>> 0)}`, 'text-xs'],
+        [t('label.broadcast'), fmtIp(broadcast), 'text-sm'],
+      ];
+      for (const [labelText, value, size] of cards) {
+        const card = document.createElement('div');
+        card.className = 'card-base p-2 text-center';
+        const s1 = document.createElement('span');
+        s1.className = 'text-xs text-matte-400'; s1.textContent = labelText;
+        const p = document.createElement('p');
+        p.className = `font-mono ${size}`; p.textContent = value;
+        card.append(s1, p);
+        info.appendChild(card);
       }
     }
 
-    document.getElementById('info-cards').innerHTML =
-      `<div class="card-base p-2 text-center"><span class="text-xs text-matte-400">Network</span><p class="font-mono text-sm">${ip}/${cidr}</p></div>`+
-      `<div class="card-base p-2 text-center"><span class="text-xs text-matte-400">Netmask</span><p class="font-mono text-sm">${[(mask>>>24)&255,(mask>>>16)&255,(mask>>>8)&255,mask&255].join('.')}</p></div>`+
-      `<div class="card-base p-2 text-center"><span class="text-xs text-matte-400">Host Range</span><p class="font-mono text-xs">${[(net+1>>>24)&255,(net+1>>>16)&255,(net+1>>>8)&255,(net+1)&255].join('.')} – ${[(broadcast-1>>>24)&255,(broadcast-1>>>16)&255,(broadcast-1>>>8)&255,(broadcast-1)&255].join('.')}</p></div>`+
-      `<div class="card-base p-2 text-center"><span class="text-xs text-matte-400">Broadcast</span><p class="font-mono text-sm">${[(broadcast>>>24)&255,(broadcast>>>16)&255,(broadcast>>>8)&255,broadcast&255].join('.')}</p></div>`;
-  }
+    function parseInput(): { ip: string; cidr: number } | null {
+      const ipVal = ipEl.value.trim();
+      const cidr = parseInt(cidrEl.value, 10);
+      const m = ipVal.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+      if (!m || m.slice(1).some(o => +o > 255) || isNaN(cidr) || cidr < 8 || cidr > 30) return null;
+      return { ip: ipVal, cidr };
+    }
 
+    function draw() {
+      const parsed = parseInput();
+      if (!parsed) { toast('IP tidak valid!', 'error'); return; }
+      render(parsed.ip, parsed.cidr);
+    }
+
+    document.getElementById('viz-btn')?.addEventListener('click', draw);
+    draw();
+    __render = () => {
+      const parsed = parseInput();
+      if (parsed) render(parsed.ip, parsed.cidr);
+    };
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -91,5 +133,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>

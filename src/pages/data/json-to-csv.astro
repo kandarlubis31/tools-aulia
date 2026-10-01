@@ -6,23 +6,25 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <ToolPageHeader title="JSON to CSV" description="Konversi JSON array ke CSV — otomatis detect header" icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M8 17h2"/><path d="M14 13h2"/><path d="M14 17h2"/>' />
 
   <div class="card-base p-5 space-y-4">
-    <textarea id="json-input" class="input-field w-full h-40 font-mono text-sm" placeholder='Paste JSON array di sini...&#10;[&#10;  {"name": "Alice", "age": 25, "city": "Jakarta"},&#10;  {"name": "Bob", "age": 30, "city": "Bandung"}&#10;]'></textarea>
-    <div class="flex gap-2">
-      <button id="convert-btn" class="btn-primary">Konversi ke CSV</button>
+    <label for="json-input" class="block text-sm text-matte-500 font-medium" data-i18n="label.json_input">Input JSON</label>
+    <textarea id="json-input" class="input-field w-full h-40 font-mono text-sm" placeholder='Paste JSON array di sini...' data-i18n-attr="placeholder" data-i18n="ph.paste_json"></textarea>
+    <div class="flex flex-wrap gap-2 items-center">
+      <button id="convert-btn" class="btn-primary" data-i18n="btn.convert_csv">Konversi ke CSV</button>
+      <label for="delimiter" class="text-sm text-matte-500" data-i18n="label.delimiter">Delimiter</label>
       <select id="delimiter" class="input-field text-sm w-20">
         <option value="," selected>,</option>
         <option value=";">;</option>
-        <option value="\t">TAB</option>
+        <option value="TAB">TAB</option>
       </select>
-      <label class="flex items-center gap-1 text-sm text-matte-500"><input type="checkbox" id="wrap" checked> "Quote"</label>
+      <label class="flex items-center gap-1 text-sm text-matte-500"><input type="checkbox" id="wrap" checked> <span data-i18n="label.quote_values">"Quote" nilai</span></label>
     </div>
 
     <div class="flex justify-between">
-      <label class="text-sm text-matte-500 font-medium">Output CSV</label>
+      <label for="csv-output" class="text-sm text-matte-500 font-medium" data-i18n="label.csv_output">Output CSV</label>
       <div class="flex gap-2">
         <button id="copy-btn" class="btn-secondary text-xs" data-i18n="btn.copy_emoji">📋 Copy</button>
-        <button id="download-btn" class="btn-secondary text-xs">⬇️ .csv</button>
-        <button id="preview-btn" class="btn-secondary text-xs">👁️ Preview Table</button>
+        <button id="download-btn" class="btn-secondary text-xs" data-i18n="btn.download_csv">⬇️ .csv</button>
+        <button id="preview-btn" class="btn-secondary text-xs" data-i18n="btn.preview_table">👁️ Preview Table</button>
       </div>
     </div>
     <textarea id="csv-output" class="input-field w-full h-32 font-mono text-sm bg-matte-50 dark:bg-matte-800" readonly></textarea>
@@ -31,57 +33,72 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-
-  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
-  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  const jsonInp = document.getElementById('json-input');
-  const csvOut = document.getElementById('csv-output');
+    const jsonInp = document.getElementById('json-input') as HTMLTextAreaElement;
+    const csvOut = document.getElementById('csv-output') as HTMLTextAreaElement;
 
-  document.getElementById('convert-btn').addEventListener('click', () => {
-    try {
-      const data = JSON.parse(jsonInp.value);
-      const arr = Array.isArray(data) ? data : [data];
-      if (!arr.length) { csvOut.value = ''; return; }
+    const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+    const escHtml = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const getDelim = () => {
+      const v = (document.getElementById('delimiter') as HTMLSelectElement).value;
+      return v === 'TAB' ? '\t' : v;
+    };
 
-      const keys = Object.keys(arr[0]);
-      const delim = document.getElementById('delimiter').value === '\t' ? '\t' : document.getElementById('delimiter').value;
-      const wrap = document.getElementById('wrap').checked;
+    document.getElementById('convert-btn')?.addEventListener('click', () => {
+      const raw = jsonInp.value.trim();
+      if (!raw) { toast('Input kosong!', 'info'); return; }
+      let data: unknown;
+      try { data = JSON.parse(raw); } catch { toast('JSON tidak valid!', 'error'); return; }
+      const arr: unknown[] = Array.isArray(data) ? data : [data];
+      if (!arr.length) { toast('Input kosong!', 'info'); return; }
+
+      // Union key dari semua row — row dengan key berbeda tetap masuk
+      const keys = [...new Set(arr.flatMap(o => (o && typeof o === 'object' ? Object.keys(o as object) : ['value'])))];
+      const delim = getDelim();
+      const wrap = (document.getElementById('wrap') as HTMLInputElement).checked;
       const q = wrap ? '"' : '';
-      const esc = (s) => wrap ? String(s||'').replace(/"/g,'""') : String(s||'');
+      const esc = (s: unknown) => { const str = s == null ? '' : String(s); return wrap ? str.replace(/"/g, '""') : str; };
 
       const lines = [keys.map(k => q + k + q).join(delim)];
-      arr.forEach(row => lines.push(keys.map(k => q + esc(row[k]) + q).join(delim)));
+      for (const row of arr) {
+        const obj = row && typeof row === 'object' ? row as Record<string, unknown> : { value: row };
+        lines.push(keys.map(k => q + esc(obj[k]) + q).join(delim));
+      }
       csvOut.value = lines.join('\n');
-    } catch (e) {
-      showToast?.(_tToast?.('JSON tidak valid: '+(e.message||''), 'Invalid JSON'), 'error');
-    }
-  });
+    });
 
-  document.getElementById('copy-btn').addEventListener('click', () => {
-    navigator.clipboard.writeText(csvOut.value).then(() => showToast?.(_tToast?.('Disalin!','Copied!'),'success'));
-  });
+    document.getElementById('copy-btn')?.addEventListener('click', async () => {
+      if (!csvOut.value) { toast('Input kosong!', 'info'); return; }
+      try { await navigator.clipboard.writeText(csvOut.value); toast('Disalin!'); }
+      catch { toast('Gagal menyalin', 'error'); }
+    });
 
-  document.getElementById('download-btn').addEventListener('click', () => {
-    const blob = new Blob([csvOut.value], { type: 'text/csv' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'data.csv'; a.click();
-  });
+    document.getElementById('download-btn')?.addEventListener('click', () => {
+      if (!csvOut.value) { toast('Input kosong!', 'info'); return; }
+      const blob = new Blob([csvOut.value], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'data.csv';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      toast('CSV diunduh!');
+    });
 
-  document.getElementById('preview-btn').addEventListener('click', () => {
-    const lines = csvOut.value.split('\n').filter(Boolean);
-    if (!lines.length) return;
-    const table = document.getElementById('preview-table');
-    table.classList.remove('hidden');
-    const headers = lines[0].split(document.getElementById('delimiter').value);
-    table.innerHTML = '<table class="text-sm border-collapse w-full"><thead><tr class="bg-matte-100 dark:bg-matte-700">'+
-      headers.map(h => '<th class="p-2 border border-matte-200 dark:border-matte-600 text-left">'+escHtml(h)+'</th>').join('') +
-      '</tr></thead><tbody>'+
-      lines.slice(1).map(l => '<tr>'+l.split(document.getElementById('delimiter').value).map(c => '<td class="p-2 border border-matte-200 dark:border-matte-600">'+escHtml(c)+'</td>').join('')+'</tr>').join('') +
-      '</tbody></table>';
-  });
-
-  function escHtml(s) { return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
+    document.getElementById('preview-btn')?.addEventListener('click', () => {
+      const lines = csvOut.value.split('\n').filter(Boolean);
+      if (!lines.length) { toast('Input kosong!', 'info'); return; }
+      const table = document.getElementById('preview-table') as HTMLElement;
+      table.classList.remove('hidden');
+      const delim = getDelim();
+      const unwrap = (c: string) => c.replace(/^"|"$/g, '').replace(/""/g, '"');
+      const headerCells = lines[0].split(delim)
+        .map(h => `<th class="p-2 border border-matte-200 dark:border-matte-600 text-left">${escHtml(unwrap(h))}</th>`).join('');
+      const bodyRows = lines.slice(1)
+        .map(l => '<tr>' + l.split(delim).map(c => `<td class="p-2 border border-matte-200 dark:border-matte-600">${escHtml(unwrap(c))}</td>`).join('') + '</tr>')
+        .join('');
+      table.innerHTML = `<table class="text-sm border-collapse w-full"><thead><tr class="bg-matte-100 dark:bg-matte-700">${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+    });
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -93,5 +110,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>
