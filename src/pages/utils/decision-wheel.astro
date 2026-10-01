@@ -138,12 +138,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const value = input.value.trim();
         
         if (!value) {
-          showToast('Masukkan opsi!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Masukkan opsi!') : 'Masukkan opsi!', 'error');
           return;
         }
 
         if (options.length >= 10) {
-          showToast('Maksimal 10 opsi!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Maksimal 10 opsi!') : 'Maksimal 10 opsi!', 'error');
           return;
         }
 
@@ -151,7 +151,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         input.value = '';
         renderOptions();
         renderWheel();
-        showToast('Opsi ditambahkan!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Opsi ditambahkan!') : 'Opsi ditambahkan!', 'success');
       });
 
       // Enter key
@@ -176,7 +176,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       // Spin wheel
       document.getElementById('spin-btn')?.addEventListener('click', () => {
         if (isSpinning || options.length < 2) {
-          if (options.length < 2) showToast('Minimal 2 opsi!', 'error');
+          if (options.length < 2) window.showToast?.(window._tToast ? window._tToast('Minimal 2 opsi!') : 'Minimal 2 opsi!', 'error');
           return;
         }
 
@@ -202,7 +202,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           document.getElementById('wheel-result')?.classList.remove('hidden');
           
           isSpinning = false;
-          showToast(`Hasil: ${result}!`, 'success');
+          window.showToast?.(`Hasil: ${result}!`, 'success');
         }, 1100);
       });
 

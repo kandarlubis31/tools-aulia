@@ -22,6 +22,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 </BaseLayout>
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   document.getElementById('mode').onchange = e => { document.getElementById('shift').classList.toggle('hidden', e.target.value !== 'custom'); };
   function caesar(text, shift, decode) {
     if (decode) shift = 26 - shift;
@@ -40,4 +44,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     document.getElementById('output').value = caesar(document.getElementById('input').value, shift, true);
   };
   document.getElementById('copy-btn').onclick = () => { navigator.clipboard.writeText(document.getElementById('output').value); };
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __textRot13Page = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __textRot13Page) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

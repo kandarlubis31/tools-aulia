@@ -144,7 +144,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     }
 
     async function downloadAll() {
-      showToast('Menyiapkan download…');
+      window.showToast?.(window._tToast ? window._tToast('Menyiapkan download…') : 'Menyiapkan download…', 'info');
 
       const canvases = SIZES.map(s => drawFavicon(s));
       const files: { name: string; blob: Blob }[] = [];
@@ -181,7 +181,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       a.click();
       URL.revokeObjectURL(bigUrl);
 
-      showToast('Semua ukuran didownload!');
+      window.showToast?.(window._tToast ? window._tToast('Semua ukuran didownload!') : 'Semua ukuran didownload!', 'info');
     }
 
     // Event listeners

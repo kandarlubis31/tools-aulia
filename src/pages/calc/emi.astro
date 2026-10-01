@@ -108,9 +108,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const annualRate = parseFloat(interestRate.value);
       const totalMonths = (parseInt(tenureYears.value) || 0) * 12 + (parseInt(tenureMonths.value) || 0);
 
-      if (isNaN(P) || P <= 0) { showToast('Masukkan jumlah pinjaman yang valid', 'error'); return; }
-      if (isNaN(annualRate) || annualRate < 0) { showToast('Masukkan bunga yang valid', 'error'); return; }
-      if (totalMonths <= 0) { showToast('Tenor minimal 1 bulan', 'error'); return; }
+      if (isNaN(P) || P <= 0) { window.showToast?.(window._tToast ? window._tToast('Masukkan jumlah pinjaman yang valid') : 'Masukkan jumlah pinjaman yang valid', 'error'); return; }
+      if (isNaN(annualRate) || annualRate < 0) { window.showToast?.(window._tToast ? window._tToast('Masukkan bunga yang valid') : 'Masukkan bunga yang valid', 'error'); return; }
+      if (totalMonths <= 0) { window.showToast?.(window._tToast ? window._tToast('Tenor minimal 1 bulan') : 'Tenor minimal 1 bulan', 'error'); return; }
 
       const monthlyRate = annualRate / 100 / 12;
       let emi: number;

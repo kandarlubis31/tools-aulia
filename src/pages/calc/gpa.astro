@@ -40,6 +40,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const gradeMap: Record<string, number> = { 'A':4,'A-':3.7,'B+':3.3,'B':3,'B-':2.7,'C+':2.3,'C':2,'D':1,'E':0 };
   const container = document.getElementById('courses-container')!;
   let rowId = 0;
@@ -80,4 +84,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   document.getElementById('add-course')!.addEventListener('click', () => addRow());
   addRow(); addRow(); addRow();
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __calcGpaPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __calcGpaPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

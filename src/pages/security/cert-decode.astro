@@ -17,6 +17,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   document.getElementById('decode-btn').addEventListener('click', async () => {
     const pem = document.getElementById('cert-input').value.trim();
     if (!pem) { showToast?.(_tToast?.('Paste sertifikat dulu', 'Paste certificate first'), 'error'); return; }
@@ -70,4 +74,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     result.Subject = parseDN();
     return result;
   }
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __securityCertDecodePage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __securityCertDecodePage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

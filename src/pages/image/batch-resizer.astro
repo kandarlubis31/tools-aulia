@@ -113,7 +113,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     fileInput?.addEventListener('change', () => {
       const list = Array.from(fileInput.files || []).filter(f => f.type.startsWith('image/'));
-      if (!list.length) { showToast('Tidak ada file gambar valid', 'error'); return; }
+      if (!list.length) { window.showToast?.(window._tToast ? window._tToast('Tidak ada file gambar valid') : 'Tidak ada file gambar valid', 'error'); return; }
       files = [...files, ...list].slice(0, 50);
       settingsCard?.classList.remove('hidden');
       updateCount();
@@ -158,7 +158,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     }
 
     processBtn?.addEventListener('click', async () => {
-      if (!files.length) { showToast('Pilih gambar dulu', 'error'); return; }
+      if (!files.length) { window.showToast?.(window._tToast ? window._tToast('Pilih gambar dulu') : 'Pilih gambar dulu', 'error'); return; }
       processBtn.disabled = true;
       processBtn.textContent = '⏳ Memproses...';
       resultsGrid?.classList.add('hidden');
@@ -193,7 +193,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           } catch { continue; }
         }
 
-        if (!processed) { showToast('Semua file gagal diproses', 'error'); return; }
+        if (!processed) { window.showToast?.(window._tToast ? window._tToast('Semua file gagal diproses') : 'Semua file gagal diproses', 'error'); return; }
 
         const content = await zip.generateAsync({ type: 'blob' });
         const a = document.createElement('a');
@@ -212,9 +212,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           </div>`
         ).join('');
 
-        showToast(`✅ ${processed} gambar berhasil di-resize & di-zip!`);
+        window.showToast?.(`✅ ${processed} gambar berhasil di-resize & di-zip!`, 'success');
       } catch {
-        showToast('Gagal memproses — library ZIP tidak termuat?', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Gagal memproses — library ZIP tidak termuat?') : 'Gagal memproses — library ZIP tidak termuat?', 'error');
       } finally {
         processBtn.disabled = false;
         processBtn.textContent = '⚡ Resize & ZIP';

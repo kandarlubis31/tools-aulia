@@ -203,7 +203,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
         if (key === 'ENTER') {
           if (currentCol < 5) {
-            showToast('Masukkan 5 huruf!', 'error');
+            window.showToast?.(window._tToast ? window._tToast('Masukkan 5 huruf!') : 'Masukkan 5 huruf!', 'error');
             return;
           }
 
@@ -215,7 +215,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
             document.getElementById('status-text')!.textContent = '🎉 Benar! Kamu menang!';
             document.getElementById('status-text')!.className = 'text-lg font-bold mb-4 text-green-600 dark:text-green-400';
             document.getElementById('game-status')?.classList.remove('hidden');
-            showToast('Selamat! Kamu benar!', 'success');
+            window.showToast?.(window._tToast ? window._tToast('Selamat! Kamu benar!') : 'Selamat! Kamu benar!', 'success');
           } else if (currentRow >= 5) {
             gameOver = true;
             document.getElementById('status-text')!.textContent = `💀 Game over! Jawaban: ${targetWord}`;

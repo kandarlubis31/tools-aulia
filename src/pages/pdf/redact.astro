@@ -100,7 +100,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       async function loadPDF(file: File) {
         const pdfjsLib = await loadPdfJs();
-        if (!pdfjsLib) { showToast('Gagal load PDF library', 'error'); return; }
+        if (!pdfjsLib) { window.showToast?.(window._tToast ? window._tToast('Gagal load PDF library') : 'Gagal load PDF library', 'error'); return; }
         pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
 
         const arrayBuffer = await file.arrayBuffer();
@@ -118,7 +118,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         document.getElementById('redact-btn')?.classList.remove('hidden');
 
         await renderPage(currentPage);
-        showToast('PDF dimuat!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('PDF dimuat!') : 'PDF dimuat!', 'success');
       }
 
       async function renderPage(pageNum: number) {
@@ -191,7 +191,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           ctx.fillStyle = '#000000';
           ctx.fillRect(x / 1.5, y / 1.5, w / 1.5, h / 1.5);
           
-          showToast('Area ditambahkan!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('Area ditambahkan!') : 'Area ditambahkan!', 'success');
         }
       });
 
@@ -212,7 +212,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       // Download (simplified - just saves the canvas as image for now)
       document.getElementById('download-btn')?.addEventListener('click', () => {
-        showToast('PDF dengan sensor akan didownload', 'success');
+        window.showToast?.(window._tToast ? window._tToast('PDF dengan sensor akan didownload') : 'PDF dengan sensor akan didownload', 'success');
         // In production, you'd use pdf-lib to actually modify the PDF
       });
     });

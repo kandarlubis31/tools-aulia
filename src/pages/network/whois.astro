@@ -58,10 +58,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     async function lookup() {
       let domain = domainInput.value.trim().toLowerCase();
-      if (!domain) { showToast('Masukkan domain', 'error'); return; }
+      if (!domain) { window.showToast?.(window._tToast ? window._tToast('Masukkan domain') : 'Masukkan domain', 'error'); return; }
       // Strip protocol
       domain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-      if (!domain.includes('.')) { showToast('Domain tidak valid', 'error'); return; }
+      if (!domain.includes('.')) { window.showToast?.(window._tToast ? window._tToast('Domain tidak valid') : 'Domain tidak valid', 'error'); return; }
 
       lookupBtn.disabled = true;
       lookupBtn.innerHTML = '⏳ …';

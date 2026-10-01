@@ -105,7 +105,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const numSentences = parseInt((document.getElementById('sentence-count') as HTMLInputElement)?.value) || 3;
 
         if (!text || text.trim().length < 50) {
-          showToast('Masukkan teks minimal 50 karakter!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Masukkan teks minimal 50 karakter!') : 'Masukkan teks minimal 50 karakter!', 'error');
           return;
         }
 
@@ -117,14 +117,14 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         document.getElementById('reduction')!.textContent = `${Math.round((1 - summary.length / text.length) * 100)}%`;
         document.getElementById('result')?.classList.remove('hidden');
         
-        showToast('Teks diringkas!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Teks diringkas!') : 'Teks diringkas!', 'success');
       });
 
       document.getElementById('copy-result')?.addEventListener('click', () => {
         const summary = document.getElementById('summary-output')?.textContent;
         if (summary) {
           navigator.clipboard.writeText(summary);
-          showToast('Ringkasan disalin!', 'success');
+          window.showToast?.(window._tToast ? window._tToast('Ringkasan disalin!') : 'Ringkasan disalin!', 'success');
         }
       });
     });

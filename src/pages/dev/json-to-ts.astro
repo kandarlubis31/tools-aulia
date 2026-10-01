@@ -165,7 +165,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     copyBtn?.addEventListener('click', () => {
       if (!tsOutput?.textContent || tsOutput.textContent.startsWith('//')) return;
       navigator.clipboard.writeText(tsOutput.textContent);
-      showToast('Kode TypeScript disalin!');
+      window.showToast?.(window._tToast ? window._tToast('Kode TypeScript disalin!') : 'Kode TypeScript disalin!', 'info');
     });
 
     downloadBtn?.addEventListener('click', () => {

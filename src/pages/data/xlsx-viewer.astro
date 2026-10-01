@@ -110,7 +110,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     fileInput?.addEventListener('change', async () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (f.size > 20 * 1024 * 1024) { showToast('File maksimal 20 MB', 'error'); return; }
+      if (f.size > 20 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('File maksimal 20 MB') : 'File maksimal 20 MB', 'error'); return; }
       try {
         // Jaring pengaman: kalau cdnjs + fallback inline semua gagal, coba CDN
         // cadangan sekali lagi lewat loadCdnLib (kasih pesan jelas kalau gak bisa).
@@ -118,17 +118,17 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
           'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
         ]);
-        if (!xlsxReady) { showToast('Gagal memuat library Excel (XLSX). Cek koneksi internet.', 'error'); return; }
+        if (!xlsxReady) { window.showToast?.(window._tToast ? window._tToast('Gagal memuat library Excel (XLSX). Cek koneksi internet.') : 'Gagal memuat library Excel (XLSX). Cek koneksi internet.', 'error'); return; }
         const buf = await f.arrayBuffer();
         wb = (window as any).XLSX.read(buf, { type: 'array' });
-        if (!wb.SheetNames.length) { showToast('Tidak ada sheet', 'error'); return; }
+        if (!wb.SheetNames.length) { window.showToast?.(window._tToast ? window._tToast('Tidak ada sheet') : 'Tidak ada sheet', 'error'); return; }
         fileName!.textContent = f.name;
         renderTabs();
         selectSheet(wb.SheetNames[0]);
         viewer?.classList.remove('hidden');
         viewer?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch {
-        showToast('File Excel tidak bisa dibaca', 'error');
+        window.showToast?.(window._tToast ? window._tToast('File Excel tidak bisa dibaca') : 'File Excel tidak bisa dibaca', 'error');
       }
     });
 
@@ -175,7 +175,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
       a.download = currentSheet.replace(/[^\w\-]+/g, '_') + '.csv';
       a.click();
-      showToast('CSV berhasil di-export!');
+      window.showToast?.(window._tToast ? window._tToast('CSV berhasil di-export!') : 'CSV berhasil di-export!', 'info');
     });
   });
 </script>

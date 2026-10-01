@@ -179,7 +179,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     }
 
     function loadRows(rows: string[][]) {
-      if (!rows.length) { showToast('CSV kosong', 'error'); return; }
+      if (!rows.length) { window.showToast?.(window._tToast ? window._tToast('CSV kosong') : 'CSV kosong', 'error'); return; }
       data = rows;
       selectedRow = -1;
       render();
@@ -199,19 +199,19 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     fileInput?.addEventListener('change', async () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (f.size > 10 * 1024 * 1024) { showToast('File maksimal 10 MB', 'error'); return; }
+      if (f.size > 10 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('File maksimal 10 MB') : 'File maksimal 10 MB', 'error'); return; }
       const text = await f.text();
       const delim = f.name.endsWith('.tsv') ? '\t' : ',';
       loadRows(parseCsv(text, delim));
-      showToast('CSV dimuat!');
+      window.showToast?.(window._tToast ? window._tToast('CSV dimuat!') : 'CSV dimuat!', 'info');
     });
 
     pasteBtn?.addEventListener('click', async () => {
       try {
         const text = await navigator.clipboard.readText();
-        if (text.trim()) { loadRows(parseCsv(text)); showToast('CSV dari clipboard dimuat!'); }
+        if (text.trim()) { loadRows(parseCsv(text)); window.showToast?.(window._tToast ? window._tToast('CSV dari clipboard dimuat!') : 'CSV dari clipboard dimuat!', 'info'); }
       } catch {
-        showToast('Tidak bisa akses clipboard', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Tidak bisa akses clipboard') : 'Tidak bisa akses clipboard', 'error');
       }
     });
 
@@ -231,7 +231,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       data.splice(selectedRow, 1);
       selectedRow = -1;
       render();
-      showToast('Baris dihapus');
+      window.showToast?.(window._tToast ? window._tToast('Baris dihapus') : 'Baris dihapus', 'info');
     });
 
     searchInput?.addEventListener('input', render);
@@ -242,7 +242,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
       a.download = 'hasil.csv';
       a.click();
-      showToast('CSV berhasil di-export!');
+      window.showToast?.(window._tToast ? window._tToast('CSV berhasil di-export!') : 'CSV berhasil di-export!', 'info');
     });
   });
 </script>

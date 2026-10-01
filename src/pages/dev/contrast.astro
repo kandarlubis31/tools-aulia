@@ -17,6 +17,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 </BaseLayout>
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   function luminance(r, g, b) { const a = [r,g,b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722; }
   function contrastRatio(fg, bg) {
     const l1 = luminance(...fg) + 0.05;
@@ -45,4 +49,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.getElementById('fg-hex').oninput = e => { if (/^#[0-9a-f]{6}$/i.test(e.target.value)) { document.getElementById('fg').value = e.target.value; render(); } };
   document.getElementById('bg-hex').oninput = e => { if (/^#[0-9a-f]{6}$/i.test(e.target.value)) { document.getElementById('bg').value = e.target.value; render(); } };
   render();
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __devContrastPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __devContrastPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

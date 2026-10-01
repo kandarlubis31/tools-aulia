@@ -27,6 +27,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const blocks = {
     arrows: { start: 0x2190, end: 0x21FF },
     math: { start: 0x2200, end: 0x22FF },
@@ -90,4 +94,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.getElementById('search').addEventListener('input', render);
   document.getElementById('block').addEventListener('change', render);
   render();
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __textCharmapPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __textCharmapPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

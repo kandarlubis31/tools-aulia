@@ -17,6 +17,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   document.getElementById('wake-btn').addEventListener('click', async () => {
     const mac = document.getElementById('mac').value.trim();
     if (!mac) { showToast?.(_tToast?.('Masukkan MAC address','Enter MAC address'),'error'); return; }
@@ -41,4 +45,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       document.getElementById('status').textContent = 'Gagal: ' + e.message;
     }
   });
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __networkWolPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __networkWolPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

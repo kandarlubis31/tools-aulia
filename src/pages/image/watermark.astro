@@ -136,7 +136,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     fileInput?.addEventListener('change', () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (!f.type.startsWith('image/')) { showToast('File harus berupa gambar', 'error'); return; }
+      if (!f.type.startsWith('image/')) { window.showToast?.(window._tToast ? window._tToast('File harus berupa gambar') : 'File harus berupa gambar', 'error'); return; }
       fileName = f.name;
       const url = URL.createObjectURL(f);
       const img = new Image();
@@ -244,9 +244,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     }
 
     renderBtn?.addEventListener('click', () => {
-      if (!sourceImg) { showToast('Upload gambar dulu', 'error'); return; }
-      if (wmType === 'text' && !wmText.value.trim()) { showToast('Isi teks watermark dulu', 'error'); return; }
-      if (wmType === 'logo' && !logoImg) { showToast('Upload logo dulu', 'error'); return; }
+      if (!sourceImg) { window.showToast?.(window._tToast ? window._tToast('Upload gambar dulu') : 'Upload gambar dulu', 'error'); return; }
+      if (wmType === 'text' && !wmText.value.trim()) { window.showToast?.(window._tToast ? window._tToast('Isi teks watermark dulu') : 'Isi teks watermark dulu', 'error'); return; }
+      if (wmType === 'logo' && !logoImg) { window.showToast?.(window._tToast ? window._tToast('Upload logo dulu') : 'Upload logo dulu', 'error'); return; }
       const canvas = document.createElement('canvas');
       canvas.width = sourceImg.naturalWidth;
       canvas.height = sourceImg.naturalHeight;
@@ -258,7 +258,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       a.href = canvas.toDataURL('image/png');
       a.download = fileName.replace(/\.[^.]+$/, '') + '-watermarked.png';
       a.click();
-      showToast('Gambar berhasil di-watermark!');
+      window.showToast?.(window._tToast ? window._tToast('Gambar berhasil di-watermark!') : 'Gambar berhasil di-watermark!', 'info');
     });
   });
 </script>

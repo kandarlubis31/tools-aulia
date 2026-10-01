@@ -107,7 +107,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       } catch {
         statusText!.textContent = '❌ Akses mikrofon ditolak — periksa izin browser.';
         statusText!.dataset.i18n = '';
-        showToast('Mikrofon tidak diizinkan', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Mikrofon tidak diizinkan') : 'Mikrofon tidak diizinkan', 'error');
         return;
       }
       chunks = [];
@@ -162,16 +162,16 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const wav = encodeWav(buf);
         downloadBlob(wav, 'rekaman.wav');
         ctx.close();
-        showToast('WAV berhasil di-download!');
+        window.showToast?.(window._tToast ? window._tToast('WAV berhasil di-download!') : 'WAV berhasil di-download!', 'info');
       } catch {
-        showToast('Gagal konversi ke WAV — gunakan WebM', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Gagal konversi ke WAV — gunakan WebM') : 'Gagal konversi ke WAV — gunakan WebM', 'error');
       }
     });
 
     downloadWebmBtn?.addEventListener('click', () => {
       if (!finalBlob) return;
       downloadBlob(finalBlob, 'rekaman.webm');
-      showToast('WebM berhasil di-download!');
+      window.showToast?.(window._tToast ? window._tToast('WebM berhasil di-download!') : 'WebM berhasil di-download!', 'info');
     });
 
     resetBtn?.addEventListener('click', () => {

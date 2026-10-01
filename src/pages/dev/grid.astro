@@ -22,6 +22,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 </BaseLayout>
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   let itemCount = 9;
   const colors = ['bg-blue-400','bg-pink-400','bg-emerald-400','bg-amber-400','bg-cyan-400','bg-rose-400','bg-indigo-400','bg-violet-400','bg-teal-400','bg-orange-400','bg-lime-400','bg-sky-400'];
   function render() {
@@ -49,4 +53,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.getElementById('reset').onclick = () => { itemCount = 9; document.getElementById('cols').value = 3; document.getElementById('rows').value = 3; document.getElementById('gap').value = 8; document.getElementById('col-size').value = '1fr'; render(); };
   document.getElementById('copy-css').onclick = () => { navigator.clipboard.writeText(document.getElementById('css-output').textContent); };
   render();
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __devGridPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __devGridPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

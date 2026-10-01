@@ -67,7 +67,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           btn.addEventListener('click', () => {
             const text = (btn as HTMLElement).dataset.text!;
             navigator.clipboard.writeText(text);
-            showToast('Disalin!', 'success');
+            window.showToast?.(window._tToast ? window._tToast('Disalin!') : 'Disalin!', 'success');
           });
         });
       }

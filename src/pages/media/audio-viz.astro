@@ -22,6 +22,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   const canvas = document.getElementById('viz'), ctx = canvas.getContext('2d');
   let audioCtx, analyser, animationId, source;
 
@@ -94,4 +98,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       ctx.closePath(); ctx.stroke();
     }
   }
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __mediaAudioVizPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __mediaAudioVizPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

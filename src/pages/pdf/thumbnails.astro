@@ -86,7 +86,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       async function loadPDF(file: File) {
         const pdfjsLib = await loadPdfJs();
-        if (!pdfjsLib) { showToast('Gagal load PDF library', 'error'); return; }
+        if (!pdfjsLib) { window.showToast?.(window._tToast ? window._tToast('Gagal load PDF library') : 'Gagal load PDF library', 'error'); return; }
         pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
 
         const arrayBuffer = await file.arrayBuffer();
@@ -94,13 +94,13 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
         document.getElementById('filename')!.textContent = file.name;
         document.getElementById('filename')!.classList.remove('hidden');
-        showToast('PDF dimuat! Klik Generate untuk membuat thumbnail.', 'success');
+        window.showToast?.(window._tToast ? window._tToast('PDF dimuat! Klik Generate untuk membuat thumbnail.') : 'PDF dimuat! Klik Generate untuk membuat thumbnail.', 'success');
       }
 
       // Generate thumbnails
       document.getElementById('generate-btn')?.addEventListener('click', async () => {
         if (!pdfDoc) {
-          showToast('Upload PDF terlebih dahulu!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Upload PDF terlebih dahulu!') : 'Upload PDF terlebih dahulu!', 'error');
           return;
         }
 
@@ -140,14 +140,14 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
             link.download = `page-${i}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-            showToast(`Halaman ${i} didownload!`, 'success');
+            window.showToast?.(`Halaman ${i} didownload!`, 'success');
           });
 
           grid!.appendChild(container);
         }
 
         loading?.classList.add('hidden');
-        showToast(`${pdfDoc.numPages} thumbnail digenerate!`, 'success');
+        window.showToast?.(`${pdfDoc.numPages} thumbnail digenerate!`, 'success');
       });
     });
   </script>

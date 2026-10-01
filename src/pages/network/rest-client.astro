@@ -212,7 +212,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           saved.splice(idx, 1);
           localStorage.setItem(SAVED_KEY, JSON.stringify(saved));
           renderSaved();
-          showToast('Request dihapus');
+          window.showToast?.(window._tToast ? window._tToast('Request dihapus') : 'Request dihapus', 'info');
         });
       });
     }
@@ -227,14 +227,14 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     saveBtn?.addEventListener('click', () => {
       const url = urlInput.value.trim();
-      if (!url) { showToast('URL wajib diisi', 'error'); return; }
+      if (!url) { window.showToast?.(window._tToast ? window._tToast('URL wajib diisi') : 'URL wajib diisi', 'error'); return; }
       const saved = readSaved();
       let name: string;
       try { name = new URL(url).hostname || url; } catch { name = url.split('/')[2] || url; }
       saved.unshift({ name, method: methodSelect.value, url, headers: getHeaders(), body: bodyArea.value, savedAt: Date.now() });
       localStorage.setItem(SAVED_KEY, JSON.stringify(saved.slice(0, 30)));
       renderSaved();
-      showToast('Request tersimpan!');
+      window.showToast?.(window._tToast ? window._tToast('Request tersimpan!') : 'Request tersimpan!', 'info');
     });
 
     // ---- Send ----
@@ -243,11 +243,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     sendBtn?.addEventListener('click', async () => {
       const rawUrl = urlInput.value.trim();
-      if (!rawUrl) { showToast('URL wajib diisi', 'error'); return; }
+      if (!rawUrl) { window.showToast?.(window._tToast ? window._tToast('URL wajib diisi') : 'URL wajib diisi', 'error'); return; }
       const url = substitute(rawUrl);
       let parsed: URL;
-      try { parsed = new URL(url); } catch { showToast('URL tidak valid (cek env var)', 'error'); return; }
-      if (!/^https?:$/.test(parsed.protocol)) { showToast('Hanya http/https', 'error'); return; }
+      try { parsed = new URL(url); } catch { window.showToast?.(window._tToast ? window._tToast('URL tidak valid (cek env var)') : 'URL tidak valid (cek env var)', 'error'); return; }
+      if (!/^https?:$/.test(parsed.protocol)) { window.showToast?.(window._tToast ? window._tToast('Hanya http/https') : 'Hanya http/https', 'error'); return; }
 
       const method = methodSelect.value;
       const headers: Record<string, string> = {};
@@ -299,9 +299,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       if (!rawResponse) return;
       try {
         await navigator.clipboard.writeText(rawResponse);
-        showToast('Response tersalin!');
+        window.showToast?.(window._tToast ? window._tToast('Response tersalin!') : 'Response tersalin!', 'info');
       } catch {
-        showToast('Gagal menyalin', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin') : 'Gagal menyalin', 'error');
       }
     });
 

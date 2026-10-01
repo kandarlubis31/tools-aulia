@@ -101,10 +101,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const f = fileInput.files?.[0];
       if (!f) return;
       if (!f.type.startsWith('audio/') && !/\.(mp3|wav|ogg|m4a|flac)$/i.test(f.name)) {
-        showToast('File harus berupa audio', 'error');
+        window.showToast?.(window._tToast ? window._tToast('File harus berupa audio') : 'File harus berupa audio', 'error');
         return;
       }
-      if (f.size > 60 * 1024 * 1024) { showToast('Ukuran maksimal 60 MB', 'error'); return; }
+      if (f.size > 60 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('Ukuran maksimal 60 MB') : 'Ukuran maksimal 60 MB', 'error'); return; }
 
       try {
         const { decodeAudioFile, computePeaks, drawWaveform } = await import('../../composables/useAudioWav');
@@ -123,7 +123,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         drawWaveform(canvas, peaks, { color: '#c4b5fd', progressColor: '#8b5cf6' });
         layout();
       } catch {
-        showToast('Format audio tidak didukung', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Format audio tidak didukung') : 'Format audio tidak didukung', 'error');
       }
     });
 
@@ -182,7 +182,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       previewAudio!.src = URL.createObjectURL(sliceBuffer(buffer, start, end));
       previewAudio!.classList.remove('hidden');
       previewAudio!.play();
-      showToast('Memutar hasil potongan…');
+      window.showToast?.(window._tToast ? window._tToast('Memutar hasil potongan…') : 'Memutar hasil potongan…', 'info');
     });
 
     exportBtn?.addEventListener('click', async () => {
@@ -194,7 +194,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       a.href = URL.createObjectURL(wav);
       a.download = fileName!.textContent!.replace(/\.[^.]+$/, '') + '-trimmed.wav';
       a.click();
-      showToast('Audio berhasil dipotong!');
+      window.showToast?.(window._tToast ? window._tToast('Audio berhasil dipotong!') : 'Audio berhasil dipotong!', 'info');
     });
 
     function sliceBuffer(buf: AudioBuffer, s: number, e: number): AudioBuffer {

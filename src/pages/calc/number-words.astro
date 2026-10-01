@@ -107,14 +107,14 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const num = parseInt(input);
 
         if (isNaN(num)) {
-          showToast('Masukkan angka yang valid!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Masukkan angka yang valid!') : 'Masukkan angka yang valid!', 'error');
           return;
         }
 
         const words = numberToWords(num, language);
         document.getElementById('words-output')!.textContent = words;
         document.getElementById('result')?.classList.remove('hidden');
-        showToast('Dikonversi!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Dikonversi!') : 'Dikonversi!', 'success');
       });
     });
   </script>

@@ -19,6 +19,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  async function init() {
   let videoFile;
   const frames = [];
 
@@ -61,4 +65,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       f.canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'thumb-'+Math.round(f.time)+'s.png'; a.click(); }, 'image/png');
     }, i*200));
   });
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __mediaVideoThumbPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __mediaVideoThumbPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

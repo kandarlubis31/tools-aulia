@@ -93,6 +93,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  async function init() {
   const input = document.getElementById('input-csv') as HTMLTextAreaElement;
   const output = document.getElementById('output-json') as HTMLTextAreaElement;
   const convertBtn = document.getElementById('convert-btn');
@@ -288,4 +292,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     input.value = `id,nama,usia,kota,aktif\n1,"John Doe",28,"Jakarta",true\n2,"Jane Smith",34,"Bandung",true\n3,"Bob Marley",45,"Surabaya",false\n4,"Alice Wonder",22,"Medan",true\n5,"Charlie Brown",31,"Yogyakarta",true`;
     window.showToast?.(window._tToast ? window._tToast('📋 Sample data dimuat. Klik Convert!') : '📋 Sample data dimuat. Klik Convert!', 'info');
   });
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __fileCsvJsonPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __fileCsvJsonPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
 </script>

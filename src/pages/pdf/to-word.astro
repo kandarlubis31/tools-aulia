@@ -75,10 +75,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const f = fileInput.files?.[0];
       if (!f) return;
       if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
-        showToast('Pilih file PDF', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Pilih file PDF') : 'Pilih file PDF', 'error');
         return;
       }
-      if (f.size > 50 * 1024 * 1024) { showToast('Ukuran maksimal 50 MB', 'error'); return; }
+      if (f.size > 50 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('Ukuran maksimal 50 MB') : 'Ukuran maksimal 50 MB', 'error'); return; }
 
       docxName = f.name.replace(/\.pdf$/i, '') + '.docx';
       process?.classList.remove('hidden');
@@ -133,10 +133,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         docxBlob = buildDocx(paragraphs);
         downloadBtn?.classList.remove('hidden');
         statusText!.textContent = `✅ ${pdf.numPages} halaman → ${paragraphs.length} paragraf`;
-        showToast('Konversi selesai!');
+        window.showToast?.(window._tToast ? window._tToast('Konversi selesai!') : 'Konversi selesai!', 'info');
       } catch {
         statusText!.textContent = '❌ Gagal membaca PDF';
-        showToast('Gagal membaca PDF', 'error');
+        window.showToast?.(window._tToast ? window._tToast('Gagal membaca PDF') : 'Gagal membaca PDF', 'error');
       }
     });
 

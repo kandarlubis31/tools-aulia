@@ -111,11 +111,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       document.getElementById('analyze-btn')?.addEventListener('click', () => {
         const text = (document.getElementById('text-input') as HTMLTextAreaElement)?.value;
         if (!text || text.trim().length < 10) {
-          showToast('Masukkan minimal 10 karakter!', 'error');
+          window.showToast?.(window._tToast ? window._tToast('Masukkan minimal 10 karakter!') : 'Masukkan minimal 10 karakter!', 'error');
           return;
         }
         analyzeText(text);
-        showToast('Analisis selesai!', 'success');
+        window.showToast?.(window._tToast ? window._tToast('Analisis selesai!') : 'Analisis selesai!', 'success');
       });
     });
   </script>
