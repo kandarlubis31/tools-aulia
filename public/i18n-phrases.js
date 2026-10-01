@@ -716,4 +716,16 @@ window._i18nPhrases = {
   'Paste sertifikat dulu':'Paste a certificate first',
   'Masukkan input':'Provide input',
   'Editor direset!':'Editor reset!',
+  // W6 batch 7
+  'IP tidak valid!':'Invalid IP address!',
+  'Input kosong!':'Empty input!',
+  'Input tidak valid!':'Invalid input!',
+  'Struk diunduh!':'Receipt downloaded!',
+  'Minimal 1 item!':'Add at least 1 item!',
+  'Gagal membuat gambar':'Failed to create image',
+  'CSV diunduh!':'CSV downloaded!',
+  'JSON tidak valid!':'Invalid JSON!',
+  'Format INSERT tidak dikenali':'Unrecognized INSERT format',
+  'baris diparsing!':'rows parsed!',
+  'Library crypto gagal dimuat':'Crypto library failed to load',
 };
