@@ -6,57 +6,81 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <ToolPageHeader title="Text to Handwriting" description="Konversi teks ke tulisan tangan — download PNG" icon='<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>' />
 
   <div class="card-base p-5 space-y-4">
-    <textarea id="text-input" class="input-field w-full h-24 text-sm" placeholder="Tulis teks di sini..."></textarea>
+    <textarea id="text-input" class="input-field w-full h-24 text-sm" placeholder="Tulis teks di sini..." data-i18n-attr="placeholder" data-i18n="ph.write_here"></textarea>
 
     <div class="flex flex-wrap gap-3 items-end">
-      <div><label class="text-xs text-matte-500 mb-1 block">Gaya Tulisan</label><select id="font-style" class="input-field text-sm w-40"><option value="cursive">Cursive</option><option value="marker">Marker</option><option value="neat">Neat Print</option></select></div>
-      <div><label class="text-xs text-matte-500 mb-1 block">Ukuran Font</label><input id="font-size" type="number" class="input-field w-16 text-sm" value="24" min="12" max="48"></div>
-      <div><label class="text-xs text-matte-500 mb-1 block">Warna Tinta</label><input id="ink-color" type="color" value="#1e40af" class="w-8 h-8 rounded cursor-pointer p-0 border-0"></div>
+      <div><label for="font-style" class="text-xs text-matte-500 mb-1 block" data-i18n="label.font_style">Gaya Tulisan</label><select id="font-style" class="input-field text-sm w-40"><option value="cursive" data-i18n="label.style_cursive">Cursive</option><option value="marker" data-i18n="label.style_marker">Marker</option><option value="neat" data-i18n="label.style_neat">Neat Print</option></select></div>
+      <div><label for="font-size" class="text-xs text-matte-500 mb-1 block" data-i18n="label.font_size">Ukuran Font</label><input id="font-size" type="number" class="input-field w-16 text-sm" value="24" min="12" max="48"></div>
+      <div><label for="ink-color" class="text-xs text-matte-500 mb-1 block" data-i18n="label.ink_color">Warna Tinta</label><input id="ink-color" type="color" value="#1e40af" class="w-8 h-8 rounded cursor-pointer p-0 border-0"></div>
     </div>
 
     <div class="bg-white rounded-lg shadow-lg p-4 flex justify-center"><canvas id="hw-canvas" width="700" height="400" class="max-w-full"></canvas></div>
-    <button id="gen-btn" class="btn-primary w-full">Generate & Download PNG</button>
+    <button id="download-btn" class="btn-primary w-full" data-i18n="btn.generate_download_png">Generate & Download PNG</button>
   </div>
 </BaseLayout>
 
 <script>
-
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  const canvas = document.getElementById('hw-canvas'), ctx = canvas.getContext('2d');
-  const fonts = { cursive: 'cursive', marker: 'fantasy', neat: 'monospace' };
+  const canvas = document.getElementById('hw-canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const textInput = document.getElementById('text-input') as HTMLTextAreaElement;
+  const fonts = { cursive: 'cursive', marker: 'fantasy', neat: 'monospace' } as Record<string, string>;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
-  document.getElementById('gen-btn').addEventListener('click', () => {
-    const text = document.getElementById('text-input').value || 'Tulis sesuatu di sini...';
-    const style = document.getElementById('font-style').value;
-    const size = parseInt(document.getElementById('font-size').value) || 24;
-    const color = document.getElementById('ink-color').value;
+  const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+  function draw() {
+    const text = textInput.value.trim() || 'Tulis sesuatu di sini...';
+    const style = (document.getElementById('font-style') as HTMLSelectElement).value;
+    const size = clamp(parseInt((document.getElementById('font-size') as HTMLInputElement).value, 10) || 24, 12, 48);
+    const color = (document.getElementById('ink-color') as HTMLInputElement).value;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#fefce8'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#fefce8'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw ruled lines
+    // Garis-garis buku tulis
     ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.5;
-    for (let y=50; y<canvas.height; y+=size+10) { ctx.beginPath(); ctx.moveTo(20,y+size); ctx.lineTo(canvas.width-20,y+size); ctx.stroke(); }
+    for (let y = 50; y < canvas.height; y += size + 10) { ctx.beginPath(); ctx.moveTo(20, y + size); ctx.lineTo(canvas.width - 20, y + size); ctx.stroke(); }
 
     ctx.fillStyle = color;
-    ctx.font = size+'px ' + fonts[style];
+    ctx.font = size + 'px ' + (fonts[style] || 'cursive');
     const words = text.split(' ');
-    let x=30, y=size+30;
+    let x = 30, y = size + 30;
     words.forEach(w => {
-      const m = ctx.measureText(w+' ');
-      if (x+m.width > canvas.width-30) { x=30; y+=size+10; }
-      // slight random tilt for realism
-      ctx.save(); ctx.translate(x, y); ctx.rotate((Math.random()-0.5)*0.05);
+      const m = ctx.measureText(w + ' ');
+      if (x + m.width > canvas.width - 30) { x = 30; y += size + 10; }
+      if (y > canvas.height - 10) return; // jangan overflow keluar kanvas
+      // tilt acak kecil biar natural
+      ctx.save(); ctx.translate(x, y); ctx.rotate((Math.random() - 0.5) * 0.05);
       ctx.fillText(w, 0, 0); ctx.restore();
       x += m.width;
     });
+  }
 
-    canvas.toBlob(b => {
-      const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'handwriting.png'; a.click();
-    }, 'image/png');
+  document.getElementById('download-btn')!.addEventListener('click', () => {
+    if (!textInput.value.trim()) { toast('Tulis teks dulu!', 'error'); return; }
+    try {
+      draw();
+      canvas.toBlob(b => {
+        if (!b) { toast('Gagal membuat PNG', 'error'); return; }
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'handwriting.png'; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        toast('PNG diunduh!');
+      }, 'image/png');
+    } catch { toast('Gagal membuat PNG', 'error'); }
   });
+
+  // Live preview: re-draw saat input berubah (draw murah, tanpa debounce)
+  ['text-input', 'font-style', 'font-size', 'ink-color'].forEach(id => {
+    const el = document.getElementById(id);
+    el?.addEventListener('input', draw);
+    el?.addEventListener('change', draw);
+  });
+
+  draw();
 
   }
 
