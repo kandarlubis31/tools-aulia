@@ -6,9 +6,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <ToolPageHeader title="Cert Decoder" description="Parse sertifikat SSL: subject, issuer, masa berlaku" icon='<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>' />
 
   <div class="card-base p-5 space-y-4">
-    <textarea id="cert-input" class="input-field w-full h-40 font-mono text-sm" placeholder="Paste sertifikat PEM di sini...&#10;-----BEGIN CERTIFICATE-----&#10;MIIDXTCCAkWgAwIBAgIJAKl...&#10;-----END CERTIFICATE-----"></textarea>
+    <div>
+      <label for="cert-input" class="text-xs text-matte-500 mb-1 block" data-i18n="label.certificate">Sertifikat (PEM)</label>
+      <textarea id="cert-input" class="input-field w-full h-40 font-mono text-sm" placeholder="Paste sertifikat PEM di sini...&#10;-----BEGIN CERTIFICATE-----&#10;MIIDXTCCAkWgAwIBAgIJAKl...&#10;-----END CERTIFICATE-----" data-i18n-attr="placeholder" data-i18n="ph.paste_cert"></textarea>
+    </div>
 
-    <button id="decode-btn" class="btn-primary">Decode Sertifikat</button>
+    <button id="decode-btn" class="btn-primary" data-i18n="btn.decode_cert">Decode Sertifikat</button>
 
     <div id="result-area" class="hidden space-y-2">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="fields"></div>
@@ -17,58 +20,83 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  document.getElementById('decode-btn').addEventListener('click', async () => {
-    const pem = document.getElementById('cert-input').value.trim();
-    if (!pem) { showToast?.(_tToast?.('Paste sertifikat dulu', 'Paste certificate first'), 'error'); return; }
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+  const esc = (s: unknown) => String(s ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  document.getElementById('decode-btn')!.addEventListener('click', () => {
+    const pem = (document.getElementById('cert-input') as HTMLTextAreaElement).value.trim();
+    if (!pem) { toast('Paste sertifikat dulu', 'error'); return; }
 
     try {
-      let derB64 = pem.replace(/-----BEGIN CERTIFICATE-----/, '').replace(/-----END CERTIFICATE-----/, '').replace(/\s/g, '');
+      const derB64 = pem.replace(/-----BEGIN CERTIFICATE-----/, '').replace(/-----END CERTIFICATE-----/, '').replace(/\s/g, '');
       const der = Uint8Array.from(atob(derB64), c => c.charCodeAt(0));
 
       const { Subject, Issuer, NotBefore, NotAfter, SerialNumber } = parseX509Lite(der);
-      document.getElementById('result-area').classList.remove('hidden');
-      document.getElementById('fields').innerHTML =
-        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Subject CN:</span> <span class="font-mono">'+esc(Subject.CN||'-')+'</span></div>'+
-        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Subject Org:</span> <span class="font-mono">'+esc(Subject.O||'-')+'</span></div>'+
-        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Issuer CN:</span> <span class="font-mono">'+esc(Issuer.CN||'-')+'</span></div>'+
-        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Issuer Org:</span> <span class="font-mono">'+esc(Issuer.O||'-')+'</span></div>'+
-        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Valid From:</span> <span class="font-mono">'+esc(NotBefore||'-')+'</span></div>'+
-        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Valid Until:</span> <span class="font-mono '+((new Date(NotAfter) < new Date())?'text-red-500':'text-green-500')+'">'+esc(NotAfter||'-')+'</span></div>'+
-        '<div class="card-base p-2 text-sm"><span class="text-matte-400">Serial:</span> <span class="font-mono text-xs">'+esc(SerialNumber||'-')+'</span></div>';
-    } catch (e) {
-      showToast?.(_tToast?.('Gagal decode: '+(e.message||'Invalid'), 'Decode failed'), 'error');
+      const expired = NotAfter && new Date(NotAfter) < new Date();
+      document.getElementById('result-area')!.classList.remove('hidden');
+      document.getElementById('fields')!.innerHTML =
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">' + t('cert.subject_cn', 'Subject CN:') + '</span> <span class="font-mono">' + esc(Subject.CN || '-') + '</span></div>' +
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">' + t('cert.subject_org', 'Subject Org:') + '</span> <span class="font-mono">' + esc(Subject.O || '-') + '</span></div>' +
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">' + t('cert.issuer_cn', 'Issuer CN:') + '</span> <span class="font-mono">' + esc(Issuer.CN || '-') + '</span></div>' +
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">' + t('cert.issuer_org', 'Issuer Org:') + '</span> <span class="font-mono">' + esc(Issuer.O || '-') + '</span></div>' +
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">' + t('cert.valid_from', 'Valid From:') + '</span> <span class="font-mono">' + esc(NotBefore || '-') + '</span></div>' +
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">' + t('cert.valid_until', 'Valid Until:') + '</span> <span class="font-mono ' + (expired ? 'text-red-500' : 'text-green-500') + '">' + esc(NotAfter || '-') + '</span></div>' +
+        '<div class="card-base p-2 text-sm"><span class="text-matte-400">' + t('cert.serial', 'Serial:') + '</span> <span class="font-mono text-xs">' + esc(SerialNumber || '-') + '</span></div>' +
+        '<div class="card-base p-2 text-sm col-span-2 text-center font-bold ' + (expired ? 'text-red-500' : 'text-green-500') + '">' +
+        (expired ? '❌ ' + t('cert.status_expired', 'Sertifikat KEDALUWARSA') : '✅ ' + t('cert.status_valid', 'Sertifikat masih berlaku')) + '</div>';
+    } catch (e: any) {
+      toast('Gagal decode: ' + (e?.message || 'Invalid'), 'error');
     }
   });
 
-  function esc(s) { return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  function parseX509Lite(der) {
-    const result = { Subject:{}, Issuer:{}, NotBefore:'', NotAfter:'', SerialNumber:'' };
+  // ASN.1 DER lite parser — baca field utama X.509 tanpa dependency
+  function parseX509Lite(der: Uint8Array) {
+    const result = { Subject: {} as Record<string, string>, Issuer: {} as Record<string, string>, NotBefore: '', NotAfter: '', SerialNumber: '' };
     const view = new DataView(der.buffer, der.byteOffset, der.byteLength);
-    // ASN.1 DER lite parser — parse TBS certificate
     let pos = 0;
-    function readLength() { let len = view.getUint8(pos++); if (len & 0x80) { const n = len&0x7f; len=0; for(let i=0;i<n;i++) len=(len<<8)|view.getUint8(pos++); } return len; }
-    function skipTag(tag) { pos++; readLength(); }
-    function readString() { const tag = view.getUint8(pos); pos++; const len = readLength(); const s = String.fromCharCode(...new Uint8Array(der.buffer, der.byteOffset+pos, len)); pos+=len; return s; }
-    function parseDN() { const o = {}; pos++; const outerLen = readLength(); const end = pos+outerLen; while(pos<end){ pos++; const len = readLength(); const oid = view.getUint8(pos+2); pos+=len; const val = readString();
-      if(oid===3)o.CN=val; else if(oid===6)o.C=val; else if(oid===7)o.L=val; else if(oid===9)o.O=val; } return o; }
+    function readLength() { let len = view.getUint8(pos++); if (len & 0x80) { const n = len & 0x7f; len = 0; for (let i = 0; i < n; i++) len = (len << 8) | view.getUint8(pos++); } return len; }
+    function skipHeader() { pos++; readLength(); } // turun ke isi (container)
+    function skipElement() { pos++; const len = readLength(); pos += len; } // lewati seluruh elemen
+    function readString() { pos++; const len = readLength(); let s = ''; for (let i = 0; i < len; i++) s += String.fromCharCode(view.getUint8(pos + i)); pos += len; return s; }
+    function parseDN() {
+      const o: Record<string, string> = {};
+      // Name(0x30) berisi RDN; tiap RDN: SET(0x31) { SEQUENCE(0x30) { OID(0x06), value } }
+      pos++; const nameLen = readLength(); const nameEnd = pos + nameLen;
+      while (pos < nameEnd) {
+        pos++; const setLen = readLength(); const setEnd = pos + setLen;
+        pos++; readLength(); // SEQ header saja — kontennya = OID + value
+        pos++; const oidLen = readLength();
+        const oidLast = view.getUint8(pos + oidLen - 1); // 3=CN, 6=C, 7=L, 10=O
+        pos += oidLen;
+        pos++; // value tag (0x0C/0x13/0x1E)
+        const vLen = readLength();
+        let val = '';
+        for (let i = 0; i < vLen; i++) val += String.fromCharCode(view.getUint8(pos + i));
+        pos += vLen;
+        pos = setEnd;
+        if (oidLast === 3) o.CN = val; else if (oidLast === 6) o.C = val; else if (oidLast === 7) o.L = val; else if (oidLast === 10) o.O = val;
+      }
+      pos = nameEnd;
+      return o;
+    }
 
-    skipTag(0x30); // SEQUENCE
-    skipTag(0x30); // TBSCertificate
-    if (view.getUint8(pos) === 0xA0) { pos++; readLength(); } // version
-    const serialTag = view.getUint8(pos); pos++;
-    const serialLen = readLength();
-    let serial='';
-    for(let i=0;i<serialLen;i++) serial += view.getUint8(pos+i).toString(16).padStart(2,'0');
+    skipHeader(); // SEQUENCE
+    skipHeader(); // TBSCertificate
+    if (view.getUint8(pos) === 0xA0) skipElement(); // version — SKIP ISI
+    const serialLen = (pos++, readLength());
+    let serial = '';
+    for (let i = 0; i < serialLen; i++) serial += view.getUint8(pos + i).toString(16).padStart(2, '0');
     result.SerialNumber = serial;
     pos += serialLen;
-    skipTag(0x30); // signature algo
+    skipElement(); // signature algo — SKIP ISI
     result.Issuer = parseDN();
-    skipTag(0x30); // validity
+    skipHeader(); // validity (turun ke isi: 2 UTC time)
     result.NotBefore = readString();
     result.NotAfter = readString();
     result.Subject = parseDN();

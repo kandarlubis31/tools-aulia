@@ -704,4 +704,16 @@ window._i18nPhrases = {
   'Tercatat!':'Logged!',
   'Dibatalkan':'Undone',
   '🎉 Target harian tercapai!':'🎉 Daily goal reached!',
+  // W6 batch 6
+  'Isi minimum & maximum':'Fill in minimum & maximum',
+  'Jumlah minimal 1':'Count must be at least 1',
+  'Minimum harus kurang dari Maximum':'Minimum must be less than Maximum',
+  'Jumlah melebihi range untuk angka unik':'Count exceeds range for unique numbers',
+  'Upload PDF dulu!':'Upload a PDF first!',
+  'File harus PDF!':'File must be a PDF!',
+  'PDF gagal dimuat — file mungkin korup':'Failed to load PDF — file may be corrupted',
+  'Upload kedua PDF dulu!':'Upload both PDFs first!',
+  'Paste sertifikat dulu':'Paste a certificate first',
+  'Masukkan input':'Provide input',
+  'Editor direset!':'Editor reset!',
 };
