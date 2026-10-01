@@ -16,31 +16,41 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <div class="card-base p-8 animate-fade-in">
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        <div><label class="text-xs text-matte-500 mb-1 block">Jenis Kelamin</label>
+        <div><label for="gender" class="text-xs text-matte-500 mb-1 block" data-i18n="bmr.gender">Jenis Kelamin</label>
           <select id="gender" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
-            <option value="male">Laki-laki</option>
-            <option value="female">Perempuan</option>
+            <option value="male" data-i18n="bmr.male">Laki-laki</option>
+            <option value="female" data-i18n="bmr.female">Perempuan</option>
           </select></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Usia (tahun)</label><input id="age" type="number" value="25" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Berat (kg)</label><input id="weight" type="number" value="70" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Tinggi (cm)</label><input id="height" type="number" value="170" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Aktivitas</label>
+        <div><label for="age" class="text-xs text-matte-500 mb-1 block" data-i18n="bmr.age">Usia (tahun)</label><input id="age" type="number" value="25" min="1" max="120" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label for="weight" class="text-xs text-matte-500 mb-1 block" data-i18n="bmr.weight">Berat (kg)</label><input id="weight" type="number" value="70" min="10" max="400" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label for="height" class="text-xs text-matte-500 mb-1 block" data-i18n="bmr.height">Tinggi (cm)</label><input id="height" type="number" value="170" min="50" max="260" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label for="activity" class="text-xs text-matte-500 mb-1 block" data-i18n="bmr.activity">Aktivitas</label>
           <select id="activity" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
-            <option value="1.2">Sedentary (tidak olahraga)</option>
-            <option value="1.375">Ringan (1-3x/minggu)</option>
-            <option value="1.55" selected>Sedang (3-5x/minggu)</option>
-            <option value="1.725">Berat (6-7x/minggu)</option>
-            <option value="1.9">Sangat Berat (2x/hari)</option>
+            <option value="1.2" data-i18n="bmr.act_sedentary">Sedentary (tidak olahraga)</option>
+            <option value="1.375" data-i18n="bmr.act_light">Ringan (1-3x/minggu)</option>
+            <option value="1.55" selected data-i18n="bmr.act_moderate">Sedang (3-5x/minggu)</option>
+            <option value="1.725" data-i18n="bmr.act_heavy">Berat (6-7x/minggu)</option>
+            <option value="1.9" data-i18n="bmr.act_athlete">Sangat Berat (2x/hari)</option>
           </select></div>
-        <div class="flex items-end"><button id="calc" class="w-full py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors">Hitung</button></div>
+        <div class="flex items-end"><button id="calc" class="w-full py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors" data-i18n="btn.calculate">Hitung</button></div>
       </div>
 
       <div id="result" class="hidden mt-6 p-6 bg-matte-50 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl"><span class="text-2xl font-black text-red-500" id="bmr-val">0</span><br/><span class="text-xs text-matte-500">BMR (kalori)</span></div>
-          <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl"><span class="text-2xl font-black text-orange-500" id="tdee-val">0</span><br/><span class="text-xs text-matte-500">TDEE (kalori/hari)</span></div>
-          <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl"><span class="text-2xl font-black text-emerald-500" id="loss-val">0</span><br/><span class="text-xs text-matte-500">Defisit (−500)</span></div>
-          <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl"><span class="text-2xl font-black text-blue-500" id="gain-val">0</span><br/><span class="text-xs text-matte-500">Surplus (+500)</span></div>
+          <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl"><span class="text-2xl font-black text-red-500" id="bmr-val">0</span><br/><span class="text-xs text-matte-500" data-i18n="bmr.bmr_label">BMR (kalori)</span></div>
+          <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl"><span class="text-2xl font-black text-orange-500" id="tdee-val">0</span><br/><span class="text-xs text-matte-500" data-i18n="bmr.tdee_label">TDEE (kalori/hari)</span></div>
+          <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl"><span class="text-2xl font-black text-emerald-500" id="loss-val">0</span><br/><span class="text-xs text-matte-500" data-i18n="bmr.deficit_label">Defisit (−500)</span></div>
+          <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl"><span class="text-2xl font-black text-blue-500" id="gain-val">0</span><br/><span class="text-xs text-matte-500" data-i18n="bmr.surplus_label">Surplus (+500)</span></div>
+        </div>
+      </div>
+
+      <div id="hist-wrap" class="hidden mt-6 pt-4 border-t border-matte-200 dark:border-surface-border">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-sm font-bold text-matte-600 dark:text-matte-300" data-i18n="hist.title">Riwayat Perhitungan</h3>
+          <button id="hist-clear" class="text-xs font-bold text-rose-500 hover:underline" data-i18n="btn.clear_history">Hapus Riwayat</button>
+        </div>
+        <div id="hist-list" class="space-y-1.5">
+          <p class="text-xs text-matte-400" data-i18n="common.no_history">Belum ada riwayat</p>
         </div>
       </div>
     </div>
@@ -48,27 +58,96 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { useLocalHistory } from '../../composables/useLocalHistory';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  document.getElementById('calc').onclick = () => {
-    const g = document.getElementById('gender').value;
-    const a = +document.getElementById('age').value;
-    const w = +document.getElementById('weight').value;
-    const h = +document.getElementById('height').value;
-    const act = +document.getElementById('activity').value;
-    let bmr;
-    if (g === 'male') bmr = 10 * w + 6.25 * h - 5 * a + 5;
-    else bmr = 10 * w + 6.25 * h - 5 * a - 161;
+  const genderSel = document.getElementById('gender') as HTMLSelectElement;
+  const ageInp = document.getElementById('age') as HTMLInputElement;
+  const weightInp = document.getElementById('weight') as HTMLInputElement;
+  const heightInp = document.getElementById('height') as HTMLInputElement;
+  const activitySel = document.getElementById('activity') as HTMLSelectElement;
+  const resultEl = document.getElementById('result')!;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  interface HistEntry { gender: string; age: number; weight: number; height: number; act: number; bmr: number; tdee: number; at: number; }
+  const history = useLocalHistory<HistEntry>('hist:bmr', 10);
+
+  function esc(s: unknown) { return String(s ?? '').replace(/</g, '&lt;'); }
+
+  function renderHistory() {
+    const wrap = document.getElementById('hist-wrap')!;
+    const list = document.getElementById('hist-list')!;
+    const items = history.getAll();
+    wrap.classList.toggle('hidden', items.length === 0);
+    list.innerHTML = items.length === 0
+      ? '<p class="text-xs text-matte-400" data-i18n="common.no_history">Belum ada riwayat</p>'
+      : items.map((it, i) =>
+        `<div class="flex items-center gap-2 text-xs card-base p-2">
+          <button data-load="${i}" class="font-bold text-red-500 hover:underline shrink-0" data-i18n="hist.load">Muat</button>
+          <span class="flex-1 truncate">${esc(it.gender === 'male' ? '♂' : '♀')} ${it.age}th · ${it.weight}kg · ${it.height}cm — BMR ${it.bmr} / TDEE ${it.tdee}</span>
+          <button data-del="${i}" class="text-rose-500 hover:text-rose-600 font-bold shrink-0" aria-label="Delete">✕</button>
+        </div>`).join('');
+  }
+
+  document.getElementById('hist-list')!.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const loadIdx = target.dataset.load;
+    const delIdx = target.dataset.del;
+    if (loadIdx !== undefined) {
+      const it = history.getAll()[Number(loadIdx)];
+      if (!it) return;
+      genderSel.value = it.gender;
+      ageInp.value = String(it.age);
+      weightInp.value = String(it.weight);
+      heightInp.value = String(it.height);
+      activitySel.value = String(it.act);
+      calc();
+      toast('Form dimuat dari riwayat.', 'info');
+    } else if (delIdx !== undefined) {
+      const items = history.getAll();
+      items.splice(Number(delIdx), 1);
+      history.update(items);
+      renderHistory();
+    }
+  });
+
+  document.getElementById('hist-clear')!.addEventListener('click', () => {
+    history.clear();
+    renderHistory();
+    toast('Riwayat dihapus!');
+  });
+
+  const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+  function calc() {
+    const g = genderSel.value;
+    const age = clamp(parseInt(ageInp.value, 10) || 0, 1, 120);
+    const w = clamp(parseFloat(weightInp.value) || 0, 10, 400);
+    const h = clamp(parseFloat(heightInp.value) || 0, 50, 260);
+    const act = parseFloat(activitySel.value) || 1.2;
+    ageInp.value = String(age); weightInp.value = String(w); heightInp.value = String(h);
+
+    let bmr = 10 * w + 6.25 * h - 5 * age + (g === 'male' ? 5 : -161);
     bmr = Math.round(bmr);
     const tdee = Math.round(bmr * act);
-    document.getElementById('bmr-val').textContent = bmr;
-    document.getElementById('tdee-val').textContent = tdee;
-    document.getElementById('loss-val').textContent = (tdee - 500);
-    document.getElementById('gain-val').textContent = (tdee + 500);
-    document.getElementById('result').classList.remove('hidden');
-  };
+    (document.getElementById('bmr-val') as HTMLElement).textContent = String(bmr);
+    (document.getElementById('tdee-val') as HTMLElement).textContent = String(tdee);
+    (document.getElementById('loss-val') as HTMLElement).textContent = String(tdee - 500);
+    (document.getElementById('gain-val') as HTMLElement).textContent = String(tdee + 500);
+    resultEl.classList.remove('hidden');
+
+    const items = history.getAll().filter(it => !(it.gender === g && it.age === age && it.weight === w && it.height === h));
+    items.unshift({ gender: g, age, weight: w, height: h, act, bmr, tdee, at: Date.now() });
+    history.update(items);
+    renderHistory();
+  }
+
+  document.getElementById('calc')!.addEventListener('click', calc);
+  [ageInp, weightInp, heightInp].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') calc(); }));
+  renderHistory();
 
   }
 

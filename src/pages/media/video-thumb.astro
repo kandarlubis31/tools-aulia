@@ -7,63 +7,114 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <div class="card-base p-5 space-y-4">
     <input type="file" id="file-input" accept="video/*" class="input-field text-sm w-full">
-    <div class="flex gap-2 items-end">
-      <div><label class="text-xs text-matte-500 mb-1 block">Waktu (detik)</label><input id="time" type="number" min="0" step="0.1" value="5" class="input-field w-20 text-sm"></div>
-      <div><label class="text-xs text-matte-500 mb-1 block">Mode</label><select id="mode" class="input-field text-sm w-32"><option value="single">Single Frame</option><option value="grid">Grid 3x3</option></select></div>
-      <button id="capture-btn" class="btn-primary text-sm">Capture</button>
+    <div class="flex gap-2 items-end flex-wrap">
+      <div><label for="time" class="text-xs text-matte-500 mb-1 block" data-i18n="label.time_seconds">Waktu (detik)</label><input id="time" type="number" min="0" step="0.1" value="5" class="input-field w-20 text-sm"></div>
+      <div><label for="mode" class="text-xs text-matte-500 mb-1 block" data-i18n="label.mode">Mode</label><select id="mode" class="input-field text-sm w-32"><option value="single" data-i18n="mode.single">Single Frame</option><option value="grid" data-i18n="mode.grid">Grid 3x3</option></select></div>
+      <button id="capture-btn" class="btn-primary text-sm" data-i18n="btn.capture">Capture</button>
     </div>
 
     <div class="bg-matte-50 dark:bg-matte-800 rounded-lg p-3 flex justify-center flex-wrap gap-2" id="frames"></div>
-    <button id="download-all" class="btn-primary w-full hidden">Download Semua PNG</button>
+    <button id="download-all" class="btn-primary w-full hidden" data-i18n="btn.download_all">Download Semua PNG</button>
   </div>
 </BaseLayout>
 
 <script>
-
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
-  async function init() {
-  let videoFile;
-  const frames = [];
+  function init() {
+  let videoFile: File | undefined;
+  const frames: { canvas: HTMLCanvasElement; time: number }[] = [];
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
-  document.getElementById('file-input').addEventListener('change', function() { videoFile = this.files[0]; });
-
-  document.getElementById('capture-btn').addEventListener('click', async () => {
-    if (!videoFile) { showToast?.(_tToast?.('Pilih video dulu','Select video first'),'error'); return; }
-    const video = document.createElement('video');
-    video.src = URL.createObjectURL(videoFile);
-    video.muted = true;
-    await new Promise(r => { video.onloadedmetadata = r; });
-    const mode = document.getElementById('mode').value;
-    const start = parseFloat(document.getElementById('time').value) || 5;
-    const container = document.getElementById('frames');
-    container.innerHTML = '';
-    frames.length = 0;
-
-    const times = mode === 'grid' ? Array.from({length:9}, (_,i) => start + i * (video.duration - start) / 9) : [start];
-
-    for (const t of times) {
-      video.currentTime = Math.min(t, video.duration - 0.1);
-      await new Promise(r => { video.onseeked = r; });
-      const c = document.createElement('canvas');
-      c.width = video.videoWidth / 2; c.height = video.videoHeight / 2;
-      c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
-      c.className = 'rounded shadow cursor-pointer hover:ring-2 hover:ring-accent-blue';
-      c.title = 'Klik download';
-      c.addEventListener('click', () => {
-        c.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'thumb-'+Math.round(t)+'s.png'; a.click(); }, 'image/png');
-      });
-      container.appendChild(c);
-      frames.push({ canvas: c, time: t });
+  fileInput.addEventListener('change', () => {
+    videoFile = fileInput.files?.[0];
+    if (videoFile && !videoFile.type.startsWith('video/')) {
+      videoFile = undefined;
+      toast('File harus video!', 'error');
     }
-    URL.revokeObjectURL(video.src);
-    document.getElementById('download-all').classList.toggle('hidden', !frames.length);
   });
 
-  document.getElementById('download-all').addEventListener('click', () => {
-    frames.forEach((f,i) => setTimeout(() => {
-      f.canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'thumb-'+Math.round(f.time)+'s.png'; a.click(); }, 'image/png');
-    }, i*200));
+  // Seek dengan timeout — onseeked bisa tak pernah fire untuk codec yang tak didukung
+  function seek(video: HTMLVideoElement, t: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { cleanup(); reject(new Error('seek timeout')); }, 6000);
+      const onSeeked = () => { cleanup(); resolve(); };
+      const onError = () => { cleanup(); reject(new Error('seek error')); };
+      function cleanup() { clearTimeout(timer); video.removeEventListener('seeked', onSeeked); video.removeEventListener('error', onError); }
+      video.addEventListener('seeked', onSeeked);
+      video.addEventListener('error', onError);
+      video.currentTime = t;
+    });
+  }
+
+  document.getElementById('capture-btn')!.addEventListener('click', async () => {
+    if (!videoFile) { toast('Pilih video dulu!', 'error'); return; }
+    const video = document.createElement('video');
+    const url = URL.createObjectURL(videoFile);
+    video.src = url;
+    video.muted = true;
+    const container = document.getElementById('frames')!;
+    const dlAll = document.getElementById('download-all') as HTMLButtonElement;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('metadata timeout')), 8000);
+        video.onloadedmetadata = () => { clearTimeout(timer); resolve(); };
+        video.onerror = () => { clearTimeout(timer); reject(new Error('video load error')); };
+      });
+
+      const mode = (document.getElementById('mode') as HTMLSelectElement).value;
+      const start = Math.max(0, parseFloat((document.getElementById('time') as HTMLInputElement).value) || 5);
+      if (start >= video.duration) { toast('Waktu melebihi durasi video', 'error'); return; }
+
+      container.innerHTML = '';
+      frames.length = 0;
+
+      const times = mode === 'grid'
+        ? Array.from({ length: 9 }, (_, i) => start + i * Math.max(0.1, (video.duration - start)) / 9)
+        : [start];
+
+      for (const t of times) {
+        await seek(video, Math.min(t, Math.max(0, video.duration - 0.1)));
+        const c = document.createElement('canvas');
+        c.width = video.videoWidth / 2 || 320;
+        c.height = video.videoHeight / 2 || 180;
+        c.getContext('2d')!.drawImage(video, 0, 0, c.width, c.height);
+        c.className = 'rounded shadow cursor-pointer hover:ring-2 hover:ring-accent-blue';
+        c.title = window._tToast ? window._tToast('Klik untuk download') : 'Klik download';
+        const timeAt = t;
+        c.addEventListener('click', () => {
+          c.toBlob(b => {
+            if (!b) return;
+            const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'thumb-' + Math.round(timeAt) + 's.png'; a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+          }, 'image/png');
+        });
+        container.appendChild(c);
+        frames.push({ canvas: c, time: t });
+      }
+      URL.revokeObjectURL(url);
+      dlAll.classList.toggle('hidden', !frames.length);
+      toast('Frame di-capture!', 'success');
+    } catch {
+      URL.revokeObjectURL(url);
+      container.innerHTML = '';
+      frames.length = 0;
+      dlAll.classList.add('hidden');
+      toast('Video gagal diproses — codec mungkin tidak didukung', 'error');
+    }
+  });
+
+  document.getElementById('download-all')!.addEventListener('click', () => {
+    if (!frames.length) { toast('Belum ada frame.', 'info'); return; }
+    frames.forEach((f, i) => setTimeout(() => {
+      f.canvas.toBlob(b => {
+        if (!b) return;
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'thumb-' + Math.round(f.time) + 's.png'; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      }, 'image/png');
+    }, i * 200));
   });
 
   }
