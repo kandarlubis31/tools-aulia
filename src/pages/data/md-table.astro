@@ -6,11 +6,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <ToolPageHeader title="Markdown Table Gen" description="Generate tabel Markdown dari CSV — copy-paste siap" icon='<path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 3v18"/>' />
 
   <div class="card-base p-5 space-y-4">
-    <textarea id="csv-input" class="input-field w-full h-32 font-mono text-sm" placeholder="Paste CSV di sini...&#10;Nama, Usia, Kota&#10;Alice, 25, Jakarta&#10;Bob, 30, Bandung"></textarea>
-    <div class="flex gap-2">
-      <button id="gen-btn" class="btn-primary">Generate MD Table</button>
-      <label class="flex items-center gap-1 text-sm text-matte-500"><input type="checkbox" id="align" checked> Alignment header</label>
-      <label class="flex items-center gap-1 text-sm text-matte-500"><input type="checkbox" id="pretty"> Pretty format</label>
+    <textarea id="csv-input" class="input-field w-full h-32 font-mono text-sm" placeholder="Paste CSV di sini...&#10;Nama, Usia, Kota&#10;Alice, 25, Jakarta&#10;Bob, 30, Bandung" data-i18n-attr="placeholder" data-i18n="ph.paste_csv"></textarea>
+    <div class="flex flex-wrap gap-2 items-center">
+      <button id="gen-btn" class="btn-primary" data-i18n="btn.generate_md">Generate MD Table</button>
+      <label class="flex items-center gap-1 text-sm text-matte-500"><input type="checkbox" id="align" checked> <span data-i18n="label.alignment_header">Alignment header</span></label>
+      <label class="flex items-center gap-1 text-sm text-matte-500"><input type="checkbox" id="pretty"> <span data-i18n="label.pretty_format">Pretty format</span></label>
     </div>
 
     <div class="flex justify-between items-center"><label class="text-sm text-matte-500 font-medium" data-i18n="label.output">Output</label><button id="copy-btn" class="btn-secondary text-xs" data-i18n="btn.copy_emoji">📋 Copy</button></div>
@@ -19,37 +19,50 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  document.getElementById('gen-btn').addEventListener('click', () => {
-    const csv = document.getElementById('csv-input').value.trim();
-    if (!csv) return;
-    const lines = csv.split('\n').filter(Boolean);
-    const rows = lines.map(l => l.split(',').map(c => c.trim()));
-    if (!rows.length) return;
-    const pretty = document.getElementById('pretty').checked;
-    const align = document.getElementById('align').checked;
+  const csvInput = document.getElementById('csv-input') as HTMLTextAreaElement;
+  const outputEl = document.getElementById('output') as HTMLPreElement;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
-    const colWidths = rows[0].map((_,ci) => Math.max(...rows.map(r => (r[ci]||'').length)));
-    const pad = (s,w) => pretty ? s + ' '.repeat(Math.max(0,w-s.length)) : s;
+  document.getElementById('gen-btn')!.addEventListener('click', () => {
+    const csv = csvInput.value.trim();
+    if (!csv) { toast('Paste CSV dulu!', 'error'); return; }
+    try {
+      const lines = csv.split('\n').filter(Boolean);
+      const rows = lines.map(l => l.split(',').map(c => c.trim()));
+      if (!rows.length) { toast('Paste CSV dulu!', 'error'); return; }
+      const pretty = (document.getElementById('pretty') as HTMLInputElement).checked;
+      const align = (document.getElementById('align') as HTMLInputElement).checked;
 
-    let md = '| ' + rows[0].map((c,i) => pad(c, colWidths[i])).join(' | ') + ' |\n';
-    if (align) {
-      md += '|' + rows[0].map((_,i) => ' ' + ':---' + ' '.repeat(Math.max(0,colWidths[i]-4)) + ' |').join('') + '\n';
-    } else {
-      md += '|' + rows[0].map((_,i) => ' ' + '---' + ' '.repeat(Math.max(0,colWidths[i]-3)) + ' |').join('') + '\n';
+      const colWidths = rows[0].map((_, ci) => Math.max(...rows.map(r => (r[ci] || '').length)));
+      const pad = (s: string, w: number) => pretty ? s + ' '.repeat(Math.max(0, w - s.length)) : s;
+
+      let md = '| ' + rows[0].map((c, i) => pad(c, colWidths[i])).join(' | ') + ' |\n';
+      if (align) {
+        md += '|' + rows[0].map((_, i) => ' ' + ':---' + ' '.repeat(Math.max(0, colWidths[i] - 4)) + ' |').join('') + '\n';
+      } else {
+        md += '|' + rows[0].map((_, i) => ' ' + '---' + ' '.repeat(Math.max(0, colWidths[i] - 3)) + ' |').join('') + '\n';
+      }
+      for (let r = 1; r < rows.length; r++) {
+        md += '| ' + rows[r].map((c, i) => pad(c || '', colWidths[i])).join(' | ') + ' |\n';
+      }
+
+      outputEl.textContent = md;
+    } catch {
+      toast('Gagal generate tabel', 'error');
     }
-    for (let r=1; r<rows.length; r++) {
-      md += '| ' + rows[r].map((c,i) => pad(c||'', colWidths[i])).join(' | ') + ' |\n';
-    }
-
-    document.getElementById('output').textContent = md;
   });
 
-  document.getElementById('copy-btn').addEventListener('click', () => {
-    navigator.clipboard.writeText(document.getElementById('output').textContent).then(() => showToast?.(_tToast?.('Disalin!','Copied!'),'success'));
+  document.getElementById('copy-btn')!.addEventListener('click', async () => {
+    try {
+      const text = outputEl.textContent || '';
+      if (!text) { toast('Belum ada hasil untuk disalin.', 'info'); return; }
+      await navigator.clipboard.writeText(text);
+      toast('Disalin!');
+    } catch { toast('Gagal menyalin', 'error'); }
   });
 
   }

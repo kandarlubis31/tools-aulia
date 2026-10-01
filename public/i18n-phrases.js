@@ -634,4 +634,30 @@ window._i18nPhrases = {
   'File bukan gambar!':'File is not an image!',
   'Gagal membaca file':'Failed to read file',
   'Gambar terlalu besar (maks ~10 MB)':'Image too large (~10 MB max)',
+  // W6 batch 2 — md-table
+  'Paste CSV dulu!':'Paste CSV first!',
+  'Gagal generate tabel':'Failed to generate table',
+  // W6 batch 2 — grocery
+  'Tulis nama item dulu!':'Type the item name first!',
+  'Item selesai dihapus':'Done items removed',
+  'Belum ada item yang selesai.':'No done items yet.',
+  'Daftar sudah kosong.':'List is already empty.',
+  'Daftar belanja dikosongkan':'Grocery list cleared',
+  // W6 batch 2 — grid
+  'Maksimal 48 item':'48 items max',
+  'CSS disalin!':'CSS copied!',
+  'Belum ada CSS untuk disalin.':'No CSS to copy yet.',
+  // W6 batch 2 — bucket-list
+  'Tulis goal dulu!':'Type a goal first!',
+  'Goal terlalu panjang (maks 200 karakter)':'Goal too long (200 characters max)',
+  'Goal ditambahkan!':'Goal added!',
+  // W6 batch 2 — handwriting
+  'Tulis teks dulu!':'Write some text first!',
+  'Gagal membuat PNG':'Failed to create PNG',
+  'PNG diunduh!':'PNG downloaded!',
+  // W6 batch 2 — joiner
+  'Nama file tidak berpola .part — urutan gabungan mungkin salah':'File names do not follow the .part pattern — join order may be wrong',
+  'Tidak ada file untuk digabung':'No files to join',
+  'Gagal menggabung file':'Failed to join files',
+  'File berhasil digabung!':'Files joined successfully!',
 };
