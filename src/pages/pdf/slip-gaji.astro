@@ -22,7 +22,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <div><label class="text-xs text-matte-500 mb-1 block" for="period">Periode Gaji</label><input id="period" type="month" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
           <div class="grid grid-cols-2 gap-4">
             <div><label class="text-xs text-matte-500 mb-1 block" for="sign-name">Nama Penandatangan</label><input id="sign-name" type="text" placeholder="cth: Budi Santoso" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
-            <div><label class="text-xs text-matte-500 mb-1 block" for="sign-title">Jabatan</label><input id="sign-title" type="text" placeholder="cth: HR Manager" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+            <div><label class="text-xs text-matte-500 mb-1 block" for="sign-title" data-i18n="label.jabatan">Jabatan</label><input id="sign-title" type="text" placeholder="cth: HR Manager" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
           </div>
         </div>
       </div>
@@ -38,9 +38,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             <p class="text-[11px] text-matte-400 mt-1">Kosong? Isi data karyawan dulu di <a href="/utils/hrd-dashboard" class="text-emerald-600 dark:text-emerald-400 underline">HRD Dashboard</a>, atau isi manual di samping.</p>
           </div>
           <div class="grid grid-cols-2 gap-3 content-start">
-            <div><label class="text-xs text-matte-500 mb-1 block" for="man-name">Nama (manual)</label><input id="man-name" type="text" placeholder="cth: Ahmad Fulan" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+            <div><label class="text-xs text-matte-500 mb-1 block" for="man-name">Nama (manual)</label><input id="man-name" type="text" data-i18n-attr="placeholder" data-i18n="ph.cth_nama" placeholder="cth: Ahmad Fulan" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
             <div><label class="text-xs text-matte-500 mb-1 block" for="man-pos">Jabatan (manual)</label><input id="man-pos" type="text" placeholder="cth: Operator" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
-            <div class="col-span-2"><label class="text-xs text-matte-500 mb-1 block" for="man-salary">Gaji Pokok Manual (Rp)</label><input id="man-salary" type="number" min="0" placeholder="cth: 5000000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
+            <div class="col-span-2"><label class="text-xs text-matte-500 mb-1 block" for="man-salary">Gaji Pokok Manual (Rp)</label><input id="man-salary" type="number" min="0" data-i18n-attr="placeholder" data-i18n="ph.cth_angka" placeholder="cth: 5000000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border" /></div>
           </div>
         </div>
         <div class="grid md:grid-cols-3 gap-4">
@@ -62,7 +62,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">3 · Preview & Unduh</h3>
         <div class="flex flex-wrap gap-3 mb-6">
           <button id="btn-preview" class="flex-1 min-w-40 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors">Preview Slip</button>
-          <button id="btn-pdf" class="flex-1 min-w-40 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors">Download PDF</button>
+          <button id="btn-pdf" class="flex-1 min-w-40 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors" data-i18n="btn.download_pdf">Download PDF</button>
         </div>
         <div id="preview-wrap" class="hidden">
           <p class="text-xs text-matte-400 mb-2">Preview (skala menyesuaikan layar — PDF mengikuti ukuran asli):</p>
@@ -75,7 +75,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div class="card-base p-8" id="history-card">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold text-matte-800 dark:text-white">Riwayat Slip</h3>
-          <button id="slip-history-clear" class="text-xs text-matte-400 hover:text-red-500 font-medium">Hapus Semua</button>
+          <button id="slip-history-clear" class="text-xs text-matte-400 hover:text-red-500 font-medium" data-i18n="btn.clear_all">Hapus Semua</button>
         </div>
         <div id="slip-history-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
           <p class="text-sm text-matte-400 text-center py-4">Belum ada riwayat</p>

@@ -3017,6 +3017,20 @@ export const translations: Record<string, { id: string; en: string }> = {
   'hist.title': { id: 'Riwayat Perhitungan', en: 'Calculation History' },
   'hist.load': { id: 'Muat', en: 'Load' },
   'common.no_history': { id: 'Belum ada riwayat', en: 'No history yet' },
+  // --- W5c i18n mass audit: shared keys untuk label/placeholder berulang ---
+  'btn.copy_emoji': { id: '📋 Copy', en: '📋 Copy' },
+  'btn.stop_emoji': { id: '⏹️ Stop', en: '⏹️ Stop' },
+  'label.choose_pdf': { id: 'Pilih PDF', en: 'Choose PDF' },
+  'btn.download_pdf': { id: 'Download PDF', en: 'Download PDF' },
+  'label.jabatan': { id: 'Jabatan', en: 'Position' },
+  'label.background': { id: 'Background', en: 'Background' },
+  'label.original': { id: 'Original', en: 'Original' },
+  'label.portrait': { id: 'Portrait', en: 'Portrait' },
+  'label.landscape': { id: 'Landscape', en: 'Landscape' },
+  'label.employee_name': { id: 'Nama Karyawan', en: 'Employee Name' },
+  'ph.cth_angka': { id: 'cth: 5000000', en: 'e.g. 5000000' },
+  'ph.cth_nama': { id: 'cth: Ahmad Fulan', en: 'e.g. John Doe' },
+  'ph.cth_posisi': { id: 'cth: Operator Produksi', en: 'e.g. Production Operator' },
 };
 
 export function t(key, fallback) {
