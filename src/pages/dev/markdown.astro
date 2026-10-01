@@ -8,43 +8,49 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <script is:inline src="/vendor/dompurify/purify.min.js"></script>
 
   <div class="max-w-7xl mx-auto px-4 min-h-[80vh] flex flex-col">
-        <ToolPageHeader
+    <ToolPageHeader
       title="Markdown Editor"
+      titleKey="header.markdown_editor"
       desc="Tulis Markdown di kiri, lihat hasilnya di kanan secara real-time."
+      descKey="header.markdown_editor_desc"
       icon='<path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/>'
       gradient="from-slate-500 to-slate-600"
     />
 
     <div class="flex justify-end gap-2 mb-4 animate-fade-in">
-       <button id="copy-html" class="px-4 py-2 bg-matte-200 dark:bg-matte-700 hover:bg-matte-300 dark:hover:bg-matte-600 text-sm font-bold rounded-lg transition" data-i18n="btn.copy_html">Copy HTML</button>
-       <button id="copy-md" class="px-4 py-2 bg-matte-800 hover:bg-matte-900 text-white text-sm font-bold rounded-lg transition" data-i18n="btn.copy_md">Copy Markdown</button>
+      <button id="reset-btn" class="px-4 py-2 bg-matte-200 dark:bg-matte-700 hover:bg-matte-300 dark:hover:bg-matte-600 text-sm font-bold rounded-lg transition" data-i18n="btn.reset">Reset</button>
+      <button id="copy-html" class="px-4 py-2 bg-matte-200 dark:bg-matte-700 hover:bg-matte-300 dark:hover:bg-matte-600 text-sm font-bold rounded-lg transition" data-i18n="btn.copy_html">Copy HTML</button>
+      <button id="copy-md" class="px-4 py-2 bg-matte-800 hover:bg-matte-900 text-white text-sm font-bold rounded-lg transition" data-i18n="btn.copy_md">Copy Markdown</button>
     </div>
 
     <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-4 pb-12 animate-fade-in h-[600px]">
-       
-       <textarea id="editor" class="w-full h-full p-6 font-mono text-sm bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-700 rounded-xl resize-none outline-none focus:border-matte-500" spellcheck="false" placeholder="# Hello World&#10;&#10;Tulis **Markdown** di sini..."></textarea>
 
-       <div id="preview" class="w-full h-full p-6 bg-white dark:bg-matte-800 border border-matte-300 dark:border-matte-700 rounded-xl overflow-y-auto prose dark:prose-invert max-w-none">
-          </div>
+      <label class="sr-only" for="editor" data-i18n="header.markdown_editor">Markdown Editor</label>
+      <textarea id="editor" class="w-full h-full p-6 font-mono text-sm bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-700 rounded-xl resize-none outline-none focus:border-matte-500" spellcheck="false" placeholder="# Hello World&#10;&#10;Tulis **Markdown** di sini..." data-i18n-attr="placeholder" data-i18n="ph.md_editor"></textarea>
+
+      <div id="preview" class="w-full h-full p-6 bg-white dark:bg-matte-800 border border-matte-300 dark:border-matte-700 rounded-xl overflow-y-auto prose dark:prose-invert max-w-none"></div>
 
     </div>
   </div>
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  const editor = document.getElementById('editor');
-  const preview = document.getElementById('preview');
-  const btnCopyHtml = document.getElementById('copy-html');
-  const btnCopyMd = document.getElementById('copy-md');
+  const editor = document.getElementById('editor') as HTMLTextAreaElement;
+  const preview = document.getElementById('preview') as HTMLElement;
+  const btnCopyHtml = document.getElementById('copy-html') as HTMLButtonElement;
+  const btnCopyMd = document.getElementById('copy-md') as HTMLButtonElement;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
   // Default Content
-  const defaultText = `# ${window.i18n && window.i18n.t ? window.i18n.t('header.selamat_datang', 'Selamat Datang!') : 'Selamat Datang!'};
+  const defaultText = `# ${t('header.selamat_datang', 'Selamat Datang!')}
 
-Ini adalah **Markdown Editor** sederhana. 
+Ini adalah **Markdown Editor** sederhana.
 Kamu bisa menulis:
 
 - List item
@@ -57,25 +63,41 @@ Coba ketik sesuatu di sebelah kiri...`;
 
   function render() {
     const text = editor.value;
-    // DOMPurify sanitize — marked gak sanitize HTML (XSS guard)
-    const html = marked.parse(text);
-    preview.innerHTML = (window.DOMPurify ? window.DOMPurify.sanitize(html) : html);
+    try {
+      const html = (window as any).marked.parse(text);
+      preview.innerHTML = (window as any).DOMPurify ? (window as any).DOMPurify.sanitize(html) : html;
+    } catch {
+      // vendor lib belum siap (offline/CDN gagal) — jangan biarkan editor mati
+      preview.textContent = text;
+    }
   }
 
   editor.addEventListener('input', render);
-  
-  // Set default
-  editor.value = defaultText;
-  render();
 
-  btnCopyMd.addEventListener('click', () => {
-    navigator.clipboard.writeText(editor.value);
-    window.showToast?.(window._tToast ? window._tToast('Markdown disalin!') : 'Markdown disalin!', 'success');
+  // Set default — hanya saat editor masih kosong (SPA balik tidak nge-reset isi user)
+  if (!editor.value) {
+    editor.value = defaultText;
+    render();
+  }
+
+  document.getElementById('reset-btn')!.addEventListener('click', () => {
+    editor.value = defaultText;
+    render();
+    toast('Editor direset!', 'info');
   });
 
-  btnCopyHtml.addEventListener('click', () => {
-    navigator.clipboard.writeText(preview.textContent || '');
-    window.showToast?.(window._tToast ? window._tToast('HTML Code disalin!') : 'HTML Code disalin!', 'success');
+  btnCopyMd.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(editor.value);
+      toast('Markdown disalin!');
+    } catch { toast('Gagal menyalin', 'error'); }
+  });
+
+  btnCopyHtml.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(preview.innerHTML || '');
+      toast('HTML Code disalin!');
+    } catch { toast('Gagal menyalin', 'error'); }
   });
 
   }

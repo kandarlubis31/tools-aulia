@@ -22,8 +22,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <div><label for="count" class="text-xs text-matte-500 mb-1 block" data-i18n="rtext.count">Jumlah</label><input id="count" type="number" value="5" min="1" max="1000" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
           <div><label for="type" class="text-xs text-matte-500 mb-1 block" data-i18n="calc.rnd.type">Tipe</label>
             <select id="type" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
-              <option value="integer">Integer</option>
-              <option value="float">Float (2 desimal)</option>
+              <option value="integer" data-i18n="calc.rnd.integer">Integer</option>
+              <option value="float" data-i18n="calc.rnd.float">Float (2 desimal)</option>
             </select></div>
         </div>
         <div class="flex gap-2 mb-6">
@@ -33,7 +33,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <button id="generate" class="w-full py-3 bg-lime-600 text-white rounded-xl font-bold hover:bg-lime-700 transition-colors" data-i18n="common.generate">Generate</button>
         <div id="result" class="mt-6 hidden">
           <div class="flex justify-between items-center mb-2">
-            <span class="text-sm font-bold text-matte-500">Hasil:</span>
+            <span class="text-sm font-bold text-matte-500" id="result-label" data-i18n="calc.rnd.result">Hasil:</span>
             <button id="copy-btn" class="text-xs px-3 py-1 bg-matte-200 dark:bg-matte-700 rounded-full hover:bg-lime-100 dark:hover:bg-lime-900/30 transition-colors" data-i18n="btn.copy_emoji">📋 Copy</button>
           </div>
           <div id="output" class="p-4 bg-matte-50 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border font-mono text-sm break-all text-matte-800 dark:text-matte-200 max-h-64 overflow-y-auto"></div>
@@ -48,31 +48,45 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  document.getElementById('generate').onclick = () => {
-    const min = +document.getElementById('min').value;
-    const max = +document.getElementById('max').value;
-    const count = Math.min(+document.getElementById('count').value, 1000);
-    const type = document.getElementById('type').value;
-    const unique = document.getElementById('unique').checked;
-    const sort = document.getElementById('sort').checked;
-    if (min >= max) { window.showToast?.(window._tToast ? window._tToast('Minimum harus kurang dari Maximum') : 'Minimum harus kurang dari Maximum', 'error'); return; }
-    let nums = [];
-    const range = max - min + 1;
-    if (unique && count > range) { window.showToast?.(window._tToast ? window._tToast('Jumlah melebihi range untuk angka unik') : 'Jumlah melebihi range untuk angka unik', 'error'); return; }
-    while (nums.length < count) {
-      let n = Math.floor(Math.random() * range) + min;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  document.getElementById('generate')!.addEventListener('click', () => {
+    const min = parseFloat((document.getElementById('min') as HTMLInputElement).value);
+    const max = parseFloat((document.getElementById('max') as HTMLInputElement).value);
+    const count = Math.min(parseInt((document.getElementById('count') as HTMLInputElement).value, 10) || 5, 1000);
+    const type = (document.getElementById('type') as HTMLSelectElement).value;
+    const unique = (document.getElementById('unique') as HTMLInputElement).checked;
+    const sort = (document.getElementById('sort') as HTMLInputElement).checked;
+
+    if (isNaN(min) || isNaN(max)) { toast('Isi minimum & maximum', 'error'); return; }
+    if (min >= max) { toast('Minimum harus kurang dari Maximum', 'error'); return; }
+    if (count < 1) { toast('Jumlah minimal 1', 'error'); return; }
+
+    const nums: (number | string)[] = [];
+    const range = type === 'integer' ? Math.floor(max) - Math.floor(min) + 1 : 0;
+    if (type === 'integer' && unique && count > range) { toast('Jumlah melebihi range untuk angka unik', 'error'); return; }
+    let guard = 0;
+    while (nums.length < count && guard < count * 100) {
+      guard++;
+      let n: number | string;
       if (type === 'float') n = (Math.random() * (max - min) + min).toFixed(2);
+      else n = Math.floor(Math.random() * range) + Math.floor(min);
       if (!unique || !nums.includes(n)) nums.push(n);
     }
-    if (sort) nums.sort((a,b) => +a - +b);
-    document.getElementById('output').textContent = nums.join(', ');
-    document.getElementById('result').classList.remove('hidden');
-  };
-  document.getElementById('copy-btn').onclick = () => {
-    navigator.clipboard.writeText(document.getElementById('output').textContent);
-    document.getElementById('copy-btn').textContent = '✅ Copied!';
-    setTimeout(() => document.getElementById('copy-btn').textContent = '📋 Copy', 1500);
-  };
+    if (sort) nums.sort((a, b) => (+a) - (+b));
+    (document.getElementById('output') as HTMLElement).textContent = nums.join(', ');
+    document.getElementById('result')!.classList.remove('hidden');
+  });
+
+  document.getElementById('copy-btn')!.addEventListener('click', async () => {
+    try {
+      const out = (document.getElementById('output') as HTMLElement).textContent || '';
+      if (!out) { toast('Belum ada hasil.', 'info'); return; }
+      await navigator.clipboard.writeText(out);
+      toast('Disalin!');
+    } catch { toast('Gagal menyalin', 'error'); }
+  });
 
   }
 

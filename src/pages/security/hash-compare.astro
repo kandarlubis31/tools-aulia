@@ -8,23 +8,24 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <div class="card-base p-5 space-y-4">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm text-matte-500 mb-1 font-medium">File / Teks 1</label>
-        <textarea id="text1" class="input-field w-full h-32 font-mono text-sm" placeholder="Paste teks atau hash di sini..."></textarea>
-        <p class="text-xs text-matte-400 mt-1">atau</p>
-        <input type="file" id="file1" class="input-field text-sm w-full">
+        <label for="text1" class="block text-sm text-matte-500 mb-1 font-medium" data-i18n="sec.hc.input1">File / Teks 1</label>
+        <textarea id="text1" class="input-field w-full h-32 font-mono text-sm" placeholder="Paste teks atau hash di sini..." data-i18n-attr="placeholder" data-i18n="ph.hc_paste"></textarea>
+        <p class="text-xs text-matte-400 mt-1" data-i18n="sec.hc.or">atau</p>
+        <input type="file" id="file1" class="input-field text-sm w-full" aria-label="File 1">
         <p class="text-xs font-mono text-matte-400 mt-1 break-all" id="hash1"></p>
       </div>
       <div>
-        <label class="block text-sm text-matte-500 mb-1 font-medium">File / Teks 2</label>
-        <textarea id="text2" class="input-field w-full h-32 font-mono text-sm" placeholder="Paste teks atau hash di sini..."></textarea>
-        <p class="text-xs text-matte-400 mt-1">atau</p>
-        <input type="file" id="file2" class="input-field text-sm w-full">
+        <label for="text2" class="block text-sm text-matte-500 mb-1 font-medium" data-i18n="sec.hc.input2">File / Teks 2</label>
+        <textarea id="text2" class="input-field w-full h-32 font-mono text-sm" placeholder="Paste teks atau hash di sini..." data-i18n-attr="placeholder" data-i18n="ph.hc_paste"></textarea>
+        <p class="text-xs text-matte-400 mt-1" data-i18n="sec.hc.or">atau</p>
+        <input type="file" id="file2" class="input-field text-sm w-full" aria-label="File 2">
         <p class="text-xs font-mono text-matte-400 mt-1 break-all" id="hash2"></p>
       </div>
     </div>
 
     <div class="flex gap-2">
-      <button id="compare-btn" class="btn-primary flex-1">Bandingkan</button>
+      <button id="compare-btn" class="btn-primary flex-1" data-i18n="btn.compare">🔍 Bandingkan</button>
+      <label class="sr-only" for="algo" data-i18n="sec.hc.algo">Algoritma</label>
       <select id="algo" class="input-field text-sm w-32">
         <option value="SHA-256" selected>SHA-256</option>
         <option value="SHA-1">SHA-1</option>
@@ -37,43 +38,55 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  async function hashContent(input, fileInput) {
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  async function hashContent(input: HTMLTextAreaElement, fileInput: HTMLInputElement): Promise<string | null> {
     const text = input.value.trim();
-    const file = fileInput.files[0];
-    let data;
+    const file = fileInput.files?.[0];
+    let data: ArrayBuffer | Uint8Array;
     if (file) data = await file.arrayBuffer();
     else if (text) data = new TextEncoder().encode(text);
     else return null;
-    const algo = document.getElementById('algo').value;
-    const hashBuf = await crypto.subtle.digest(algo, data);
-    return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    const algo = (document.getElementById('algo') as HTMLSelectElement).value;
+    const hashBuf = await crypto.subtle.digest(algo, data as ArrayBuffer);
+    return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  document.getElementById('compare-btn').addEventListener('click', async () => {
-    const h1 = await hashContent(document.getElementById('text1'), document.getElementById('file1'));
-    const h2 = await hashContent(document.getElementById('text2'), document.getElementById('file2'));
-    if (!h1 && !h2) { showToast?.(_tToast?.('Masukkan input', 'Provide input'), 'error'); return; }
-    document.getElementById('hash1').textContent = h1 ? 'Hash 1: ' + h1 : '';
-    document.getElementById('hash2').textContent = h2 ? 'Hash 2: ' + h2 : '';
-    const result = document.getElementById('result');
-    result.classList.remove('hidden');
-    const same = h1 && h2 && h1 === h2;
-    result.textContent = same ? '✅ Cocok! (Hash identik)' : (h1 && h2 ? '❌ Tidak Cocok! (Hash berbeda)' : '⚠️ Isi kedua input');
-    result.className = 'card-base p-4 text-center text-lg font-bold ' + (same ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300');
+  document.getElementById('compare-btn')!.addEventListener('click', async () => {
+    try {
+      const h1 = await hashContent(document.getElementById('text1') as HTMLTextAreaElement, document.getElementById('file1') as HTMLInputElement);
+      const h2 = await hashContent(document.getElementById('text2') as HTMLTextAreaElement, document.getElementById('file2') as HTMLInputElement);
+      if (!h1 && !h2) { toast('Masukkan input', 'error'); return; }
+      (document.getElementById('hash1') as HTMLElement).textContent = h1 ? t('sec.hc.hash1', 'Hash 1: {h}').replace('{h}', h1) : '';
+      (document.getElementById('hash2') as HTMLElement).textContent = h2 ? t('sec.hc.hash2', 'Hash 2: {h}').replace('{h}', h2) : '';
+      const result = document.getElementById('result')!;
+      result.classList.remove('hidden');
+      const same = h1 && h2 && h1 === h2;
+      result.textContent = same
+        ? '✅ ' + t('sec.hc.match', 'Cocok! (Hash identik)')
+        : (h1 && h2 ? '❌ ' + t('sec.hc.mismatch', 'Tidak Cocok! (Hash berbeda)') : '⚠️ ' + t('sec.hc.need_both', 'Isi kedua input'));
+      result.className = 'card-base p-4 text-center text-lg font-bold ' + (same ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300');
+    } catch {
+      toast('Gagal menghitung hash', 'error');
+    }
   });
 
   // live hash as user types
-  async function liveHash(textId, fileId, hashId) {
-    const h = await hashContent(document.getElementById(textId), document.getElementById(fileId));
-    document.getElementById(hashId).textContent = h ? 'Hash: ' + h : '';
+  async function liveHash(textId: string, fileId: string, hashId: string) {
+    try {
+      const h = await hashContent(document.getElementById(textId) as HTMLTextAreaElement, document.getElementById(fileId) as HTMLInputElement);
+      (document.getElementById(hashId) as HTMLElement).textContent = h ? t('sec.hc.hash_label', 'Hash: {h}').replace('{h}', h) : '';
+    } catch { /* biarkan hash lama tampil */ }
   }
-  ['text1','text2'].forEach((id,i) => {
-    document.getElementById(id).addEventListener('input', () => liveHash(id, 'file'+(i+1), 'hash'+(i+1)));
-    document.getElementById('file'+(i+1)).addEventListener('change', () => liveHash('text'+(i+1), 'file'+(i+1), 'hash'+(i+1)));
+  ['text1', 'text2'].forEach((id, i) => {
+    document.getElementById(id)!.addEventListener('input', () => liveHash(id, 'file' + (i + 1), 'hash' + (i + 1)));
+    document.getElementById('file' + (i + 1))!.addEventListener('change', () => liveHash('text' + (i + 1), 'file' + (i + 1), 'hash' + (i + 1)));
   });
 
   }
