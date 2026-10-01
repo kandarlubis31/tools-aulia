@@ -435,4 +435,11 @@ window._i18nPhrases = {
   'Gagal membuat blob untuk share.':'Failed to create blob for sharing.',
   'Browser tidak support share file.':'Browser does not support file sharing.',
   'Riwayat gagal disimpan — penyimpanan penuh':'Failed to save history — storage full',
+  // W4 HR suite (thr-bpjs, workdays, pph21-ter) + giants slip/surat
+  'Form dimuat dari riwayat.':'Form loaded from history.',
+  'Slip gaji diunduh sebagai PDF!':'Payslip downloaded as PDF!',
+  'Preview slip siap.':'Payslip preview ready.',
+  'Surat diunduh sebagai PDF!':'Letter downloaded as PDF!',
+  'Preview surat siap.':'Letter preview ready.',
+  'Isi dulu bruto di Card 1 (TER) untuk estimasi.':'Fill in the gross income in Card 1 (TER) first for the estimate.',
 };

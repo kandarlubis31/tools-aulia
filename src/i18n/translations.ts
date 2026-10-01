@@ -3014,6 +3014,9 @@ export const translations: Record<string, { id: string; en: string }> = {
   'label.hex_color': { id: 'Kode hex warna', en: 'Color hex code' },
   'btn.upload_logo': { id: 'Unggah Logo', en: 'Upload Logo' },
   'btn.remove_logo': { id: 'Hapus Logo', en: 'Remove Logo' },
+  'hist.title': { id: 'Riwayat Perhitungan', en: 'Calculation History' },
+  'hist.load': { id: 'Muat', en: 'Load' },
+  'common.no_history': { id: 'Belum ada riwayat', en: 'No history yet' },
 };
 
 export function t(key, fallback) {

@@ -81,6 +81,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <div id="result-pr" class="mt-6 hidden"></div>
       </div>
 
+      <div class="card-base p-8" id="history-card">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-matte-800 dark:text-white" data-i18n="hist.title">Riwayat Perhitungan</h3>
+          <button id="wd-history-clear" class="text-xs text-matte-400 hover:text-red-500 font-medium" data-i18n="common.clear_history">Hapus Riwayat</button>
+        </div>
+        <div id="wd-history-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+          <p class="text-sm text-matte-400 text-center py-4" data-i18n="common.no_history">Belum ada riwayat</p>
+        </div>
+      </div>
+
       <div class="text-xs text-matte-400 bg-matte-100 dark:bg-surface-hover rounded-xl p-4 leading-relaxed">
         <p class="font-bold text-matte-600 dark:text-matte-300 mb-1">Catatan</p>
         <ul class="list-disc list-inside space-y-0.5">
@@ -94,6 +104,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { useLocalHistory } from '../../composables/useLocalHistory';
+
+  const escHtml = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+
+  // Riwayat form-snapshot (konvensi riwayat lokal, maks 10)
+  const wdHistory = useLocalHistory<{ id: number; date: string; snapshot: Record<string, string> }>('hist:workdays', 10);
+
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const fmtRp = (n: number) => 'Rp ' + Math.round(n).toLocaleString('id-ID');
   const toISO = (d: Date) => d.toISOString().slice(0, 10);
@@ -102,6 +119,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     return isNaN(d.getTime()) ? iso : d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   };
 
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
   ($('wd-start') as HTMLInputElement).value = toISO(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   ($('wd-end') as HTMLInputElement).value = toISO(new Date());
 
@@ -201,6 +221,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
       <p class="text-[11px] text-matte-400 mt-2">${pct}% dari rentang adalah hari kerja.</p>`;
     el.classList.remove('hidden');
+    addWdHistory();
   };
 
   $('calc-pr').onclick = () => {
@@ -253,5 +274,87 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
       <p class="text-[11px] text-matte-400 mt-3">Rumus gaji: ${fmtRp(salary)} ÷ ${basis} hari × ${workedDays} hari kerja = ${fmtRp(earned)} · basis: ${basisNote}. Tanpa rentang di Card 1, dianggap periode penuh (${basis} hari).</p>`;
     el.classList.remove('hidden');
+    addWdHistory();
   };
+
+  // ===== Riwayat form-snapshot =====
+  const WD_FIELDS = ['wd-start', 'wd-end', 'wd-weekend', 'wd-mode', 'wd-holidays', 'pr-salary', 'pr-quot', 'pr-used', 'pr-basis'];
+  function snapshot(): Record<string, string> {
+    const o: Record<string, string> = {};
+    WD_FIELDS.forEach(id => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
+      if (el) o[id] = el.value;
+    });
+    return o;
+  }
+
+  function restore(o: Record<string, string>) {
+    Object.entries(o).forEach(([id, val]) => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
+      if (el) el.value = val;
+    });
+    updateCount();
+  }
+
+  function renderWdHistory() {
+    const list = document.getElementById('wd-history-list');
+    if (!list) return;
+    const items = wdHistory.getAll();
+    if (items.length === 0) {
+      list.innerHTML = '<p class="text-sm text-matte-400 text-center py-4" data-i18n="common.no_history">Belum ada riwayat</p>';
+      return;
+    }
+    list.innerHTML = items.map(it => {
+      const from = it.snapshot['wd-start'] || '—', to = it.snapshot['wd-end'] || '—';
+      return `
+      <div class="flex items-center justify-between gap-2 p-3 rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border">
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-matte-700 dark:text-white truncate">${escHtml(from)} → ${escHtml(to)}</p>
+          <p class="text-[10px] text-matte-400">${escHtml(it.date)}</p>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button data-load="${it.id}" class="text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline px-2 py-1" data-i18n="hist.load">Muat</button>
+          <button data-del="${it.id}" aria-label="Hapus dari riwayat" class="text-matte-400 hover:text-red-500 p-1 font-bold">×</button>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll<HTMLButtonElement>('[data-load]').forEach(b => b.addEventListener('click', () => {
+      const it = wdHistory.getAll().find(x => x.id === +(b.dataset.load || 0));
+      if (it) { restore(it.snapshot); window.showToast?.(window._tToast ? window._tToast('Form dimuat dari riwayat.') : 'Form loaded from history.', 'info'); }
+    }));
+    list.querySelectorAll<HTMLButtonElement>('[data-del]').forEach(b => b.addEventListener('click', () => {
+      wdHistory.remove(x => x.id === +(b.dataset.del || 0));
+      renderWdHistory();
+    }));
+  }
+
+  function addWdHistory() {
+    const snap = snapshot();
+    try {
+      const items = wdHistory.getAll();
+      const top = items[0];
+      if (top && JSON.stringify(top.snapshot) === JSON.stringify(snap)) return; // duplikat setelan sama, skip
+      wdHistory.add({ id: Date.now(), date: new Date().toLocaleString('id-ID'), snapshot: snap });
+    } catch { /* kuota localStorage penuh — riwayat skip, jangan ganggu alur utama */ }
+    renderWdHistory();
+  }
+
+  document.getElementById('wd-history-clear')?.addEventListener('click', () => {
+    wdHistory.clear();
+    renderWdHistory();
+    window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus!') : 'History cleared!', 'success');
+  });
+
+  renderWdHistory();
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __wdPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __wdPage) return;
+    const btn = document.getElementById('calc-wd');
+    if (!btn || btn.dataset.wdBound === 'true') return;
+    btn.dataset.wdBound = 'true';
+    init();
+  });
 </script>
