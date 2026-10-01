@@ -609,4 +609,29 @@ window._i18nPhrases = {
   'PDF berhasil dibuka kuncinya!':'PDF unlocked successfully!',
   'Nomor valid!':'Number is valid!',
   'Nomor tidak valid':'Invalid number',
+  // W6 deepening — url-parser
+  'Parse URL dulu — belum ada hasil.':'Parse the URL first — nothing to copy yet.',
+  'Hasil parse disalin!':'Parsed result copied!',
+  'URL dikosongkan':'URL cleared',
+  'URL dimuat dari riwayat.':'URL loaded from history.',
+  // W6 — rot13
+  'Input masih kosong!':'Input is still empty!',
+  'Belum ada hasil untuk disalin.':'Nothing to copy yet.',
+  'Belum ada hasil untuk di-swap.':'Nothing to swap yet.',
+  'Entri riwayat dimuat.':'History entry loaded.',
+  // W6 — morse
+  'Belum ada kode Morse untuk diputar!':'No Morse code to play!',
+  'Gagal memutar audio Morse':'Failed to play Morse audio',
+  // W6 — wol
+  'Masukkan MAC address':'Enter a MAC address',
+  'MAC tidak valid':'Invalid MAC address',
+  'Mengirim magic packet...':'Sending magic packet...',
+  'Magic packet dikirim! (verifikasi di jaringan lokal)':'Magic packet sent! (verify on local network)',
+  'Packet WoL dikirim!':'WoL packet sent!',
+  'Gagal memproses packet WoL':'Failed to process WoL packet',
+  // W6 — base64-image
+  'Base64 tersalin!':'Base64 copied!',
+  'File bukan gambar!':'File is not an image!',
+  'Gagal membaca file':'Failed to read file',
+  'Gambar terlalu besar (maks ~10 MB)':'Image too large (~10 MB max)',
 };
