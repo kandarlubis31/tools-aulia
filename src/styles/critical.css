@@ -231,3 +231,11 @@ h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-seri
 @media (min-width: 1440px) {
   .card-grid { grid-template-columns: repeat(5, 1fr); }
 }
+
+/* ---- Nav: hamburger & mobile menu disembunyikan sejak FIRST PAINT di desktop.
+   Tanpa rule ini, antara critical inline selesai dan global.css (Tailwind
+   `md:hidden`) selesai di-load, tombol hamburger bisa muncul sesaat di desktop
+   (FOUC tergantung timing jaringan/SW) — "terkadang muncul di desktop". ---- */
+@media (min-width: 768px) {
+  #mobile-menu-btn, #mobile-menu { display: none !important; }
+}
