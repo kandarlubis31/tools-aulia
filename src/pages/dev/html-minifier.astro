@@ -15,8 +15,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     />
 
     <div class="card-base p-6 animate-fade-in">
-      <label class="section-title mb-2 block" for="html-input">HTML Input</label>
-      <textarea id="html-input" rows="10" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-blue-500 transition-colors text-sm font-mono resize-y" placeholder="Tempel HTML di sini..." data-i18n-attr="placeholder"></textarea>
+      <label class="section-title mb-2 block" for="html-input" data-i18n="htmlmin.input_label">HTML Input</label>
+      <textarea id="html-input" rows="10" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-blue-500 transition-colors text-sm font-mono resize-y" placeholder="Tempel HTML di sini..." data-i18n-attr="placeholder" data-i18n="htmlmin.input_ph"></textarea>
 
       <div class="flex gap-2 mt-4">
         <button id="format-btn" class="flex-1 gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="html.format">Format</button>
@@ -25,79 +25,99 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       <label class="section-title mb-2 mt-4 block" for="html-output" data-i18n="label.output">Output</label>
       <div class="relative">
-        <textarea id="html-output" rows="10" class="w-full p-4 bg-matte-50 dark:bg-matte-900 border border-matte-200 dark:border-surface-border rounded-xl text-sm font-mono resize-y" readonly></textarea>
+        <textarea id="html-output" rows="10" class="w-full p-4 bg-matte-50 dark:bg-matte-900 border border-matte-200 dark:border-surface-border rounded-xl text-sm font-mono resize-y" readonly placeholder="Output muncul di sini" data-i18n-attr="placeholder" data-i18n="htmlmin.out_ph"></textarea>
         <button id="copy-output" class="absolute top-2 right-2 text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="html.copy">Copy</button>
       </div>
+      <p id="size-info" class="text-xs text-matte-400 mt-2"></p>
     </div>
   </div>
 
   <script>
-const __page = (location.pathname.replace(/\/+$/, '') || '/');
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
-    document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
+  function formatHTML(html) {
+    let formatted = '';
+    let indent = 0;
+    const tab = '  ';
 
-      function formatHTML(html: string): string {
-        let formatted = '';
-        let indent = 0;
-        const tab = '  ';
+    const lines = html.replace(/>\s*</g, '>\n<').split('\n');
 
-        // Simple HTML formatter
-        const lines = html.replace(/>\s*</g, '>\n<').split('\n');
-        
-        lines.forEach(line => {
-          line = line.trim();
-          if (!line) return;
+    lines.forEach((line) => {
+      line = line.trim();
+      if (!line) return;
 
-          // Check if closing tag
-          if (line.match(/^<\//)) indent--;
-          
-          formatted += tab.repeat(Math.max(0, indent)) + line + '\n';
-          
-          // Check if opening tag (not self-closing)
-          if (line.match(/^<[^\/][^>]*[^\/]>$/) && !line.match(/^(br|hr|img|input|meta|link)/i)) {
-            indent++;
-          }
-        });
-
-        return formatted.trim();
+      // DOCTYPE / komentar / processing instruction: netral (tidak mengubah indent)
+      if (/^<!|^<\?/.test(line)) {
+        formatted += tab.repeat(Math.max(0, indent)) + line + '\n';
+        return;
       }
 
-      function minifyHTML(html: string): string {
-        return html
-          .replace(/\s+/g, ' ')
-          .replace(/>\s+</g, '><')
-          .replace(/<!--[\s\S]*?-->/g, '')
-          .trim();
+      const isOpenAndClose = /^<[^/][^>]*>[\s\S]*<\/[a-zA-Z][^>]*>$/.test(line);
+      if (/^<\//.test(line)) indent--;
+      formatted += tab.repeat(Math.max(0, indent)) + line + '\n';
+      // opening tag non-self-closing dan bukan satu-baris-lengkap (<div>teks</div>)
+      if (!isOpenAndClose && /^<[^/][^>]*[^/]>$/.test(line) && !/\/>$/.test(line)) {
+        indent++;
       }
-
-      // Format button
-      document.getElementById('format-btn')?.addEventListener('click', () => {
-        const input = (document.getElementById('html-input') as HTMLTextAreaElement)?.value;
-        if (!input) { window.showToast?.(window._tToast ? window._tToast('Masukkan HTML!') : 'Masukkan HTML!', 'error'); return; }
-
-        const output = formatHTML(input);
-        (document.getElementById('html-output') as HTMLTextAreaElement).value = output;
-        window.showToast?.(window._tToast ? window._tToast('HTML diformat!') : 'HTML diformat!', 'success');
-      });
-
-      // Minify button
-      document.getElementById('minify-btn')?.addEventListener('click', () => {
-        const input = (document.getElementById('html-input') as HTMLTextAreaElement)?.value;
-        if (!input) { window.showToast?.(window._tToast ? window._tToast('Masukkan HTML!') : 'Masukkan HTML!', 'error'); return; }
-
-        const output = minifyHTML(input);
-        (document.getElementById('html-output') as HTMLTextAreaElement).value = output;
-        window.showToast?.(window._tToast ? window._tToast('HTML di-minify!') : 'HTML di-minify!', 'success');
-      });
-
-      // Copy output
-      document.getElementById('copy-output')?.addEventListener('click', () => {
-        const output = (document.getElementById('html-output') as HTMLTextAreaElement)?.value;
-        if (output) {
-          navigator.clipboard.writeText(output);
-          window.showToast?.(window._tToast ? window._tToast('Disalin!') : 'Disalin!', 'success');
-        }
-      });
     });
+
+    return formatted.trim();
+  }
+
+  function minifyHTML(html) {
+    return html
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/\s+/g, ' ')
+      .replace(/>\s+</g, '><')
+      .trim();
+  }
+
+  function setOutput(text) {
+    document.getElementById('html-output').value = text;
+    const info = document.getElementById('size-info');
+    if (text) {
+      const before = new Blob([document.getElementById('html-input').value]).size;
+      const after = new Blob([text]).size;
+      const pct = before ? Math.round((1 - after / before) * 100) : 0;
+      info.textContent = before + ' B → ' + after + ' B' + (pct > 0 ? ' (−' + pct + '%)' : '');
+    } else {
+      info.textContent = '';
+    }
+  }
+
+  document.getElementById('format-btn').addEventListener('click', () => {
+    const input = document.getElementById('html-input').value;
+    if (!input.trim()) { toast('Masukkan HTML!', 'error'); return; }
+    setOutput(formatHTML(input));
+    toast('HTML diformat!');
+  });
+
+  document.getElementById('minify-btn').addEventListener('click', () => {
+    const input = document.getElementById('html-input').value;
+    if (!input.trim()) { toast('Masukkan HTML!', 'error'); return; }
+    setOutput(minifyHTML(input));
+    toast('HTML di-minify!');
+  });
+
+  document.getElementById('copy-output').addEventListener('click', async () => {
+    const output = document.getElementById('html-output').value;
+    if (!output) { toast('Input kosong!', 'error'); return; }
+    try { await navigator.clipboard.writeText(output); toast('Disalin!'); }
+    catch { toast('Gagal menyalin', 'error'); }
+  });
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __devHtmlMinifierPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __devHtmlMinifierPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
   </script>
 </BaseLayout>

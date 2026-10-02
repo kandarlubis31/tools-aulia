@@ -3334,6 +3334,35 @@ export const translations: Record<string, { id: string; en: string }> = {
   'sec.hg.script_src': { id: 'Direktif script-src', en: 'script-src directive' },
   'sec.hg.style_src': { id: 'Direktif style-src', en: 'style-src directive' },
   'sec.hg.img_src': { id: 'Direktif img-src', en: 'img-src directive' },
+  // --- W6 batch 9: hmac ---
+  'hmac.msg_ph': { id: 'Masukkan message...', en: 'Enter a message...' },
+  'hmac.secret_ph': { id: 'Masukkan secret key...', en: 'Enter a secret key...' },
+  // --- W6 batch 9: html-minifier ---
+  'htmlmin.input_label': { id: 'HTML Input', en: 'HTML Input' },
+  'htmlmin.input_ph': { id: 'Tempel HTML di sini...', en: 'Paste HTML here...' },
+  'htmlmin.out_ph': { id: 'Output muncul di sini', en: 'Output appears here' },
+  // --- W6 batch 9: image border ---
+  'border.drop_hint': { id: '🖼️ Drop gambar di sini', en: '🖼️ Drop an image here' },
+  'border.color': { id: 'Warna Border', en: 'Border color' },
+  'border.thickness': { id: 'Tebal (px)', en: 'Thickness (px)' },
+  'border.radius': { id: 'Radius (px)', en: 'Radius (px)' },
+  'border.download': { id: 'Download Gambar Berframe', en: 'Download Framed Image' },
+  // --- W6 batch 9: file rename ---
+  'rename.drop_hint': { id: '📁 Drop file di sini (multiple)', en: '📁 Drop files here (multiple)' },
+  'rename.pattern': { id: 'Pola Nama', en: 'Name pattern' },
+  'rename.counter': { id: 'Counter Start', en: 'Counter start' },
+  'rename.padding': { id: 'Padding (00x)', en: 'Padding (00x)' },
+  'rename.suffix': { id: 'Suffix', en: 'Suffix' },
+  'rename.download': { id: 'Download Semua (Renamed)', en: 'Download All (Renamed)' },
+  // --- W6 batch 9: name picker ---
+  'namepicker.ph': { id: 'Nama — satu per baris', en: 'Names — one per line' },
+  'namepicker.spin': { id: '🎡 PUTAR!', en: '🎡 SPIN!' },
+  'namepicker.empty': { id: 'Masukkan nama dulu', en: 'Enter names first' },
+  'namepicker.history': { id: 'Riwayat pemenang', en: 'Winners history' },
+  'namepicker.hist_clear': { id: 'Hapus', en: 'Clear' },
+  'namepicker.hist_empty': { id: 'Belum ada pemenang.', en: 'No winners yet.' },
+  // --- W6 batch 9: token ---
+  'token.count': { id: 'Jumlah Token', en: 'Token count' },
 };
 
 export function t(key, fallback) {

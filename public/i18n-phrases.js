@@ -738,4 +738,10 @@ window._i18nPhrases = {
   'Pilih file dulu!':'Choose a file first!',
   'File kosong.':'File is empty.',
   'Download chunks dimulai!':'Chunk download started!',
+  // W6 batch 9
+  'Download dimulai!':'Download started!',
+  'Roda berhenti!':'Wheel stopped!',
+  'Token digenerate!':'Tokens generated!',
+  'Gagal menggenerate HMAC':'Failed to generate HMAC',
+  'File bukan gambar.':'Not an image file.',
 };

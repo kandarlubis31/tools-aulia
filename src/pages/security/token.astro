@@ -17,11 +17,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <div class="card-base p-6 animate-fade-in">
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label class="section-title mb-2 block" data-i18n="token.length">Panjang</label>
+          <label class="section-title mb-2 block" for="token-length" data-i18n="token.length">Panjang</label>
           <input id="token-length" type="number" min="8" max="128" value="32" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" />
         </div>
         <div>
-          <label class="section-title mb-2 block" data-i18n="token.format">Format</label>
+          <label class="section-title mb-2 block" for="token-format" data-i18n="token.format">Format</label>
           <select id="token-format" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm">
             <option value="hex">Hex</option>
             <option value="base64">Base64</option>
@@ -30,7 +30,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
       </div>
 
-      <label class="section-title mb-2 block">Jumlah Token</label>
+      <label class="section-title mb-2 block" for="token-count" data-i18n="token.count">Jumlah Token</label>
       <input id="token-count" type="number" min="1" max="20" value="5" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" />
 
       <button id="generate-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="token.generate">Generate</button>
@@ -46,62 +46,90 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
-const __page = (location.pathname.replace(/\/+$/, '') || '/');
+  import { t } from '../../i18n/translations';
 
-    document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
-      function generateToken(length: number, format: string): string {
-        const array = new Uint8Array(length);
-        crypto.getRandomValues(array);
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
+  function generateToken(length, format) {
+    // Panjang token = N karakter konsisten utk semua format
+    // (hex: N chars butuh ceil(N/2) bytes; base64url: N chars butuh ceil(N*3/4) bytes)
+    let bytes;
+    if (format === 'hex') bytes = Math.ceil(length / 2);
+    else if (format === 'base64') bytes = Math.ceil(length * 3 / 4);
+    else bytes = length;
+    const array = new Uint8Array(Math.max(1, bytes));
+    crypto.getRandomValues(array);
 
-        switch (format) {
-          case 'hex':
-            return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
-          case 'base64':
-            return btoa(String.fromCharCode(...array)).replace(/\+/g, '-').replace(/\//g, '_').substring(0, length);
-          case 'alphanumeric':
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            return Array.from(array).map(b => chars[b % chars.length]).join('');
-          default:
-            return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
-        }
+    switch (format) {
+      case 'base64':
+        return btoa(String.fromCharCode.apply(null, array)).replace(/\+/g, '-').replace(/\//g, '_').substring(0, length);
+      case 'alphanumeric': {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        return Array.from(array).map(b => chars[b % chars.length]).join('').substring(0, length);
       }
+      default:
+        return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('').substring(0, length);
+    }
+  }
 
-      document.getElementById('generate-btn')?.addEventListener('click', () => {
-        const length = parseInt((document.getElementById('token-length') as HTMLInputElement).value) || 32;
-        const format = (document.getElementById('token-format') as HTMLSelectElement).value;
-        const count = parseInt((document.getElementById('token-count') as HTMLInputElement).value) || 5;
+  document.getElementById('generate-btn').addEventListener('click', () => {
+    const length = Math.min(128, Math.max(8, parseInt(document.getElementById('token-length').value, 10) || 32));
+    const format = document.getElementById('token-format').value;
+    const count = Math.min(20, Math.max(1, parseInt(document.getElementById('token-count').value, 10) || 5));
 
-        const tokens: string[] = [];
-        for (let i = 0; i < count; i++) {
-          tokens.push(generateToken(length, format));
-        }
+    const tokens = [];
+    for (let i = 0; i < count; i++) tokens.push(generateToken(length, format));
 
-        const listEl = document.getElementById('tokens-list');
-        listEl!.innerHTML = tokens.map((token, i) => `
-          <div class="flex items-center gap-2 p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border">
-            <span class="text-xs text-matte-400 w-6">${i + 1}.</span>
-            <code class="flex-1 text-xs font-mono text-violet-600 dark:text-violet-400 break-all">${token}</code>
-            <button class="copy-token text-xs font-bold px-2 py-1 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-token="${token}" data-i18n="btn.copy">Copy</button>
-          </div>
-        `).join('');
+    const listEl = document.getElementById('tokens-list');
+    listEl.textContent = '';
+    tokens.forEach((token, i) => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border';
 
-        listEl!.querySelectorAll('.copy-token').forEach(btn => {
-          btn.addEventListener('click', () => {
-            navigator.clipboard.writeText((btn as HTMLElement).dataset.token!);
-            window.showToast?.(window._tToast ? window._tToast('Token disalin!') : 'Token disalin!', 'success');
-          });
-        });
+      const num = document.createElement('span');
+      num.className = 'text-xs text-matte-400 w-6';
+      num.textContent = (i + 1) + '.';
 
-        document.getElementById('result')?.classList.remove('hidden');
-        window.showToast?.(`${count} token digenerate!`, 'success');
+      const code = document.createElement('code');
+      code.className = 'flex-1 text-xs font-mono text-violet-600 dark:text-violet-400 break-all';
+      code.textContent = token;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'copy-token text-xs font-bold px-2 py-1 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded hover:bg-matte-200 dark:hover:bg-surface-hover transition';
+      btn.textContent = t('common.copy', 'Copy');
+      btn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(token); toast('Token disalin!'); }
+        catch { toast('Gagal menyalin', 'error'); }
       });
 
-      document.getElementById('copy-all')?.addEventListener('click', () => {
-        const tokens = Array.from(document.querySelectorAll('.copy-token')).map(btn => (btn as HTMLElement).dataset.token!);
-        navigator.clipboard.writeText(tokens.join('\n'));
-        window.showToast?.(window._tToast ? window._tToast('Semua token disalin!') : 'Semua token disalin!', 'success');
-      });
+      row.append(num, code, btn);
+      listEl.appendChild(row);
     });
+
+    document.getElementById('result').classList.remove('hidden');
+    toast('Token digenerate!');
+  });
+
+  document.getElementById('copy-all').addEventListener('click', async () => {
+    const tokens = Array.from(document.querySelectorAll('#tokens-list code')).map(c => c.textContent || '');
+    if (!tokens.length) { toast('Input kosong!', 'error'); return; }
+    try { await navigator.clipboard.writeText(tokens.join('\n')); toast('Semua token disalin!'); }
+    catch { toast('Gagal menyalin', 'error'); }
+  });
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __securityTokenPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __securityTokenPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
   </script>
 </BaseLayout>

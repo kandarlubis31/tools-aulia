@@ -7,87 +7,111 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <div class="card-base p-5 space-y-4">
     <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 text-center cursor-pointer hover:border-accent-blue transition-colors">
-      <span>🖼️ Drop gambar di sini</span>
+      <span data-i18n="border.drop_hint">🖼️ Drop gambar di sini</span>
       <input type="file" id="file-input" class="hidden" accept="image/*">
     </div>
 
     <div id="controls" class="hidden space-y-3">
       <div class="flex flex-wrap gap-3 items-center">
         <div>
-          <label class="block text-xs text-matte-500 mb-1">Warna Border</label>
+          <label class="block text-xs text-matte-500 mb-1" for="color" data-i18n="border.color">Warna Border</label>
           <input id="color" type="color" value="#2563eb" class="w-10 h-10 rounded cursor-pointer p-0 border-0">
         </div>
         <div>
-          <label class="block text-xs text-matte-500 mb-1">Tebal (px)</label>
+          <label class="block text-xs text-matte-500 mb-1" for="thickness" data-i18n="border.thickness">Tebal (px)</label>
           <input id="thickness" type="range" min="1" max="80" value="10" class="w-24"> <span id="thick-val">10px</span>
         </div>
         <div>
-          <label class="block text-xs text-matte-500 mb-1">Radius (px)</label>
+          <label class="block text-xs text-matte-500 mb-1" for="radius" data-i18n="border.radius">Radius (px)</label>
           <input id="radius" type="range" min="0" max="60" value="0" class="w-24"> <span id="radius-val">0px</span>
         </div>
       </div>
 
       <canvas id="preview" class="max-w-full rounded-lg shadow mx-auto" width="600" height="400"></canvas>
-      <button id="download-btn" class="btn-primary w-full">Download Gambar Berframe</button>
+      <button id="download-btn" class="btn-primary w-full" data-i18n="border.download">Download Gambar Berframe</button>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  const canvas = document.getElementById('preview'); const ctx = canvas.getContext('2d');
-  let img;
+  const canvas = document.getElementById('preview');
+  const ctx = canvas.getContext('2d');
+  let img = null;
+  let imgName = 'image';
 
-  document.getElementById('file-input').addEventListener('change', loadFile);
   const dz = document.getElementById('drop-zone');
-  dz.addEventListener('click', () => document.getElementById('file-input').click());
-  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('border-accent-blue'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('border-accent-blue'));
-  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('border-accent-blue'); loadFile({ target: { files: e.dataTransfer.files } }); });
+  const fi = document.getElementById('file-input');
 
-  function loadFile(e) {
-    const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader(); r.onload = () => { img = new Image(); img.onload = draw; img.src = r.result; };
+  dz.addEventListener('click', () => fi.click());
+  dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('border-accent-blue'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('border-accent-blue'));
+  dz.addEventListener('drop', (e) => { e.preventDefault(); dz.classList.remove('border-accent-blue'); loadFile(e.dataTransfer.files[0]); });
+  fi.addEventListener('change', () => { loadFile(fi.files[0]); fi.value = ''; });
+
+  function loadFile(f) {
+    if (!f) return;
+    if (!f.type || !f.type.startsWith('image/')) { toast('File bukan gambar.', 'error'); return; }
+    imgName = f.name.replace(/\.[^.]+$/, '') || 'image';
+    const r = new FileReader();
+    r.onerror = () => toast('Gagal membuat gambar', 'error');
+    r.onload = () => {
+      img = new Image();
+      img.onload = draw;
+      img.onerror = () => toast('Gagal membuat gambar', 'error');
+      img.src = r.result;
+    };
     r.readAsDataURL(f);
   }
 
-  ['color','thickness','radius'].forEach(id => document.getElementById(id).addEventListener('input', draw));
-  document.getElementById('thickness').addEventListener('input', function() { document.getElementById('thick-val').textContent = this.value+'px'; });
-  document.getElementById('radius').addEventListener('input', function() { document.getElementById('radius-val').textContent = this.value+'px'; });
+  ['color', 'thickness', 'radius'].forEach((id) => document.getElementById(id).addEventListener('input', draw));
+  document.getElementById('thickness').addEventListener('input', function () { document.getElementById('thick-val').textContent = this.value + 'px'; });
+  document.getElementById('radius').addEventListener('input', function () { document.getElementById('radius-val').textContent = this.value + 'px'; });
 
   function draw() {
     if (!img) return;
     document.getElementById('controls').classList.remove('hidden');
-    const t = parseInt(document.getElementById('thickness').value);
-    const r = parseInt(document.getElementById('radius').value);
+    const t = parseInt(document.getElementById('thickness').value, 10) || 0;
+    const r = parseInt(document.getElementById('radius').value, 10) || 0;
     const c = document.getElementById('color').value;
-    const w = Math.min(img.naturalWidth + t*2, 800);
-    const h = w * (img.naturalHeight + t*2) / (img.naturalWidth + t*2);
-    canvas.width = w; canvas.height = h;
+    const w = Math.min(img.naturalWidth + t * 2, 800);
+    const h = w * (img.naturalHeight + t * 2) / (img.naturalWidth + t * 2);
+    canvas.width = w;
+    canvas.height = h;
 
     ctx.fillStyle = c;
-    ctx.beginPath(); ctx.roundRect(0, 0, w, h, r); ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(0, 0, w, h, r);
+    ctx.fill();
 
-    const iw = w - t*2, ih = h - t*2;
+    const iw = w - t * 2, ih = h - t * 2;
     ctx.save();
-    ctx.beginPath(); ctx.roundRect(t, t, iw, ih, Math.max(0, r-t));
+    ctx.beginPath();
+    ctx.roundRect(t, t, iw, ih, Math.max(0, r - t));
     ctx.clip();
     ctx.drawImage(img, t, t, iw, ih);
     ctx.restore();
   }
 
   document.getElementById('download-btn').addEventListener('click', () => {
-    canvas.toBlob(b => {
-      const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'framed-image.png'; a.click();
-      showToast?.(_tToast?.('Download dimulai!','Download started!'),'success');
+    if (!img) { toast('Upload gambar dulu!', 'error'); return; }
+    canvas.toBlob((b) => {
+      if (!b) { toast('Gagal membuat gambar', 'error'); return; }
+      const url = URL.createObjectURL(b);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = imgName + '-framed.png';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast('Download dimulai!');
     }, 'image/png');
   });
 
   document.getElementById('thick-val').textContent = '10px';
-
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -99,5 +123,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>

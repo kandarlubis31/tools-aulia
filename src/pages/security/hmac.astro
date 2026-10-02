@@ -16,10 +16,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <div class="card-base p-6 animate-fade-in">
       <label class="section-title mb-2 block" for="message" data-i18n="hmac.message">Message</label>
-      <textarea id="message" rows="3" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono resize-y" placeholder="Masukkan message..." data-i18n-attr="placeholder"></textarea>
+      <textarea id="message" rows="3" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono resize-y" placeholder="Masukkan message..." data-i18n-attr="placeholder" data-i18n="hmac.msg_ph"></textarea>
 
       <label class="section-title mb-2 mt-4 block" for="secret" data-i18n="hmac.secret">Secret Key</label>
-      <input id="secret" type="text" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono" placeholder="Masukkan secret key..." autocomplete="off" />
+      <input id="secret" type="text" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm font-mono" placeholder="Masukkan secret key..." autocomplete="off" data-i18n-attr="placeholder" data-i18n="hmac.secret_ph" />
 
       <label class="section-title mb-2 mt-4 block" data-i18n="hmac.algorithm">Algoritma</label>
       <div class="flex gap-2">
@@ -40,63 +40,79 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
-const __page = (location.pathname.replace(/\/+$/, '') || '/');
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
-    document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
+  let algorithm = 'SHA-256';
+  const ALG_ACTIVE = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all';
+  const ALG_IDLE = 'px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
 
-      let algorithm = 'SHA-256';
+  async function generate() {
+    const message = document.getElementById('message').value;
+    const secret = document.getElementById('secret').value;
 
-      // Algorithm buttons
-      document.getElementById('alg-sha256')?.addEventListener('click', () => {
-        algorithm = 'SHA-256';
-        document.getElementById('alg-sha256')!.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all';
-        document.getElementById('alg-sha512')!.className = 'px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
-      });
+    if (!message || !secret) {
+      toast('Masukkan message dan secret key!', 'error');
+      return false;
+    }
 
-      document.getElementById('alg-sha512')?.addEventListener('click', () => {
-        algorithm = 'SHA-512';
-        document.getElementById('alg-sha512')!.className = 'px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500 text-white shadow-md transition-all';
-        document.getElementById('alg-sha256')!.className = 'px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all';
-      });
+    try {
+      const enc = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        'raw', enc.encode(secret),
+        { name: 'HMAC', hash: algorithm },
+        false, ['sign']
+      );
 
-      // Generate HMAC
-      document.getElementById('generate-btn')?.addEventListener('click', async () => {
-        const message = (document.getElementById('message') as HTMLTextAreaElement)?.value;
-        const secret = (document.getElementById('secret') as HTMLInputElement)?.value;
+      const signature = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+      const hashHex = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-        if (!message || !secret) {
-          window.showToast?.(window._tToast ? window._tToast('Masukkan message dan secret key!') : 'Masukkan message dan secret key!', 'error');
-          return;
-        }
+      document.getElementById('hmac-output').textContent = hashHex;
+      document.getElementById('result').classList.remove('hidden');
+      toast('HMAC digenerate!');
+      return true;
+    } catch (e) {
+      console.error(e);
+      toast('Gagal menggenerate HMAC', 'error');
+      return false;
+    }
+  }
 
-        try {
-          const enc = new TextEncoder();
-          const key = await crypto.subtle.importKey(
-            'raw', enc.encode(secret),
-            { name: 'HMAC', hash: algorithm },
-            false, ['sign']
-          );
+  function setAlg(alg) {
+    algorithm = alg;
+    document.getElementById('alg-sha256').className = alg === 'SHA-256' ? ALG_ACTIVE : ALG_IDLE;
+    document.getElementById('alg-sha512').className = alg === 'SHA-512' ? ALG_ACTIVE : ALG_IDLE;
+    // re-generate otomatis kalau hasil sudah tampil (ganti algoritma tanpa klik ulang)
+    if (!document.getElementById('result').classList.contains('hidden')) generate();
+  }
 
-          const signature = await crypto.subtle.sign('HMAC', key, enc.encode(message));
-          const hashArray = Array.from(new Uint8Array(signature));
-          const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  document.getElementById('alg-sha256').addEventListener('click', () => setAlg('SHA-256'));
+  document.getElementById('alg-sha512').addEventListener('click', () => setAlg('SHA-512'));
 
-          document.getElementById('hmac-output')!.textContent = hashHex;
-          document.getElementById('result')?.classList.remove('hidden');
-          window.showToast?.(window._tToast ? window._tToast('HMAC digenerate!') : 'HMAC digenerate!', 'success');
-        } catch (e: any) {
-          window.showToast?.(window._tToast ? window._tToast('Error: ') + e.message : 'Error: ' + e.message, 'error');
-        }
-      });
+  document.getElementById('generate-btn').addEventListener('click', generate);
 
-      // Copy HMAC
-      document.getElementById('copy-hmac')?.addEventListener('click', () => {
-        const hmac = document.getElementById('hmac-output')?.textContent;
-        if (hmac) {
-          navigator.clipboard.writeText(hmac);
-          window.showToast?.(window._tToast ? window._tToast('HMAC disalin!') : 'HMAC disalin!', 'success');
-        }
-      });
-    });
+  // Enter di secret = generate
+  document.getElementById('secret').addEventListener('keydown', (e) => { if (e.key === 'Enter') generate(); });
+
+  // Copy HMAC
+  document.getElementById('copy-hmac').addEventListener('click', async () => {
+    const hmac = document.getElementById('hmac-output').textContent || '';
+    if (!hmac) { toast('Input kosong!', 'error'); return; }
+    try { await navigator.clipboard.writeText(hmac); toast('HMAC disalin!'); }
+    catch { toast('Gagal menyalin', 'error'); }
+  });
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __securityHmacPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __securityHmacPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
   </script>
 </BaseLayout>
