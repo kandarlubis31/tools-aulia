@@ -7,7 +7,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <div class="card-base p-5 space-y-4">
     <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 text-center cursor-pointer hover:border-accent-blue transition-colors">
-      <span>📁 Drop file di sini atau klik</span>
+      <span data-i18n="split.drop_hint">📁 Drop file di sini atau klik</span>
       <input type="file" id="file-input" class="hidden">
     </div>
 
@@ -15,7 +15,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <span class="text-sm text-matte-500 font-medium" id="filename"></span>
       <div class="flex flex-wrap gap-3 items-end">
         <div>
-          <label class="block text-xs text-matte-500 mb-1">Ukuran per chunk</label>
+          <label for="chunk-size" class="block text-xs text-matte-500 mb-1" data-i18n="split.chunk_label">Ukuran per chunk</label>
           <select id="chunk-size" class="input-field text-sm">
             <option value="1048576">1 MB</option>
             <option value="5242880" selected>5 MB</option>
@@ -24,67 +24,79 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             <option value="custom">Custom</option>
           </select>
         </div>
-        <input id="custom-size" type="number" min="1024" value="1048576" class="input-field text-sm w-32 hidden" placeholder="Bytes">
+        <input id="custom-size" type="number" min="1024" step="1024" value="1048576" class="input-field text-sm w-32 hidden" placeholder="Bytes" data-i18n-attr="placeholder" data-i18n="split.custom_ph">
       </div>
       <p class="text-sm text-matte-500" id="chunk-info"></p>
-      <button id="split-btn" class="btn-primary">Potong & Download Chunks</button>
+      <button id="split-btn" class="btn-primary" data-i18n="split.btn">Potong & Download Chunks</button>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  let fileBytes, fileName;
+  let fileBytes = null;
+  let fileName = '';
+  const MIN_CHUNK = 1024;
 
-  document.getElementById('file-input').addEventListener('change', function() { handleFile(this.files[0]); });
   const dz = document.getElementById('drop-zone');
-  dz.addEventListener('click', () => document.getElementById('file-input').click());
-  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('border-accent-blue'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('border-accent-blue'));
-  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('border-accent-blue'); handleFile(e.dataTransfer.files[0]); });
+  const fi = document.getElementById('file-input');
+  const customSize = document.getElementById('custom-size');
 
-  document.getElementById('chunk-size').addEventListener('change', function() {
-    document.getElementById('custom-size').classList.toggle('hidden', this.value !== 'custom');
+  fi.addEventListener('change', function () { handleFile(this.files[0]); this.value = ''; });
+  dz.addEventListener('click', () => fi.click());
+  dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('border-accent-blue'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('border-accent-blue'));
+  dz.addEventListener('drop', (e) => { e.preventDefault(); dz.classList.remove('border-accent-blue'); handleFile(e.dataTransfer.files[0]); });
+
+  document.getElementById('chunk-size').addEventListener('change', function () {
+    customSize.classList.toggle('hidden', this.value !== 'custom');
     updateInfo();
   });
-  document.getElementById('custom-size').addEventListener('input', updateInfo);
+  customSize.addEventListener('input', updateInfo);
 
-  async function handleFile(file) {
-    if (!file) return;
-    fileBytes = new Uint8Array(await file.arrayBuffer());
-    fileName = file.name;
-    document.getElementById('filename').textContent = fileName + ' (' + (file.size/1048576).toFixed(1) + ' MB)';
-    document.getElementById('info').classList.remove('hidden');
-    updateInfo();
+  function getChunkSize() {
+    const sel = document.getElementById('chunk-size').value;
+    let size = sel === 'custom' ? (parseInt(customSize.value, 10) || MIN_CHUNK) : parseInt(sel, 10);
+    if (!Number.isFinite(size) || size < MIN_CHUNK) size = MIN_CHUNK;
+    return size;
   }
 
   function updateInfo() {
     if (!fileBytes) return;
-    const sel = document.getElementById('chunk-size').value;
-    const size = sel === 'custom' ? parseInt(document.getElementById('custom-size').value) || 1048576 : parseInt(sel);
+    const size = getChunkSize();
     const chunks = Math.ceil(fileBytes.length / size);
-    document.getElementById('chunk-info').textContent = chunks + ' chunk' + (chunks>1?'s':'') + ' ±' + (size/1048576).toFixed(1) + ' MB';
+    document.getElementById('chunk-info').textContent = chunks + ' chunk' + (chunks > 1 ? 's' : '') + ' · ' + (size / 1048576).toFixed(1) + ' MB';
+  }
+
+  async function handleFile(file) {
+    if (!file) return;
+    if (file.size === 0) { toast('File kosong.', 'error'); return; }
+    try { fileBytes = new Uint8Array(await file.arrayBuffer()); }
+    catch { toast('Gagal membaca file', 'error'); return; }
+    fileName = file.name;
+    document.getElementById('filename').textContent = fileName + ' (' + (file.size / 1048576).toFixed(2) + ' MB)';
+    document.getElementById('info').classList.remove('hidden');
+    updateInfo();
   }
 
   document.getElementById('split-btn').addEventListener('click', () => {
-    if (!fileBytes) return;
-    const sel = document.getElementById('chunk-size').value;
-    const size = sel === 'custom' ? parseInt(document.getElementById('custom-size').value) || 1048576 : parseInt(sel);
+    if (!fileBytes) { toast('Pilih file dulu!', 'error'); return; }
+    const size = getChunkSize();
     for (let i = 0; i < fileBytes.length; i += size) {
       const chunk = fileBytes.slice(i, Math.min(i + size, fileBytes.length));
       const blob = new Blob([chunk]);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = fileName + '.part' + String(Math.floor(i/size)+1).padStart(3,'0');
-      setTimeout(() => { a.click(); URL.revokeObjectURL(url); }, i/size * 200);
+      a.download = fileName + '.part' + String(Math.floor(i / size) + 1).padStart(3, '0');
+      setTimeout(() => { a.click(); URL.revokeObjectURL(url); }, (i / size) * 200);
     }
-    showToast?.(_tToast?.('Download chunks dimulai!', 'Chunk download started!'), 'success');
+    toast('Download chunks dimulai!');
   });
-
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -96,5 +108,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>

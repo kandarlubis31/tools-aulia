@@ -15,7 +15,6 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     />
 
     <div class="card-base p-8 text-center animate-fade-in">
-      <!-- Ball -->
       <div class="relative mx-auto w-56 h-56 mb-6">
         <div id="ball" class="w-full h-full rounded-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-2xl flex items-center justify-center transition-transform duration-500 cursor-pointer active:scale-95">
           <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-800 to-indigo-900 flex items-center justify-center shadow-inner">
@@ -29,71 +28,93 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <p class="text-sm text-matte-500 dark:text-matte-300 mb-4 italic" data-i18n="magic.think">Pikirkan pertanyaanmu, lalu klik bola ajaib…</p>
 
       <input id="question-input" type="text" placeholder="Aku akan sukses di 2026?"
-        class="w-full max-w-xs px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm text-center outline-none focus:ring-2 focus:ring-purple-500/40"          data-i18n-attr="placeholder|magic.placeholder" />
+        class="w-full max-w-xs px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm text-center outline-none focus:ring-2 focus:ring-purple-500/40"
+        data-i18n-attr="placeholder" data-i18n="magic.placeholder" />
+
+      <button id="copy-answer" class="hidden mt-4 text-xs px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 rounded-full" data-i18n="magic.copy_btn">📋 Salin jawaban</button>
     </div>
   </div>
 </BaseLayout>
 
 <script>
-const __page = (location.pathname.replace(/\/+$/, '') || '/');
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+  const ANSWERS_ID = [
+    'Iya pasti! ✨', 'Tidak diragukan.', '100% yakin.', 'Kayaknya iya deh.', 'Tanda-tanda baik.',
+    'Bisa jadi.', 'Masih abu-abu.', 'Tanya lagi nanti.', 'Lebih baik tidak tahu.', 'Jangan harap deh.',
+    'Nope.', 'Mimpi aja!', 'Hmm… ragu.', 'Sepertinya begini.', 'Fokus dulu, baru tanya.',
+    'Bismillah, iya!', 'Skip deh.', 'Besok tanya lagi.', 'Jawabannya ada di dirimu.', 'Ya Allah, jauhkan! 🙏',
+  ];
+  const ANSWERS_EN = [
+    'Absolutely yes! ✨', 'Without a doubt.', '100% certain.', 'Looks like yes.', 'Good signs.',
+    'Maybe.', 'Still unclear.', 'Ask again later.', 'Better not to know.', 'Do not count on it.',
+    'Nope.', 'Just a dream!', 'Hmm… doubtful.', 'Seems so.', 'Focus first, then ask.',
+    'Fingers crossed, yes!', 'Skip it.', 'Ask again tomorrow.', 'The answer is within you.', 'Heavens, no! 🙏',
+  ];
 
-    const ball = document.getElementById('ball')!;
-    const ballText = document.getElementById('ball-text')!;
-    const questionInput = document.getElementById('question-input') as HTMLInputElement;
+  function getAnswers() {
+    try { return (localStorage.getItem('lang') || 'id') === 'en' ? ANSWERS_EN : ANSWERS_ID; }
+    catch { return ANSWERS_ID; }
+  }
 
-    const ANSWERS = [
-      'Iya pasti! ✨',
-      'Tidak diragukan.',
-      '100% yakin.',
-      'Kayaknya iya deh.',
-      'Tanda-tanda baik.',
-      'Bisa jadi.',
-      'Masih abu-abu.',
-      'Tanya lagi nanti.',
-      'Lebih baik tidak tahu.',
-      'Jangan harap deh.',
-      'Nope.',
-      'Mimpi aja!',
-      'Hmm… ragu.',
-      'Absolutely yes!',
-      'Better not say.',
-      'Signs point to yes.',
-      'Very doubtful.',
-      'Mungkin…',
-      'Coba lagi bos.',
-      'Ya Allah, jauhkan! 🙏',
-    ];
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  function init() {
+  const ball = document.getElementById('ball');
+  const ballText = document.getElementById('ball-text');
+  const copyBtn = document.getElementById('copy-answer');
+  let shaking = false;
+  let lastAnswer = '';
 
-    ball.addEventListener('click', () => {
-      // Shake animation
-      ball.style.transform = 'translateX(0px)';
-      const shakes = 8;
-      let i = 0;
-      const shakeInt = setInterval(() => {
-        i++;
-        const x = (i % 2 === 0 ? 10 : -10) * (1 - i / shakes);
-        ball.style.transform = `rotate(${x}deg)`;
-        if (i >= shakes) {
-          clearInterval(shakeInt);
-          ball.style.transform = 'rotate(0deg)';
-          showAnswer();
-        }
-      }, 60);
+  function showAnswer() {
+    const answers = getAnswers();
+    lastAnswer = answers[Math.floor(Math.random() * answers.length)];
+    ballText.textContent = '';
+    const p = document.createElement('p');
+    p.className = 'text-sm font-bold leading-tight';
+    p.textContent = lastAnswer;
+    ballText.appendChild(p);
+    copyBtn.classList.remove('hidden');
+  }
 
-      ballText.innerHTML = '<p class="text-lg font-bold animate-pulse">…</p>';
-    });
+  ball.addEventListener('click', () => {
+    if (shaking) return;
+    shaking = true;
+    ballText.textContent = '…';
+    copyBtn.classList.add('hidden');
+    const shakes = 8;
+    let i = 0;
+    const shakeInt = setInterval(() => {
+      i++;
+      const x = (i % 2 === 0 ? 10 : -10) * (1 - i / shakes);
+      ball.style.transform = 'rotate(' + x + 'deg)';
+      if (i >= shakes) {
+        clearInterval(shakeInt);
+        ball.style.transform = 'rotate(0deg)';
+        shaking = false;
+        showAnswer();
+      }
+    }, 60);
+  });
 
-    questionInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') ball.click();
-    });
+  document.getElementById('question-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') ball.click();
+  });
 
-    function showAnswer() {
-      const idx = Math.floor(Math.random() * ANSWERS.length);
-      setTimeout(() => {
-        ballText.innerHTML = `<p class="text-sm font-bold leading-tight">${ANSWERS[idx]}</p>`;
-      }, Math.random() * 600 + 300);
-    }
+  copyBtn.addEventListener('click', async () => {
+    if (!lastAnswer) return;
+    try { await navigator.clipboard.writeText(lastAnswer); toast('Jawaban disalin'); }
+    catch { toast('Gagal menyalin', 'error'); }
+  });
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __lifeMagic8ballPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __lifeMagic8ballPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
   });
 </script>

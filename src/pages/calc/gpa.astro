@@ -8,28 +8,35 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <div class="card-base p-5 space-y-4">
     <div class="space-y-2" id="courses-container">
       <div class="grid grid-cols-12 gap-2 text-xs text-matte-400 font-medium px-1">
-        <span class="col-span-5">Mata Kuliah</span>
-        <span class="col-span-3">Nilai (A-F)</span>
-        <span class="col-span-3">SKS</span>
+        <span class="col-span-5" data-i18n="gpa.col_name">Mata Kuliah</span>
+        <span class="col-span-3" data-i18n="gpa.col_grade">Nilai (A-F)</span>
+        <span class="col-span-3" data-i18n="gpa.col_sks">SKS</span>
         <span class="col-span-1"></span>
       </div>
     </div>
 
-    <button id="add-course" class="btn-secondary text-sm w-full">+ Tambah Mata Kuliah</button>
+    <div class="grid grid-cols-2 gap-2">
+      <button id="add-course" class="btn-secondary text-sm" data-i18n="gpa.add_btn">+ Tambah Mata Kuliah</button>
+      <button id="reset-gpa" class="btn-secondary text-sm" data-i18n="gpa.reset_btn">Reset</button>
+    </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <div class="card-base p-3 text-center bg-gradient-to-br from-accent-blue/5 to-transparent">
-        <p class="text-xs text-matte-400">Total SKS</p>
+        <p class="text-xs text-matte-400" data-i18n="gpa.total_sks">Total SKS</p>
         <p class="text-2xl font-bold text-accent-blue" id="total-sks">0</p>
       </div>
       <div class="card-base p-3 text-center bg-gradient-to-br from-accent-green/5 to-transparent">
-        <p class="text-xs text-matte-400">Total Bobot</p>
+        <p class="text-xs text-matte-400" data-i18n="gpa.total_points">Total Bobot</p>
         <p class="text-2xl font-bold text-accent-green" id="total-points">0.00</p>
       </div>
       <div class="card-base p-3 text-center bg-gradient-to-br from-accent-amber/5 to-transparent col-span-2">
-        <p class="text-xs text-matte-400">IPK (GPA)</p>
+        <p class="text-xs text-matte-400" data-i18n="gpa.gpa_label">IPK (GPA)</p>
         <p class="text-3xl font-bold text-accent-amber" id="gpa-result">0.00</p>
       </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button id="copy-gpa" class="btn-secondary text-xs" data-i18n="gpa.copy_btn">📋 Copy IPK</button>
     </div>
 
     <div class="text-xs text-matte-400 space-x-3">
@@ -40,51 +47,96 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
+
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  let __gpaRender: (() => void) | null = null;
+  window.addEventListener('langchange', () => { __gpaRender?.(); });
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  const gradeMap: Record<string, number> = { 'A':4,'A-':3.7,'B+':3.3,'B':3,'B-':2.7,'C+':2.3,'C':2,'D':1,'E':0 };
+  const gradeMap: Record<string, number> = { 'A': 4, 'A-': 3.7, 'B+': 3.3, 'B': 3, 'B-': 2.7, 'C+': 2.3, 'C': 2, 'D': 1, 'E': 0 };
   const container = document.getElementById('courses-container')!;
-  let rowId = 0;
 
-  function addRow(name = '', grade = 'A', sks = '3') {
-    const id = ++rowId;
+  function addRow() {
     const div = document.createElement('div');
     div.className = 'grid grid-cols-12 gap-2 items-center course-row';
-    div.innerHTML = `
-      <input type="text" class="col-span-5 input-field text-sm" placeholder="Mata Kuliah" value="${name}" data-role="name">
-      <select class="col-span-3 input-field text-sm" data-role="grade">
-        ${Object.keys(gradeMap).map(g => `<option value="${g}" ${g===grade?'selected':''}>${g}</option>`).join('')}
-      </select>
-      <input type="number" min="0" step="1" class="col-span-3 input-field text-sm" value="${sks}" data-role="sks" placeholder="SKS">
-      <button class="col-span-1 text-red-400 hover:text-red-600 text-lg remove-btn" title="Hapus">✕</button>
-    `;
+
+    const name = document.createElement('input');
+    name.type = 'text';
+    name.className = 'col-span-5 input-field text-sm';
+    name.placeholder = t('gpa.course_ph', 'Mata Kuliah');
+
+    const grade = document.createElement('select');
+    grade.className = 'col-span-3 input-field text-sm';
+    Object.keys(gradeMap).forEach((g) => {
+      const opt = document.createElement('option');
+      opt.value = g;
+      opt.textContent = g;
+      grade.appendChild(opt);
+    });
+
+    const sks = document.createElement('input');
+    sks.type = 'number';
+    sks.min = '1';
+    sks.max = '24';
+    sks.step = '1';
+    sks.value = '3';
+    sks.className = 'col-span-3 input-field text-sm';
+    sks.placeholder = 'SKS';
+
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'col-span-1 text-red-400 hover:text-red-600 text-lg remove-btn';
+    del.textContent = '✕';
+    del.setAttribute('aria-label', 'remove');
+
+    div.append(name, grade, sks, del);
     container.appendChild(div);
-    div.querySelector('.remove-btn')!.addEventListener('click', () => { div.remove(); calc(); });
-    div.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calc));
+    del.addEventListener('click', () => { div.remove(); calc(); });
+    [name, grade, sks].forEach((el) => el.addEventListener('input', calc));
     calc();
   }
 
   function calc() {
     let totalSks = 0, totalPoints = 0;
-    document.querySelectorAll('.course-row').forEach(row => {
-      const grade = (row.querySelector('[data-role="grade"]') as HTMLSelectElement)?.value;
-      const sks = +(row.querySelector('[data-role="sks"]') as HTMLInputElement)?.value || 0;
-      if (grade && gradeMap[grade] !== undefined && sks > 0) {
+    container.querySelectorAll('.course-row').forEach((row) => {
+      const grade = (row.querySelector('select') as HTMLSelectElement).value;
+      const sks = Math.min(24, Math.max(0, parseInt((row.querySelector('input[type="number"]') as HTMLInputElement).value, 10) || 0));
+      if (gradeMap[grade] !== undefined && sks > 0) {
         totalSks += sks;
         totalPoints += gradeMap[grade] * sks;
       }
     });
     document.getElementById('total-sks')!.textContent = String(totalSks);
     document.getElementById('total-points')!.textContent = totalPoints.toFixed(2);
-    const gpa = totalSks > 0 ? totalPoints / totalSks : 0;
-    document.getElementById('gpa-result')!.textContent = gpa.toFixed(2);
+    document.getElementById('gpa-result')!.textContent = (totalSks > 0 ? totalPoints / totalSks : 0).toFixed(2);
   }
 
   document.getElementById('add-course')!.addEventListener('click', () => addRow());
+
+  document.getElementById('reset-gpa')!.addEventListener('click', () => {
+    container.querySelectorAll('.course-row').forEach((r) => r.remove());
+    addRow(); addRow(); addRow();
+    toast('Data direset');
+  });
+
+  document.getElementById('copy-gpa')!.addEventListener('click', async () => {
+    const gpa = document.getElementById('gpa-result')!.textContent || '';
+    try { await navigator.clipboard.writeText(gpa); toast('IPK disalin'); }
+    catch { toast('Gagal menyalin', 'error'); }
+  });
+
   addRow(); addRow(); addRow();
 
+  // langchange: placeholder baris dinamis ikut bahasa aktif
+  __gpaRender = () => {
+    container.querySelectorAll('.course-row input[type="text"]').forEach((inp) => {
+      (inp as HTMLInputElement).placeholder = t('gpa.course_ph', 'Mata Kuliah');
+    });
+  };
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -96,5 +148,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>
