@@ -11,14 +11,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="en-csp" checked> CSP (Content-Security-Policy)</label>
         <div id="csp-opts" class="ml-6 space-y-1 text-xs">
           <input id="csp-def" type="text" class="input-field text-sm w-full" value="default-src 'self'" aria-label="default-src" data-i18n-attr="aria-label" data-i18n="sec.hg.csp_def" placeholder="default-src 'self'">
-          <input id="csp-script" type="text" class="input-field text-sm w-full mt-1" value="script-src 'self' 'unsafe-inline'" aria-label="script-src" placeholder="script-src">
-          <input id="csp-style" type="text" class="input-field text-sm w-full mt-1" value="style-src 'self' 'unsafe-inline'" aria-label="style-src" placeholder="style-src">
-          <input id="csp-img" type="text" class="input-field text-sm w-full mt-1" value="img-src 'self' data: https:" aria-label="img-src" placeholder="img-src">
+          <input id="csp-script" type="text" class="input-field text-sm w-full mt-1" value="script-src 'self' 'unsafe-inline'" aria-label="script-src" data-i18n-attr="aria-label" data-i18n="sec.hg.script_src" placeholder="script-src">
+          <input id="csp-style" type="text" class="input-field text-sm w-full mt-1" value="style-src 'self' 'unsafe-inline'" aria-label="style-src" data-i18n-attr="aria-label" data-i18n="sec.hg.style_src" placeholder="style-src">
+          <input id="csp-img" type="text" class="input-field text-sm w-full mt-1" value="img-src 'self' data: https:" aria-label="img-src" data-i18n-attr="aria-label" data-i18n="sec.hg.img_src" placeholder="img-src">
         </div>
 
         <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="en-hsts"> HSTS</label>
         <div id="hsts-opts" class="ml-6 text-xs hidden">
-          <input id="hsts-max-age" type="number" class="input-field text-sm w-32" value="31536000" aria-label="max-age" placeholder="max-age"> detik
+          <input id="hsts-max-age" type="number" min="0" class="input-field text-sm w-32" value="31536000" aria-label="max-age" placeholder="max-age"> <span data-i18n="hg.seconds">detik</span>
           <label class="flex items-center gap-1 mt-1"><input type="checkbox" id="hsts-sub"> includeSubDomains</label>
           <label class="flex items-center gap-1"><input type="checkbox" id="hsts-preload"> preload</label>
         </div>
@@ -26,11 +26,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="en-xfo"> X-Frame-Options</label>
         <div id="xfo-opts" class="ml-6 hidden"><select id="xfo-val" class="input-field text-sm w-48" aria-label="X-Frame-Options" data-i18n-attr="aria-label" data-i18n="sec.hg.xfo"><option value="DENY">DENY</option><option value="SAMEORIGIN" selected>SAMEORIGIN</option></select></div>
 
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="en-referrer"> Referrer-Policy</label>
+        <div id="referrer-opts" class="ml-6 hidden"><select id="referrer-val" class="input-field text-sm w-64" aria-label="Referrer-Policy"><option value="no-referrer">no-referrer</option><option value="same-origin">same-origin</option><option value="strict-origin">strict-origin</option><option value="strict-origin-when-cross-origin" selected>strict-origin-when-cross-origin</option><option value="no-referrer-when-downgrade">no-referrer-when-downgrade</option></select></div>
+
         <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="en-xcto"> X-Content-Type-Options</label>
       </div>
 
       <div>
-        <label class="text-sm text-matte-500 mb-1 font-medium" for="output">Output Headers (NGINX add_header)</label>
+        <label class="text-sm text-matte-500 mb-1 font-medium" for="output" data-i18n="hg.output_label">Output Headers (NGINX add_header)</label>
         <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-72 overflow-auto text-xs font-mono whitespace-pre-wrap"></pre>
         <button id="copy-btn" class="btn-secondary text-xs mt-2" data-i18n="common.copy">📋 Copy</button>
       </div>
@@ -39,24 +42,29 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
+
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  let __hgRender: (() => void) | null = null;
+  window.addEventListener('langchange', () => { __hgRender?.(); });
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  function toggle(id, enId) {
-    document.getElementById(id).classList.toggle('hidden', !document.getElementById(enId).checked);
+  function toggle(optsId, enId) {
+    document.getElementById(optsId).classList.toggle('hidden', !document.getElementById(enId).checked);
     render();
   }
-  ['en-csp','en-hsts','en-xfo'].forEach(id => {
-    document.getElementById(id).addEventListener('change', () => {
-      const g = id.replace('en-','');
-      toggle(g+'-opts', id);
-    });
+  [['en-csp', 'csp-opts'], ['en-hsts', 'hsts-opts'], ['en-xfo', 'xfo-opts'], ['en-referrer', 'referrer-opts']].forEach(([enId, optsId]) => {
+    document.getElementById(enId).addEventListener('change', () => toggle(optsId, enId));
   });
   document.getElementById('en-xcto').addEventListener('change', render);
-  ['csp-def','csp-script','csp-style','csp-img','hsts-max-age','hsts-sub','hsts-preload','xfo-val'].forEach(id => {
+  ['csp-def', 'csp-script', 'csp-style', 'csp-img', 'hsts-max-age', 'hsts-sub', 'hsts-preload', 'xfo-val', 'referrer-val'].forEach((id) => {
     document.getElementById(id).addEventListener('input', render);
   });
+
+  function val(id) { return document.getElementById(id).value.trim(); }
 
   function render() {
     const lines = [];
@@ -65,7 +73,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       lines.push('add_header Content-Security-Policy "' + parts.join('; ') + '";');
     }
     if (document.getElementById('en-hsts').checked) {
-      let h = 'max-age='+(parseInt(document.getElementById('hsts-max-age').value)||31536000);
+      const maxAge = Math.max(0, parseInt(document.getElementById('hsts-max-age').value, 10));
+      let h = 'max-age=' + (Number.isFinite(maxAge) ? maxAge : 31536000);
       if (document.getElementById('hsts-sub').checked) h += '; includeSubDomains';
       if (document.getElementById('hsts-preload').checked) h += '; preload';
       lines.push('add_header Strict-Transport-Security "' + h + '";');
@@ -73,20 +82,24 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     if (document.getElementById('en-xfo').checked) {
       lines.push('add_header X-Frame-Options "' + document.getElementById('xfo-val').value + '";');
     }
+    if (document.getElementById('en-referrer').checked) {
+      lines.push('add_header Referrer-Policy "' + document.getElementById('referrer-val').value + '";');
+    }
     if (document.getElementById('en-xcto').checked) {
       lines.push('add_header X-Content-Type-Options "nosniff";');
     }
-    document.getElementById('output').textContent = lines.join('\n') || '# Select options above';
+    document.getElementById('output').textContent = lines.join('\n') || '# ' + t('hg.empty_hint', 'Pilih opsi di atas');
   }
 
-  function val(id) { return document.getElementById(id).value.trim(); }
-
-  document.getElementById('copy-btn').addEventListener('click', () => {
-    navigator.clipboard.writeText(document.getElementById('output').textContent).then(() => showToast?.(_tToast?.('Disalin!','Copied!'),'success'));
+  document.getElementById('copy-btn').addEventListener('click', async () => {
+    const text = document.getElementById('output').textContent || '';
+    if (!text) { toast('Input kosong!', 'error'); return; }
+    try { await navigator.clipboard.writeText(text); toast('Disalin!'); }
+    catch { toast('Gagal menyalin', 'error'); }
   });
 
   render();
-
+  __hgRender = render;
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -98,5 +111,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>

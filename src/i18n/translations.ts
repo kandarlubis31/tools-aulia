@@ -3291,6 +3291,49 @@ export const translations: Record<string, { id: string; en: string }> = {
   'label.sql_input': { id: 'Input SQL', en: 'SQL Input' },
   'ph.paste_sql': { id: 'Paste SQL INSERT di sini...', en: 'Paste SQL INSERT here...' },
   'btn.convert_json': { id: 'Konversi ke JSON', en: 'Convert to JSON' },
+  // --- W6 batch 8: qr-scanner ---
+  'qrsc.camera_btn': { id: '📷 Buka Kamera', en: '📷 Open Camera' },
+  'qrsc.upload_btn': { id: '🖼️ Upload Gambar', en: '🖼️ Upload Image' },
+  'qrsc.stop_btn': { id: '⏹ Stop Kamera', en: '⏹ Stop Camera' },
+  'qrsc.result_label': { id: 'Hasil scan:', en: 'Scan result:' },
+  'qrsc.hist_title': { id: 'Riwayat scan', en: 'Scan history' },
+  'qrsc.hist_clear': { id: 'Hapus', en: 'Clear' },
+  'qrsc.hist_empty': { id: 'Belum ada riwayat scan.', en: 'No scan history yet.' },
+  'qrsc.no_qr': { id: 'Tidak ada QR terdeteksi di gambar.', en: 'No QR code detected in the image.' },
+  'qrsc.not_supported': { id: 'Browser tidak mendukung deteksi QR otomatis.', en: 'This browser does not support automatic QR detection.' },
+  // --- W6 batch 8: palette ---
+  'palette.drop_hint': { id: 'Drop gambar atau klik', en: 'Drop an image or click' },
+  'palette.k_label': { id: 'Jumlah warna:', en: 'Number of colors:' },
+  'palette.extract_btn': { id: '🎨 Ekstrak', en: '🎨 Extract' },
+  'palette.empty_hint': { id: 'Palet warna dominan muncul di sini — klik warna untuk copy HEX.', en: 'Dominant color palette appears here — click a color to copy its HEX.' },
+  // --- W6 batch 8: magic-8ball ---
+  'magic.ask': { id: 'Klik untuk bertanya', en: 'Click to ask' },
+  'magic.think': { id: 'Pikirkan pertanyaanmu, lalu klik bola ajaib…', en: 'Think of your question, then click the magic ball…' },
+  'magic.placeholder': { id: 'Aku akan sukses di 2026?', en: 'Will I succeed in 2026?' },
+  'magic.copy_btn': { id: '📋 Salin jawaban', en: '📋 Copy answer' },
+  // --- W6 batch 8: gpa ---
+  'gpa.col_name': { id: 'Mata Kuliah', en: 'Course' },
+  'gpa.col_grade': { id: 'Nilai (A-F)', en: 'Grade (A-F)' },
+  'gpa.col_sks': { id: 'SKS', en: 'Credits' },
+  'gpa.add_btn': { id: '+ Tambah Mata Kuliah', en: '+ Add Course' },
+  'gpa.reset_btn': { id: 'Reset', en: 'Reset' },
+  'gpa.copy_btn': { id: '📋 Copy IPK', en: '📋 Copy GPA' },
+  'gpa.course_ph': { id: 'Mata Kuliah', en: 'Course name' },
+  'gpa.total_sks': { id: 'Total SKS', en: 'Total Credits' },
+  'gpa.total_points': { id: 'Total Bobot', en: 'Total Points' },
+  'gpa.gpa_label': { id: 'IPK (GPA)', en: 'GPA' },
+  // --- W6 batch 8: file splitter ---
+  'split.drop_hint': { id: '📁 Drop file di sini atau klik', en: '📁 Drop a file here or click' },
+  'split.chunk_label': { id: 'Ukuran per chunk', en: 'Chunk size' },
+  'split.custom_ph': { id: 'Bytes', en: 'Bytes' },
+  'split.btn': { id: 'Potong & Download Chunks', en: 'Split & Download Chunks' },
+  // --- W6 batch 8: headers-gen ---
+  'hg.output_label': { id: 'Output Headers (NGINX add_header)', en: 'Output Headers (NGINX add_header)' },
+  'hg.seconds': { id: 'detik', en: 'seconds' },
+  'hg.empty_hint': { id: 'Pilih opsi di atas', en: 'Select options above' },
+  'sec.hg.script_src': { id: 'Direktif script-src', en: 'script-src directive' },
+  'sec.hg.style_src': { id: 'Direktif style-src', en: 'style-src directive' },
+  'sec.hg.img_src': { id: 'Direktif img-src', en: 'img-src directive' },
 };
 
 export function t(key, fallback) {

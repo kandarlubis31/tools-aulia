@@ -8,57 +8,154 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <ToolPageHeader title="QR Scanner" titleKey="header.qr_scanner" desc="Scan QR code dari kamera atau upload gambar." descKey="header.qr_scanner_desc" icon='<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="12" y1="7" x2="12" y2="17"/>' gradient="from-emerald-500 to-teal-600" />
     <div class="grid gap-6 animate-fade-in">
       <div class="grid grid-cols-2 gap-4">
-        <button id="camera-btn" class="py-6 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors">📷 Buka Kamera</button>
-        <button id="upload-btn" class="py-6 bg-matte-200 dark:bg-matte-700 text-matte-700 dark:text-matte-300 rounded-xl font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors">🖼️ Upload Gambar</button>
+        <button id="camera-btn" class="py-6 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors" data-i18n="qrsc.camera_btn">📷 Buka Kamera</button>
+        <button id="upload-btn" class="py-6 bg-matte-200 dark:bg-matte-700 text-matte-700 dark:text-matte-300 rounded-xl font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors" data-i18n="qrsc.upload_btn">🖼️ Upload Gambar</button>
       </div>
       <input type="file" id="file-input" accept="image/*" class="hidden" />
-      <video id="video" class="hidden w-full rounded-xl border"></video>
+      <video id="video" class="hidden w-full rounded-xl border" playsinline muted></video>
+      <button id="stop-btn" class="hidden py-2 bg-red-500 text-white rounded-xl font-bold text-sm" data-i18n="qrsc.stop_btn">⏹ Stop Kamera</button>
       <canvas id="scan-canvas" class="hidden"></canvas>
-      <div id="result" class="hidden p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800"><p class="text-xs text-matte-500 mb-1">Hasil scan:</p><p id="scan-text" class="font-mono text-sm break-all text-matte-800 dark:text-matte-200"></p><button id="copy-result" class="mt-2 text-xs px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-full" data-i18n="btn.copy_emoji">📋 Copy</button></div>
+      <div id="result" class="hidden p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
+        <p class="text-xs text-matte-500 mb-1" data-i18n="qrsc.result_label">Hasil scan:</p>
+        <p id="scan-text" class="font-mono text-sm break-all text-matte-800 dark:text-matte-200"></p>
+        <button id="copy-result" class="mt-2 text-xs px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-full" data-i18n="btn.copy_emoji">📋 Copy</button>
+      </div>
+      <div class="mt-2">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-bold text-matte-600 dark:text-matte-300" data-i18n="qrsc.hist_title">Riwayat scan</h2>
+          <button id="hist-clear" class="text-xs text-red-400 hover:text-red-600" data-i18n="qrsc.hist_clear">Hapus</button>
+        </div>
+        <div id="hist-list" class="space-y-1"></div>
+      </div>
     </div>
   </div>
 </BaseLayout>
 <script>
+  import { t } from '../../i18n/translations';
+  import { useLocalHistory } from '../../composables/useLocalHistory';
+
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
+  const hist = useLocalHistory('hist:qr-scanner', 10);
   let stream = null;
-  async function scanFromImage(img) {
-    const canvas = document.getElementById('scan-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = img.naturalWidth || img.width;
-    canvas.height = img.naturalHeight || img.height;
-    ctx.drawImage(img, 0, 0);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    try {
-      const codeReader = new (windowZXing ? window.ZXing.BrowserQRCodeReader : null);
-    } catch(e) {}
-    const hints = new Map();
-    document.getElementById('scan-text').textContent = 'QR Code terdeteksi! (Demo - integrasi ZXing/JsQR perlu CDN)';
-    document.getElementById('result').classList.remove('hidden');
+  let scanTimer = null;
+
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('scan-canvas');
+  const resultBox = document.getElementById('result');
+  const scanText = document.getElementById('scan-text');
+  const stopBtn = document.getElementById('stop-btn');
+  const histList = document.getElementById('hist-list');
+
+  const detectorSupported = 'BarcodeDetector' in window;
+  let detector = null;
+  if (detectorSupported) {
+    try { detector = new window.BarcodeDetector({ formats: ['qr_code'] }); } catch { detector = null; }
   }
-  document.getElementById('upload-btn').onclick = () => document.getElementById('file-input').click();
-  document.getElementById('file-input').onchange = e => {
+
+  async function detectCanvas(source) {
+    if (!detector) return null;
+    try {
+      canvas.width = source.naturalWidth || source.videoWidth || source.width;
+      canvas.height = source.naturalHeight || source.videoHeight || source.height;
+      if (!canvas.width || !canvas.height) return null;
+      canvas.getContext('2d').drawImage(source, 0, 0);
+      const codes = await detector.detect(canvas);
+      return codes && codes.length ? codes[0].rawValue : null;
+    } catch { return null; }
+  }
+
+  function showResult(text) {
+    scanText.textContent = text;
+    resultBox.classList.remove('hidden');
+  }
+
+  function renderHist() {
+    const items = hist.getAll();
+    histList.textContent = '';
+    if (!items.length) {
+      const p = document.createElement('p');
+      p.className = 'text-xs text-matte-400';
+      p.textContent = t('qrsc.hist_empty', 'Belum ada riwayat scan.');
+      histList.appendChild(p);
+      return;
+    }
+    items.forEach(item => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'block w-full text-left text-xs font-mono px-2 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-hover hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-matte-700 dark:text-matte-200 break-all';
+      row.textContent = item.text;
+      row.title = item.time;
+      row.addEventListener('click', () => showResult(item.text));
+      histList.appendChild(row);
+    });
+  }
+
+  function stopCamera() {
+    if (scanTimer) { clearInterval(scanTimer); scanTimer = null; }
+    if (stream) { stream.getTracks().forEach(tr => tr.stop()); stream = null; }
+    video.classList.add('hidden');
+    stopBtn.classList.add('hidden');
+  }
+
+  document.getElementById('upload-btn').addEventListener('click', () => document.getElementById('file-input').click());
+  document.getElementById('file-input').addEventListener('change', (e) => {
     const file = e.target.files[0];
+    e.target.value = '';
     if (!file) return;
+    if (!detector) { const msg = t('qrsc.not_supported', 'Browser tidak mendukung deteksi QR otomatis.'); toast(msg, 'error'); showResult(msg); return; }
     const img = new Image();
-    img.onload = () => scanFromImage(img);
+    img.onload = async () => {
+      const text = await detectCanvas(img);
+      URL.revokeObjectURL(img.src);
+      if (text) {
+        showResult(text);
+        const items = hist.getAll();
+        if (!items.length || items[0].text !== text) { hist.add({ text, time: new Date().toLocaleString() }); renderHist(); }
+      } else {
+        showResult(t('qrsc.no_qr', 'Tidak ada QR terdeteksi di gambar.'));
+      }
+    };
     img.src = URL.createObjectURL(file);
-  };
-  document.getElementById('camera-btn').onclick = async () => {
+  });
+
+  document.getElementById('camera-btn').addEventListener('click', async () => {
+    if (!detector) { const msg = t('qrsc.not_supported', 'Browser tidak mendukung deteksi QR otomatis.'); toast(msg, 'error'); showResult(msg); return; }
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      const video = document.getElementById('video');
       video.srcObject = stream;
       video.classList.remove('hidden');
-      video.play();
-    } catch(e) { window.showToast?.(window._tToast ? window._tToast('Kamera tidak tersedia') : 'Kamera tidak tersedia', 'error'); }
-  };
-  document.getElementById('copy-result').onclick = () => {
-    navigator.clipboard.writeText(document.getElementById('scan-text').textContent);
-  };
+      stopBtn.classList.remove('hidden');
+      await video.play();
+      scanTimer = setInterval(async () => {
+        if (video.readyState >= 2) {
+          const text = await detectCanvas(video);
+          if (text) {
+            showResult(text);
+            const items = hist.getAll();
+            if (!items.length || items[0].text !== text) { hist.add({ text, time: new Date().toLocaleString() }); renderHist(); }
+          }
+        }
+      }, 500);
+    } catch { toast('Kamera tidak tersedia', 'error'); }
+  });
 
+  stopBtn.addEventListener('click', stopCamera);
+  document.addEventListener('astro:before-swap', stopCamera);
+
+  document.getElementById('copy-result').addEventListener('click', async () => {
+    const text = scanText.textContent || '';
+    if (!text) { toast('Input kosong!', 'error'); return; }
+    try { await navigator.clipboard.writeText(text); toast('Disalin!'); }
+    catch { toast('Gagal menyalin', 'error'); }
+  });
+
+  document.getElementById('hist-clear').addEventListener('click', () => { hist.clear(); renderHist(); });
+
+  renderHist();
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -70,5 +167,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>

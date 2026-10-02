@@ -728,4 +728,14 @@ window._i18nPhrases = {
   'Format INSERT tidak dikenali':'Unrecognized INSERT format',
   'baris diparsing!':'rows parsed!',
   'Library crypto gagal dimuat':'Crypto library failed to load',
+  // W6 batch 8
+  'Kamera tidak tersedia':'Camera not available',
+  'Upload gambar dulu!':'Upload an image first!',
+  'Warna disalin':'Color copied',
+  'Jawaban disalin':'Answer copied',
+  'Data direset':'Data reset',
+  'IPK disalin':'GPA copied',
+  'Pilih file dulu!':'Choose a file first!',
+  'File kosong.':'File is empty.',
+  'Download chunks dimulai!':'Chunk download started!',
 };
