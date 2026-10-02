@@ -19,21 +19,21 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-      
+
       <div class="flex flex-col h-full bg-white dark:bg-matte-800 rounded-xl shadow-lg border border-matte-200 dark:border-matte-700 overflow-hidden">
          <div class="bg-matte-100 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 flex justify-between items-center">
-            <span class="text-xs font-bold text-matte-500 uppercase">Input</span>
+            <span class="text-xs font-bold text-matte-500 uppercase" data-i18n="url.input_header">Input</span>
             <button id="clear-btn" class="text-xs font-bold text-red-500 hover:text-red-600" data-i18n="btn.clear">Clear</button>
          </div>
-         <textarea id="input-text" class="flex-1 w-full p-4 font-mono text-sm bg-matte-50 dark:bg-matte-900 text-matte-800 dark:text-matte-200 outline-none resize-none min-h-[200px]" placeholder="https://example.com/search?q=hello world"></textarea>
+         <textarea id="input-text" class="flex-1 w-full p-4 font-mono text-sm bg-matte-50 dark:bg-matte-900 text-matte-800 dark:text-matte-200 outline-none resize-none min-h-[200px]" placeholder="https://example.com/search?q=hello world" data-i18n-attr="placeholder" data-i18n="url.in_ph"></textarea>
       </div>
 
       <div class="flex flex-col h-full bg-white dark:bg-matte-800 rounded-xl shadow-lg border border-matte-200 dark:border-matte-700 overflow-hidden">
          <div class="bg-matte-100 dark:bg-matte-900 px-4 py-2 border-b border-matte-200 dark:border-matte-700 flex justify-between items-center">
-            <span class="text-xs font-bold text-matte-500 uppercase">Result</span>
+            <span class="text-xs font-bold text-matte-500 uppercase" data-i18n="url.result_header">Result</span>
             <button id="copy-btn" class="text-xs font-bold text-teal-600 hover:text-teal-700" data-i18n="btn.copy">Copy</button>
          </div>
-         <textarea id="output-text" readonly class="flex-1 w-full p-4 font-mono text-sm bg-matte-50 dark:bg-matte-900 text-matte-800 dark:text-matte-200 outline-none resize-none min-h-[200px]" placeholder="https://example.com/search?q=hello%20world"></textarea>
+         <textarea id="output-text" readonly class="flex-1 w-full p-4 font-mono text-sm bg-matte-50 dark:bg-matte-900 text-matte-800 dark:text-matte-200 outline-none resize-none min-h-[200px]" placeholder="https://example.com/search?q=hello%20world" data-i18n-attr="placeholder" data-i18n="url.out_ph"></textarea>
       </div>
 
     </div>
@@ -41,6 +41,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -49,35 +50,35 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const output = document.getElementById('output-text');
   const modeEncode = document.getElementById('mode-encode');
   const modeDecode = document.getElementById('mode-decode');
-  const clearBtn = document.getElementById('clear-btn');
-  const copyBtn = document.getElementById('copy-btn');
 
   let isEncode = true;
+  let hadError = false;
 
   function process() {
     const val = input.value;
-    if(!val) { output.value = ""; return; }
+    if (!val) { output.value = ''; return; }
 
     try {
-        if (isEncode) {
-            output.value = encodeURIComponent(val).replace(/%20/g, '+'); // Standard URL encoding
-        } else {
-            output.value = decodeURIComponent(val.replace(/\+/g, '%20'));
-        }
-    } catch (e) {
-        output.value = window._tToast ? window._tToast('Error: Invalid URL format') : 'Error: Invalid URL format';
+      if (isEncode) {
+        output.value = encodeURIComponent(val).replace(/%20/g, '+');
+      } else {
+        output.value = decodeURIComponent(val.replace(/\+/g, '%20'));
+      }
+      hadError = false;
+    } catch {
+      output.value = '⚠ ' + (window._tToast ? window._tToast('Error: Invalid URL format') : 'Error: Invalid URL format');
+      hadError = true;
     }
   }
 
   function setMode(encode) {
     isEncode = encode;
-    
     if (encode) {
-        modeEncode.className = "px-6 py-2 rounded-lg text-sm font-bold bg-teal-500 text-white shadow-md transition-all";
-        modeDecode.className = "px-6 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all";
+      modeEncode.className = 'px-6 py-2 rounded-lg text-sm font-bold bg-teal-500 text-white shadow-md transition-all';
+      modeDecode.className = 'px-6 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all';
     } else {
-        modeDecode.className = "px-6 py-2 rounded-lg text-sm font-bold bg-teal-500 text-white shadow-md transition-all";
-        modeEncode.className = "px-6 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all";
+      modeDecode.className = 'px-6 py-2 rounded-lg text-sm font-bold bg-teal-500 text-white shadow-md transition-all';
+      modeEncode.className = 'px-6 py-2 rounded-lg text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 transition-all';
     }
     process();
   }
@@ -85,17 +86,25 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   modeEncode.addEventListener('click', () => setMode(true));
   modeDecode.addEventListener('click', () => setMode(false));
   input.addEventListener('input', process);
-  
-  clearBtn.addEventListener('click', () => {
-    input.value = ""; output.value = ""; input.focus();
+
+  document.getElementById('clear-btn').addEventListener('click', () => {
+    input.value = '';
+    output.value = '';
+    hadError = false;
+    input.focus();
   });
 
-  copyBtn.addEventListener('click', () => {
-    if(!output.value) return;
-    navigator.clipboard.writeText(output.value);
-    window.showToast?.(window._tToast ? window._tToast('URL disalin!') : 'URL disalin!', "success");
+  document.getElementById('copy-btn').addEventListener('click', async () => {
+    if (!output.value) { toast('Input kosong!', 'error'); return; }
+    if (hadError) { toast('Error: Invalid URL format', 'error'); return; }
+    try { await navigator.clipboard.writeText(output.value); toast('URL disalin!'); }
+    catch { toast('Gagal menyalin', 'error'); }
   });
 
+  // Enter di input = copy hasil
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('copy-btn').click(); }
+  });
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -107,5 +116,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>
