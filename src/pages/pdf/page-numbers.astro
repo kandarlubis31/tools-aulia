@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
-<BaseLayout pageTitle="Add Page Numbers">
+<BaseLayout pageTitle="Add Page Numbers" pdfJs={false}>
 
   <div class="max-w-4xl mx-auto px-4 min-h-[60vh]">
         <ToolPageHeader
@@ -24,16 +24,37 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     </div>
 
     <div id="controls-area" class="hidden max-w-md mx-auto mt-8 bg-white dark:bg-matte-800 p-8 rounded-2xl border border-matte-200 dark:border-matte-700 shadow-xl animate-fade-in text-center">
-      <p id="filename" class="text-sm font-medium text-matte-500 mb-6 truncate">filename.pdf</p>
-      
+      <p id="filename" class="text-sm font-medium text-matte-500 mb-4 truncate">filename.pdf</p>
+
+      <div class="grid grid-cols-2 gap-3 mb-5 text-left">
+        <div>
+          <label for="num-format" class="block text-xs text-matte-500 mb-1 font-medium" data-i18n="pagenum.format_label">Format Nomor</label>
+          <select id="num-format" class="input-field text-sm w-full">
+            <option value="slash" selected>1 / N</option>
+            <option value="plain">1</option>
+            <option value="dash">- 1 -</option>
+            <option value="pageof">Page 1 of N</option>
+          </select>
+        </div>
+        <div>
+          <label for="num-pos" class="block text-xs text-matte-500 mb-1 font-medium" data-i18n="pagenum.pos_label">Posisi</label>
+          <select id="num-pos" class="input-field text-sm w-full">
+            <option value="bc" data-i18n="pagenum.pos_bc" selected>Bawah Tengah</option>
+            <option value="br" data-i18n="pagenum.pos_br">Bawah Kanan</option>
+          </select>
+        </div>
+      </div>
+
       <button id="process-btn" class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2" data-i18n="btn.add_page_numbers">
         Tambahkan Nomor Halaman
       </button>
+      <button id="change-file" class="mt-3 text-xs font-bold text-violet-600 hover:text-violet-700" data-i18n="pagenum.change_file">🔄 Ganti File</button>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -47,15 +68,32 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   window.usePdfDropZone('drop-zone', 'file-input', {
     accentColor: 'violet',
     onFile: (file) => {
+      if (file.type && file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+        toast('Hanya file PDF yang diperbolehkan', 'error');
+        return;
+      }
       currentFile = file;
-      if (filenameDisplay) filenameDisplay.innerText = file.name;
-      document.getElementById('drop-zone')!.classList.add('hidden');
-      controlsArea!.classList.remove('hidden');
+      if (filenameDisplay) filenameDisplay.textContent = file.name;
+      document.getElementById('drop-zone').classList.add('hidden');
+      controlsArea.classList.remove('hidden');
     },
   });
 
-  processBtn?.addEventListener('click', async () => {
-    if (!currentFile) return;
+  document.getElementById('change-file').addEventListener('click', () => {
+    currentFile = null;
+    controlsArea.classList.add('hidden');
+    document.getElementById('drop-zone').classList.remove('hidden');
+  });
+
+  function formatLabel(idx, total, style) {
+    if (style === 'plain') return String(idx + 1);
+    if (style === 'dash') return '- ' + (idx + 1) + ' -';
+    if (style === 'pageof') return 'Page ' + (idx + 1) + ' of ' + total;
+    return (idx + 1) + ' / ' + total;
+  }
+
+  processBtn.addEventListener('click', async () => {
+    if (!currentFile) { toast('Pilih file dulu!', 'error'); return; }
 
     const { PDFDocument, rgb, StandardFonts } = await import('pdf-lib');
 
@@ -67,15 +105,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
       const pages = pdfDoc.getPages();
       const totalPages = pages.length;
+      const style = document.getElementById('num-format').value;
+      const pos = document.getElementById('num-pos').value;
 
       pages.forEach((page, idx) => {
         const { width } = page.getSize();
-        const text = `${idx + 1} / ${totalPages}`;
+        const text = formatLabel(idx, totalPages, style);
         const textSize = 12;
         const textWidth = helveticaFont.widthOfTextAtSize(text, textSize);
+        const x = pos === 'br' ? width - textWidth - 30 : (width / 2) - (textWidth / 2);
 
         page.drawText(text, {
-          x: (width / 2) - (textWidth / 2),
+          x,
           y: 20,
           size: textSize,
           font: helveticaFont,
@@ -84,17 +125,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       });
 
       const pdfBytes = await pdfDoc.save();
-      window.downloadBytes(pdfBytes, `numbered-${currentFile.name}`);
+      window.downloadBytes(pdfBytes, 'numbered-' + currentFile.name);
 
-      window.showToast?.(window._tToast ? window._tToast("Nomor halaman berhasil ditambahkan!") : "Nomor halaman berhasil ditambahkan!", "success");
-
+      toast('Nomor halaman berhasil ditambahkan!');
     } catch (err) {
-      window.showToast?.(window._tToast ? window._tToast("Gagal memproses PDF.") : "Gagal memproses PDF.", "error");
+      console.error(err);
+      toast('Gagal memproses PDF.', 'error');
     } finally {
       restoreBtn();
     }
   });
-
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -106,5 +146,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>

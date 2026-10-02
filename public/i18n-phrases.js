@@ -744,4 +744,7 @@ window._i18nPhrases = {
   'Token digenerate!':'Tokens generated!',
   'Gagal menggenerate HMAC':'Failed to generate HMAC',
   'File bukan gambar.':'Not an image file.',
+  // W6 batch 10
+  'Baris diproses!':'Lines processed!',
+  'Format waktu tidak valid!':'Invalid time format!',
 };

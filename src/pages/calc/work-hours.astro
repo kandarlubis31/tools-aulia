@@ -16,7 +16,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <div class="grid gap-8 animate-fade-in">
       <div class="card-base p-8">
-        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">Jam Kerja Harian</h3>
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6" data-i18n="workh.daily_title">Jam Kerja Harian</h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div><label for="start" class="text-xs text-matte-500 mb-1 block" data-i18n="calc.wh.start">Masuk</label><input id="start" type="time" value="08:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
           <div><label for="break-start" class="text-xs text-matte-500 mb-1 block" data-i18n="calc.wh.break_start">Istirahat Mulai</label><input id="break-start" type="time" value="12:00" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
@@ -28,7 +28,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
 
       <div class="card-base p-8">
-        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6">Lembur Mingguan</h3>
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-6" data-i18n="workh.weekly_title">Lembur Mingguan</h3>
         <div class="grid grid-cols-7 gap-2 mb-4">
           <input type="number" id="h-mon" aria-label="Senin" data-i18n-attr="aria-label" data-i18n="calc.wh.mon" placeholder="Sen" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
           <input type="number" id="h-tue" aria-label="Selasa" data-i18n-attr="aria-label" data-i18n="calc.wh.tue" placeholder="Sel" class="p-2 border rounded-lg text-center text-sm dark:bg-surface-hover dark:border-surface-border" value="8" />
@@ -50,51 +50,106 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
+
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  let __workHoursRender: (() => void) | null = null;
+  window.addEventListener('langchange', () => { __workHoursRender?.(); });
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  function toMin(t) { const [h,m] = t.split(':').map(Number); return h*60+m; }
-  function fmtDur(min) { const h = Math.floor(min/60), m = min%60; return `${h}j ${m}m`; }
+  function toMin(ts) {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(ts || '');
+    if (!m) return null;
+    return +m[1] * 60 + +m[2];
+  }
+  function fmtDur(min) {
+    const h = Math.floor(min / 60), mm = min % 60;
+    return h + 'j ' + mm + 'm';
+  }
   function fmtRp(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
-  document.getElementById('calc-daily').onclick = () => {
+
+  let lastDaily = null;
+  let lastWeekly = null;
+
+  function statCell(value, label, color) {
+    const wrap = document.createElement('div');
+    const v = document.createElement('span');
+    v.className = 'text-2xl font-black ' + color;
+    v.textContent = value;
+    const l = document.createElement('span');
+    l.className = 'text-xs text-matte-500 block mt-1';
+    l.textContent = label;
+    wrap.appendChild(v);
+    wrap.appendChild(l);
+    return wrap;
+  }
+
+  function renderDaily() {
+    if (!lastDaily) return;
+    const el = document.getElementById('result-daily');
+    el.textContent = '';
+    const grid = document.createElement('div');
+    grid.className = 'grid grid-cols-2 md:grid-cols-4 gap-4 text-center';
+    grid.appendChild(statCell(fmtDur(lastDaily.total), t('workh.r_total', 'Total di kantor'), 'text-cyan-600'));
+    grid.appendChild(statCell(fmtDur(lastDaily.brk), t('workh.r_break', 'Istirahat'), 'text-amber-500'));
+    grid.appendChild(statCell(fmtDur(lastDaily.work), t('workh.r_effective', 'Jam kerja efektif'), 'text-emerald-500'));
+    grid.appendChild(statCell((lastDaily.work / 60).toFixed(1) + 'h', t('workh.r_decimal', 'Dalam jam desimal'), 'text-blue-500'));
+    el.appendChild(grid);
+  }
+
+  function renderWeekly() {
+    if (!lastWeekly) return;
+    const el = document.getElementById('result-weekly');
+    el.textContent = '';
+    const grid = document.createElement('div');
+    grid.className = 'grid grid-cols-2 md:grid-cols-4 gap-4 text-center';
+    grid.appendChild(statCell(lastWeekly.total + 'h', t('workh.r_week_total', 'Total jam minggu ini'), 'text-cyan-600'));
+    grid.appendChild(statCell(lastWeekly.ot + 'h', t('workh.r_ot', 'Lembur') + ' (> ' + lastWeekly.normal + 'h)', 'text-amber-500'));
+    grid.appendChild(statCell(fmtRp(lastWeekly.normalPay), t('workh.r_normal_pay', 'Gaji normal'), 'text-emerald-500'));
+    grid.appendChild(statCell(fmtRp(lastWeekly.otPay), t('workh.r_ot_pay', 'Upah lembur (×1.5)'), 'text-violet-500'));
+    el.appendChild(grid);
+  }
+
+  document.getElementById('calc-daily').addEventListener('click', () => {
     const s = toMin(document.getElementById('start').value);
     const bs = toMin(document.getElementById('break-start').value);
     const be = toMin(document.getElementById('break-end').value);
     const e = toMin(document.getElementById('end').value);
+    if (s === null || bs === null || be === null || e === null || e <= s) {
+      toast('Format waktu tidak valid!', 'error');
+      return;
+    }
     const total = e - s;
-    const brk = be - bs;
+    const brk = Math.max(0, be - bs);
+    if (brk >= total) {
+      toast('Format waktu tidak valid!', 'error');
+      return;
+    }
     const work = total - brk;
-    const el = document.getElementById('result-daily');
-    el.classList.remove('hidden');
-    el.innerHTML = `
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div><span class="text-2xl font-black text-cyan-600">${fmtDur(total)}</span><br/><span class="text-xs text-matte-500">Total di kantor</span></div>
-        <div><span class="text-2xl font-black text-amber-500">${fmtDur(brk)}</span><br/><span class="text-xs text-matte-500">Istirahat</span></div>
-        <div><span class="text-2xl font-black text-emerald-500">${fmtDur(work)}</span><br/><span class="text-xs text-matte-500">Jam kerja efektif</span></div>
-        <div><span class="text-2xl font-black text-blue-500">${(work/60).toFixed(1)}h</span><br/><span class="text-xs text-matte-500">Dalam jam desimal</span></div>
-      </div>`;
-  };
-  document.getElementById('calc-weekly').onclick = () => {
-    const ids = ['h-mon','h-tue','h-wed','h-thu','h-fri','h-sat','h-sun'];
-    const hrs = ids.map(id => parseFloat(document.getElementById(id).value)||0);
-    const total = hrs.reduce((a,b) => a+b, 0);
-    const normal = parseFloat(document.getElementById('normal-hrs').value)||40;
+    lastDaily = { total, brk, work };
+    document.getElementById('result-daily').classList.remove('hidden');
+    renderDaily();
+  });
+
+  document.getElementById('calc-weekly').addEventListener('click', () => {
+    const ids = ['h-mon', 'h-tue', 'h-wed', 'h-thu', 'h-fri', 'h-sat', 'h-sun'];
+    const hrs = ids.map((id) => Math.max(0, parseFloat(document.getElementById(id).value) || 0));
+    const total = hrs.reduce((a, b) => a + b, 0);
+    const normal = Math.max(1, parseFloat(document.getElementById('normal-hrs').value) || 40);
     const ot = Math.max(0, total - normal);
-    const rate = parseFloat(document.getElementById('rate').value)||0;
+    const rate = Math.max(0, parseFloat(document.getElementById('rate').value) || 0);
     const normalPay = Math.min(total, normal) * rate;
     const otPay = ot * rate * 1.5;
-    const el = document.getElementById('result-weekly');
-    el.classList.remove('hidden');
-    el.innerHTML = `
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div><span class="text-2xl font-black text-cyan-600">${total}h</span><br/><span class="text-xs text-matte-500">Total jam minggu ini</span></div>
-        <div><span class="text-2xl font-black text-amber-500">${ot}h</span><br/><span class="text-xs text-matte-500">Lembur (> ${normal}h)</span></div>
-        <div><span class="text-2xl font-black text-emerald-500">${fmtRp(normalPay)}</span><br/><span class="text-xs text-matte-500">Gaji normal</span></div>
-        <div><span class="text-2xl font-black text-violet-500">${fmtRp(otPay)}</span><br/><span class="text-xs text-matte-500">Upah lembur (×1.5)</span></div>
-      </div>`;
-  };
+    lastWeekly = { total, ot, normal, normalPay, otPay };
+    document.getElementById('result-weekly').classList.remove('hidden');
+    renderWeekly();
+  });
 
+  // langchange: hasil terakhir ikut bahasa
+  __workHoursRender = () => { renderDaily(); renderWeekly(); };
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -106,5 +161,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>

@@ -6,23 +6,23 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <ToolPageHeader title="Line Sorter" description="Sort, dedupe, shuffle, reverse — atur baris teks sekejap" icon='<line x1="12" y1="3" x2="12" y2="21"/><polyline points="16 7 12 3 8 7"/><polyline points="8 17 12 21 16 17"/>' />
 
   <div class="card-base p-5 space-y-4">
-    <textarea id="input" class="input-field w-full h-40 font-mono text-sm" placeholder="Paste teks di sini...&#10;satu baris per line&#10;B&#10;A&#10;C"></textarea>
+    <textarea id="input" class="input-field w-full h-40 font-mono text-sm" placeholder="Paste teks di sini...&#10;satu baris per line&#10;B&#10;A&#10;C" data-i18n-attr="placeholder" data-i18n="linesorter.input_ph"></textarea>
 
     <div class="flex flex-wrap gap-2">
-      <button data-action="sort-asc" class="btn-secondary text-sm active-btn">Sort A→Z</button>
-      <button data-action="sort-desc" class="btn-secondary text-sm">Sort Z→A</button>
-      <button data-action="sort-num-asc" class="btn-secondary text-sm">Sort Numerik ↑</button>
-      <button data-action="sort-num-desc" class="btn-secondary text-sm">Sort Numerik ↓</button>
-      <button data-action="dedupe" class="btn-secondary text-sm">Hapus Duplikat</button>
-      <button data-action="shuffle" class="btn-secondary text-sm">Acak</button>
-      <button data-action="reverse" class="btn-secondary text-sm">Reverse</button>
-      <button data-action="trim" class="btn-secondary text-sm">Trim Whitespace</button>
-      <button data-action="sort-length" class="btn-secondary text-sm">Sort by Length</button>
+      <button data-action="sort-asc" class="btn-secondary text-sm active-btn" data-i18n="linesorter.sort_asc">Sort A→Z</button>
+      <button data-action="sort-desc" class="btn-secondary text-sm" data-i18n="linesorter.sort_desc">Sort Z→A</button>
+      <button data-action="sort-num-asc" class="btn-secondary text-sm" data-i18n="linesorter.sort_num_asc">Sort Numerik ↑</button>
+      <button data-action="sort-num-desc" class="btn-secondary text-sm" data-i18n="linesorter.sort_num_desc">Sort Numerik ↓</button>
+      <button data-action="dedupe" class="btn-secondary text-sm" data-i18n="linesorter.dedupe">Hapus Duplikat</button>
+      <button data-action="shuffle" class="btn-secondary text-sm" data-i18n="linesorter.shuffle">Acak</button>
+      <button data-action="reverse" class="btn-secondary text-sm" data-i18n="linesorter.reverse">Reverse</button>
+      <button data-action="trim" class="btn-secondary text-sm" data-i18n="linesorter.trim">Trim Whitespace</button>
+      <button data-action="sort-length" class="btn-secondary text-sm" data-i18n="linesorter.sort_length">Sort by Length</button>
     </div>
 
     <div class="flex justify-between text-xs text-matte-400">
-      <span id="line-count">0 baris</span>
-      <span id="char-count">0 karakter</span>
+      <span id="line-count">0</span>
+      <span id="char-count">0</span>
     </div>
 
     <div class="flex justify-between items-center">
@@ -32,67 +32,89 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <button id="download-btn" class="btn-secondary text-xs">⬇️ .txt</button>
       </div>
     </div>
-    <textarea id="output" class="input-field w-full h-40 font-mono text-sm bg-matte-50 dark:bg-matte-800" readonly placeholder="Hasil sort..."></textarea>
+    <textarea id="output" class="input-field w-full h-40 font-mono text-sm bg-matte-50 dark:bg-matte-800" readonly placeholder="Hasil sort..." data-i18n-attr="placeholder" data-i18n="linesorter.out_ph"></textarea>
   </div>
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
+
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  let __lineSorterRender: (() => void) | null = null;
+  window.addEventListener('langchange', () => { __lineSorterRender?.(); });
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  const input = document.getElementById('input')! as HTMLTextAreaElement;
-  const output = document.getElementById('output')! as HTMLTextAreaElement;
-  const lineCount = document.getElementById('line-count')!;
-  const charCount = document.getElementById('char-count')!;
-  function getLines(): string[] {
+  const input = document.getElementById('input');
+  const output = document.getElementById('output');
+  const lineCount = document.getElementById('line-count');
+  const charCount = document.getElementById('char-count');
+
+  function getLines() {
     return input.value.split('\n').filter(l => l.trim() !== '');
   }
 
   function updateStats() {
     const lines = getLines();
-    lineCount.textContent = lines.length + ' baris';
-    charCount.textContent = input.value.length + ' karakter';
+    lineCount.textContent = lines.length + ' ' + t('linesorter.lines', 'baris');
+    charCount.textContent = input.value.length + ' ' + t('linesorter.chars', 'karakter');
   }
 
-  function process(action: string) {
+  // numeric sort: baris non-numerik ditenggelamkan ke bawah (bukan jadi 0 dan nyempil)
+  function numSort(lines, desc) {
+    const key = (l) => { const n = parseFloat(l); return Number.isNaN(n) ? Infinity : n; };
+    lines.sort((a, b) => key(a) - key(b));
+    if (desc) lines.reverse();
+  }
+
+  function process(action) {
     let lines = getLines();
+    if (!lines.length) { toast('Input kosong!', 'error'); return; }
     switch (action) {
-      case 'sort-asc': lines.sort((a,b) => a.localeCompare(b, 'id', { sensitivity: 'base' })); break;
-      case 'sort-desc': lines.sort((a,b) => b.localeCompare(a, 'id', { sensitivity: 'base' })); break;
-      case 'sort-num-asc': lines.sort((a,b) => parseFloat(a) - parseFloat(b)); break;
-      case 'sort-num-desc': lines.sort((a,b) => parseFloat(b) - parseFloat(a)); break;
+      case 'sort-asc': lines.sort((a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' })); break;
+      case 'sort-desc': lines.sort((a, b) => b.localeCompare(a, 'id', { sensitivity: 'base' })); break;
+      case 'sort-num-asc': numSort(lines, false); break;
+      case 'sort-num-desc': numSort(lines, true); break;
       case 'dedupe': lines = [...new Set(lines)]; break;
-      case 'shuffle': for (let i = lines.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [lines[i],lines[j]] = [lines[j],lines[i]]; } break;
+      case 'shuffle': for (let i = lines.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [lines[i], lines[j]] = [lines[j], lines[i]]; } break;
       case 'reverse': lines.reverse(); break;
       case 'trim': lines = lines.map(l => l.trim()); break;
-      case 'sort-length': lines.sort((a,b) => a.length - b.length); break;
+      case 'sort-length': lines.sort((a, b) => a.length - b.length); break;
     }
     output.value = lines.join('\n');
-    showToast?.(_tToast?.('Baris diproses!', 'Lines processed!'), 'success');
+    toast('Baris diproses!');
   }
 
-  document.querySelectorAll('[data-action]').forEach(btn => {
-    btn.addEventListener('click', () => process((btn as HTMLElement).dataset.action!));
+  document.querySelectorAll('[data-action]').forEach((btn) => {
+    btn.addEventListener('click', () => process(btn.dataset.action));
   });
 
   input.addEventListener('input', updateStats);
 
-  document.getElementById('copy-btn')!.addEventListener('click', () => {
-    navigator.clipboard.writeText(output.value).then(() => {
-      showToast?.(_tToast?.('Hasil disalin!', 'Result copied!'), 'success');
-    });
+  document.getElementById('copy-btn').addEventListener('click', async () => {
+    if (!output.value) { toast('Input kosong!', 'error'); return; }
+    try { await navigator.clipboard.writeText(output.value); toast('Hasil disalin!'); }
+    catch { toast('Gagal menyalin', 'error'); }
   });
 
-  document.getElementById('download-btn')!.addEventListener('click', () => {
+  document.getElementById('download-btn').addEventListener('click', () => {
+    if (!output.value) { toast('Input kosong!', 'error'); return; }
     const blob = new Blob([output.value], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'sorted-lines.txt'; a.click();
-    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sorted-lines.txt';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('Download dimulai!');
   });
 
   updateStats();
 
+  // langchange: stats + (statik sudah oleh engine) — re-render stats
+  __lineSorterRender = updateStats;
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -104,5 +126,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>

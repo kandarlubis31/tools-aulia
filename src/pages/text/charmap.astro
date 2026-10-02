@@ -7,17 +7,19 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   <div class="card-base p-5 space-y-4">
     <div class="flex gap-2">
-      <input id="search" type="text" class="input-field flex-1 text-sm" placeholder="Cari karakter atau nama... (emoji, panah, latin)">
+      <label class="sr-only" for="search" data-i18n="charmap.search_ph">Cari karakter, nama, atau kode hex</label>
+      <input id="search" type="text" class="input-field flex-1 text-sm" placeholder="Cari karakter, nama, atau kode hex (panah, arrow, 2190)" data-i18n-attr="placeholder" data-i18n="charmap.search_ph">
+      <label class="sr-only" for="block" data-i18n="charmap.all_blocks">Semua Block</label>
       <select id="block" class="input-field text-sm w-40">
-        <option value="">Semua Block</option>
-        <option value="arrows">Panah</option>
-        <option value="math">Matematika</option>
-        <option value="currency">Mata Uang</option>
-        <option value="punctuation">Punctuation</option>
-        <option value="dingbats">Dingbats/Simbol</option>
-        <option value="greek">Greek</option>
-        <option value="box">Box Drawing</option>
-        <option value="block">Block Elements</option>
+        <option value="" data-i18n="charmap.all_blocks">Semua Block</option>
+        <option value="arrows" data-i18n="charmap.blk_arrows">Panah</option>
+        <option value="math" data-i18n="charmap.blk_math">Matematika</option>
+        <option value="currency" data-i18n="charmap.blk_currency">Mata Uang</option>
+        <option value="punctuation" data-i18n="charmap.blk_punct">Punctuation</option>
+        <option value="dingbats" data-i18n="charmap.blk_dingbats">Dingbats/Simbol</option>
+        <option value="greek" data-i18n="charmap.blk_greek">Greek</option>
+        <option value="box" data-i18n="charmap.blk_box">Box Drawing</option>
+        <option value="block" data-i18n="charmap.blk_block">Block Elements</option>
       </select>
     </div>
 
@@ -27,6 +29,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
+
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  let __charmapRender: (() => void) | null = null;
+  window.addEventListener('langchange', () => { __charmapRender?.(); });
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -39,62 +47,93 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     dingbats: { start: 0x2700, end: 0x27BF },
     greek: { start: 0x0370, end: 0x03FF },
     box: { start: 0x2500, end: 0x257F },
-    block: { start: 0x2580, end: 0x259F }
+    block: { start: 0x2580, end: 0x259F },
+  };
+
+  // Nama karakter umum (search by name — tanpa lib eksternal)
+  const NAMES = {
+    0x2190: 'left arrow panah kiri', 0x2191: 'up arrow panah atas', 0x2192: 'right arrow panah kanan', 0x2193: 'down arrow panah bawah',
+    0x2194: 'left right arrow kiri kanan', 0x2195: 'up down arrow atas bawah', 0x21A9: 'leftwards arrow with hook reply balas',
+    0x21AA: 'rightwards arrow with hook forward', 0x21D0: 'left double arrow', 0x21D2: 'right double arrow implies',
+    0x2200: 'for all semua', 0x2202: 'partial differential turunan', 0x2203: 'there exists ada', 0x2205: 'empty set kosong',
+    0x2207: 'nabla gradient', 0x2208: 'element of anggota', 0x2209: 'not element of', 0x220B: 'contains element memuat',
+    0x2211: 'summation sigma jumlah', 0x2212: 'minus', 0x2213: 'minus plus', 0x221A: 'square root akar kuadrat',
+    0x221E: 'infinity tak hingga', 0x221F: 'right angle siku', 0x2220: 'angle sudut', 0x2227: 'logical and dan',
+    0x2228: 'logical or atau', 0x2229: 'intersection irisan', 0x222A: 'union gabungan', 0x222B: 'integral',
+    0x2248: 'almost equal hampir sama', 0x2260: 'not equal tidak sama', 0x2261: 'identical to identik',
+    0x2264: 'less or equal kurang sama', 0x2265: 'greater or equal lebih sama', 0x2295: 'circled plus xor',
+    0x00B1: 'plus minus', 0x00D7: 'multiplication kali', 0x00F7: 'division bagi', 0x00B0: 'degree derajat',
+    0x03B1: 'alpha', 0x03B2: 'beta', 0x03B3: 'gamma', 0x03B4: 'delta', 0x03B8: 'theta', 0x03BB: 'lambda',
+    0x03BC: 'mu mikro', 0x03C0: 'pi', 0x03A3: 'capital sigma', 0x03A9: 'omega ohm',
+    0x20A0: 'euro currency sign', 0x20A6: 'naira', 0x20A9: 'won', 0x20AC: 'euro', 0x20B1: 'peso', 0x20B4: 'hryvnia',
+    0x00A2: 'cent sen', 0x00A3: 'pound sterling', 0x00A4: 'currency sign', 0x00A5: 'yen yuan',
+    0x00A9: 'copyright hak cipta', 0x00AE: 'registered terdaftar', 0x00B6: 'pilcrow paragraf', 0x00A7: 'section seksi',
+    0x2022: 'bullet', 0x2026: 'ellipsis titik tiga', 0x2030: 'per mille per seribu', 0x2032: 'prime menit',
+    0x2033: 'double prime detik', 0x2013: 'en dash', 0x2014: 'em dash', 0x2018: 'left quote kutip buka',
+    0x2019: 'right quote kutip tutup', 0x201C: 'double quote kutip dua buka', 0x201D: 'double quote kutip dua tutup',
+    0x2020: 'dagger', 0x2021: 'double dagger', 0x2122: 'trademark', 0x2713: 'check mark centang',
+    0x2714: 'heavy check mark centang', 0x2717: 'ballot x silang', 0x2728: 'sparkles', 0x2605: 'black star bintang',
+    0x2606: 'white star bintang kosong', 0x2665: 'black heart hati', 0x2660: 'black spade', 0x2663: 'black club',
+    0x2666: 'black diamond wajik', 0x25A0: 'black square kotak penuh', 0x25A1: 'white square kotak kosong',
+    0x25CF: 'black circle bulat penuh', 0x25CB: 'white circle bulat kosong', 0x25B2: 'black up triangle segitiga atas',
+    0x25BC: 'black down triangle segitiga bawah', 0x2500: 'box light horizontal', 0x2502: 'box light vertical',
+    0x250C: 'box down right sudut', 0x2510: 'box down left sudut', 0x2514: 'box up right sudut', 0x2518: 'box up left sudut',
+    0x2588: 'full block', 0x2591: 'light shade', 0x2592: 'medium shade', 0x2593: 'dark shade',
   };
 
   function getChars(filter) {
     const chars = [];
-    if (filter) {
+    if (filter && blocks[filter]) {
       const blk = blocks[filter];
-      if (blk) for (let i=blk.start; i<=blk.end; i++) chars.push(i);
+      for (let i = blk.start; i <= blk.end; i++) chars.push(i);
     } else {
-      for (const blk of Object.values(blocks)) for (let i=blk.start; i<=blk.end; i++) chars.push(i);
+      for (const blk of Object.values(blocks)) for (let i = blk.start; i <= blk.end; i++) chars.push(i);
     }
     return chars;
   }
 
   function render() {
-    const q = document.getElementById('search').value.toLowerCase();
+    const q = document.getElementById('search').value.toLowerCase().trim();
     const blk = document.getElementById('block').value;
     let chars = getChars(blk);
 
     if (q) {
-      chars = chars.filter(c => {
+      const qHex = q.replace(/^u\+?|^0x/, '');
+      chars = chars.filter((c) => {
         const ch = String.fromCodePoint(c);
-        try { return ch.toLowerCase().includes(q) || getCharName(c).toLowerCase().includes(q); }
-        catch { return false; }
+        const hex = c.toString(16);
+        if (hex === qHex) return true;
+        const name = NAMES[c] || '';
+        return name.includes(q) || ch === q;
       });
     }
 
     const grid = document.getElementById('grid');
-    grid.innerHTML = chars.slice(0, 300).map(c => {
-      let ch, cls = 'p-2 text-center text-lg cursor-pointer hover:bg-matte-100 dark:hover:bg-matte-700 rounded transition-colors';
-      try { ch = String.fromCodePoint(c); } catch { return ''; }
-      return '<span class="'+cls+'" title="U+'+c.toString(16).toUpperCase().padStart(4,'0')+'" data-char="'+ch+'">'+ch+'</span>';
-    }).join('');
-
-    grid.querySelectorAll('[data-char]').forEach(el => {
-      el.addEventListener('click', () => {
-        navigator.clipboard.writeText(el.dataset.char).then(() => {
-          showToast?.(_tToast?.('Disalin: '+el.dataset.char, 'Copied: '+el.dataset.char), 'success');
-        });
+    grid.textContent = '';
+    chars.slice(0, 300).forEach((c) => {
+      let ch;
+      try { ch = String.fromCodePoint(c); } catch { return; }
+      const el = document.createElement('span');
+      el.className = 'p-2 text-center text-lg cursor-pointer hover:bg-matte-100 dark:hover:bg-matte-700 rounded transition-colors';
+      el.title = 'U+' + c.toString(16).toUpperCase().padStart(4, '0') + (NAMES[c] ? ' — ' + NAMES[c].split(' ')[0] : '');
+      el.dataset.char = ch;
+      el.textContent = ch;
+      el.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(ch); toast('Disalin!'); }
+        catch { toast('Gagal menyalin', 'error'); }
       });
+      grid.appendChild(el);
     });
 
-    document.getElementById('info').textContent = 'Menampilkan '+Math.min(chars.length,300)+' dari ' + chars.length + ' karakter';
-  }
-
-  function getCharName(cp) {
-    try {
-      const r = new Intl.DisplayNames(['id','en'], { type: 'language' });
-      return '';
-    } catch { return ''; }
+    document.getElementById('info').textContent = t('charmap.showing', 'Menampilkan {a} dari {b} karakter')
+      .replace('{a}', String(Math.min(chars.length, 300)))
+      .replace('{b}', String(chars.length));
   }
 
   document.getElementById('search').addEventListener('input', render);
   document.getElementById('block').addEventListener('change', render);
   render();
-
+  __charmapRender = render;
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -106,5 +145,4 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>
