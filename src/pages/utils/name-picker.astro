@@ -6,7 +6,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <ToolPageHeader title="Name Picker" description="Roda putar random — pilih nama dengan animasi keren" icon='<circle cx="12" cy="12" r="10"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>' />
 
   <div class="card-base p-5 space-y-4">
-    <textarea id="names" class="input-field w-full h-24 text-sm" placeholder="Nama — satu per baris">Alice
+    <label class="sr-only" for="names" data-i18n="namepicker.ph">Nama — satu per baris</label>
+    <textarea id="names" class="input-field w-full h-24 text-sm" placeholder="Nama — satu per baris" data-i18n-attr="placeholder" data-i18n="namepicker.ph">Alice
 Bob
 Citra
 Dodi
@@ -14,59 +15,138 @@ Eva
 Fikri</textarea>
 
     <div class="flex gap-2">
-      <button id="spin-btn" class="btn-primary flex-1 text-lg">🎡 PUTAR!</button>
+      <button id="spin-btn" class="btn-primary flex-1 text-lg" data-i18n="namepicker.spin">🎡 PUTAR!</button>
     </div>
 
     <div class="flex justify-center">
-      <canvas id="wheel" width="400" height="400" class="rounded-full shadow-lg"></canvas>
+      <div class="relative">
+        <canvas id="wheel" width="400" height="400" class="rounded-full shadow-lg"></canvas>
+        <div class="absolute left-1/2 -top-2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-r-[10px] border-t-[16px] border-l-transparent border-r-transparent border-t-matte-800 dark:border-t-white pointer-events-none"></div>
+      </div>
     </div>
 
     <div id="result" class="text-center text-2xl font-bold text-accent-blue hidden"></div>
+
+    <div class="mt-2">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-bold text-matte-600 dark:text-matte-300" data-i18n="namepicker.history">Riwayat pemenang</h2>
+        <button id="hist-clear" class="text-xs text-red-400 hover:text-red-600" data-i18n="namepicker.hist_clear">Hapus</button>
+      </div>
+      <div id="hist-list" class="space-y-1"></div>
+    </div>
   </div>
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
+  import { useLocalHistory } from '../../composables/useLocalHistory';
+
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  let __namePickerDraw: (() => void) | null = null;
+  window.addEventListener('langchange', () => { __namePickerDraw?.(); });
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  const canvas = document.getElementById('wheel'), ctx = canvas.getContext('2d');
+  const canvas = document.getElementById('wheel');
+  const ctx = canvas.getContext('2d');
+  const hist = useLocalHistory('hist:name-picker', 10);
   let angle = 0, spinning = false, target = 0;
 
-  function getNames() { return document.getElementById('names').value.split('\n').filter(n => n.trim()); }
+  // pointer di ATAS (12 o'clock). Canvas: 0 rad = timur, 3π/2 = utara.
+  const POINTER = 3 * Math.PI / 2;
 
-  document.getElementById('names').addEventListener('input', draw);
+  function getNames() { return document.getElementById('names').value.split('\n').map(n => n.trim()).filter(n => n); }
 
-  const colors = ['#2563eb','#dc2626','#16a34a','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#84cc16','#6366f1'];
+  const colors = ['#2563eb', '#dc2626', '#16a34a', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#84cc16', '#6366f1'];
 
   function draw() {
     const names = getNames();
     const r = 190, cx = 200, cy = 200;
-    ctx.clearRect(0,0,400,400);
-    if (!names.length) { ctx.fillText('Masukkan nama dulu', 200, 200); return; }
+    ctx.clearRect(0, 0, 400, 400);
+    if (!names.length) {
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(t('namepicker.empty', 'Masukkan nama dulu'), 200, 200);
+      return;
+    }
     const slice = (2 * Math.PI) / names.length;
-    names.forEach((n,i) => {
-      ctx.beginPath(); ctx.moveTo(cx,cy);
-      ctx.arc(cx,cy,r, angle + i*slice, angle + (i+1)*slice);
-      ctx.closePath(); ctx.fillStyle = colors[i % colors.length]; ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+    names.forEach((n, i) => {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, angle + i * slice, angle + (i + 1) * slice);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
 
-      ctx.save(); ctx.translate(cx,cy); ctx.rotate(angle + i*slice + slice/2);
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'right';
-      ctx.fillText(n.substring(0,15), r-15, 5);
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angle + i * slice + slice / 2);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(n.substring(0, 15), r - 15, 5);
       ctx.restore();
     });
-    // center circle
-    ctx.beginPath(); ctx.arc(cx,cy,25,0,2*Math.PI); ctx.fillStyle='#1e293b'; ctx.fill();
-    ctx.fillStyle='#fff'; ctx.font='bold 10px sans-serif'; ctx.textAlign='center'; ctx.fillText('PUTAR',cx,cy+4);
+    ctx.beginPath();
+    ctx.arc(cx, cy, 25, 0, 2 * Math.PI);
+    ctx.fillStyle = '#1e293b';
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SPIN', cx, cy + 4);
   }
+
+  function winnerIndex(targetAngle, count) {
+    const slice = (2 * Math.PI) / count;
+    const rel = ((POINTER - targetAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+    return Math.floor(rel / slice) % count;
+  }
+
+  function renderHist() {
+    const items = hist.getAll();
+    const list = document.getElementById('hist-list');
+    list.textContent = '';
+    if (!items.length) {
+      const p = document.createElement('p');
+      p.className = 'text-xs text-matte-400';
+      p.textContent = t('namepicker.hist_empty', 'Belum ada pemenang.');
+      list.appendChild(p);
+      return;
+    }
+    items.forEach((item) => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'flex justify-between w-full text-left text-xs px-2 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-hover hover:bg-blue-50 dark:hover:bg-surface-elevated text-matte-700 dark:text-matte-200';
+      const name = document.createElement('span');
+      name.className = 'font-bold';
+      name.textContent = '🏆 ' + item.name;
+      const time = document.createElement('span');
+      time.className = 'text-matte-400';
+      time.textContent = item.time;
+      row.append(name, time);
+      row.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(item.name); toast('Disalin!'); }
+        catch { toast('Gagal menyalin', 'error'); }
+      });
+      list.appendChild(row);
+    });
+  }
+
+  document.getElementById('names').addEventListener('input', draw);
 
   document.getElementById('spin-btn').addEventListener('click', () => {
     if (spinning) return;
     const names = getNames();
-    if (!names.length) return;
+    if (!names.length) { toast('Input kosong!', 'error'); return; }
     spinning = true;
-    target = angle + Math.PI*8 + Math.random()*Math.PI*4;
+    target = angle + Math.PI * 8 + Math.random() * Math.PI * 4;
     document.getElementById('result').classList.add('hidden');
     animate();
   });
@@ -75,22 +155,31 @@ Fikri</textarea>
     if (!spinning) return;
     angle += 0.3;
     draw();
-    if (angle < target) { requestAnimationFrame(animate); }
-    else {
+    if (angle < target) {
+      requestAnimationFrame(animate);
+    } else {
       angle = target;
       spinning = false;
       draw();
       const names = getNames();
-      const slice = (2*Math.PI)/names.length;
-      const winner = names[Math.floor((((2*Math.PI - (target % (2*Math.PI))) % (2*Math.PI)) / slice)) % names.length];
+      const winner = names[winnerIndex(angle, names.length)];
       const res = document.getElementById('result');
       res.textContent = '🎉 ' + winner + ' 🎉';
       res.classList.remove('hidden');
+      toast('Roda berhenti!');
+      const items = hist.getAll();
+      if (!items.length || items[0].name !== winner || Date.now() - (items[0].ts || 0) > 5000) {
+        hist.add({ name: winner, time: new Date().toLocaleTimeString(), ts: Date.now() });
+        renderHist();
+      }
     }
   }
 
-  draw();
+  document.getElementById('hist-clear').addEventListener('click', () => { hist.clear(); renderHist(); });
 
+  draw();
+  renderHist();
+  __namePickerDraw = () => { draw(); renderHist(); };
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -102,5 +191,4 @@ Fikri</textarea>
     anchor.dataset.autoBound = 'true';
     init();
   });
-
 </script>
