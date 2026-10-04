@@ -1,0 +1,670 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="URL Shortener">
+  <script is:inline src="/vendor/qrious.min.js"></script>
+  <script is:inline>
+    // Fallback: kalau vendor lokal (/vendor/qrious.min.js) gagal load (404/network),
+    // ambil otomatis dari CDN (pola sama seperti utils/qr.astro).
+    (function () {
+      if (typeof window.QRious !== 'undefined') return;
+      var CDN_URL = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
+      if (document.readyState === 'loading') {
+        document.write('<script src="' + CDN_URL + '"><\/script>');
+      } else {
+        var s = document.createElement('script');
+        s.src = CDN_URL;
+        s.onerror = function () { if (s.parentNode) s.remove(); };
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+
+  <div class="max-w-4xl mx-auto px-4 min-h-[80vh] pb-20">
+    <ToolPageHeader
+      title="URL Shortener"
+      titleKey="header.url_shortener"
+      descKey="header.url_shortener_desc"
+      desc="Pendekkan link panjang jadi short link singkat. Custom alias, batch, dan QR code."
+      icon='<path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/>'
+      gradient="from-cyan-500 to-blue-600"
+    />
+
+    <!-- Disclaimer privasi: tool ini SATU-SATUNYA yang mengirim data ke layanan pihak
+         ketiga (spoo.me). Tool lain 100% offline — penting biar klaim project tetap jujur. -->
+    <div class="mb-5 flex items-start gap-3 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 animate-fade-in">
+      <span class="text-lg leading-none shrink-0" aria-hidden="true">🔗</span>
+      <!-- data-i18n dipecah label + body: i18n non-attr menulis textContent sehingga
+           markup <b> di dalamnya akan terhapus kalau digabung dalam satu elemen. -->
+      <p class="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
+        <b data-i18n="shortener.privacy_label">Catatan privasi:</b>
+        <span data-i18n="shortener.privacy_body">Berbeda dari tool lain di MasAul Tools, tool ini memakai layanan pihak ketiga spoo.me untuk membuat short link — URL yang kamu masukkan dikirim keluar dari browser. Jangan pendekkan link yang berisi data rahasia atau token.</span>
+      </p>
+    </div>
+
+    <!-- Mode tabs -->
+    <div class="flex gap-2 mb-4" role="tablist" aria-label="Mode">
+      <button id="tab-single" type="button" role="tab" aria-selected="true" aria-controls="panel-single"
+        class="px-4 py-2 rounded-xl text-sm font-bold transition-colors bg-matte-900 dark:bg-white text-white dark:text-matte-900"
+        data-i18n="shortener.tab_single">Satu Link</button>
+      <button id="tab-batch" type="button" role="tab" aria-selected="false" aria-controls="panel-batch"
+        class="px-4 py-2 rounded-xl text-sm font-bold transition-colors bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-matte-600"
+        data-i18n="shortener.tab_batch">Banyak Link</button>
+    </div>
+
+    <!-- Panel: single -->
+    <div id="panel-single" role="tabpanel" class="card-base p-5 space-y-3 animate-fade-in">
+      <div>
+        <label for="long-url" class="block text-xs font-bold text-matte-500 dark:text-matte-400 uppercase mb-1.5" data-i18n="shortener.long_url">URL Panjang</label>
+        <input id="long-url" type="url" inputmode="url" autocomplete="off" spellcheck="false"
+          class="w-full px-3.5 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 text-sm font-mono text-matte-800 dark:text-white placeholder-matte-400 transition-colors"
+          placeholder="https://contoh.com/artikel/sangat-panjang?utm_source=..." />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:items-end">
+        <div class="sm:col-span-2">
+          <label for="alias" class="block text-xs font-bold text-matte-500 dark:text-matte-400 uppercase mb-1.5" data-i18n="shortener.alias">Custom Alias (opsional)</label>
+          <input id="alias" type="text" autocomplete="off" spellcheck="false" maxlength="32"
+            class="w-full px-3.5 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 text-sm font-mono text-matte-800 dark:text-white placeholder-matte-400 transition-colors"
+            placeholder="mis. promo-2026" />
+        </div>
+        <button id="shorten-btn" type="button"
+          class="px-4 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-bold text-sm transition-colors active:scale-95"
+          data-i18n="shortener.btn_shorten">Pendekkan</button>
+      </div>
+      <p class="text-2xs text-matte-400" data-i18n="shortener.alias_hint">Kosongkan untuk kode acak. Alias: huruf, angka, tanda hubung (-) dan garis bawah (_).</p>
+    </div>
+
+    <!-- Panel: batch -->
+    <div id="panel-batch" role="tabpanel" class="card-base p-5 space-y-3 hidden">
+      <div>
+        <label for="batch-urls" class="block text-xs font-bold text-matte-500 dark:text-matte-400 uppercase mb-1.5" data-i18n="shortener.batch_label">Daftar URL (satu per baris)</label>
+        <textarea id="batch-urls" rows="6" spellcheck="false"
+          class="w-full px-3.5 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-hover border border-matte-200 dark:border-surface-border focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/20 text-xs font-mono text-matte-800 dark:text-white placeholder-matte-400 resize-y transition-colors"
+          placeholder="https://contoh.com/halaman-1&#10;https://contoh.com/halaman-2"></textarea>
+      </div>
+      <div class="flex flex-wrap gap-3 items-center">
+        <button id="batch-btn" type="button"
+          class="px-4 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-bold text-sm transition-colors active:scale-95"
+          data-i18n="shortener.btn_shorten_all">Pendekkan Semua</button>
+        <span id="batch-progress" class="text-xs text-matte-400" role="status" aria-live="polite"></span>
+      </div>
+      <div id="batch-result" class="space-y-2"></div>
+    </div>
+
+    <!-- Hasil (single) — QR auto-render di dalam kartu, tanpa perlu tombol -->
+    <div id="result" class="hidden card-base p-5 mt-4 border-2 border-cyan-400/50 dark:border-cyan-500/30">
+      <h2 class="text-xs font-bold text-matte-500 dark:text-matte-400 uppercase mb-3" data-i18n="shortener.result">Hasil</h2>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <a id="result-link" href="#" target="_blank" rel="noopener noreferrer"
+          class="font-mono text-base sm:text-lg font-bold text-cyan-600 dark:text-cyan-400 hover:underline break-all flex-1 min-w-0"></a>
+        <button id="result-copy" type="button"
+          class="px-3 py-2 rounded-lg bg-matte-200 dark:bg-matte-700 font-bold text-xs hover:bg-matte-300 dark:hover:bg-matte-600 transition-colors shrink-0">📋 Copy</button>
+      </div>
+      <p id="result-long" class="text-2xs text-matte-400 mt-2 break-all"></p>
+
+      <div class="flex flex-wrap gap-2 mt-3">
+        <a id="result-open" href="#" target="_blank" rel="noopener noreferrer"
+          class="px-3 py-1.5 rounded-lg bg-matte-200 dark:bg-matte-700 font-bold text-xs hover:bg-matte-300 dark:hover:bg-matte-600 transition-colors" data-i18n="shortener.open">Buka</a>
+        <button id="result-stats" type="button"
+          class="px-3 py-1.5 rounded-lg bg-cyan-500/10 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border border-cyan-500/30 font-bold text-xs hover:bg-cyan-500/20 transition-colors"
+          data-i18n="shortener.stats">Statistik Klik</button>
+      </div>
+
+      <!-- Statistik klik (spoo.me /stats/{code}) -->
+      <div id="stats-box" class="hidden mt-3"></div>
+
+      <!-- QR otomatis untuk short link di atas -->
+      <div class="mt-4 pt-4 border-t border-matte-200 dark:border-surface-border text-center">
+        <canvas id="qr-canvas" width="180" height="180" class="mx-auto rounded-lg bg-white" aria-label="QR code short link"></canvas>
+        <p id="qr-status" class="text-2xs text-matte-400 mt-2" role="status" aria-live="polite"></p>
+        <div class="flex flex-wrap justify-center gap-2 mt-2">
+          <button id="qr-download" type="button"
+            class="px-3 py-2 rounded-lg bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-bold text-xs hover:opacity-90 transition-opacity" data-i18n="shortener.download_qr">Download QR (PNG)</button>
+          <button id="qr-copy" type="button"
+            class="px-3 py-2 rounded-lg bg-matte-200 dark:bg-matte-700 font-bold text-xs hover:bg-matte-300 dark:hover:bg-matte-600 transition-colors" data-i18n="shortener.copy_qr">Copy Gambar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Riwayat -->
+    <div id="hist-wrap" class="hidden card-base p-5 mt-4">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200" data-i18n="shortener.history">Riwayat Short Link</h2>
+        <button id="hist-clear" type="button" class="text-xs font-bold text-rose-500 hover:underline" data-i18n="btn.clear_history">Hapus Riwayat</button>
+      </div>
+      <div id="hist-list" class="space-y-2"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { useLocalHistory } from '../../composables/useLocalHistory';
+  import { copyToClipboard, copyImageToClipboard } from '../../composables/useClipboard';
+  import { t } from '../../i18n/translations';
+
+  const API = 'https://spoo.me/';
+
+  interface ShortEntry {
+    long: string;
+    short: string;
+    alias: string;
+    at: number;
+  }
+
+  // SPA boot (#14): guard path — script top-level mati begitu navigasi SPA balik.
+  const __utilsUrlShortenerPage = (location.pathname.replace(/\/+$/, '') || '/');
+
+  function init() {
+    const history = useLocalHistory<ShortEntry>('hist:url-shortener', 20);
+
+    // --- Elements ---
+    const tabSingle = document.getElementById('tab-single') as HTMLButtonElement | null;
+    const tabBatch = document.getElementById('tab-batch') as HTMLButtonElement | null;
+    const panelSingle = document.getElementById('panel-single');
+    const panelBatch = document.getElementById('panel-batch');
+    const longInput = document.getElementById('long-url') as HTMLInputElement | null;
+    const aliasInput = document.getElementById('alias') as HTMLInputElement | null;
+    const shortenBtn = document.getElementById('shorten-btn') as HTMLButtonElement | null;
+    const batchInput = document.getElementById('batch-urls') as HTMLTextAreaElement | null;
+    const batchBtn = document.getElementById('batch-btn') as HTMLButtonElement | null;
+    const batchProgress = document.getElementById('batch-progress');
+    const batchResult = document.getElementById('batch-result');
+    const resultCard = document.getElementById('result');
+    const resultLink = document.getElementById('result-link') as HTMLAnchorElement | null;
+    const resultLong = document.getElementById('result-long');
+    const resultCopy = document.getElementById('result-copy');
+    const resultOpen = document.getElementById('result-open') as HTMLAnchorElement | null;
+    const resultStats = document.getElementById('result-stats');
+    const statsBox = document.getElementById('stats-box');
+    const qrCanvas = document.getElementById('qr-canvas') as HTMLCanvasElement | null;
+    const qrStatus = document.getElementById('qr-status');
+    const qrDownload = document.getElementById('qr-download');
+    const qrCopy = document.getElementById('qr-copy');
+    const histWrap = document.getElementById('hist-wrap');
+    const histList = document.getElementById('hist-list');
+    const histClear = document.getElementById('hist-clear');
+
+    const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+    // Short link yang sedang ditampilkan — disimpan di variabel, bukan dibaca dari
+    // DOM, supaya copy/QR/statistik tidak bergantung pada isi teks elemen.
+    let currentShort = '';
+
+    // --- Helpers ---
+    // Escaping wajib: nama/URL berasal dari input user & respons API → jangan pernah
+    // disisipkan mentah ke innerHTML.
+    function esc(s: unknown): string {
+      return String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Normalisasi + validasi: terima "contoh.com" (auto https://), tolak yang bukan http(s).
+    function normalizeUrl(raw: string): string | null {
+      let value = raw.trim();
+      if (!value) return null;
+      if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(value)) value = 'https://' + value;
+      let u: URL;
+      try { u = new URL(value); } catch { return null; }
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+      // Harus punya host bertitik atau localhost — hindari "https://foo" salah ketik.
+      if (!u.hostname.includes('.') && u.hostname !== 'localhost') return null;
+      return u.href;
+    }
+
+    // POST form-urlencoded = CORS simple request (tanpa preflight), dipakai untuk
+    // semua panggilan spoo.me. Timeout 15s.
+    async function postForm(url: string, fields: Record<string, string>): Promise<Response> {
+      const body = new URLSearchParams();
+      for (const [k, v] of Object.entries(fields)) body.set(k, v);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+      try {
+        return await fetch(url, {
+          method: 'POST',
+          headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString(),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function firstErrorMessage(data: unknown, fallback: string): string {
+      if (data && typeof data === 'object') {
+        for (const v of Object.values(data as Record<string, unknown>)) {
+          if (typeof v === 'string' && v.trim()) return v.trim();
+        }
+      }
+      return fallback;
+    }
+
+    async function shorten(longUrl: string, alias: string): Promise<ShortEntry> {
+      const fields: Record<string, string> = { url: longUrl };
+      if (alias) fields.alias = alias;
+
+      const res = await postForm(API, fields);
+      let data: Record<string, unknown> | null = null;
+      try { data = await res.json(); } catch { data = null; }
+
+      const shortUrl = data && typeof data.short_url === 'string' ? data.short_url : '';
+      if (!res.ok || !shortUrl) {
+        throw new Error(firstErrorMessage(data, `Gagal membuat short link (HTTP ${res.status}).`));
+      }
+
+      return {
+        long: typeof data!.original_url === 'string' ? data!.original_url : longUrl,
+        short: shortUrl,
+        alias,
+        at: Date.now(),
+      };
+    }
+
+    // Ambil kode short link dari URL (http://spoo.me/abc123 → "abc123").
+    function codeFrom(shortUrl: string): string {
+      try {
+        return new URL(shortUrl).pathname.replace(/^\/+/, '');
+      } catch {
+        return shortUrl.replace(/^https?:\/\/[^/]+\//, '');
+      }
+    }
+
+    async function fetchStats(shortUrl: string): Promise<Record<string, unknown>> {
+      const code = codeFrom(shortUrl);
+      if (!code) throw new Error('Kode short link tidak ditemukan.');
+      const res = await postForm(`${API}stats/${encodeURIComponent(code)}`, {});
+      let data: Record<string, unknown> | null = null;
+      try { data = await res.json(); } catch { data = null; }
+      if (!res.ok || !data) {
+        throw new Error(firstErrorMessage(data, `Gagal memuat statistik (HTTP ${res.status}).`));
+      }
+      return data;
+    }
+
+    // --- QR: otomatis dirender di kartu hasil (tanpa tombol) ---
+    let qrReady = false;
+    let pendingQr: string | null = null;
+
+    function waitForQRious(timeoutMs = 8000): Promise<boolean> {
+      return new Promise((resolve) => {
+        const start = Date.now();
+        const tick = () => {
+          if (typeof window.QRious !== 'undefined') return resolve(true);
+          if (Date.now() - start > timeoutMs) return resolve(false);
+          setTimeout(tick, 50);
+        };
+        tick();
+      });
+    }
+
+    function paintQr(value: string) {
+      if (!qrCanvas) return;
+      if (!qrReady || typeof window.QRious === 'undefined') {
+        // Library belum siap → simpan & gambar begitu siap (lihat handler di bawah).
+        pendingQr = value;
+        if (qrStatus) qrStatus.textContent = t('shortener.qr_loading', 'Menyiapkan QR…');
+        return;
+      }
+      new window.QRious({ element: qrCanvas, value, size: 180, level: 'M', foreground: '#000000', background: '#ffffff' });
+      pendingQr = null;
+      if (qrStatus) qrStatus.textContent = '';
+    }
+
+    // --- Statistik klik ---
+    function topList(obj: unknown, limit = 3): Array<[string, number]> {
+      if (!obj || typeof obj !== 'object') return [];
+      return Object.entries(obj as Record<string, unknown>)
+        .map(([k, v]) => [k, Number(v) || 0] as [string, number])
+        .filter(([, n]) => n > 0)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit);
+    }
+
+    function statCard(label: string, value: string): string {
+      return `<div class="rounded-lg bg-matte-50 dark:bg-surface-hover border border-matte-200 dark:border-surface-border p-2.5 text-center">
+        <div class="text-lg font-bold text-cyan-600 dark:text-cyan-400">${esc(value)}</div>
+        <div class="text-2xs font-bold text-matte-400 uppercase mt-0.5">${esc(label)}</div>
+      </div>`;
+    }
+
+    function listBlock(label: string, rows: Array<[string, number]>): string {
+      if (rows.length === 0) return '';
+      return `<div class="mt-3">
+        <div class="text-2xs font-bold text-matte-400 uppercase mb-1.5">${esc(label)}</div>
+        <div class="space-y-1">
+          ${rows.map(([name, count]) => `<div class="flex items-center justify-between gap-2 text-xs">
+            <span class="font-mono text-matte-600 dark:text-matte-300 truncate" title="${esc(name)}">${esc(name)}</span>
+            <span class="font-bold text-matte-500 tabular-nums shrink-0">${esc(count)}</span>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    function formatDate(value: unknown): string {
+      if (typeof value !== 'string' || !value.trim()) return '—';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return value;
+      return d.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+    }
+
+    function renderStats(data: Record<string, unknown>) {
+      if (!statsBox) return;
+      const total = Number(data['total-clicks']) || 0;
+      const unique = Number(data['total_unique_clicks']) || 0;
+      const avgDaily = Number(data['average_daily_clicks']) || 0;
+
+      const lastClick = data['last-click'];
+      const lastBits = [data['last-click-browser'], data['last-click-os'], data['last-click-country']]
+        .filter((x) => typeof x === 'string' && x.trim())
+        .join(' · ');
+
+      let html = `<div class="grid grid-cols-3 gap-2">
+        ${statCard(t('shortener.total_clicks', 'Total Klik'), total.toLocaleString('id-ID'))}
+        ${statCard(t('shortener.unique_clicks', 'Klik Unik'), unique.toLocaleString('id-ID'))}
+        ${statCard(t('shortener.avg_daily', 'Rata-rata/Hari'), avgDaily.toFixed(1))}
+      </div>`;
+
+      html += `<p class="text-2xs text-matte-500 dark:text-matte-400 mt-2.5">
+        <b>${esc(t('shortener.last_click', 'Klik Terakhir'))}:</b> ${esc(formatDate(lastClick))}${lastBits ? ` — ${esc(lastBits)}` : ''}
+      </p>`;
+
+      if (total === 0) {
+        html += `<p class="text-xs text-matte-400 mt-2">${esc(t('shortener.stats_empty', 'Belum ada klik tercatat.'))}</p>`;
+      }
+
+      html += listBlock(t('shortener.top_country', 'Negara Teratas'), topList(data.country));
+      html += listBlock(t('shortener.top_referrer', 'Referrer Teratas'), topList(data.referrer));
+
+      statsBox.innerHTML = html;
+      statsBox.classList.remove('hidden');
+    }
+
+    async function handleStats() {
+      if (!currentShort || !statsBox || !resultStats) return;
+      const restore = window.showButtonSpinner?.(resultStats as HTMLElement, t('shortener.stats_loading', 'Memuat…'));
+      try {
+        const data = await fetchStats(currentShort);
+        renderStats(data);
+      } catch (err) {
+        statsBox.innerHTML = `<p class="text-xs text-rose-500">${esc(err instanceof Error ? err.message : t('shortener.stats_error', 'Gagal memuat statistik.'))}</p>`;
+        statsBox.classList.remove('hidden');
+      } finally {
+        restore?.();
+      }
+    }
+
+    // --- Riwayat ---
+    function renderHistory() {
+      if (!histWrap || !histList) return;
+      const items = history.getAll();
+      histWrap.classList.toggle('hidden', items.length === 0);
+      histList.innerHTML = items.map((it, i) => `
+        <div class="flex items-center gap-2 text-xs card-base p-2">
+          <a href="${esc(it.short)}" target="_blank" rel="noopener noreferrer"
+            class="font-mono font-bold text-cyan-600 dark:text-cyan-400 hover:underline shrink-0">${esc(it.short.replace(/^https?:\/\//, ''))}</a>
+          <span class="font-mono truncate flex-1 text-matte-400" title="${esc(it.long)}">${esc(it.long)}</span>
+          <button type="button" data-copy="${i}" class="text-matte-500 hover:text-cyan-500 font-bold shrink-0" aria-label="Copy short link">📋</button>
+          <button type="button" data-stats="${i}" class="text-matte-500 hover:text-cyan-500 font-bold shrink-0" aria-label="Lihat statistik klik">📊</button>
+          <button type="button" data-del="${i}" class="text-rose-500 hover:text-rose-600 font-bold shrink-0" aria-label="Hapus dari riwayat">✕</button>
+        </div>`).join('');
+    }
+
+    function pushHistory(entry: ShortEntry) {
+      // Dedupe: pendekkan URL yang sama dua kali → update entri lama, jangan dobel.
+      const rest = history.getAll().filter((it) => it.long !== entry.long);
+      rest.unshift(entry);
+      history.update(rest);
+      renderHistory();
+      return rest[0];
+    }
+
+    // --- Single mode ---
+    function showResult(entry: ShortEntry) {
+      if (!resultCard || !resultLink) return;
+      currentShort = entry.short;
+      resultLink.textContent = entry.short;
+      resultLink.href = entry.short;
+      if (resultOpen) resultOpen.href = entry.short;
+      if (resultLong) resultLong.textContent = entry.long;
+      // Reset statistik lama supaya tidak nyangkut dari link sebelumnya.
+      if (statsBox) { statsBox.classList.add('hidden'); statsBox.innerHTML = ''; }
+      resultCard.classList.remove('hidden');
+      // QR langsung tampil tanpa perlu klik.
+      paintQr(entry.short);
+    }
+
+    async function handleShorten() {
+      if (!longInput || !shortenBtn) return;
+      const normalized = normalizeUrl(longInput.value);
+      if (!normalized) {
+        toast('URL tidak valid. Contoh: https://contoh.com/halaman', 'error');
+        longInput.focus();
+        return;
+      }
+
+      const rawAlias = (aliasInput?.value || '').trim();
+      if (rawAlias && !/^[A-Za-z0-9_-]{1,32}$/.test(rawAlias)) {
+        toast('Alias hanya boleh huruf, angka, tanda hubung (-) dan garis bawah (_).', 'error');
+        aliasInput?.focus();
+        return;
+      }
+
+      const restore = window.showButtonSpinner?.(shortenBtn, 'Memproses…');
+      try {
+        const entry = await shorten(normalized, rawAlias);
+        pushHistory(entry);
+        showResult(entry);
+        toast('Short link berhasil dibuat!');
+      } catch (err) {
+        toast(err instanceof Error ? err.message : 'Gagal membuat short link.', 'error');
+      } finally {
+        restore?.();
+      }
+    }
+
+    // --- Batch mode ---
+    async function handleBatch() {
+      if (!batchInput || !batchBtn || !batchResult) return;
+      const lines = batchInput.value
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+      if (lines.length === 0) {
+        toast('Isi minimal satu URL.', 'info');
+        return;
+      }
+      if (lines.length > 15) {
+        toast('Maksimal 15 URL sekali jalan biar tidak kena rate limit.', 'error');
+        return;
+      }
+
+      batchResult.innerHTML = '';
+      const restore = window.showButtonSpinner?.(batchBtn, 'Memproses…');
+      let done = 0;
+      const rows: string[] = [];
+
+      for (const line of lines) {
+        const normalized = normalizeUrl(line);
+        if (!normalized) {
+          rows.push(`<div class="flex items-center gap-2 text-xs card-base p-2">
+            <span class="text-rose-500 font-bold shrink-0">✕</span>
+            <span class="font-mono truncate flex-1 text-matte-400" title="${esc(line)}">${esc(line)}</span>
+            <span class="text-rose-500 font-bold shrink-0">URL tidak valid</span>
+          </div>`);
+          batchResult.innerHTML = rows.join('');
+          continue;
+        }
+
+        // Sudah pernah dipendekkan? Pakai hasil lama — hemat request API.
+        const cached = history.getAll().find((it) => it.long === line || it.long === normalized);
+        if (cached) {
+          rows.push(`<div class="flex items-center gap-2 text-xs card-base p-2">
+            <a href="${esc(cached.short)}" target="_blank" rel="noopener noreferrer" class="font-mono font-bold text-cyan-600 dark:text-cyan-400 hover:underline shrink-0">${esc(cached.short.replace(/^https?:\/\//, ''))}</a>
+            <span class="font-mono truncate flex-1 text-matte-400" title="${esc(cached.long)}">${esc(cached.long)}</span>
+            <button type="button" data-rowcopy="${esc(cached.short)}" class="text-matte-500 hover:text-cyan-500 font-bold shrink-0" aria-label="Copy short link">📋</button>
+          </div>`);
+          batchResult.innerHTML = rows.join('');
+          done++;
+          if (batchProgress) batchProgress.textContent = `${done}/${lines.length}`;
+          continue;
+        }
+
+        try {
+          const entry = await shorten(normalized, '');
+          pushHistory(entry);
+          rows.push(`<div class="flex items-center gap-2 text-xs card-base p-2">
+            <a href="${esc(entry.short)}" target="_blank" rel="noopener noreferrer" class="font-mono font-bold text-cyan-600 dark:text-cyan-400 hover:underline shrink-0">${esc(entry.short.replace(/^https?:\/\//, ''))}</a>
+            <span class="font-mono truncate flex-1 text-matte-400" title="${esc(entry.long)}">${esc(entry.long)}</span>
+            <button type="button" data-rowcopy="${esc(entry.short)}" class="text-matte-500 hover:text-cyan-500 font-bold shrink-0" aria-label="Copy short link">📋</button>
+          </div>`);
+        } catch (err) {
+          rows.push(`<div class="flex items-center gap-2 text-xs card-base p-2">
+            <span class="text-rose-500 font-bold shrink-0">✕</span>
+            <span class="font-mono truncate flex-1 text-matte-400" title="${esc(normalized)}">${esc(normalized)}</span>
+            <span class="text-rose-500 font-bold shrink-0 truncate">${esc(err instanceof Error ? err.message : 'Gagal')}</span>
+          </div>`);
+        }
+
+        done++;
+        if (batchProgress) batchProgress.textContent = `${done}/${lines.length}`;
+        batchResult.innerHTML = rows.join('');
+        // Jeda kecil antar request — sopan ke API & hindari rate limit.
+        if (done < lines.length) await new Promise((r) => setTimeout(r, 400));
+      }
+
+      restore?.();
+      if (batchProgress) batchProgress.textContent = `Selesai — ${done}/${lines.length}`;
+      toast(`Selesai memproses ${done} URL.`);
+    }
+
+    // --- Tabs ---
+    function setTab(mode: 'single' | 'batch') {
+      if (!panelSingle || !panelBatch || !tabSingle || !tabBatch) return;
+      const active = 'px-4 py-2 rounded-xl text-sm font-bold transition-colors bg-matte-900 dark:bg-white text-white dark:text-matte-900';
+      const idle = 'px-4 py-2 rounded-xl text-sm font-bold transition-colors bg-matte-200 dark:bg-matte-700 text-matte-600 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-matte-600';
+      const isSingle = mode === 'single';
+      panelSingle.classList.toggle('hidden', !isSingle);
+      panelBatch.classList.toggle('hidden', isSingle);
+      tabSingle.className = isSingle ? active : idle;
+      tabBatch.className = isSingle ? idle : active;
+      tabSingle.setAttribute('aria-selected', String(isSingle));
+      tabBatch.setAttribute('aria-selected', String(!isSingle));
+    }
+
+    // --- Events (delegasi agar aman saat daftar di-render ulang) ---
+    tabSingle?.addEventListener('click', () => setTab('single'));
+    tabBatch?.addEventListener('click', () => setTab('batch'));
+    shortenBtn?.addEventListener('click', handleShorten);
+    batchBtn?.addEventListener('click', handleBatch);
+    longInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleShorten(); });
+
+    resultCopy?.addEventListener('click', async () => {
+      if (!currentShort) return;
+      const ok = await copyToClipboard(currentShort);
+      toast(ok ? 'Short link disalin!' : 'Gagal menyalin.', ok ? 'success' : 'error');
+    });
+
+    resultStats?.addEventListener('click', handleStats);
+
+    qrDownload?.addEventListener('click', () => {
+      if (!qrCanvas) return;
+      try {
+        const a = document.createElement('a');
+        a.href = qrCanvas.toDataURL('image/png');
+        a.download = 'qr-shortlink.png';
+        a.click();
+      } catch {
+        toast('Gagal mengunduh QR.', 'error');
+      }
+    });
+
+    qrCopy?.addEventListener('click', async () => {
+      if (!qrCanvas) return;
+      const ok = await copyImageToClipboard(qrCanvas);
+      toast(ok ? 'Gambar QR disalin!' : 'Gagal menyalin gambar.', ok ? 'success' : 'error');
+    });
+
+    histList?.addEventListener('click', async (e) => {
+      const target = (e.target as HTMLElement).closest('button') as HTMLElement | null;
+      if (!target) return;
+      const items = history.getAll();
+
+      const copyIdx = target.dataset.copy;
+      if (copyIdx !== undefined) {
+        const it = items[Number(copyIdx)];
+        if (!it) return;
+        const ok = await copyToClipboard(it.short);
+        toast(ok ? 'Short link disalin!' : 'Gagal menyalin.', ok ? 'success' : 'error');
+        return;
+      }
+
+      const statsIdx = target.dataset.stats;
+      if (statsIdx !== undefined) {
+        const it = items[Number(statsIdx)];
+        if (!it) return;
+        // Muat ke kartu hasil (short link + QR ikut tampil) lalu ambil statistiknya.
+        showResult(it);
+        resultCard?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        await handleStats();
+        return;
+      }
+
+      const delIdx = target.dataset.del;
+      if (delIdx !== undefined) {
+        const it = items[Number(delIdx)];
+        if (!it) return;
+        history.remove((x) => x.short === it.short && x.long === it.long);
+        renderHistory();
+        toast('Dihapus dari riwayat.', 'info');
+      }
+    });
+
+    batchResult?.addEventListener('click', async (e) => {
+      const target = (e.target as HTMLElement).closest('button') as HTMLElement | null;
+      if (!target?.dataset.rowcopy) return;
+      const ok = await copyToClipboard(target.dataset.rowcopy);
+      toast(ok ? 'Short link disalin!' : 'Gagal menyalin.', ok ? 'success' : 'error');
+    });
+
+    histClear?.addEventListener('click', () => {
+      history.clear();
+      renderHistory();
+      toast('Riwayat dihapus.');
+    });
+
+    // --- Boot ---
+    setTab('single');
+    renderHistory();
+    if (qrStatus) qrStatus.textContent = t('shortener.qr_loading', 'Menyiapkan QR…');
+    waitForQRious().then((ok) => {
+      qrReady = ok;
+      if (!ok) {
+        if (qrStatus) qrStatus.textContent = t('shortener.qr_failed', 'QR tidak tersedia');
+        toast('Gagal memuat library QR — fitur QR dinonaktifkan.', 'error');
+        return;
+      }
+      // Library baru siap sementara QR sudah diminta → gambar sekarang.
+      if (pendingQr) paintQr(pendingQr);
+      else if (qrStatus && !currentShort) qrStatus.textContent = '';
+    });
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __utilsUrlShortenerPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+</script>
