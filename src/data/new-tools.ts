@@ -7,6 +7,7 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  '/utils/url-shortener',
   '/calc/workdays',
   '/calc/thr-bpjs',
   '/pdf/surat-hr',

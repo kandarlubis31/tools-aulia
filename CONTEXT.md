@@ -19,6 +19,12 @@ tidak pernah dikirim ke server. Live production: **https://tools.paklubis.my.id*
 - **Lib pihak ketiga**: pola multi-CDN fallback via `src/composables/useCdnLib.ts`
   (SheetJS, html2pdf, dll). `mammoth` (docx→HTML) di-bundle lokal.
 - **Jangan pakai class Tailwind dinamis** (`bg-${color}-500`) — gak ke-generate. Pakai mapping statis.
+- ⚠️ **Pengecualian privasi (satu-satunya):** `/utils/url-shortener` memakai API pihak ketiga
+  **spoo.me** — URL yang dipendekkan dikirim keluar dari browser. Ini satu-satunya halaman di mana
+  data pengguna meninggalkan perangkat. Tetap lolos `check-client-side.mjs` karena request dibuat
+  dari browser (tanpa kode server). Disclaimer privasi di halaman itu **jangan dihapus**, dan
+  `seoDesc`-nya juga harus jujur soal spoo.me. Kalau butuh host API baru, cek CSP `connect-src`
+  di `vercel.json` (sementara sudah `https:` — semua host diizinkan).
 
 ---
 
@@ -66,6 +72,15 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 - ⚠️ Catatan: kalau halaman sempat keindeks sebelum noindex, minta user request removal via Google Search Console.
 - 💡 Backlog opsional (belum diminta): multi-device sync → butuh backend (kandidat: Supabase), PPT → PDF, absensi dari HP karyawan.
 - ✅ **Rebrand (Sep 24, 2026): ToolsAulia → MasAul Tools** — nama baru + logo baru (`public/logo.png`, 1254×1254). Navbar/footer pakai `<img>` `/logo.png`, favicon 16/32, apple-touch 180, PWA 192/512 digenerate dari logo (ffmpeg lanczos), favicon.svg = wrapper logo, safari mask-icon + safari-pinned-tab.svg dihapus, manifest PWA + JSON-LD + seluruh page title `| ToolsAulia` → `| MasAul Tools` (97 file; special-case "ToolsAulia by Mas Aul" tetap), title + favicon 32 di editor ikut. Nama personal "Aulia Iskandar Lubis" di copyright footer/LICENSE tetap.
+
+- 🆕 **URL Shortener (Okt 2026):** `/utils/url-shortener` — pendekkan link via **spoo.me**
+  (browser → API langsung, tanpa server). Custom alias, batch (maks 15 URL + jeda 400ms), riwayat
+  localStorage (`hist:url-shortener`, maks 20), **QR code otomatis** di kartu hasil (qrious
+  `/vendor` + fallback CDN, langsung tampil tanpa perlu tombol), dan **statistik klik** via
+  `POST https://spoo.me/stats/{shortCode}` (tanpa API key — total/klik unik, rata-rata harian,
+  klik terakhir, negara & referrer teratas).
+  Terdaftar di `tools.ts` + `new-tools.ts` + i18n (`tool.*`, `header.*`, `shortener.*`).
+  **Ini pengecualian privasi project** — lihat catatan di Konvensi & Guardrails.
 
 ## Verifikasi standar selesai kerja
 
