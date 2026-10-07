@@ -15,16 +15,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     />
 
     <div class="card-base p-6 animate-fade-in">
-      <label class="section-title mb-2 block" for="number-input">Masukkan Angka</label>
-      <input id="number-input" type="number" class="w-full px-4 py-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-amber-500 transition-colors text-lg font-mono" placeholder="1234567890" />
+      <label class="section-title mb-2 block" for="number-input" data-i18n="words.input_label">Masukkan Angka</label>
+      <input id="number-input" type="number" class="w-full px-4 py-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-amber-500 transition-colors text-lg font-mono" placeholder="1234567890" data-i18n-attr="placeholder" data-i18n="words.ph" />
+      <p class="text-xs text-matte-400 mt-1.5" data-i18n="words.max_hint">Maksimum 999 triliun (15 digit); bilangan negatif didukung.</p>
 
       <label class="section-title mb-2 mt-4 block" data-i18n="words.lang">Bahasa</label>
       <div class="flex gap-2">
-        <button id="lang-id" class="px-4 py-2 rounded-xl text-sm font-bold bg-amber-500 text-white shadow-md transition-all">Indonesia</button>
-        <button id="lang-en" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all">English</button>
+        <button id="lang-id" class="px-4 py-2 rounded-xl text-sm font-bold bg-amber-500 text-white shadow-md transition-all" data-i18n="words.id">Indonesia</button>
+        <button id="lang-en" class="px-4 py-2 rounded-xl text-sm font-medium text-matte-500 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-i18n="words.en">English</button>
       </div>
 
-      <button id="convert-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm">Konversi</button>
+      <button id="convert-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="words.convert">Konversi</button>
 
       <div id="result" class="hidden mt-6 p-6 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
         <p class="text-2xs text-matte-400 mb-2" data-i18n="words.result">Terbilang</p>
@@ -36,7 +37,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
+    const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+      // Guard dobel-bind (SPA back ke halaman yang sama, DOM tak di-swap)
+      const anchor = document.querySelector('main button, main input, main select, main textarea');
+      if (!anchor || anchor.dataset.autoBound === 'true') return;
+      anchor.dataset.autoBound = 'true';
 
       let language = 'id';
 
@@ -48,10 +56,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       function convertHundreds(n: number, lang: string): string {
         if (n === 0) return '';
         if (n < 20) return lang === 'id' ? ones[n] : onesEn[n];
-        
+
         const t = Math.floor(n / 10);
         const o = n % 10;
-        
+
         if (lang === 'id') {
           return tens[t] + (o ? ' ' + ones[o] : '');
         } else {
@@ -61,30 +69,32 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       function numberToWords(num: number, lang: string): string {
         if (num === 0) return lang === 'id' ? 'nol' : 'zero';
-        
+
         const isNegative = num < 0;
         num = Math.abs(num);
-        
+
         const parts: string[] = [];
         const scales = lang === 'id' ? ['', 'ribu', 'juta', 'miliar', 'triliun'] : ['', 'thousand', 'million', 'billion', 'trillion'];
-        
+
         let scaleIndex = 0;
         while (num > 0) {
           const chunk = num % 1000;
           if (chunk !== 0) {
-            let chunkWords = convertHundreds(chunk, lang);
+            let chunkWords: string;
             if (lang === 'id' && chunk === 1 && scaleIndex > 0) {
-              chunkWords = scales[scaleIndex] === 'ribu' ? 'se' + scales[scaleIndex] : 'se' + scales[scaleIndex];
+              // 'seribu'/'sejuta'/dst — skala 'ribu' dapat 'seribu' eksplisit,
+              // selain itu prefix 'se' (sejuta, semiliar, setriliun).
+              chunkWords = scales[scaleIndex] === 'ribu' ? 'seribu' : 'se' + scales[scaleIndex];
             } else {
-              chunkWords += ' ' + scales[scaleIndex];
+              chunkWords = convertHundreds(chunk, lang) + ' ' + scales[scaleIndex];
             }
             parts.unshift(chunkWords.trim());
           }
           num = Math.floor(num / 1000);
           scaleIndex++;
         }
-        
-        const result = parts.join(lang === 'id' ? ' ' : ' ');
+
+        const result = parts.join(' ');
         return isNegative ? (lang === 'id' ? 'minus ' : 'negative ') + result : result;
       }
 
@@ -103,18 +113,27 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       // Convert button
       document.getElementById('convert-btn')?.addEventListener('click', () => {
-        const input = (document.getElementById('number-input') as HTMLInputElement).value;
-        const num = parseInt(input);
+        const input = ((document.getElementById('number-input') as HTMLInputElement).value || '').trim();
 
+        // Validasi string dulu (bukan parseInt langsung): tolak desimal/ework/
+        // kelebihan digit — parseInt senyap memotong desimal & 1e21 jadi 1.
+        if (!/^-?\d{1,15}$/.test(input)) {
+          if (input === '') { toast('Masukkan angka yang valid!', 'error'); return; }
+          if (/[.e]/.test(input)) { toast('Masukkan bilangan bulat (tanpa desimal/eksponen)!', 'error'); return; }
+          toast('Angka terlalu besar — maksimum 999.999.999.999.999 (15 digit).', 'error');
+          return;
+        }
+
+        const num = parseInt(input, 10);
         if (isNaN(num)) {
-          window.showToast?.(window._tToast ? window._tToast('Masukkan angka yang valid!') : 'Masukkan angka yang valid!', 'error');
+          toast('Masukkan angka yang valid!', 'error');
           return;
         }
 
         const words = numberToWords(num, language);
         document.getElementById('words-output')!.textContent = words;
         document.getElementById('result')?.classList.remove('hidden');
-        window.showToast?.(window._tToast ? window._tToast('Dikonversi!') : 'Dikonversi!', 'success');
+        toast('Dikonversi!');
       });
     });
   </script>

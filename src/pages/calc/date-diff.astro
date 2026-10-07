@@ -31,25 +31,25 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <span class="text-sm text-matte-600 dark:text-matte-400" data-i18n="diff.business_days">Hari kerja saja</span>
       </label>
 
-      <button id="calc-btn" class="w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="diff.result">Hitung Selisih</button>
+      <button id="calc-btn" class="w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="diff.calculate">Hitung Selisih</button>
 
       <div id="result" class="hidden mt-6">
         <div class="grid grid-cols-3 gap-3 text-center">
           <div class="p-4 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border">
-            <p class="text-2xs text-matte-400">Hari</p>
+            <p class="text-2xs text-matte-400" data-i18n="diff.days">Hari</p>
             <p id="days" class="text-2xl font-bold text-teal-600 dark:text-teal-400">0</p>
           </div>
           <div class="p-4 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border">
-            <p class="text-2xs text-matte-400">Bulan</p>
+            <p class="text-2xs text-matte-400" data-i18n="diff.months">Bulan</p>
             <p id="months" class="text-2xl font-bold text-teal-600 dark:text-teal-400">0</p>
           </div>
           <div class="p-4 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border">
-            <p class="text-2xs text-matte-400">Tahun</p>
+            <p class="text-2xs text-matte-400" data-i18n="diff.years">Tahun</p>
             <p id="years" class="text-2xl font-bold text-teal-600 dark:text-teal-400">0</p>
           </div>
         </div>
         <div id="business-result" class="hidden mt-3 p-3 bg-teal-50 dark:bg-teal-900/20 rounded-xl text-center">
-          <p class="text-sm text-teal-600 dark:text-teal-400"><span id="business-days-count">0</span> hari kerja</p>
+          <p class="text-sm text-teal-600 dark:text-teal-400"><span id="business-days-count">0</span> <span data-i18n="diff.business_label">hari kerja</span></p>
         </div>
       </div>
     </div>
@@ -58,13 +58,21 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
+    const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+    // Guard dobel-bind: anchor di DOM halaman ini — kalau sudah pernah init
+    // (SPA back ke halaman yang sama, DOM tak di-swap) jangan bind ulang.
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
 
       // Set default dates
       const today = new Date();
       const lastMonth = new Date(today);
       lastMonth.setMonth(lastMonth.getMonth() - 1);
-      
+
       const startInput = document.getElementById('start-date') as HTMLInputElement;
       const endInput = document.getElementById('end-date') as HTMLInputElement;
       startInput.value = lastMonth.toISOString().split('T')[0];
@@ -86,17 +94,29 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       }
 
       document.getElementById('calc-btn')?.addEventListener('click', () => {
-        const start = new Date(startInput.value);
-        const end = new Date(endInput.value);
-        const businessOnly = (document.getElementById('business-days') as HTMLInputElement).checked;
-
         if (!startInput.value || !endInput.value) {
-          window.showToast?.(window._tToast ? window._tToast('Pilih kedua tanggal!') : 'Pilih kedua tanggal!', 'error');
+          toast('Pilih kedua tanggal!', 'error');
           return;
         }
 
-        const diffMs = Math.abs(end.getTime() - start.getTime());
-        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        const start = new Date(startInput.value + 'T00:00:00');
+        const end = new Date(endInput.value + 'T00:00:00');
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+          toast('Tanggal tidak valid!', 'error');
+          return;
+        }
+        const businessOnly = (document.getElementById('business-days') as HTMLInputElement).checked;
+
+        // Parse manual komponen YYYY-MM-DD → Date.UTC: date-only string ISO
+        // di-parse sebagai UTC (bisa mundur 1 hari di UTC+7), sedangkan string
+        // +T00:00:00 di-parse lokal. Keduanya digabung di sini biar diff hari
+        // pasti kelipatan 24 jam, tanpa error DST/timezone.
+        const [sy, sm, sd] = startInput.value.split('-').map(Number);
+        const [ey, em, ed] = endInput.value.split('-').map(Number);
+        const utcStart = Date.UTC(sy, sm - 1, sd);
+        const utcEnd = Date.UTC(ey, em - 1, ed);
+        const diffMs = Math.abs(utcEnd - utcStart);
+        const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
         const diffMonths = Math.floor(diffDays / 30);
         const diffYears = Math.floor(diffDays / 365);
 
@@ -105,7 +125,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         document.getElementById('years')!.textContent = diffYears.toString();
 
         if (businessOnly) {
-          const bizDays = countBusinessDays(start < end ? start : end, start < end ? end : start);
+          const lo = start <= end ? start : end;
+          const hi = start <= end ? end : start;
+          const bizDays = countBusinessDays(lo, hi);
           document.getElementById('business-days-count')!.textContent = bizDays.toString();
           document.getElementById('business-result')?.classList.remove('hidden');
         } else {
@@ -113,7 +135,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         }
 
         document.getElementById('result')?.classList.remove('hidden');
-        window.showToast?.(window._tToast ? window._tToast('Selisih dihitung!') : 'Selisih dihitung!', 'success');
+        toast('Selisih dihitung!');
       });
     });
   </script>

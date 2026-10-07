@@ -775,4 +775,12 @@ window._i18nPhrases = {
   'Memproses...':'Processing...',
   'PDF berhasil dianotasi!':'PDF annotated!',
   'PDF overlay berhasil!':'PDF overlay complete!',
+  'Angka terlalu besar — maksimum 999.999.999.999.999 (15 digit).':'Number too large — maximum 999,999,999,999,999 (15 digits).',
+  'Format hex harus #RRGGBB (contoh: #ff5733).':'Hex format must be #RRGGBB (e.g. #ff5733).',
+  'Gagal mengunduh.':'Download failed.',
+  'Isi path asal dan tujuan dulu.':'Fill in the source and destination paths first.',
+  'Isi pola regex dan tujuan dulu.':'Fill in the regex pattern and destination first.',
+  'Masukkan bilangan bulat (tanpa desimal/eksponen)!':'Enter an integer (no decimals/exponents)!',
+  'Rule ditambahkan.':'Rule added.',
+  'Tanggal tidak valid!':'Invalid date!',
 };
