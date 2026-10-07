@@ -36,82 +36,111 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
-const __page = (location.pathname.replace(/\/+$/, '') || '/');
+import { t } from '../../i18n/translations';
 
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+// Re-render hasil lookup saat bahasa diganti (label kartu di-bake via t()).
+// Satu listener module-scope; init() selalu update referensi closure terbaru.
+let __whoisRender: (() => void) | null = null;
+window.addEventListener('langchange', () => { __whoisRender?.(); });
 
-    const domainInput = document.getElementById('domain-input') as HTMLInputElement;
-    const lookupBtn = document.getElementById('lookup-btn') as HTMLButtonElement;
-    const resultArea = document.getElementById('result-area')!;
+const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+  window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
-    function escHtml(s: string): string {
-      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function init() {
+  const domainInput = document.getElementById('domain-input') as HTMLInputElement;
+  const lookupBtn = document.getElementById('lookup-btn') as HTMLButtonElement;
+  const resultArea = document.getElementById('result-area')!;
+
+  // Cache hasil lookup terakhir → bisa di-render ulang dengan label bahasa baru.
+  let lastData: any = null;
+
+  function escHtml(s: string): string {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function formatDate(d: string): string {
+    if (!d || d === '—') return '—';
+    try {
+      const date = new Date(d);
+      const loc = (localStorage.getItem('lang') || 'id') === 'en' ? 'en-US' : 'id-ID';
+      return date.toLocaleDateString(loc, { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch { return d; }
+  }
+
+  function renderResult(domain: string, data: any) {
+    const events = data.events || [];
+    const created = events.find((e: any) => e.eventAction === 'registration')?.eventDate || '—';
+    const updated = events.find((e: any) => e.eventAction === 'last changed')?.eventDate || '—';
+    const expires = events.find((e: any) => e.eventAction === 'expiration')?.eventDate || '—';
+
+    const nameservers = (data.nameservers || []).map((n: any) => n.ldhName).filter(Boolean);
+    const statuses = data.status || [];
+    const entities = data.entities || [];
+    const registrar = entities.find((e: any) => e.roles?.includes('registrar'));
+    const registrarName = registrar?.vcardArray?.[1]?.find((v: any) => v[0] === 'fn')?.[3] || '—';
+
+    const expired = expires !== '—' && new Date(expires) < new Date();
+    let html = '<div class="space-y-3">';
+    html += `<div class="grid grid-cols-2 gap-3">
+      <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">${escHtml(t('whois.domain', 'Domain'))}</span><span class="font-bold font-mono text-sm">${escHtml(domain)}</span></div>
+      <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">${escHtml(t('whois.registrar', 'Registrar'))}</span><span class="font-bold text-sm">${escHtml(registrarName)}</span></div>
+      <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">${escHtml(t('whois.created', 'Dibuat'))}</span><span class="font-bold text-sm">${escHtml(formatDate(created))}</span></div>
+      <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">${escHtml(t('whois.expires', 'Kadaluarsa'))}</span><span class="font-bold text-sm ${expired ? 'text-red-500' : 'text-emerald-500'}">${escHtml(formatDate(expires))}</span></div>
+      <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">${escHtml(t('whois.updated', 'Terakhir Diupdate'))}</span><span class="font-bold text-sm">${escHtml(formatDate(updated))}</span></div>
+      <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">${escHtml(t('whois.nameservers', 'Nameservers'))}</span><span class="font-bold text-xs font-mono">${nameservers.length ? nameservers.map(n => escHtml(n)).join('<br>') : '—'}</span></div>
+    </div>`;
+
+    if (statuses.length) {
+      html += `<div class="flex flex-wrap gap-1.5"><span class="text-2xs text-matte-400">${escHtml(t('whois.status', 'Status'))}: </span>${statuses.map((s: string) => `<span class="px-2 py-0.5 rounded text-2xs font-bold font-mono bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300">${escHtml(s)}</span>`).join('')}</div>`;
     }
 
-    function formatDate(d: string): string {
-      if (!d) return '—';
-      try {
-        const date = new Date(d);
-        return date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
-      } catch { return d; }
+    html += '</div>';
+    resultArea.innerHTML = html;
+  }
+
+  async function lookup() {
+    let domain = domainInput.value.trim().toLowerCase();
+    if (!domain) { toast('Masukkan domain', 'error'); return; }
+    // Strip protocol
+    domain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    if (!domain.includes('.')) { toast('Domain tidak valid', 'error'); return; }
+
+    lookupBtn.disabled = true;
+    lookupBtn.innerHTML = '⏳ …';
+    resultArea.innerHTML = `<p class="text-matte-400 text-center py-6 animate-pulse">${escHtml(t('whois.loading', 'Querying WHOIS…'))}</p>`;
+
+    try {
+      // Use RDAP (Registration Data Access Protocol) — lebih terstruktur dari WHOIS text
+      const res = await fetch(`https://rdap.org/domain/${encodeURIComponent(domain)}`, {
+        headers: { 'Accept': 'application/json' },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+      lastData = { domain, data };
+      renderResult(domain, data);
+    } catch (e: any) {
+      lastData = null;
+      resultArea.innerHTML = `<div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">❌ ${escHtml(t('whois.failed', 'Gagal query WHOIS.'))}<br><br><span class="font-mono text-xs">${escHtml(e.message)}</span><br><br>${escHtml(t('whois.failed_hint', 'Pastikan domain valid. API RDAP mungkin rate-limited.'))}</div>`;
+    } finally {
+      lookupBtn.disabled = false;
+      lookupBtn.innerHTML = `🔍 <span data-i18n="whois.lookup">${escHtml(t('whois.lookup', 'Lookup'))}</span>`;
     }
+  }
 
-    async function lookup() {
-      let domain = domainInput.value.trim().toLowerCase();
-      if (!domain) { window.showToast?.(window._tToast ? window._tToast('Masukkan domain') : 'Masukkan domain', 'error'); return; }
-      // Strip protocol
-      domain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-      if (!domain.includes('.')) { window.showToast?.(window._tToast ? window._tToast('Domain tidak valid') : 'Domain tidak valid', 'error'); return; }
+  __whoisRender = () => { if (lastData) renderResult(lastData.domain, lastData.data); };
 
-      lookupBtn.disabled = true;
-      lookupBtn.innerHTML = '⏳ …';
-      resultArea.innerHTML = '<p class="text-matte-400 text-center py-6 animate-pulse">Querying WHOIS…</p>';
+  lookupBtn.addEventListener('click', lookup);
+  domainInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') lookup(); });
+}
 
-      try {
-        // Use RDAP (Registration Data Access Protocol) — lebih terstruktur dari WHOIS text
-        const res = await fetch(`https://rdap.org/domain/${encodeURIComponent(domain)}`, {
-          headers: { 'Accept': 'application/json' },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const data = await res.json();
-        const events = data.events || [];
-        const created = events.find((e: any) => e.eventAction === 'registration')?.eventDate || '—';
-        const updated = events.find((e: any) => e.eventAction === 'last changed')?.eventDate || '—';
-        const expires = events.find((e: any) => e.eventAction === 'expiration')?.eventDate || '—';
-
-        const nameservers = (data.nameservers || []).map((n: any) => n.ldhName).filter(Boolean);
-        const statuses = data.status || [];
-        const entities = data.entities || [];
-        const registrar = entities.find((e: any) => e.roles?.includes('registrar'));
-        const registrarName = registrar?.vcardArray?.[1]?.find((v: any) => v[0] === 'fn')?.[3] || '—';
-
-        let html = '<div class="space-y-3">';
-        html += `<div class="grid grid-cols-2 gap-3">
-          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Domain</span><span class="font-bold font-mono text-sm">${escHtml(domain)}</span></div>
-          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Registrar</span><span class="font-bold text-sm">${escHtml(registrarName)}</span></div>
-          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Dibuat</span><span class="font-bold text-sm">${formatDate(created)}</span></div>
-          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Kadaluarsa</span><span class="font-bold text-sm ${expires !== '—' ? new Date(expires) < new Date() ? 'text-red-500' : 'text-emerald-500' : ''}">${formatDate(expires)}</span></div>
-          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Terakhir Diupdate</span><span class="font-bold text-sm">${formatDate(updated)}</span></div>
-          <div class="p-3 rounded-lg bg-matte-50 dark:bg-surface-elevated"><span class="text-2xs text-matte-400 block">Nameservers</span><span class="font-bold text-xs font-mono">${nameservers.length ? nameservers.map(n => escHtml(n)).join('<br>') : '—'}</span></div>
-        </div>`;
-
-        if (statuses.length) {
-          html += `<div class="flex flex-wrap gap-1.5"><span class="text-2xs text-matte-400">Status: </span>${statuses.map((s: string) => `<span class="px-2 py-0.5 rounded text-2xs font-bold font-mono bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300">${escHtml(s)}</span>`).join('')}</div>`;
-        }
-
-        html += '</div>';
-        resultArea.innerHTML = html;
-      } catch (e: any) {
-        resultArea.innerHTML = `<div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">❌ Gagal query WHOIS.<br><br><span class="font-mono text-xs">${escHtml(e.message)}</span><br><br>Pastikan domain valid. API RDAP mungkin rate-limited.</div>`;
-      } finally {
-        lookupBtn.disabled = false;
-        lookupBtn.innerHTML = '🔍 <span data-i18n="whois.lookup">Lookup</span>';
-        (window as any).processI18n?.();
-      }
-    }
-
-    lookupBtn.addEventListener('click', lookup);
-    domainInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') lookup(); });
-  });
+// SPA boot (#14): guard path + guard dobel-bind
+const __networkWhoisPage = (location.pathname.replace(/\/+$/, '') || '/');
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __networkWhoisPage) { __whoisRender = null; return; }
+  const anchor = document.querySelector('main button, main input, main select, main textarea');
+  if (!anchor || anchor.dataset.autoBound === 'true') return;
+  anchor.dataset.autoBound = 'true';
+  init();
+});
 </script>

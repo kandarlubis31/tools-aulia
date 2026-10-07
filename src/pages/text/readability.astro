@@ -15,10 +15,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     />
 
     <div class="card-base p-6 animate-fade-in">
-      <label class="section-title mb-2 block" for="text-input">Masukkan Teks</label>
-      <textarea id="text-input" rows="8" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-teal-500 transition-colors text-sm resize-y" placeholder="Tempel atau ketik teks di sini..." data-i18n-attr="placeholder"></textarea>
+      <label class="section-title mb-2 block" for="text-input" data-i18n="read.input_label">Masukkan Teks</label>
+      <textarea id="text-input" rows="8" class="w-full p-4 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-teal-500 transition-colors text-sm resize-y" placeholder="Tempel atau ketik teks di sini..." data-i18n-attr="placeholder" data-i18n="read.ph"></textarea>
 
-      <button id="analyze-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm">Analisis Keterbacaan</button>
+      <button id="analyze-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="read.analyze">Analisis Keterbacaan</button>
 
       <div id="result" class="hidden mt-6">
         <div class="grid grid-cols-2 gap-4">
@@ -36,15 +36,15 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
         <div class="grid grid-cols-3 gap-3 mt-4">
           <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
-            <p class="text-2xs text-matte-400">Kata</p>
+            <p class="text-2xs text-matte-400" data-i18n="read.words">Kata</p>
             <p id="word-count" class="text-lg font-bold text-teal-600 dark:text-teal-400">0</p>
           </div>
           <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
-            <p class="text-2xs text-matte-400">Kalimat</p>
+            <p class="text-2xs text-matte-400" data-i18n="read.sentences">Kalimat</p>
             <p id="sentence-count" class="text-lg font-bold text-teal-600 dark:text-teal-400">0</p>
           </div>
           <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
-            <p class="text-2xs text-matte-400">Suku Kata</p>
+            <p class="text-2xs text-matte-400" data-i18n="read.syllables">Suku Kata</p>
             <p id="syllable-count" class="text-lg font-bold text-teal-600 dark:text-teal-400">0</p>
           </div>
         </div>
@@ -53,25 +53,61 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+import { t } from '../../i18n/translations';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-    document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+  window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+let __readRender: (() => void) | null = null;
+window.addEventListener('langchange', () => { __readRender?.(); });
+
+    document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) { __readRender = null; return; }
+      // Guard dobel-bind (SPA back ke halaman yang sama, DOM tak di-swap)
+      const anchor = document.querySelector('main button, main input, main select, main textarea');
+      if (!anchor || anchor.dataset.autoBound === 'true') return;
+      anchor.dataset.autoBound = 'true';
+
+      let last: { ease: number; fkgl: number; words: number; sentences: number; syllables: number } | null = null;
 
       function countSyllables(word: string): number {
         word = word.toLowerCase().replace(/[^a-z]/g, '');
         if (word.length <= 3) return 1;
-        
+
         word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
         word = word.replace(/^y/, '');
-        
+
         const matches = word.match(/[aeiouy]{1,2}/g);
         return matches ? matches.length : 1;
+      }
+
+      function easeLabelKey(fleschEase: number): string {
+        if (fleschEase >= 90) return 'read.ease_very_easy';
+        if (fleschEase >= 80) return 'read.ease_easy';
+        if (fleschEase >= 70) return 'read.ease_fairly_easy';
+        if (fleschEase >= 60) return 'read.ease_standard';
+        if (fleschEase >= 50) return 'read.ease_fairly_hard';
+        if (fleschEase >= 30) return 'read.ease_hard';
+        return 'read.ease_very_hard';
+      }
+
+      // Render ulang label dinamis (ease/FKGL) — ikut bahasa aktif
+      function paint() {
+        if (!last) return;
+        document.getElementById('flesch-ease')!.textContent = Math.round(last.ease).toString();
+        document.getElementById('flesch-ease-label')!.textContent = t(easeLabelKey(last.ease), '—');
+        document.getElementById('fkgl')!.textContent = (Math.round(last.fkgl * 10) / 10) + ' ' + t('read.grade_suffix', 'kelas');
+        document.getElementById('fkgl-label')!.textContent = t('read.grade_equiv', 'Setara kelas') + ' ' + Math.round(last.fkgl);
+        document.getElementById('word-count')!.textContent = last.words.toString();
+        document.getElementById('sentence-count')!.textContent = last.sentences.toString();
+        document.getElementById('syllable-count')!.textContent = last.syllables.toString();
       }
 
       function analyzeText(text: string) {
         const words = text.split(/\s+/).filter(w => w.length > 0);
         const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-        
+
         let totalSyllables = 0;
         words.forEach(word => {
           totalSyllables += countSyllables(word);
@@ -83,39 +119,25 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
         // Flesch Reading Ease
         const fleschEase = 206.835 - 1.015 * (wordCount / sentenceCount) - 84.6 * (syllableCount / wordCount);
-        
+
         // Flesch-Kincaid Grade
         const fkgl = 0.39 * (wordCount / sentenceCount) + 11.8 * (syllableCount / wordCount) - 15.59;
 
-        // Labels
-        let easeLabel: string;
-        if (fleschEase >= 90) easeLabel = 'Sangat mudah';
-        else if (fleschEase >= 80) easeLabel = 'Mudah';
-        else if (fleschEase >= 70) easeLabel = 'Cukup mudah';
-        else if (fleschEase >= 60) easeLabel = 'Standar';
-        else if (fleschEase >= 50) easeLabel = 'Cukup sulit';
-        else if (fleschEase >= 30) easeLabel = 'Sulit';
-        else easeLabel = 'Sangat sulit';
-
-        document.getElementById('flesch-ease')!.textContent = Math.round(fleschEase).toString();
-        document.getElementById('flesch-ease-label')!.textContent = easeLabel;
-        document.getElementById('fkgl')!.textContent = Math.round(fkgl * 10) / 10 + ' kelas';
-        document.getElementById('fkgl-label')!.textContent = `Setara kelas ${Math.round(fkgl)}`;
-        document.getElementById('word-count')!.textContent = wordCount.toString();
-        document.getElementById('sentence-count')!.textContent = sentenceCount.toString();
-        document.getElementById('syllable-count')!.textContent = syllableCount.toString();
-
+        last = { ease: fleschEase, fkgl, words: wordCount, sentences: sentenceCount, syllables: syllableCount };
+        paint();
         document.getElementById('result')?.classList.remove('hidden');
       }
+
+      __readRender = paint;
 
       document.getElementById('analyze-btn')?.addEventListener('click', () => {
         const text = (document.getElementById('text-input') as HTMLTextAreaElement)?.value;
         if (!text || text.trim().length < 10) {
-          window.showToast?.(window._tToast ? window._tToast('Masukkan minimal 10 karakter!') : 'Masukkan minimal 10 karakter!', 'error');
+          toast('Masukkan minimal 10 karakter!', 'error');
           return;
         }
         analyzeText(text);
-        window.showToast?.(window._tToast ? window._tToast('Analisis selesai!') : 'Analisis selesai!', 'success');
+        toast('Analisis selesai!', 'success');
       });
     });
   </script>
