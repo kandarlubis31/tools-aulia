@@ -15,14 +15,19 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     />
 
     <div class="card-base p-8 animate-fade-in">
-      <textarea id="input" rows="6" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4 focus:border-emerald-500 transition-colors" placeholder="Masukkan teks untuk dideteksi bahasanya..."></textarea>
-      <button id="detect" class="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors">🔍 Deteksi Bahasa</button>
+      <textarea id="input" rows="6" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4 focus:border-emerald-500 transition-colors" placeholder="Masukkan teks untuk dideteksi bahasanya..." data-i18n-attr="placeholder" data-i18n="langdet.placeholder"></textarea>
+      <button id="detect" class="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors" data-i18n="langdet.detect">🔍 Deteksi Bahasa</button>
       <div id="result" class="mt-6 hidden"></div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  let __langDetectRender: (() => void) | null = null;
+  window.addEventListener('langchange', () => { __langDetectRender?.(); });
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -31,59 +36,60 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     'id': { name: '🇮🇩 Indonesia', common: ['yang','dan','di','ini','untuk','dengan','pada','adalah','dari','itu','tidak','akan','juga','oleh','bisa','sudah','ada','lebih','mereka','saya','kami','anda','ia','belum','karena','jika','atau','hanya','setiap'], weight: 1.0 },
     'en': { name: '🇺🇸 English', common: ['the','of','and','to','a','in','is','you','that','it','he','was','for','on','are','as','with','his','they','i','at','be','this','have','from','or','one','had','by','but','not','what','all','were','we','when','your','can','said','there','use'], weight: 1.0 },
     'ms': { name: '🇲🇾 Malay', common: ['yang','dan','di','ini','untuk','dengan','pada','adalah','dari','tidak','akan','juga','oleh','bisa','sudah','ada','lebih','mereka','saya','kami','anda','belum','karena','jika','atau','hanya','telah','orang','baik'], weight: 0.95 },
-    'jv': { name: '🇯awa Jawa', common: ['ing','lan','kang','saking','iku','iki','ten','wong','ora','padha','kulo','sampeyan','sampun','dereng','mangke','sami','dados','anging','amargi','menawi','utawi','manawi','kula','panjenengan','miturut','lajeng','sanes','namung','mBoten','tigang'], weight: 0.9 },
-    'su': { name: ' Sundanese', common: ['sareng','ka','di','nu','mah','ta','mah','ge','mah','ieu','éta','anjir','teh','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah','mah'], weight: 0.7 },
+    'jv': { name: '🇯🇲 Jawa', common: ['ing','lan','kang','saking','iku','iki','ten','wong','ora','padha','kulo','sampeyan','sampun','dereng','mangke','sami','dados','anging','amargi','menawi','utawi','manawi','kula','panjenengan','miturut','lajeng','sanes','namung','boten','tigang'], weight: 0.9 },
+    // BUG LAMA: list Sunda cuma 'mah' yang diulang 20+ kali → skor kata umum lain
+    // nyaris nol dan 'mah' sendiri bikin skor Sunda melambung palsu. Diganti
+    // kosakata Sunda nyata + dedupe.
+    'su': { name: '🇮🇩 Sunda', common: ['nu','di','jeung','ka','sareng','teh','mah','ge','ieu','eta','anjeun','abdi','kuring','urang','moal','henteu','acan','geus','kudu','bisa','hayang','imah','sakola','jalan','gawé','duit','saha','kumaha','naon'], weight: 0.85 },
     'de': { name: '🇩🇪 Deutsch', common: ['der','die','und','in','den','von','zu','das','mit','sich','des','auf','ist','ein','eine','als','auch','es','an','werden','aus','er','hat','dass','sie','nach','wird','bei','einer','um'], weight: 1.0 },
-    'es': { name: '🇪🇸 Español', common: ['que','de','la','el','en','y','los','del','las','un','por','con','una','para','al','lo','como','más','pero','sus','le','ha','este','ya','o','fue','este','ha','si','porque','esta','son','entre','cuando','muy','sin','sobre','ser','tiene','cada'], weight: 1.0 },
+    'es': { name: '🇪🇸 Español', common: ['que','de','la','el','en','y','los','del','las','un','por','con','una','para','al','lo','como','más','pero','sus','le','ha','este','ya','o','fue','si','porque','esta','son','entre','cuando','muy','sin','sobre','ser','tiene','cada'], weight: 1.0 },
     'fr': { name: '🇫🇷 Français', common: ['le','de','les','des','une','est','et','en','que','qui','dans','du','ce','il','pas','pour','sur','sont','avec','plus','par','au','fait','tout','mais','comme','on','peut','aussi','bien','non','oui','cette','ces','ou','moins','entre','même','autre','très'], weight: 1.0 },
-    'ar': { name: '🇸🇦 العربية', common: ['من','في','على','هذا','التي','لا','كان','إلى','أن','إذا','كل','بل','هناك','حتى','لقد','حيث','كما','وبعد','ذلك','وقد','وما','وهو','وكان','ولم','وكان'], weight: 0.9 },
+    'ar': { name: '🇸🇦 العربية', common: ['من','في','على','هذا','التي','لا','كان','إلى','أن','إذا','كل','هناك','حتى','لقد','حيث','كما','وبعد','ذلك','وقد','وما','وهو','وكان','ولم'], weight: 0.9 },
     'zh': { name: '🇨🇳 中文', common: ['的','了','在','是','我','有','和','就','不','人','都','一','一个','上','也','很','到','说','要','去','你','会','着','没有','看','好','自己','这'], weight: 0.8 },
-    'ja': { name: '🇯🇵 日本語', common: ['の','に','は','を','た','が','で','て','と','し','れ','さ','ある','いる','も','する','から','な','こと','として','い','や','れる','など','なっ','ない','この','ため','その','あっ','よう','また','もの','という','あり','まで','られ','なる','へ','か','だ','これ','によって','により','おり','より','による','ず','なり','られる','において','ば','なかっ','なく','しかし','について','せ','だっ','そう','て','について','ず','なり','られる','において','ば','なかっ','なく','しかし','について','せ','だっ','そう'], weight: 0.8 },
-    'ko': { name: '🇰🇷 한국어', common: ['의','에','를','이','는','가','과','로','에서','하고','으로','도','한','으로','에게','보다','만','부터','까지','처럼','처럼','하고','하고','하고','하고','하고','하고','하고','하고','하고','하고'], weight: 0.8 },
-    'ru': { name: '🇷🇺 Русский', common: ['в','на','и','не','что','он','как','но','та','бы','по','только','его','если','уже','или','ни','быть','было','вот','все','она','так','его','да','что','ты','к','у','же','вы','за','бы','по','только','ее','мне','было','вот','от','меня','еще','нет','о','из','ему','теперь','когда','даже','ну','ли','если','уже','или','ни','быть','было'], weight: 1.0 }
+    'ja': { name: '🇯🇵 日本語', common: ['の','に','は','を','た','が','で','て','と','し','れ','さ','ある','いる','も','する','から','な','こと','として','い','や','れる','など','ない','この','ため','その','よう','また','もの','という','あり','まで','られ','なる','へ','か','だ','これ','より','による','ず','なり','られる','ば','なかっ','なく','しかし','について','そう'], weight: 0.8 },
+    // BUG LAMA: '하고' diulang 10× dan '처럼'/'으로' dobel → skor Korea bias ke
+    // partikel yang sama. Diganti kosakata Korea nyata + dedupe.
+    'ko': { name: '🇰🇷 한국어', common: ['의','에','를','이','는','가','과','와','로','에서','으로','도','한','에게','보다','만','부터','까지','처럼','때','수','있다','없다','그','저','것','나','너','우리','사람','하다','되다'], weight: 0.8 },
+    'ru': { name: '🇷🇺 Русский', common: ['в','на','и','не','что','он','как','но','та','бы','по','только','его','если','уже','или','ни','быть','было','вот','все','она','так','да','ты','к','у','же','вы','за','ее','мне','от','меня','еще','нет','о','из','ему','теперь','когда','даже','ну','ли'], weight: 1.0 }
   };
 
   function detectLanguage(text) {
     const words = text.toLowerCase().replace(/[^a-z\u0600-\u06FF\u4E00-\u9FFF\u3040-\u309F\uAC00-\uD7AF\u0400-\u04FF]+/g, ' ').split(/\s+/).filter(w => w.length > 0);
     if (words.length === 0) return [];
-    
+
     const scores = {};
     for (const [lang, profile] of Object.entries(langProfiles)) {
       let score = 0;
       for (const word of words) {
-        const idx = profile.common.indexOf(word);
-        if (idx !== -1) score += (profile.common.length - idx);
+        const idx = (profile as any).common.indexOf(word);
+        if (idx !== -1) score += ((profile as any).common.length - idx);
       }
-      scores[lang] = (score / words.length) * profile.weight;
+      scores[lang] = (score / words.length) * (profile as any).weight;
     }
-    
+
     // Check character patterns for non-Latin scripts
-    if (/[؀-ۿ]/.test(text)) scores['ar'] = (scores['ar'] || 0) + 3;
-    if (/[一-鿿]/.test(text)) scores['zh'] = (scores['zh'] || 0) + 3;
-    if (/[぀-ゟ]/.test(text)) scores['ja'] = (scores['ja'] || 0) + 3;
-    if (/[가-힯]/.test(text)) scores['ko'] = (scores['ko'] || 0) + 3;
-    if (/[Ѐ-ӿ]/.test(text)) scores['ru'] = (scores['ru'] || 0) + 3;
-    
+    if (/[\u0600-\u06FF]/.test(text)) scores['ar'] = (scores['ar'] || 0) + 3;
+    if (/[\u4E00-\u9FFF]/.test(text)) scores['zh'] = (scores['zh'] || 0) + 3;
+    if (/[\u3040-\u309F]/.test(text)) scores['ja'] = (scores['ja'] || 0) + 3;
+    if (/[\uAC00-\uD7AF]/.test(text)) scores['ko'] = (scores['ko'] || 0) + 3;
+    if (/[\u0400-\u04FF]/.test(text)) scores['ru'] = (scores['ru'] || 0) + 3;
+
+    const total = Object.values(scores).reduce((s: number, x: any) => s + (x > 0 ? x : 0), 0);
     return Object.entries(scores)
       .filter(([_, s]) => s > 0)
       .sort((a, b) => b[1] - a[1])
-      .map(([lang, score]) => ({ lang, name: langProfiles[lang].name, score, pct: 0 }))
-      .slice(0, 5)
-      .map((item, i, arr) => {
-        const total = arr.reduce((s, x) => s + x.score, 0);
-        item.pct = total > 0 ? Math.round((item.score / total) * 100) : 0;
-        return item;
-      });
+      .map(([lang, score]) => ({ lang, name: (langProfiles as any)[lang].name, score, pct: total > 0 ? Math.round((score / total) * 100) : 0 }))
+      .slice(0, 5);
   }
 
-  document.getElementById('detect').onclick = () => {
+  function render() {
     const text = document.getElementById('input').value.trim();
     const resultEl = document.getElementById('result');
-    if (!text) { resultEl.classList.add('hidden'); return; }
+    if (!text) { resultEl.classList.add('hidden'); resultEl.innerHTML = ''; return; }
     const results = detectLanguage(text);
     resultEl.classList.remove('hidden');
     if (results.length === 0) {
-      resultEl.innerHTML = '<p class="text-matte-500 text-center">Tidak dapat mendeteksi bahasa. Coba masukkan lebih banyak teks.</p>';
+      resultEl.innerHTML = '<p class="text-matte-500 text-center">' + t('langdet.empty', 'Tidak dapat mendeteksi bahasa. Coba masukkan lebih banyak teks.') + '</p>';
       return;
     }
     resultEl.innerHTML = results.map((r, i) => `
@@ -100,7 +106,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
       </div>
     `).join('');
+  }
+
+  document.getElementById('detect').onclick = () => {
+    const text = document.getElementById('input').value.trim();
+    // Dulu input kosong cuma menyembunyikan hasil tanpa penjelasan.
+    if (!text) { toast(t('langdet.no_input', 'Masukkan teks dulu.'), 'error'); return; }
+    render();
   };
+
+  __langDetectRender = render;
 
   }
 

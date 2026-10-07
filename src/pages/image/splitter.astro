@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
-<BaseLayout title="Image Splitter — Potong Gambar Grid | MasAul Tools" description="Potong gambar jadi grid 2x2, 3x3, atau custom. 100% client-side canvas." category="Image" toolHref="/image/splitter">
+<BaseLayout pageTitle="Image Splitter" description="Potong gambar jadi grid 2x2, 3x3, atau custom. 100% client-side canvas.">
   <ToolPageHeader title="Image Splitter" description="Potong gambar jadi grid, download per tile" icon='<path d="M3 3v18h18V3H3zM12 3v18M3 12h18"/>' />
 
   <div class="card-base p-5 space-y-4">
@@ -114,7 +114,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const u = URL.createObjectURL(b); const a = document.createElement('a');
       a.href = u; a.download = 'tile-'+(i+1)+'.png'; a.click(); URL.revokeObjectURL(u);
     }, 'image/png'); }, i*200));
-    showToast?.(_tToast?.('Download semua tile dimulai!', 'All tiles downloading!'), 'success');
+    window.showToast?.(window._tToast ? window._tToast('Download semua tile dimulai!') : 'All tiles download started!', 'success');
   });
 
   }

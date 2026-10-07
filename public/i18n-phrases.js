@@ -747,4 +747,32 @@ window._i18nPhrases = {
   // W6 batch 10
   'Baris diproses!':'Lines processed!',
   'Format waktu tidak valid!':'Invalid time format!',
+  // W6 batch 11 — toast cleanup: frasa dari pola `_tToast?.('ID','EN')` lama yang
+  // argumen EN-nya dibuang percuma (window._tToast cuma terima 1 argumen), jadi
+  // frasa ID ini harus ada di map supaya mode EN benar-benar menerjemahkannya.
+  'SVG disalin!':'SVG copied!',
+  'File maksimal 25MB':'Max file size 25MB',
+  'Halaman tidak valid':'Invalid page',
+  'Anotasi ditambahkan!':'Annotation added!',
+  'Belum ada anotasi untuk diterapkan':'No annotations to apply',
+  'Gunakan browser terbaru untuk ekstrak ZIP':'Use a recent browser to extract ZIP',
+  'file diekstrak!':'files extracted!',
+  'Gagal ekstrak ZIP':'Failed to extract ZIP',
+  'Download semua dimulai!':'Download all started!',
+  'Download semua tile dimulai!':'All tiles download started!',
+  'Audio dikonversi!':'Audio converted!',
+  'Mic tidak tersedia':'Microphone not available',
+  'Logo terlalu besar, akan diperkecil':'Logo too large, will be scaled down',
+  'Masukkan URL atau teks':'Enter a URL or text',
+  'QR code dibuat!':'QR code generated!',
+  'Gagal membuat QR':'Failed to generate QR',
+  'SVG QR disalin!':'QR SVG copied!',
+  'Gambar di-download!':'Image downloaded!',
+  'File maksimal 50MB':'Max file size 50MB',
+  'Membaca ZIP...':'Reading ZIP...',
+  'Mengekstrak...':'Extracting...',
+  'Memproses anotasi...':'Processing annotations...',
+  'Memproses...':'Processing...',
+  'PDF berhasil dianotasi!':'PDF annotated!',
+  'PDF overlay berhasil!':'PDF overlay complete!',
 };
