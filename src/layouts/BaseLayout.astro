@@ -907,25 +907,59 @@ if (isPdfRoot) {
          }
       }
 
-      const updateOnlineStatus = () => {
+      // navigator.onLine bisa false-positive (OS/VM/VPN/adaptor melaporkan tidak ada
+      // koneksi padahal internet jalan). JANGAN percaya `false` sendirian — verifikasi
+      // dengan probe jaringan nyata sebelum menampilkan status offline.
+      const probeOnline = (timeoutMs) => new Promise((resolve) => {
+        if (navigator.onLine) { resolve(true); return; }
+        let done = false;
+        const finish = (v) => { if (!done) { done = true; resolve(v); } };
+        const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const to = setTimeout(() => { if (ctrl) ctrl.abort(); finish(false); }, timeoutMs || 4000);
+        // Path yang pasti TIDAK di-precache + bukan navigasi → SW passthrough ke
+        // network. Online = dapat respons apa pun (termasuk 404); offline = reject.
+        fetch('/__conncheck__?t=' + Date.now(), { method: 'HEAD', cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
+          .then(() => { clearTimeout(to); finish(true); })
+          .catch(() => { clearTimeout(to); finish(false); });
+      });
+
+      let offlineProbeTimer = null;
+      const showOnline = () => {
         const indicator = document.getElementById('offline-indicator');
-        if (!navigator.onLine) {
-            if (indicator) indicator.classList.remove('hidden');
-            window.showToast?.(window._tToast ? window._tToast('Koneksi terputus.') : 'Koneksi terputus.', 'error');
-        } else {
-            if(!(indicator && indicator.classList.contains('hidden'))) {
-                if (indicator) indicator.classList.add('hidden');
+        if (indicator) indicator.classList.add('hidden');
+      };
+      const showOffline = () => {
+        const indicator = document.getElementById('offline-indicator');
+        if (indicator) indicator.classList.remove('hidden');
+        window.showToast?.(window._tToast ? window._tToast('Koneksi terputus.') : 'Koneksi terputus.', 'error');
+      };
+      const updateOnlineStatus = async () => {
+        const indicator = document.getElementById('offline-indicator');
+        if (navigator.onLine) {
+            const wasOffline = !!(indicator && !indicator.classList.contains('hidden'));
+            showOnline();
+            if (offlineProbeTimer) { clearInterval(offlineProbeTimer); offlineProbeTimer = null; }
+            if (wasOffline) {
                 const hasSW = !!(navigator.serviceWorker && navigator.serviceWorker.controller);
                 const msg = hasSW
                   ? (window._tToast ? window._tToast('📦 Kembali Online! Konten dari cache, data terbaru sedang dimuat...') : '📦 Kembali Online! Konten dari cache, data terbaru sedang dimuat...')
                   : (window._tToast ? window._tToast('Kembali Online!') : 'Kembali Online!');
                 window.showToast?.(msg, 'success');
             }
+            return;
+        }
+        // onLine=false — cek dulu sebelum memvonis offline.
+        if (await probeOnline(4000)) { showOnline(); return; }
+        showOffline();
+        if (!offlineProbeTimer) {
+            offlineProbeTimer = setInterval(async () => {
+                if (await probeOnline(3000)) { clearInterval(offlineProbeTimer); offlineProbeTimer = null; showOnline(); }
+            }, 8000);
         }
       };
       window.addEventListener('online', updateOnlineStatus);
       window.addEventListener('offline', updateOnlineStatus);
-      if(!navigator.onLine) { var offlineInd = document.getElementById('offline-indicator'); if (offlineInd) offlineInd.classList.remove('hidden'); }
+      updateOnlineStatus();
 
       // ── First-cache notification: toast "⚡ Siap untuk offline!" once per SW install ──
       if (!localStorage.getItem('_sw_cached') && navigator.serviceWorker) {

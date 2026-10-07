@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
-<BaseLayout title="QR Code Art — QR Custom Warna & Logo | MasAul Tools" description="Buat QR code custom dengan warna, logo, dan style. 100% client-side di browser." category="Image" toolHref="/image/qr-art">
+<BaseLayout pageTitle="QR Code Art" description="Buat QR code custom dengan warna, logo, dan style. 100% client-side di browser.">
   <ToolPageHeader title="QR Code Art" description="QR code kustom dengan warna, logo, & style" icon='<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>' />
 
   <div class="card-base p-5 space-y-4">
@@ -82,7 +82,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const size = parseInt(qrSize.value);
         const maxW = size * 0.22;
         if (logoImg!.naturalWidth > maxW || logoImg!.naturalHeight > maxW) {
-          showToast?.(_tToast?.('Logo terlalu besar, akan diperkecil', 'Logo too large, will be scaled down'), 'warning');
+          window.showToast?.(window._tToast ? window._tToast('Logo terlalu besar, akan diperkecil') : 'Logo too large, will be scaled down', 'warning');
         }
         generate();
       };
@@ -93,7 +93,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   async function generate() {
     const text = qrText.value.trim();
-    if (!text) { showToast?.(_tToast?.('Masukkan URL atau teks', 'Enter URL or text'), 'error'); return; }
+    if (!text) { window.showToast?.(window._tToast ? window._tToast('Masukkan URL atau teks') : 'Enter a URL or text', 'error'); return; }
 
     const size = parseInt(qrSize.value) || 256;
     const level = qrLevel.value;
@@ -116,9 +116,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         ctx.drawImage(logoImg, lx, ly, logoSize, logoSize);
       }
 
-      showToast?.(_tToast?.('QR code dibuat!', 'QR code generated!'), 'success');
+      window.showToast?.(window._tToast ? window._tToast('QR code dibuat!') : 'QR code generated!', 'success');
     } catch {
-      showToast?.(_tToast?.('Gagal membuat QR', 'Failed to generate QR'), 'error');
+      window.showToast?.(window._tToast ? window._tToast('Gagal membuat QR') : 'Failed to generate QR', 'error');
     }
   }
 
@@ -139,7 +139,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const data = canvas.toDataURL('image/png');
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><image href="${data}" width="${w}" height="${h}"/></svg>`;
     navigator.clipboard.writeText(svg).then(() => {
-      showToast?.(_tToast?.('SVG QR disalin!', 'QR SVG copied!'), 'success');
+      window.showToast?.(window._tToast ? window._tToast('SVG QR disalin!') : 'QR SVG copied!', 'success');
     });
   });
 

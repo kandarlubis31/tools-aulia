@@ -229,6 +229,46 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   transition: width 50ms linear;
 }
 
+/* ========== FORM CONTROLS ========== */
+/* Oct 4, 2026 — `.btn-primary` / `.btn-secondary` / `.input-field` dipakai di 52 tool
+   page tapi TIDAK PERNAH didefinisikan di mana pun (bukan di global.css, critical.css,
+   atau tailwind.config.mjs) → tombol utama + input tampil tanpa style (default browser).
+   Ditulis di `@layer components` supaya utility Tailwind tetap MENANG atas default di
+   sini — itu yang diharapkan pemakaiannya, mis. `class="btn-primary text-sm"`,
+   `class="input-field w-24"`, `class="btn-primary flex-1"`.
+   Sengaja TIDAK diduplikasi ke critical.css: sejak Keputusan #12 bundle Tailwind
+   render-blocking normal → tidak ada jendela first-paint tanpa style. */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
+      bg-matte-900 dark:bg-white text-white dark:text-matte-900
+      font-semibold text-sm
+      transition-all duration-150 hover:opacity-90 active:scale-[0.97]
+      disabled:opacity-40 disabled:cursor-not-allowed
+      disabled:hover:opacity-40 disabled:active:scale-100;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
+      bg-matte-100 dark:bg-surface-hover text-matte-600 dark:text-matte-200
+      border border-matte-200 dark:border-surface-border
+      font-semibold text-sm
+      transition-colors duration-150 hover:bg-matte-200 dark:hover:bg-surface-border
+      active:scale-[0.97]
+      disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2.5 rounded-lg
+      bg-matte-50 dark:bg-surface-hover
+      border border-matte-200 dark:border-surface-border
+      text-sm text-matte-800 dark:text-white placeholder-matte-400
+      outline-none transition-colors duration-150
+      focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+}
+
 /* ========== CARD BASE ========== */
 /* Border dihapus (Sep 24, 2026) — ganti hairline box-shadow super tipis biar card
    tetap ke-definisi dari bg page (white-on-#fbfbfd) tanpa garis keras. Hover =

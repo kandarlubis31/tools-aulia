@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
-<BaseLayout title=".htaccess Generator — Builder Redirect & Rewrite | MasAul Tools" description="Generate .htaccess untuk Apache: redirect, rewrite, security headers. 100% client-side." category="Dev" toolHref="/dev/htaccess">
+<BaseLayout pageTitle=".htaccess Generator" description="Generate .htaccess untuk Apache: redirect, rewrite, security headers. 100% client-side.">
   <ToolPageHeader title=".htaccess Generator" description="Builder redirect, rewrite, security — Apache" icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>' />
 
   <div class="card-base p-5 space-y-4">
@@ -94,7 +94,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
 
   document.getElementById('copy-btn').addEventListener('click', () => {
-    navigator.clipboard.writeText(output.textContent).then(() => showToast?.(_tToast?.('Disalin!','Copied!'),'success'));
+    navigator.clipboard.writeText(output.textContent).then(() => window.showToast?.(window._tToast ? window._tToast('Disalin!') : 'Copied!','success'));
   });
   document.getElementById('download-btn').addEventListener('click', () => {
     const blob = new Blob([output.textContent], { type: 'text/plain' });

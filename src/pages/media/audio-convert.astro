@@ -2,21 +2,51 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
-<BaseLayout title="Audio Converter — Konversi Format Audio | MasAul Tools" description="Konversi format audio via WebAudio offline render. 100% client-side." category="Media" toolHref="/media/audio-convert">
-  <ToolPageHeader title="Audio Converter" description="Konversi format audio: WAV/WebM — render offline" icon='<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>' />
+<BaseLayout pageTitle="Audio Converter" description="Konversi format audio via WebAudio offline render. 100% client-side.">
+  <ToolPageHeader title="Audio Converter" description="Konversi format audio: WAV + WebM/Opus — render offline" icon='<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>' />
 
   <div class="card-base p-5 space-y-4">
     <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 text-center cursor-pointer hover:border-accent-blue transition-colors">
-      <span>🎵 Drop audio di sini (WAV, MP3, OGG, WebM)</span>
+      <span data-i18n="audioconv.drop">🎵 Drop audio di sini (WAV, MP3, OGG, WebM, M4A)</span>
       <input type="file" id="file-input" class="hidden" accept="audio/*">
     </div>
 
     <div id="controls" class="hidden space-y-3">
       <div class="flex flex-wrap gap-3 items-end">
-        <div><label class="text-xs text-matte-500 mb-1 block">Format Output</label><select id="format" class="input-field text-sm w-24"><option value="wav">WAV</option><option value="webm">WebM/OGG</option></select></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Sample Rate</label><select id="sample-rate" class="input-field text-sm w-24"><option value="44100">44100 Hz</option><option value="48000">48000 Hz</option><option value="22050">22050 Hz</option></select></div>
-        <div class="self-end"><button id="convert-btn" class="btn-primary text-sm">Konversi & Download</button></div>
+        <div>
+          <label for="format" class="text-xs text-matte-500 mb-1 block" data-i18n="audioconv.format_label">Format Output</label>
+          <select id="format" class="input-field text-sm w-40">
+            <option value="wav" data-i18n="audioconv.fmt_wav">WAV (PCM)</option>
+            <option value="webm" data-i18n="audioconv.fmt_webm">WebM / OGG (Opus)</option>
+          </select>
+        </div>
+        <div>
+          <label for="depth" class="text-xs text-matte-500 mb-1 block" data-i18n="audioconv.depth_label">Kedalaman Bit</label>
+          <select id="depth" class="input-field text-sm w-32">
+            <option value="16" data-i18n="audioconv.depth_16">16-bit PCM</option>
+            <option value="8" data-i18n="audioconv.depth_8">8-bit PCM</option>
+            <option value="32" data-i18n="audioconv.depth_32">32-bit Float</option>
+          </select>
+        </div>
+        <div>
+          <label for="sample-rate" class="text-xs text-matte-500 mb-1 block" data-i18n="audioconv.sr_label">Sample Rate</label>
+          <select id="sample-rate" class="input-field text-sm w-28">
+            <option value="44100">44100 Hz</option>
+            <option value="48000">48000 Hz</option>
+            <option value="22050">22050 Hz</option>
+          </select>
+        </div>
+        <div>
+          <label for="channels" class="text-xs text-matte-500 mb-1 block" data-i18n="audioconv.ch_label">Channel</label>
+          <select id="channels" class="input-field text-sm w-28">
+            <option value="2" data-i18n="audioconv.ch_stereo">Stereo</option>
+            <option value="1" data-i18n="audioconv.ch_mono">Mono</option>
+          </select>
+        </div>
+        <div class="self-end"><button id="convert-btn" class="btn-primary text-sm" data-i18n="audioconv.convert">Konversi &amp; Download</button></div>
       </div>
+
+      <p id="realtime-hint" class="hidden text-xs text-matte-400" data-i18n="audioconv.realtime_hint">ℹ️ WebM/Opus direkam real-time — prosesnya butuh waktu sepanjang durasi audio.</p>
 
       <div id="progress-area" class="hidden">
         <div class="h-2 bg-matte-200 dark:bg-matte-700 rounded-full overflow-hidden"><div id="progress-bar" class="h-full bg-accent-blue rounded-full" style="width:0%"></div></div>
@@ -27,11 +57,22 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
-  let audioBuf;
+  let audioBuf, baseName = 'converted';
+
+  // WebM/Opus tidak bisa di-encode offline; MediaRecorder merekam real-time.
+  // Pilih container/codec pertama yang didukung browser.
+  const WEBM_MIMES = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+  function pickMime() {
+    if (typeof MediaRecorder === 'undefined') return '';
+    for (const m of WEBM_MIMES) { if (MediaRecorder.isTypeSupported(m)) return m; }
+    return '';
+  }
 
   document.getElementById('file-input').addEventListener('change', handler);
   const dz = document.getElementById('drop-zone');
@@ -40,63 +81,182 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   dz.addEventListener('dragleave', () => dz.classList.remove('border-accent-blue'));
   dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('border-accent-blue'); handler({ target: { files: e.dataTransfer.files } }); });
 
+  // Kedalaman bit cuma relevan untuk WAV — disable + tampilkan hint real-time.
+  function syncFormatUI() {
+    const isWav = document.getElementById('format').value === 'wav';
+    document.getElementById('depth').disabled = !isWav;
+    document.getElementById('realtime-hint').classList.toggle('hidden', isWav);
+  }
+  document.getElementById('format').addEventListener('change', syncFormatUI);
+
   async function handler(e) {
     const f = e.target.files[0]; if (!f) return;
     document.getElementById('progress-area').classList.remove('hidden');
-    document.getElementById('status-text').textContent = 'Mendekode audio...';
-    const ctx = new AudioContext();
-    audioBuf = await ctx.decodeAudioData(await f.arrayBuffer());
-    ctx.close();
+    document.getElementById('status-text').textContent = t('audioconv.decoding', 'Mendekode audio...');
+    try {
+      const ctx = new AudioContext();
+      audioBuf = await ctx.decodeAudioData(await f.arrayBuffer());
+      ctx.close();
+    } catch {
+      audioBuf = null;
+      document.getElementById('progress-area').classList.add('hidden');
+      // Dulu decode gagal melempar senyap → tool seolah tidak merespons. Sekarang dijelaskan.
+      toast(t('audioconv.err_decode', 'Gagal mendekode audio — format tidak didukung.'), 'error');
+      return;
+    }
+    baseName = f.name.replace(/\.[^.]+$/, '') || 'converted';
     document.getElementById('progress-area').classList.add('hidden');
     document.getElementById('controls').classList.remove('hidden');
     dz.querySelector('span').textContent = f.name + ' (' + audioBuf.duration.toFixed(1) + 's)';
   }
 
+  const setProgress = (p) => { document.getElementById('progress-bar').style.width = Math.round(p * 100) + '%'; };
+
   document.getElementById('convert-btn').addEventListener('click', async () => {
-    if (!audioBuf) return;
+    if (!audioBuf) { toast(t('audioconv.err_none', 'Pilih file audio dulu.'), 'error'); return; }
     const fmt = document.getElementById('format').value;
-    const sr = parseInt(document.getElementById('sample-rate').value) || 44100;
+    const depth = parseInt(document.getElementById('depth').value, 10);
+    const sr = parseInt(document.getElementById('sample-rate').value, 10) || 44100;
+    const outCh = parseInt(document.getElementById('channels').value, 10) || 2;
 
     document.getElementById('progress-area').classList.remove('hidden');
-    document.getElementById('status-text').textContent = 'Mengkonversi...';
+    document.getElementById('status-text').textContent = t('audioconv.converting', 'Mengkonversi...');
+    setProgress(0.1);
 
-    const offlineCtx = new OfflineAudioContext(audioBuf.numberOfChannels, audioBuf.duration * sr, sr);
-    const source = offlineCtx.createBufferSource(); source.buffer = audioBuf;
-    source.connect(offlineCtx.destination); source.start();
+    try {
+      // Render offline dulu: hormati sample rate + channel, sekaligus cepat (lebih
+      // cepat dari real-time) sebelum di-feed ke encoder.
+      const offlineCtx = new OfflineAudioContext(outCh, Math.ceil(audioBuf.duration * sr), sr);
+      const source = offlineCtx.createBufferSource(); source.buffer = audioBuf;
+      source.connect(offlineCtx.destination); source.start();
+      const rendered = await offlineCtx.startRendering();
 
-    const rendered = await offlineCtx.startRendering();
-    document.getElementById('progress-bar').style.width = '80%';
+      let blob, ext;
+      if (fmt === 'webm') {
+        const mime = pickMime();
+        if (!mime) { toast(t('audioconv.err_nocodec', 'Browser ini tidak mendukung perekaman WebM/Opus.'), 'error'); document.getElementById('progress-area').classList.add('hidden'); return; }
+        document.getElementById('status-text').textContent = t('audioconv.recording', 'Merekam real-time...');
+        const res = await recordWebM(rendered, sr, setProgress);
+        blob = res.blob; ext = res.ext;
+      } else {
+        const wav = encodeWAV(rendered, depth, outCh);
+        blob = new Blob([wav], { type: 'audio/wav' }); ext = 'wav';
+        setProgress(0.85);
+      }
 
-    // Encode to WAV
-    const wav = encodeWAV(rendered);
-    const blob = new Blob([wav], { type: fmt==='wav'?'audio/wav':'audio/webm' });
-    const ext = fmt==='wav'?'wav':'webm';
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'converted.'+ext; a.click();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = baseName + '-converted.' + ext; a.click();
+      // Object URL dulu tidak pernah di-revoke → blob menahan memori sampai reload.
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-    document.getElementById('status-text').textContent = 'Selesai!';
-    showToast?.(_tToast?.('Audio dikonversi!','Audio converted!'),'success');
-    setTimeout(() => document.getElementById('progress-area').classList.add('hidden'), 2000);
+      setProgress(1);
+      document.getElementById('status-text').textContent = t('audioconv.done', 'Selesai!');
+      toast(t('audioconv.done', 'Selesai!'));
+      setTimeout(() => { setProgress(0); document.getElementById('progress-area').classList.add('hidden'); }, 2000);
+    } catch {
+      document.getElementById('progress-area').classList.add('hidden');
+      toast(t('audioconv.err_render', 'Gagal mengonversi audio.'), 'error');
+    }
   });
 
-  function encodeWAV(buffer) {
-    const numChannels = buffer.numberOfChannels;
-    const length = buffer.length * numChannels * 2 + 44;
-    const view = new DataView(new ArrayBuffer(length));
-    function w(s,i,isStr) { for(let j=0;j<(isStr?s.length:1);j++) view.setUint8(i++,isStr?s.charCodeAt(j):s); return i; }
-    let off = 0; off = w('RIFF', off, 1); view.setUint32(off, length-8, true); off+=4; off = w('WAVE', off, 1);
-    off = w('fmt ', off, 1); view.setUint32(off, 16, true); off+=4; view.setUint16(off, 1, true); off+=2;
-    view.setUint16(off, numChannels, true); off+=2; view.setUint32(off, buffer.sampleRate, true); off+=4;
-    view.setUint32(off, buffer.sampleRate*numChannels*2, true); off+=4;
-    view.setUint16(off, numChannels*2, true); off+=2; view.setUint16(off, 16, true); off+=2;
-    off = w('data', off, 1); view.setUint32(off, buffer.length*numChannels*2, true); off+=4;
+  // Rekam buffer lewat MediaRecorder (real-time). Mengembalikan Blob WebM/OGG.
+  let activeRec = null;
+  async function recordWebM(buffer, sr, onProgress) {
+    const mime = pickMime();
+    const ctx = new AudioContext({ sampleRate: sr });
+    if (ctx.state === 'suspended') await ctx.resume();
+    const dest = ctx.createMediaStreamDestination();
+    const src = ctx.createBufferSource(); src.buffer = buffer; src.connect(dest);
+    const rec = new MediaRecorder(dest.stream, { mimeType: mime, audioBitsPerSecond: 128000 });
+    activeRec = { rec, ctx, src, dest };
+    const chunks = [];
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    const stopped = new Promise((resolve) => { rec.onstop = () => resolve(); });
+    rec.start();
+    const t0 = ctx.currentTime;
+    src.start();
+    let rafId = 0;
+    const tick = () => { onProgress(Math.min(1, (ctx.currentTime - t0) / buffer.duration)); rafId = requestAnimationFrame(tick); };
+    tick();
+    await new Promise((resolve) => { src.onended = resolve; });
+    cancelAnimationFrame(rafId);
+    try { rec.stop(); } catch { /* sudah berhenti */ }
+    await stopped;
+    try { src.disconnect(); dest.disconnect(); } catch { /* sudah lepas */ }
+    try { dest.stream.getTracks().forEach((tr) => tr.stop()); } catch { /* tak ada track */ }
+    try { await ctx.close(); } catch { /* sudah ditutup */ }
+    activeRec = null;
+    return { blob: new Blob(chunks, { type: mime.split(';')[0] }), ext: mime.includes('ogg') ? 'ogg' : 'webm' };
+  }
 
-    const interleaved = new Float32Array(buffer.length * numChannels);
-    for (let c=0; c<numChannels; c++) { const ch = buffer.getChannelData(c); for (let i=0; i<buffer.length; i++) interleaved[i*numChannels+c] = ch[i]; }
-    for (let i=0; i<interleaved.length; i++) { const s = Math.max(-1, Math.min(1, interleaved[i])); view.setInt16(off, s<0?s*0x8000:s*0x7FFF, true); off+=2; }
+  // Bersihkan recorder yang masih jalan kalau user pindah halaman (SPA).
+  __audioconvStop = () => {
+    if (!activeRec) return;
+    try { activeRec.rec.stop(); } catch { /* belum mulai */ }
+    try { activeRec.src.disconnect(); } catch { /* sudah lepas */ }
+    try { activeRec.dest.stream.getTracks().forEach((tr) => tr.stop()); } catch { /* tak ada track */ }
+    try { activeRec.ctx.close(); } catch { /* sudah ditutup */ }
+    activeRec = null;
+  };
+
+  // Keluarkan channel output sebagai Float32Array (mono = downmix rata-rata,
+  // stereo dari sumber mono = duplikat).
+  function getChannels(buffer, outCh) {
+    const n = buffer.length;
+    const src = [];
+    for (let c = 0; c < buffer.numberOfChannels; c++) src.push(buffer.getChannelData(c));
+    if (outCh === 1) {
+      const out = new Float32Array(n);
+      for (let i = 0; i < n; i++) { let s = 0; for (let c = 0; c < src.length; c++) s += src[c][i]; out[i] = s / src.length; }
+      return [out];
+    }
+    if (src.length === 1) return [src[0], src[0]];
+    return [src[0], src[1]];
+  }
+
+  function encodeWAV(buffer, depth, outCh) {
+    const numChannels = outCh === 1 ? 1 : 2;
+    const bytesPerSample = depth === 32 ? 4 : (depth === 8 ? 1 : 2);
+    const blockAlign = numChannels * bytesPerSample;
+    const chans = getChannels(buffer, numChannels);
+    const n = buffer.length;
+    const dataLen = n * blockAlign;
+    const length = 44 + dataLen;
+    const view = new DataView(new ArrayBuffer(length));
+    function wstr(off, s) { for (let j = 0; j < s.length; j++) view.setUint8(off++, s.charCodeAt(j)); return off; }
+
+    let off = 0;
+    off = wstr(off, 'RIFF'); view.setUint32(off, length - 8, true); off += 4; off = wstr(off, 'WAVE');
+    off = wstr(off, 'fmt '); view.setUint32(off, 16, true); off += 4;
+    view.setUint16(off, depth === 32 ? 3 : 1, true); off += 2;
+    view.setUint16(off, numChannels, true); off += 2;
+    view.setUint32(off, buffer.sampleRate, true); off += 4;
+    view.setUint32(off, buffer.sampleRate * blockAlign, true); off += 4;
+    view.setUint16(off, blockAlign, true); off += 2;
+    view.setUint16(off, bytesPerSample * 8, true); off += 2;
+    off = wstr(off, 'data'); view.setUint32(off, dataLen, true); off += 4;
+
+    for (let i = 0; i < n; i++) {
+      for (let c = 0; c < numChannels; c++) {
+        const ch = chans[c] || chans[0];
+        const s = Math.max(-1, Math.min(1, ch[i]));
+        if (depth === 32) { view.setFloat32(off, s, true); off += 4; }
+        else if (depth === 8) { view.setUint8(off, Math.round((s * 0.5 + 0.5) * 255)); off += 1; }
+        else { view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true); off += 2; }
+      }
+    }
     return new Uint8Array(view.buffer);
   }
 
+  syncFormatUI();
+
   }
+
+  // Cleanup lintas-navigasi (module scope, CONTEXT #14).
+  let __audioconvStop = null;
+  document.addEventListener('astro:before-swap', () => {
+    if (__audioconvStop) { __audioconvStop(); __audioconvStop = null; }
+  });
 
   // SPA boot (#14): guard path + guard dobel-bind
   const __mediaAudioConvertPage = (location.pathname.replace(/\/+$/, '') || '/');

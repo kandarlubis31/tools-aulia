@@ -152,10 +152,24 @@
     // di-intercept SW yang sama → loop. Solusi: hapus SW + bersihkan cache, lalu
     // reload → browser fetch langsung dari server → halaman asli (SW baru akan
     // terdaftar ulang otomatis oleh BaseLayout). ──
-    function selfHeal() {
+    // navigator.onLine bisa false-positive (OS melaporkan offline padahal koneksi
+    // jalan) → probe jaringan nyata dulu sebelum memvonis offline.
+    function isReallyOffline() {
+      if (navigator.onLine) return Promise.resolve(false);
+      return new Promise(function (resolve) {
+        var done = false;
+        var finish = function (v) { if (!done) { done = true; resolve(v); } };
+        var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        var to = setTimeout(function () { if (ctrl) ctrl.abort(); finish(true); }, 4000);
+        fetch('/__conncheck__?t=' + Date.now(), { method: 'HEAD', cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
+          .then(function () { clearTimeout(to); finish(false); })
+          .catch(function () { clearTimeout(to); finish(true); });
+      });
+    }
+    async function selfHeal() {
       const dot = document.getElementById('status-dot');
       const label = document.getElementById('status-label');
-      if (!navigator.onLine) {
+      if (await isReallyOffline()) {
         dot.style.background = '#ef4444';
         label.textContent = 'Offline — menunggu koneksi...';
         return;
