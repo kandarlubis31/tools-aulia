@@ -171,10 +171,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
   const __stpPage = (location.pathname.replace(/\/+$/, '') || '/');
 
-  // FIX pola lama: init HANYA via astro:page-load (fire sekali di load pertama).
-  // Tanpa bare init() → tidak ada double-bind.
+  // FIX double-bind: autoBound guard — astro:page-load fire tiap SPA return,
+  // tanpa guard init() akan re-bind semua listener.
   document.addEventListener('astro:page-load', () => {
     if ((location.pathname.replace(/\/+$/, '') || '/') !== __stpPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
     init();
   });
 

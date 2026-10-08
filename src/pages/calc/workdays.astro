@@ -353,8 +353,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.addEventListener('astro:page-load', () => {
     if ((location.pathname.replace(/\/+$/, '') || '/') !== __wdPage) return;
     const btn = document.getElementById('calc-wd');
-    if (!btn || btn.dataset.wdBound === 'true') return;
-    btn.dataset.wdBound = 'true';
+    if (!btn || btn.dataset.autoBound === 'true') return;
+    btn.dataset.autoBound = 'true';
     init();
   });
 </script>

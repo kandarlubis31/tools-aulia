@@ -3,9 +3,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="Video Thumbnail" description="Ekstrak thumbnail/screenshot dari video di waktu tertentu. 100% client-side.">
-  <ToolPageHeader title="Video Thumbnail" desc="Ekstrak frame dari video — screenshot di detik tertentu" icon='<rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 8 16 12 10 16 10 8"/>' />
+  <ToolPageHeader title="Video Thumbnail" titleKey="header.video_thumb" desc="Ekstrak frame dari video — screenshot di detik tertentu" descKey="header.video_thumb_desc" icon='<rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 8 16 12 10 16 10 8"/>' />
 
   <div class="card-base p-5 space-y-4">
+    <label for="file-input" class="block text-sm text-matte-500 font-medium" data-i18n="label.video_file">File video</label>
     <input type="file" id="file-input" accept="video/*" class="input-field text-sm w-full">
     <div class="flex gap-2 items-end flex-wrap">
       <div><label for="time" class="text-xs text-matte-500 mb-1 block" data-i18n="label.time_seconds">Waktu (detik)</label><input id="time" type="number" min="0" step="0.1" value="5" class="input-field w-20 text-sm"></div>
@@ -15,6 +16,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <div class="bg-matte-50 dark:bg-matte-800 rounded-lg p-3 flex justify-center flex-wrap gap-2" id="frames"></div>
     <button id="download-all" class="btn-primary w-full hidden" data-i18n="btn.download_all">Download Semua PNG</button>
+    <p class="text-xs text-matte-400 text-center" data-i18n="vthumb.hint">Mode Grid menghasilkan 9 frame merata sejak waktu yang dipilih.</p>
   </div>
 </BaseLayout>
 

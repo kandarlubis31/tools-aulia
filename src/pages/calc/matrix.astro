@@ -57,6 +57,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -76,6 +78,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   function genGrid(id) {
     const rows = parseInt(document.getElementById('rows-' + id).value);
     const cols = parseInt(document.getElementById('cols-' + id).value);
+    if (!rows || !cols || rows < 1 || cols < 1 || rows > 12 || cols > 12) { toast('Ukuran matrix tidak valid!', 'error'); return; }
     const el = document.getElementById('matrix-' + id);
     el.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
     el.innerHTML = '';

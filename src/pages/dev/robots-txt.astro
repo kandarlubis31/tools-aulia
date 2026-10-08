@@ -3,13 +3,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="robots.txt Generator" description="Generate robots.txt dengan visual builder. 100% client-side.">
-  <ToolPageHeader title="robots.txt Generator" desc="Builder rules robots.txt — copy & deploy" icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>' />
+  <ToolPageHeader title="robots.txt Generator" titleKey="header.robots_txt" desc="Builder rules robots.txt — copy & deploy" descKey="header.robots_txt_desc" icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>' />
 
   <div class="card-base p-5 space-y-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="space-y-3">
         <div>
-          <label class="block text-sm text-matte-500 mb-1 font-medium">User-agent</label>
+          <label class="block text-sm text-matte-500 mb-1 font-medium" data-i18n="robots.user_agent">User-agent</label>
           <select id="user-agent" class="input-field text-sm w-full">
             <option value="*">* (Semua bot)</option>
             <option value="Googlebot">Googlebot</option>
@@ -29,28 +29,30 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
 
         <div>
-          <label class="block text-xs text-matte-500 mb-1">Sitemap URL</label>
+          <label class="block text-xs text-matte-500 mb-1" data-i18n="robots.sitemap_label">Sitemap URL</label>
           <input id="sitemap" type="text" class="input-field text-sm w-full" placeholder="https://tools.paklubis.my.id/sitemap-index.xml">
         </div>
 
         <div class="flex gap-2">
-          <button id="add-delay" class="btn-secondary text-sm">+ Crawl-delay</button>
+          <button id="add-delay" class="btn-secondary text-sm" data-i18n="robots.add_delay">+ Crawl-delay</button>
           <input id="delay-val" type="number" min="0" value="10" class="input-field w-16 text-sm hidden">
         </div>
       </div>
 
       <div>
         <div class="flex justify-between items-center mb-1">
-          <label class="text-sm text-matte-500 font-medium">Output robots.txt</label>
+          <label class="text-sm text-matte-500 font-medium" data-i18n="robots.output_label">Output robots.txt</label>
           <button id="copy-btn" class="text-xs text-accent-blue hover:underline" data-i18n="btn.copy_emoji">📋 Copy</button>
         </div>
         <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-48 overflow-auto text-sm font-mono whitespace-pre-wrap"></pre>
-        <button id="download-btn" class="btn-secondary text-sm w-full mt-2">Download robots.txt</button>
+        <button id="download-btn" class="btn-secondary text-sm w-full mt-2" data-i18n="robots.download">Download robots.txt</button>
       </div>
     </div>
 
+    <p class="text-xs text-matte-400" data-i18n="robots.hint">Path diakhiri / — aturan diterapkan berurutan dari atas.</p>
+
     <div class="text-xs text-matte-400 space-y-1">
-      <span class="font-medium text-matte-500">Rules aktif:</span>
+      <span class="font-medium text-matte-500" data-i18n="robots.rules_active">Rules aktif:</span>
       <div id="rules-list" class="space-y-1"></div>
     </div>
   </div>
@@ -103,7 +105,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   });
 
   document.getElementById('copy-btn').addEventListener('click', () => {
-    navigator.clipboard.writeText(output.textContent).then(() => window.showToast?.(window._tToast ? window._tToast('Disalin!') : 'Copied!', 'success'));
+    navigator.clipboard.writeText(output.textContent)
+      .then(() => window.showToast?.(window._tToast ? window._tToast('Disalin!') : 'Copied!', 'success'))
+      .catch(() => window.showToast?.(window._tToast ? window._tToast('Gagal menyalin') : 'Gagal menyalin', 'error'));
   });
   document.getElementById('download-btn').addEventListener('click', () => {
     const blob = new Blob([output.textContent], { type: 'text/plain' });

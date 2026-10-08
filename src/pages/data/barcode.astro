@@ -44,6 +44,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -125,6 +127,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   };
   document.getElementById('copy-value').onclick = () => {
     navigator.clipboard.writeText(document.getElementById('value').value);
+    toast('Disalin!');
     document.getElementById('copy-value').textContent = '✅ Copied!';
     setTimeout(() => document.getElementById('copy-value').textContent = '📋 Copy Value', 1500);
   };

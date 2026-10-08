@@ -16,7 +16,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <div class="card-base p-8 text-center animate-fade-in">
       <div class="relative mx-auto w-56 h-56 mb-6">
-        <div id="ball" class="w-full h-full rounded-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-2xl flex items-center justify-center transition-transform duration-500 cursor-pointer active:scale-95">
+        <div id="ball" aria-label="Bola ajaib — klik untuk bertanya" data-i18n-attr="aria-label" data-i18n="magic.aria" class="w-full h-full rounded-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-2xl flex items-center justify-center transition-transform duration-500 cursor-pointer active:scale-95">
           <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-800 to-indigo-900 flex items-center justify-center shadow-inner">
             <div id="ball-text" class="text-white text-center px-4">
               <p class="text-2xs font-bold uppercase tracking-wider opacity-60" data-i18n="magic.ask">Klik untuk bertanya</p>
@@ -26,6 +26,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
 
       <p class="text-sm text-matte-500 dark:text-matte-300 mb-4 italic" data-i18n="magic.think">Pikirkan pertanyaanmu, lalu klik bola ajaib…</p>
+
+      <p class="text-xs text-matte-400 mb-3" data-i18n="magic.hint">Tekan Enter atau klik bola untuk mengocok jawaban.</p>
 
       <input id="question-input" type="text" placeholder="Aku akan sukses di 2026?"
         class="w-full max-w-xs px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm text-center outline-none focus:ring-2 focus:ring-purple-500/40"

@@ -3,14 +3,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="Water Tracker" description="Catat konsumsi air harian + target. 100% client-side localStorage.">
-  <ToolPageHeader title="Water Tracker" desc="Catat minum air — capai target harian!" icon='<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><path d="M7 14a5 5 0 0 0 10 0"/>' />
+  <ToolPageHeader title="Water Tracker" titleKey="header.water_tracker" desc="Catat minum air — capai target harian!" descKey="header.water_tracker_desc" icon='<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><path d="M7 14a5 5 0 0 0 10 0"/>' />
 
   <div class="card-base p-5 space-y-4">
     <div class="flex gap-2 justify-center">
       <button id="add-200" class="btn-secondary text-sm px-4">+200ml</button>
       <button id="add-300" class="btn-secondary text-sm px-4">+300ml</button>
       <button id="add-500" class="btn-primary text-sm px-4">+500ml</button>
-      <button id="add-custom-btn" class="btn-secondary text-sm px-3">+Custom</button>
+      <button id="add-custom-btn" class="btn-secondary text-sm px-3" data-i18n="water.custom">+Custom</button>
       <input id="custom-amt" type="number" min="50" step="50" value="350" class="input-field w-16 text-sm hidden" aria-label="Custom ml">
       <button id="undo-btn" class="btn-secondary text-sm" aria-label="Undo">↩</button>
     </div>
@@ -30,6 +30,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <label for="goal" class="text-xs text-matte-500 mb-1 block" data-i18n="water.goal_label">Target Harian (ml)</label>
       <input id="goal" type="number" min="500" step="100" value="2000" class="input-field w-24 text-sm">
     </div>
+
+    <p class="text-xs text-matte-400 text-center" data-i18n="water.hint">Tersimpan lokal di browser — riwayat per hari.</p>
   </div>
 </BaseLayout>
 

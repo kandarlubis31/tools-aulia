@@ -347,8 +347,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.addEventListener('astro:page-load', () => {
     if ((location.pathname.replace(/\/+$/, '') || '/') !== __terPage) return;
     const btn = document.getElementById('calc-ter');
-    if (!btn || btn.dataset.terBound === 'true') return;
-    btn.dataset.terBound = 'true';
+    if (!btn || btn.dataset.autoBound === 'true') return;
+    btn.dataset.autoBound = 'true';
     init();
   });
 </script>

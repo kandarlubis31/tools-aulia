@@ -218,6 +218,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -516,7 +518,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const pagesToProcess = isCustomRange && rangeStr ? parsePageRange(rangeStr, totalPages) : Array.from({ length: totalPages }, (_, i) => i + 1);
 
     if (pagesToProcess.length === 0) {
-      window.showToast?.('Tidak ada halaman yang dipilih.', 'error');
+      toast('Tidak ada halaman yang dipilih.', 'error');
       return;
     }
 
@@ -630,11 +632,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       statusText.innerText = 'Menyusun file PDF...';
       const pdfBytes = await newPdf.save();
       window.downloadBytes(pdfBytes, `grayscale-${currentFile.name}`);
-      window.showToast?.('Berhasil! PDF Grayscale siap diunduh.', 'success');
+      toast('Berhasil! PDF Grayscale siap diunduh.', 'success');
 
     } catch (err) {
       console.error(err);
-      window.showToast?.('Gagal memproses PDF. Coba file yang lebih kecil.', 'error');
+      toast('Gagal memproses PDF. Coba file yang lebih kecil.', 'error');
     } finally {
       restoreBtn();
       statusText.innerText = 'Selesai!';

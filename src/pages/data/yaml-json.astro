@@ -29,6 +29,9 @@ import DropZone from '../../components/DropZone.astro';
       />
     </div>
 
+    <p class="text-xs text-matte-400 text-center mt-4" data-i18n="yamljson.hint">Arah konversi otomatis: file JSON → YAML, selain itu YAML → JSON.</p>
+    <p class="text-xs text-matte-400 text-center mt-1" data-i18n="yamljson.privacy">File diproses lokal di browser, tidak diunggah.</p>
+
     <div id="converter" class="hidden mt-6 animate-fade-in">
       <div class="card-base p-4 mb-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -53,9 +56,17 @@ import DropZone from '../../components/DropZone.astro';
 <script is:inline src="/vendor/js-yaml/js-yaml.min.js"></script>
 
 <script>
+import { t } from '../../i18n/translations';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+
+    const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input') as HTMLInputElement;
@@ -82,12 +93,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     fileInput?.addEventListener('change', async () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (f.size > 5 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('File maksimal 5 MB') : 'File maksimal 5 MB', 'error'); return; }
+      if (f.size > 5 * 1024 * 1024) { toast(t('yamljson.too_big', 'File maksimal 5 MB'), 'error'); return; }
       const text = await f.text();
       const ext = f.name.split('.').pop()?.toLowerCase() || '';
 
       const ready = await window.waitForCdnLib?.('jsyaml', { maxRetries: 40 });
-      if (!ready) { window.showToast?.(window._tToast ? window._tToast('Library YAML gagal dimuat, cek koneksi') : 'Library YAML gagal dimuat, cek koneksi', 'error'); return; }
+      if (!ready) { toast(t('yamljson.lib_fail', 'Library YAML gagal dimuat, cek koneksi'), 'error'); return; }
 
       try {
         let result: string;
@@ -113,7 +124,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         converter?.classList.remove('hidden');
         converter?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         errorBox!.classList.add('hidden');
-        window.showToast?.(window._tToast ? window._tToast('Konversi berhasil!') : 'Konversi berhasil!', 'info');
+        toast(t('yamljson.ok', 'Konversi berhasil!'), 'info');
       } catch (e: any) {
         errorBox!.textContent = `⚠ ${e.message}`;
         errorBox!.classList.remove('hidden');

@@ -16,6 +16,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <input type="file" id="file-input" accept="image/*" class="hidden" />
         <p class="text-sm font-bold text-matte-500 dark:text-matte-300" data-i18n="label.upload_image">Upload gambar</p>
         <p class="text-2xs text-matte-400 mt-1" id="file-info">—</p>
+        <p class="text-2xs text-matte-400 mt-1" data-i18n="b64.hint">JPG/PNG/WebP — output data URI langsung siap tempel ke HTML/CSS.</p>
       </div>
 
       <div id="result-area" class="hidden">
@@ -36,6 +37,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
@@ -59,7 +62,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     function processFile(file: File) {
       if (!file.type.startsWith('image/')) { toast('File bukan gambar!', 'error'); return; }
       if (file.size > 10 * 1024 * 1000) { toast('Gambar terlalu besar (maks ~10 MB)', 'error'); return; }
-      fileInfo.textContent = file.name + ' (' + fmt(file.size) + ')';
+      fileInfo.textContent = t('b64.file_info', '{name} ({size})').replace('{name}', file.name).replace('{size}', fmt(file.size));
       origSize.textContent = fmt(file.size);
       imgMime.textContent = file.type || '—';
       const reader = new FileReader();

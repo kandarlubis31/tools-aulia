@@ -140,6 +140,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script is:inline>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
   const __page = (location.pathname.replace(/\/+$/, '') || '/');
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
@@ -294,6 +296,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     resetAmountBtn?.addEventListener('click', () => {
         amountEl.value = "1";
         calculate();
+        toast('Diatur ulang!', 'info');
         amountEl.focus();
     });
 

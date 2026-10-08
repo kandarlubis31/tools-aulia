@@ -115,6 +115,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
 document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -292,7 +294,7 @@ function loadPreset(presetKey: string) {
 
   patterns[currentPattern] = pattern;
   renderTracks();
-  (window as any).showToast?.(`Loaded: ${preset.name}`, 'success');
+  toast(`Loaded: ${preset.name}`, 'success');
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1126,17 +1128,17 @@ function clearPattern() {
 
 function copyPattern() {
   clipboard = JSON.parse(JSON.stringify(getPattern()));
-  (window as any).showToast?.('Pattern copied!', 'success');
+  toast('Pattern copied!', 'success');
 }
 
 function pastePattern() {
   if (!clipboard) {
-    (window as any).showToast?.('Nothing to paste', 'error');
+    toast('Nothing to paste', 'error');
     return;
   }
   patterns[currentPattern] = JSON.parse(JSON.stringify(clipboard));
   renderTracks();
-  (window as any).showToast?.('Pattern pasted!', 'success');
+  toast('Pattern pasted!', 'success');
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1284,7 +1286,7 @@ async function exportWAV() {
     }
   }
 
-  (window as any).showToast?.('Rendering WAV...', 'info');
+  toast('Rendering WAV...', 'info');
 
   try {
     const rendered = await offlineCtx.startRendering();
@@ -1296,9 +1298,9 @@ async function exportWAV() {
     a.download = `beat-${PATTERN_NAMES[currentPattern]}-${bpm}bpm.wav`;
     a.click();
     URL.revokeObjectURL(url);
-    (window as any).showToast?.('WAV exported!', 'success');
+    toast('WAV exported!', 'success');
   } catch (err) {
-    (window as any).showToast?.('Export failed: ' + err, 'error');
+    toast('Export failed: ' + err, 'error');
   }
 }
 

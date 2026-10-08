@@ -48,6 +48,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -153,6 +155,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const a = document.createElement('a'); a.href = url;
       a.download = 'calendar.png'; a.click();
       URL.revokeObjectURL(url);
+      toast('Diunduh!');
     }, 'image/png');
   });
 

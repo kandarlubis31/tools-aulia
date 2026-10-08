@@ -40,6 +40,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <script>
 import { useLocalHistory } from '../../composables/useLocalHistory';
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -119,7 +121,7 @@ import { useLocalHistory } from '../../composables/useLocalHistory';
 
   function addTodo() {
     const text = input.value.trim();
-    if (!text) return;
+    if (!text) { toast('Tulis todo dulu!', 'error'); return; }
 
     todos.unshift({
         id: Date.now(),

@@ -286,8 +286,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.addEventListener('astro:page-load', () => {
     if ((location.pathname.replace(/\/+$/, '') || '/') !== __thrPage) return;
     const btn = document.getElementById('calc-thr');
-    if (!btn || btn.dataset.thrBound === 'true') return;
-    btn.dataset.thrBound = 'true';
+    if (!btn || btn.dataset.autoBound === 'true') return;
+    btn.dataset.autoBound = 'true';
     init();
   });
 </script>

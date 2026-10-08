@@ -78,6 +78,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -186,6 +188,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       document.getElementById('clear-history')?.addEventListener('click', () => {
         history = [];
         document.getElementById('history')!.innerHTML = '';
+        toast('Riwayat dibersihkan!', 'info');
         document.getElementById('history-container')?.classList.add('hidden');
       });
 

@@ -94,6 +94,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -187,6 +189,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const input = document.getElementById(targetId) as HTMLInputElement;
       if (!input || !input.value) return;
       navigator.clipboard.writeText(input.value);
+      toast('Disalin!');
       const orig = btn.innerHTML;
       btn.innerHTML = '✅';
       setTimeout(() => { btn.innerHTML = orig; }, 1200);
