@@ -3,12 +3,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="Grocery List" description="Daftar belanja tersimpan di localStorage. 100% client-side.">
-  <ToolPageHeader title="Grocery List" description="Daftar belanja simpel — checklist + localStorage" icon='<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>' />
+  <ToolPageHeader title="Grocery List" titleKey="header.grocery" desc="Daftar belanja simpel — checklist + localStorage" descKey="header.grocery_desc" icon='<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>' />
 
   <div class="card-base p-5 space-y-4">
     <div class="flex gap-2">
       <input id="item-input" type="text" class="input-field flex-1 text-sm" placeholder="Tambah item belanja..." data-i18n-attr="placeholder" data-i18n="ph.add_grocery_item">
-      <input id="qty-input" type="number" class="input-field w-16 text-sm" value="1" min="1" aria-label="Qty">
+      <input id="qty-input" type="number" class="input-field w-16 text-sm" value="1" min="1" aria-label="Qty" data-i18n-attr="aria-label" data-i18n="label.qty">
       <button id="add-btn" class="btn-primary text-sm" data-i18n="btn.add">Tambah</button>
     </div>
 
@@ -17,10 +17,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <button id="clear-done" class="btn-secondary text-xs" data-i18n="btn.clear_done">Hapus Selesai</button>
       <button id="clear-all" class="btn-secondary text-xs text-red-500" data-i18n="btn.clear_all">Hapus Semua</button>
     </div>
+    <p class="text-xs text-matte-400" data-i18n="grocery.enter_hint">Tekan Enter untuk menambah item.</p>
   </div>
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
+  // Render ulang list saat bahasa berganti (label & pesan kosong di innerHTML)
+  let __groceryRender: (() => void) | null = null;
+  window.addEventListener('langchange', () => { __groceryRender?.(); });
+
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
@@ -40,15 +47,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   function render() {
     const done = items.filter(it => it.done).length;
     listEl.innerHTML = items.length
-      ? `<p class="text-xs text-matte-400 text-center">${done}/${items.length} <span data-i18n="text.grocery_progress">item</span> ✓</p>` +
-        items.map((it, i) => `<div class="flex items-center gap-2 p-2 rounded hover:bg-matte-50 dark:hover:bg-matte-800"><input type="checkbox" data-idx="${i}" ${it.done ? 'checked' : ''} class="rounded"><span class="flex-1 text-sm ${it.done ? 'line-through text-matte-400' : ''}">${esc(it.name)}</span><span class="text-xs text-matte-400">${it.qty}</span><button data-idx="${i}" class="text-red-400 hover:text-red-600 del-item" aria-label="Delete">✕</button></div>`).join('')
-      : '<p class="text-sm text-matte-400 text-center" data-i18n="text.no_items">Belum ada item. Tambah di atas!</p>';
+      ? `<p class="text-xs text-matte-400 text-center">${done}/${items.length} <span>${esc(t('text.grocery_progress', 'item'))}</span> ✓</p>` +
+        items.map((it, i) => `<div class="flex items-center gap-2 p-2 rounded hover:bg-matte-50 dark:hover:bg-matte-800"><input type="checkbox" data-idx="${i}" ${it.done ? 'checked' : ''} class="rounded"><span class="flex-1 text-sm ${it.done ? 'line-through text-matte-400' : ''}">${esc(it.name)}</span><span class="text-xs text-matte-400">${it.qty}</span><button data-idx="${i}" class="text-red-400 hover:text-red-600 del-item" aria-label="${esc(t('common.delete', 'Hapus'))}">✕</button></div>`).join('')
+      : `<p class="text-sm text-matte-400 text-center">${esc(t('text.no_items', 'Belum ada item. Tambah di atas!'))}</p>`;
 
     listEl.querySelectorAll<HTMLInputElement>('[data-idx]').forEach(el => {
       if (el.tagName === 'INPUT') el.addEventListener('change', function (this: HTMLInputElement) { items[Number(this.dataset.idx)].done = this.checked; save(); });
       else el.addEventListener('click', function (this: HTMLElement) { items.splice(Number(this.dataset.idx), 1); save(); });
     });
   }
+
+  __groceryRender = render;
 
   document.getElementById('add-btn')!.addEventListener('click', () => {
     const name = itemInput.value.trim();
@@ -81,7 +90,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   // SPA boot (#14): guard path + guard dobel-bind
   const __lifeGroceryPage = (location.pathname.replace(/\/+$/, '') || '/');
   document.addEventListener('astro:page-load', () => {
-    if ((location.pathname.replace(/\/+$/, '') || '/') !== __lifeGroceryPage) return;
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __lifeGroceryPage) { __groceryRender = null; return; }
     const anchor = document.querySelector('main button, main input, main select, main textarea');
     if (!anchor || anchor.dataset.autoBound === 'true') return;
     anchor.dataset.autoBound = 'true';

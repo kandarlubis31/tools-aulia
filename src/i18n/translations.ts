@@ -3593,6 +3593,27 @@ export const translations: Record<string, { id: string; en: string }> = {
   'read.ease_fairly_hard': { id: 'Cukup sulit', en: 'Fairly difficult' },
   'read.ease_hard': { id: 'Sulit', en: 'Difficult' },
   'read.ease_very_hard': { id: 'Sangat sulit', en: 'Very difficult' },
+
+  // --- W6 batch 13 ---
+  'header.grocery': { id: 'Grocery List', en: 'Grocery List' },
+  'header.grocery_desc': { id: 'Daftar belanja simpel — checklist + localStorage. 100% client-side.', en: 'Simple shopping list — checklist + localStorage. 100% client-side.' },
+  'header.countdown': { id: 'Countdown Multi', en: 'Multi Countdown' },
+  'header.countdown_desc': { id: 'Banyak countdown sekaligus — event, deadline, ulang tahun. 100% client-side.', en: 'Multiple countdowns at once — events, deadlines, birthdays. 100% client-side.' },
+  'css_shadow.title': { id: 'CSS Shadow Generator', en: 'CSS Shadow Generator' },
+  'mdtable.hint': { id: 'Tempel CSV — baris pertama jadi header. Pemisah: koma, tab, atau titik koma.', en: 'Paste CSV — first row becomes the header. Separators: comma, tab, or semicolon.' },
+  'bucket.max_len': { id: 'Maks 200 karakter', en: 'Max 200 characters' },
+  'bucket.enter_hint': { id: 'Tekan Enter untuk menambah', en: 'Press Enter to add' },
+  'grocery.enter_hint': { id: 'Tekan Enter untuk menambah', en: 'Press Enter to add' },
+  'countdown.live_hint': { id: 'Hitung mundur diperbarui real-time', en: 'Countdown updates in real time' },
+  'label.qty': { id: 'Qty', en: 'Qty' },
+  'mi.file_name': { id: 'Nama file', en: 'File name' },
+  'mi.type': { id: 'Tipe', en: 'Type' },
+  'mi.size': { id: 'Ukuran', en: 'Size' },
+  'mi.duration': { id: 'Durasi', en: 'Duration' },
+  'mi.channels': { id: 'Kanal', en: 'Channels' },
+  'mi.resolution': { id: 'Resolusi', en: 'Resolution' },
+  'mi.aspect': { id: 'Rasio aspek', en: 'Aspect ratio' },
+  'mi.sample_rate': { id: 'Sample rate', en: 'Sample rate' },
 };
 
 export function t(key, fallback) {

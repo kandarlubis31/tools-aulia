@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="Markdown Table Gen" description="Generate tabel Markdown dari data CSV atau manual input. 100% client-side.">
-  <ToolPageHeader title="Markdown Table Gen" description="Generate tabel Markdown dari CSV — copy-paste siap" icon='<path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 3v18"/>' />
+  <ToolPageHeader title="Markdown Table Gen" titleKey="header.md_table" desc="Generate tabel Markdown dari CSV — copy-paste siap" descKey="header.md_table_desc" icon='<path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 3v18"/>' />
 
   <div class="card-base p-5 space-y-4">
     <textarea id="csv-input" class="input-field w-full h-32 font-mono text-sm" placeholder="Paste CSV di sini...&#10;Nama, Usia, Kota&#10;Alice, 25, Jakarta&#10;Bob, 30, Bandung" data-i18n-attr="placeholder" data-i18n="ph.paste_csv"></textarea>
@@ -15,6 +15,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <div class="flex justify-between items-center"><label class="text-sm text-matte-500 font-medium" data-i18n="label.output">Output</label><button id="copy-btn" class="btn-secondary text-xs" data-i18n="btn.copy_emoji">📋 Copy</button></div>
     <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-40 overflow-auto text-sm font-mono whitespace-pre-wrap"></pre>
+    <p id="md-hint" class="text-xs text-matte-400" data-i18n="mdtable.hint">Header diambil dari baris pertama CSV.</p>
   </div>
 </BaseLayout>
 
@@ -34,6 +35,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const lines = csv.split('\n').filter(Boolean);
       const rows = lines.map(l => l.split(',').map(c => c.trim()));
       if (!rows.length) { toast('Paste CSV dulu!', 'error'); return; }
+      // Kolom tidak seragam → tabel MD rusak (baris kelebihan/kekurangan sel)
+      const colCount = rows[0].length;
+      if (rows.some(r => r.length !== colCount)) {
+        toast('Semua baris harus memiliki jumlah kolom yang sama.', 'error');
+        return;
+      }
       const pretty = (document.getElementById('pretty') as HTMLInputElement).checked;
       const align = (document.getElementById('align') as HTMLInputElement).checked;
 
