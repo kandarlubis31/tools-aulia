@@ -8,17 +8,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <div class="card-base p-5 space-y-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm text-matte-500 mb-1 font-medium">JSON Data</label>
+        <label class="block text-sm text-matte-500 mb-1 font-medium" data-i18n="jp.data_label">JSON Data</label>
         <textarea id="json-input" class="input-field w-full h-48 font-mono text-sm" placeholder='{"store":{"books":[{"title":"Book A","price":10},{"title":"Book B","price":20}]}}'></textarea>
       </div>
       <div>
-        <label class="block text-sm text-matte-500 mb-1 font-medium">JSONPath Expression</label>
+        <label class="block text-sm text-matte-500 mb-1 font-medium" data-i18n="jp.expr_label">JSONPath Expression</label>
         <input id="query" type="text" class="input-field w-full font-mono text-sm" placeholder="$.store.books[*].title" value="$.store.books[*].title">
         <div class="flex gap-2 mt-2">
-          <button id="eval-btn" class="btn-primary text-sm">Evaluate</button>
+          <button id="eval-btn" class="btn-primary text-sm" data-i18n="jp.evaluate">Evaluate</button>
           <button id="clear-btn" class="btn-secondary text-sm" data-i18n="btn.clear">Clear</button>
         </div>
-        <p class="text-xs text-matte-400 mt-2">Contoh: $.name, $..price, $.items[0], $.store.books[?(@.price>10)]</p>
+        <p class="text-xs text-matte-400 mt-2" data-i18n="jp.examples">Contoh: $.name, $..price, $.items[0], $.store.books[?(@.price>10)]</p>
       </div>
     </div>
 
@@ -27,6 +27,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <button id="copy-btn" class="btn-secondary text-xs" data-i18n="btn.copy_emoji">📋 Copy</button>
     </div>
     <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-40 overflow-auto text-sm font-mono whitespace-pre-wrap"></pre>
+    <p class="text-xs text-matte-400 mt-2" data-i18n="jp.privacy">Evaluasi berjalan lokal di browser — data tidak dikirim ke mana pun.</p>
   </div>
 </BaseLayout>
 

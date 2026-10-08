@@ -3,23 +3,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="ZIP Extractor" description="Ekstrak file ZIP langsung di browser, download per file. 100% client-side, gak perlu upload.">
-  <ToolPageHeader title="ZIP Extractor" desc="Ekstrak & download file dari ZIP langsung di browser" icon='<path d="M21 8v12.993A2 2 0 0 1 19.007 22H4.993A.993.993 0 0 1 4 21.007V8h17zM2.458 8 5 2.458A1 1 0 0 1 5.854 2h12.292a1 1 0 0 1 .854.458L21.542 8"/>' />
+  <ToolPageHeader title="ZIP Extractor" titleKey="header.zip_extractor" desc="Ekstrak & download file dari ZIP langsung di browser" descKey="header.zip_extractor_desc" icon='<path d="M21 8v12.993A2 2 0 0 1 19.007 22H4.993A.993.993 0 0 1 4 21.007V8h17zM2.458 8 5 2.458A1 1 0 0 1 5.854 2h12.292a1 1 0 0 1 .854.458L21.542 8"/>' />
 
   <div class="card-base p-5 space-y-4">
     <div id="drop-zone"
          class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-10 text-center cursor-pointer
                 hover:border-accent-blue dark:hover:border-accent-blue/70 transition-colors">
       <div class="text-3xl mb-2">🗜️</div>
-      <p class="text-matte-600 dark:text-matte-300 font-medium">Drop ZIP di sini atau klik untuk pilih</p>
-      <p class="text-sm text-matte-400 mt-1">Max 50MB</p>
+      <p class="text-matte-600 dark:text-matte-300 font-medium" data-i18n="zip.drop">Drop ZIP di sini atau klik untuk pilih</p>
+      <p class="text-sm text-matte-400 mt-1" data-i18n="zip.max">Max 50MB</p>
       <input type="file" id="file-input" class="hidden" accept=".zip">
     </div>
+
+    <p class="text-xs text-matte-400" data-i18n="zip.hint">Struktur folder asli dipertahankan saat file diekstrak.</p>
 
     <div id="results-area" class="hidden space-y-3">
       <div class="flex justify-between items-center">
         <span class="text-sm text-matte-500 font-medium" id="filename"></span>
-        <button id="download-all-btn" class="btn-primary text-sm">Download Semua</button>
+        <button id="download-all-btn" class="btn-primary text-sm" data-i18n="zip.download_all">Download Semua</button>
       </div>
+      <span class="text-xs text-matte-500 font-medium" data-i18n="zip.list_label">Daftar file</span>
       <div class="max-h-96 overflow-y-auto space-y-1" id="file-list"></div>
     </div>
 
@@ -29,10 +32,15 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
       <p id="status-text" class="text-sm text-matte-500 mt-2 text-center"></p>
     </div>
+
+    <p class="text-xs text-matte-400 text-center" data-i18n="zip.privacy">ZIP diproses lokal di browser — tidak diunggah.</p>
   </div>
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -84,7 +92,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         extractedFiles.push({ name, blob: new Blob([data as Uint8Array]) });
       }
 
-      filename.textContent = `${file.name} · ${extractedFiles.length} file`;
+      filename.textContent = t('zip.file_count', '{name} · {n} file').replace('{name}', file.name).replace('{n}', String(extractedFiles.length));
       renderFileList();
       resultsArea.classList.remove('hidden');
       progressArea.classList.add('hidden');
@@ -124,7 +132,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   document.getElementById('download-all-btn')!.addEventListener('click', () => {
     extractedFiles.forEach((f, i) => setTimeout(() => downloadFile(f), i * 200));
-    window.showToast?.(window._tToast ? window._tToast('Download semua dimulai!') : 'Download all started!', 'success');
+    toast(t('zip.all_started', 'Download semua dimulai!'), 'success');
   });
 
   }
