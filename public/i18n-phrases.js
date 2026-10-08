@@ -783,4 +783,4 @@ window._i18nPhrases = {
   'Masukkan bilangan bulat (tanpa desimal/eksponen)!':'Enter an integer (no decimals/exponents)!',
   'Rule ditambahkan.':'Rule added.',
   'Tanggal tidak valid!':'Invalid date!',
-'Semua baris harus memiliki jumlah kolom yang sama.':'All rows must have the same number of columns.','Diatur ulang!':'Reset!',};
+'Semua baris harus memiliki jumlah kolom yang sama.':'All rows must have the same number of columns.','Diatur ulang!':'Reset!','Ketik teks dulu!':'Type some text first!',};

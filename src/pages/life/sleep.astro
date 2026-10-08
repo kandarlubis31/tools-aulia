@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="Sleep Calculator" description="Hitung waktu tidur ideal berdasarkan sleep cycle 90 menit. 100% client-side.">
-  <ToolPageHeader title="Sleep Calculator" desc="Waktu tidur ideal — bangun seger tiap pagi" icon='<path d="M18 20v-4"/><path d="M12 20V4"/><path d="M6 20v-4"/>' />
+  <ToolPageHeader title="Sleep Calculator" titleKey="header.sleep_calc" desc="Waktu tidur ideal — bangun seger tiap pagi" descKey="header.sleep_calc_desc" icon='<path d="M18 20v-4"/><path d="M12 20V4"/><path d="M6 20v-4"/>' />
 
   <div class="card-base p-5 space-y-4">
     <div class="flex gap-4">
@@ -12,14 +12,15 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     </div>
 
     <div class="flex gap-2 items-center justify-center">
-      <input id="hour" type="number" min="0" max="23" value="7" class="input-field w-16 text-center text-sm" aria-label="Jam">
+      <input id="hour" type="number" min="0" max="23" value="7" class="input-field w-16 text-center text-sm" aria-label="Jam" data-i18n-attr="aria-label" data-i18n="label.hour">
       <span class="text-matte-500">:</span>
-      <input id="min" type="number" min="0" max="59" value="0" class="input-field w-16 text-center text-sm" aria-label="Menit">
+      <input id="min" type="number" min="0" max="59" value="0" class="input-field w-16 text-center text-sm" aria-label="Menit" data-i18n-attr="aria-label" data-i18n="label.minute">
       <span id="ampm" class="text-matte-500 text-sm">AM</span>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" id="results"></div>
     <p class="text-xs text-matte-400 text-center" data-i18n="text.sleep_note">Sleep cycle rata-rata 90 menit. Tidur 5-6 cycle (7.5-9 jam) ideal.</p>
+    <p class="text-xs text-matte-400 text-center" data-i18n="sleep.copy_hint">Klik salah satu jam untuk menyalinnya.</p>
   </div>
 </BaseLayout>
 
@@ -40,6 +41,8 @@ window.addEventListener('langchange', () => { __sleepRender?.(); });
   const ampmEl = document.getElementById('ampm')!;
   const modeWake = document.getElementById('mode-wake') as HTMLButtonElement;
   const modeSleep = document.getElementById('mode-sleep') as HTMLButtonElement;
+  const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
   function setMode(m: 'wake' | 'sleep') {
     mode = m;
@@ -80,11 +83,22 @@ window.addEventListener('langchange', () => { __sleepRender?.(); });
       }
     }
 
-    document.getElementById('results')!.innerHTML = results.map(r =>
-      '<div class="card-base p-3 text-center ' + (r.count >= 5 ? 'border-2 border-accent-green/30 bg-accent-green/5' : '') + '">' +
-      '<p class="text-xs text-matte-400">' + r.label + '</p><p class="text-2xl font-bold font-mono text-accent-blue">' + r.time + '</p></div>'
+    const box = document.getElementById('results')!;
+    box.innerHTML = results.map(r =>
+      '<button type="button" class="card-base p-3 text-center w-full cursor-pointer hover:border-accent-blue transition-colors ' + (r.count >= 5 ? 'border-2 border-accent-green/30 bg-accent-green/5' : '') + '" data-time="' + r.time + '">' +
+      '<p class="text-xs text-matte-400">' + r.label + '</p><p class="text-2xl font-bold font-mono text-accent-blue">' + r.time + '</p></button>'
     ).join('');
   }
+
+  // Klik jam hasil → salin ke clipboard (delegasi, aman karena innerHTML di-render ulang tiap calc)
+  document.getElementById('results')!.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement).closest('button[data-time]') as HTMLButtonElement | null;
+    if (!btn) return;
+    try {
+      await navigator.clipboard.writeText(btn.dataset.time || '');
+      toast('Disalin!');
+    } catch { toast('Gagal menyalin', 'error'); }
+  });
 
   __sleepRender = calc;
   calc();

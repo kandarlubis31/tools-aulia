@@ -3614,6 +3614,29 @@ export const translations: Record<string, { id: string; en: string }> = {
   'mi.resolution': { id: 'Resolusi', en: 'Resolution' },
   'mi.aspect': { id: 'Rasio aspek', en: 'Aspect ratio' },
   'mi.sample_rate': { id: 'Sample rate', en: 'Sample rate' },
+
+  // --- W6 batch 14 ---
+  'joiner.hint': { id: 'File diurutkan otomatis (numerik) sebelum digabung: part1, part2, … part10.', en: 'Files are sorted automatically (numeric) before joining: part1, part2, … part10.' },
+  'joiner.privacy': { id: 'Semua pemrosesan di browser — file tidak pernah diunggah.', en: 'All processing happens in your browser — files are never uploaded.' },
+  'joiner.summary': { id: '{n} file — total {kb} KB', en: '{n} files — total {kb} KB' },
+  'joiner.read_fail': { id: 'Gagal membaca file', en: 'Failed to read files' },
+  'joiner.sort_warn': { id: 'Nama file tidak berpola .part — urutan gabungan mungkin salah', en: 'Filenames don\'t match the .part pattern — join order may be wrong' },
+  'joiner.joined': { id: 'File berhasil digabung!', en: 'Files merged successfully!' },
+  'joiner.merge_fail': { id: 'Gagal menggabung file', en: 'Failed to merge files' },
+  'label.html_input': { id: 'Input HTML tabel', en: 'HTML table input' },
+  'ph.paste_html_table': { id: 'Paste HTML tabel di sini...\n<table>\n  <tr><th>Nama</th><th>Usia</th></tr>\n  <tr><td>Alice</td><td>25</td></tr>\n</table>', en: 'Paste HTML table here...\n<table>\n  <tr><th>Name</th><th>Age</th></tr>\n  <tr><td>Alice</td><td>25</td></tr>\n</table>' },
+  'htmltable.hint': { id: 'Baris pertama <th> dipakai sebagai key JSON; tanpa <th> semua baris jadi data.', en: 'The first <th> row is used as JSON keys; without <th> every row becomes data.' },
+  'htmltable.parsed': { id: '{n} baris diparsing!', en: '{n} rows parsed!' },
+  'pdf.booklet.hint': { id: 'Jumlah halaman dibulatkan ke kelipatan 4 (halaman kosong ditambahkan otomatis).', en: 'Page count is rounded up to a multiple of 4 (blank pages added automatically).' },
+  'pdf.booklet.loaded': { id: '{n} halaman dimuat!', en: '{n} pages loaded!' },
+  'pdf.booklet.load_fail': { id: 'PDF gagal dimuat — file mungkin korup', en: 'Failed to load PDF — file may be corrupted' },
+  'pdf.booklet.no_file': { id: 'Upload PDF dulu!', en: 'Upload a PDF first!' },
+  'pdf.booklet.downloaded': { id: 'booklet.pdf diunduh!', en: 'booklet.pdf downloaded!' },
+  'pdf.booklet.download_fail': { id: 'Gagal membuat booklet PDF', en: 'Failed to create booklet PDF' },
+  'sleep.copy_hint': { id: 'Klik salah satu jam untuk menyalinnya.', en: 'Click a time to copy it.' },
+  'sqljson.hint': { id: 'Mendukung INSERT INTO … VALUES (…) multi-row. Nilai NULL/angka/boolean di-coerce ke tipe JSON aslinya.', en: 'Supports multi-row INSERT INTO … VALUES (…). NULL/number/boolean values are coerced to their JSON types.' },
+  'sqljson.parsed': { id: '{n} baris diparsing!', en: '{n} rows parsed!' },
+  'fancy.hint': { id: 'Klik Copy untuk salin satu style.', en: 'Click Copy to copy one style.' },
 };
 
 export function t(key, fallback) {
