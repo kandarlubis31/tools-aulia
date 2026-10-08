@@ -17,8 +17,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <div class="card-base p-6 animate-fade-in">
       <!-- Drop zone -->
       <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-surface-border rounded-xl p-8 text-center hover:border-orange-400 dark:hover:border-orange-500 transition-all cursor-pointer mb-4">
-        <input id="file-input" type="file" accept=".pdf" class="hidden" />
-        <p class="text-sm text-matte-500 dark:text-matte-400">Drop PDF di sini atau klik untuk upload</p>
+        <input id="file-input" type="file" accept=".pdf" class="hidden" aria-label="Pilih file PDF" data-i18n-attr="aria-label" data-i18n="thumbs.pick_pdf" />
+        <p class="text-sm text-matte-500 dark:text-matte-400" data-i18n="thumbs.drop">Drop PDF di sini atau klik untuk upload</p>
         <p id="filename" class="text-xs text-orange-600 dark:text-orange-400 mt-2 font-medium hidden"></p>
       </div>
 
@@ -37,10 +37,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <!-- Thumbnails grid -->
       <div id="thumbnails-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3"></div>
 
+      <p class="text-xs text-matte-400 text-center mt-4" data-i18n="thumbs.hint">Klik thumbnail untuk download PNG ukuran penuh.</p>
+      <p class="text-xs text-matte-400 text-center mt-1" data-i18n="thumbs.privacy">PDF diproses lokal di browser — tidak diunggah.</p>
+
       <!-- Loading -->
       <div id="loading" class="hidden text-center py-8">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-500 border-r-transparent"></div>
-        <p class="text-sm text-matte-500 mt-2">Menggenerate thumbnail...</p>
+        <p class="text-sm text-matte-500 mt-2" data-i18n="thumbs.loading">Menggenerate thumbnail...</p>
       </div>
     </div>
   </div>

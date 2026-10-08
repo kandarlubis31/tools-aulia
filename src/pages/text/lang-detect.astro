@@ -15,9 +15,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     />
 
     <div class="card-base p-8 animate-fade-in">
+      <p class="text-2xs text-matte-400 mb-3" data-i18n="langdet.tip">Semakin panjang teks yang dimasukkan, semakin akurat hasilnya.</p>
       <textarea id="input" rows="6" class="w-full p-4 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-mono text-sm resize-y mb-4 focus:border-emerald-500 transition-colors" placeholder="Masukkan teks untuk dideteksi bahasanya..." data-i18n-attr="placeholder" data-i18n="langdet.placeholder"></textarea>
       <button id="detect" class="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors" data-i18n="langdet.detect">🔍 Deteksi Bahasa</button>
+      <p class="text-xs text-matte-400 mt-3 text-center" data-i18n="langdet.hint">Deteksi berbasis frekuensi kata umum + karakter khas tiap bahasa.</p>
       <div id="result" class="mt-6 hidden"></div>
+      <p class="text-2xs text-matte-400 mt-4 text-center" data-i18n="langdet.privacy">Analisis berjalan lokal di browser — teks tidak dikirim ke mana pun.</p>
     </div>
   </div>
 </BaseLayout>

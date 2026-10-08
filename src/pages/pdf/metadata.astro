@@ -21,24 +21,24 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     </div>
 
     <div id="form-area" class="hidden max-w-2xl mx-auto mt-8 bg-white dark:bg-matte-800 p-8 rounded-2xl border border-matte-200 dark:border-matte-700 shadow-xl animate-fade-in">
-      <h3 class="font-bold text-lg mb-6 pb-2 border-b border-matte-200 dark:border-matte-700">Informasi Dokumen</h3>
+      <h3 class="font-bold text-lg mb-6 pb-2 border-b border-matte-200 dark:border-matte-700" data-i18n="mdmeta.doc_info">Informasi Dokumen</h3>
       
       <div class="space-y-4">
         <div>
-            <label class="block text-sm font-bold text-matte-500 mb-1">Judul (Title)</label>
+            <label class="block text-sm font-bold text-matte-500 mb-1" data-i18n="mdmeta.title">Judul (Title)</label>
             <input type="text" id="meta-title" class="w-full p-3 rounded-lg bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600" />
         </div>
         <div>
-            <label class="block text-sm font-bold text-matte-500 mb-1">Penulis (Author)</label>
+            <label class="block text-sm font-bold text-matte-500 mb-1" data-i18n="mdmeta.author">Penulis (Author)</label>
             <input type="text" id="meta-author" class="w-full p-3 rounded-lg bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600" />
         </div>
         <div>
-            <label class="block text-sm font-bold text-matte-500 mb-1">Subjek (Subject)</label>
+            <label class="block text-sm font-bold text-matte-500 mb-1" data-i18n="mdmeta.subject">Subjek (Subject)</label>
             <input type="text" id="meta-subject" class="w-full p-3 rounded-lg bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600" />
         </div>
         <div>
-            <label class="block text-sm font-bold text-matte-500 mb-1">Kata Kunci (Keywords)</label>
-            <input type="text" id="meta-keywords" class="w-full p-3 rounded-lg bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600" placeholder="Dipisahkan koma" />
+            <label class="block text-sm font-bold text-matte-500 mb-1" data-i18n="mdmeta.keywords">Kata Kunci (Keywords)</label>
+            <input type="text" id="meta-keywords" class="w-full p-3 rounded-lg bg-matte-50 dark:bg-matte-900 border border-matte-300 dark:border-matte-600" placeholder="Dipisahkan koma" data-i18n-attr="placeholder" data-i18n="mdmeta.keywords_ph" />
         </div>
         <div class="grid grid-cols-2 gap-4 pt-2 text-xs text-matte-400">
             <div><span class="font-bold">Creator:</span> <span id="info-creator">-</span></div>
@@ -46,9 +46,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
       </div>
 
-      <button id="save-btn" class="w-full mt-8 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+      <button id="save-btn" class="w-full mt-8 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2" data-i18n="mdmeta.save">
         Simpan Perubahan
       </button>
+      <p class="text-xs text-matte-400 mt-4 text-center" data-i18n="mdmeta.hint">Metadata ditulis ke file PDF hasil unduhan — file asli tidak diubah.</p>
     </div>
   </div>
 </BaseLayout>
