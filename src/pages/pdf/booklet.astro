@@ -8,12 +8,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <ToolPageHeader title="PDF Booklet" titleKey="header.pdf_booklet" desc="Susun ulang halaman PDF untuk cetak booklet A5." descKey="header.pdf_booklet_desc" icon='<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v18H6.5a2.5 2.5 0 0 1 0 5H20"/>' gradient="from-teal-500 to-cyan-600" />
     <div class="card-base p-8 animate-fade-in">
       <div id="drop-zone" class="border-2 border-dashed border-teal-300 dark:border-teal-700 rounded-2xl p-12 text-center cursor-pointer hover:border-teal-400 transition-colors mb-6"><input type="file" id="file-input" accept=".pdf,application/pdf" class="hidden" /><p class="text-matte-500 font-bold" data-i18n="upload.drop_pdf">Drop PDF di sini atau klik</p><p class="text-xs text-matte-400 mt-1" id="file-name"></p></div>
+      <p class="text-xs text-matte-400 mb-6 text-center" data-i18n="pdf.booklet.hint">Jumlah halaman dibulatkan ke kelipatan 4 (halaman kosong ditambahkan otomatis).</p>
       <button id="process" class="w-full py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors mb-6" data-i18n="btn.generate_booklet">📖 Generate Booklet</button>
       <div id="result" class="hidden"><p class="text-sm text-matte-500 mb-2" data-i18n="pdf.booklet.order_note">Urutan halaman untuk booklet (print 2 sisi, lipat):</p><pre id="order" class="p-4 bg-matte-50 dark:bg-surface-hover rounded-xl font-mono text-sm overflow-x-auto"></pre><button id="download" class="mt-4 w-full py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors" data-i18n="btn.download_booklet">📥 Download Booklet PDF</button></div>
     </div>
   </div>
 </BaseLayout>
 <script>
+import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -27,7 +29,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('border-teal-500'); });
   dz.addEventListener('dragleave', () => dz.classList.remove('border-teal-500'));
   dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('border-teal-500'); loadFile((e as DragEvent).dataTransfer?.files[0]); });
-  fi.addEventListener('change', () => loadFile(fi.files?.[0]));
+  fi.addEventListener('change', () => { loadFile(fi.files?.[0]); fi.value = ''; });
 
   async function loadFile(file: File | undefined) {
     if (!file) return;
@@ -39,10 +41,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       for (let i = 0; i < 50 && !pdfjsLib; i++) { pdfjsLib = (window as any).pdfjsLib; if (!pdfjsLib) await new Promise(r => setTimeout(r, 100)); }
       if (!pdfjsLib) throw new Error('pdf.js belum siap');
       pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
-      toast(pdfDoc.numPages + ' halaman dimuat!');
+      toast(t('pdf.booklet.loaded', '{n} halaman dimuat!').replace('{n}', String(pdfDoc.numPages)));
     } catch {
       pdfDoc = null;
-      toast('PDF gagal dimuat — file mungkin korup', 'error');
+      toast(t('pdf.booklet.load_fail', 'PDF gagal dimuat — file mungkin korup'), 'error');
     }
   }
 
@@ -57,7 +59,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
 
   document.getElementById('process')!.addEventListener('click', () => {
-    if (!pdfDoc) { toast('Upload PDF dulu!', 'error'); return; }
+    if (!pdfDoc) { toast(t('pdf.booklet.no_file', 'Upload PDF dulu!'), 'error'); return; }
     (document.getElementById('order') as HTMLElement).textContent = bookletOrder(pdfDoc.numPages).join(', ');
     document.getElementById('result')!.classList.remove('hidden');
   });
@@ -81,9 +83,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const a = document.createElement('a');
       a.href = url; a.download = 'booklet.pdf'; a.click();
       setTimeout(() => URL.revokeObjectURL(url), 2000);
-      toast('booklet.pdf diunduh!');
+      toast(t('pdf.booklet.downloaded', 'booklet.pdf diunduh!'));
     } catch {
-      toast('Gagal membuat booklet PDF', 'error');
+      toast(t('pdf.booklet.download_fail', 'Gagal membuat booklet PDF'), 'error');
     }
   });
 

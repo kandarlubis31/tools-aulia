@@ -3,10 +3,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="HTML Table to JSON" description="Ekstrak tabel HTML ke data JSON. 100% client-side DOMParser.">
-  <ToolPageHeader title="HTML Table to JSON" desc="Ekstrak tabel HTML jadi JSON array — otomatis" icon='<path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/>' />
+  <ToolPageHeader title="HTML Table to JSON" titleKey="header.html_table_json" desc="Ekstrak tabel HTML jadi JSON array — otomatis" descKey="header.html_table_json_desc" icon='<path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/>' />
 
   <div class="card-base p-5 space-y-4">
-    <textarea id="html-input" class="input-field w-full h-32 font-mono text-sm" placeholder='Paste HTML tabel di sini...&#10;<table>&#10;  <tr><th>Nama</th><th>Usia</th></tr>&#10;  <tr><td>Alice</td><td>25</td></tr>&#10;</table>'></textarea>
+    <label for="html-input" class="block text-sm text-matte-500 font-medium" data-i18n="label.html_input">Input HTML tabel</label>
+    <textarea id="html-input" class="input-field w-full h-32 font-mono text-sm" placeholder='Paste HTML tabel di sini...&#10;<table>&#10;  <tr><th>Nama</th><th>Usia</th></tr>&#10;  <tr><td>Alice</td><td>25</td></tr>&#10;</table>' data-i18n-attr="placeholder" data-i18n="ph.paste_html_table"></textarea>
+
+    <p class="text-xs text-matte-400" data-i18n="htmltable.hint">Baris pertama &lt;th&gt; dipakai sebagai key JSON; tanpa &lt;th&gt; semua baris jadi data.</p>
 
     <button id="parse-btn" class="btn-primary" data-i18n="btn.parse_json">Parse ke JSON</button>
 
@@ -22,6 +25,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
+  // Re-render toast/teks dinamis saat ganti bahasa tidak diperlukan (event-based),
+  // tapi parse result dihasilkan via t() → cukup dipanggil ulang saat render berikutnya.
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -56,7 +63,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     });
 
     (document.getElementById('output') as HTMLPreElement).textContent = JSON.stringify(data, null, 2);
-    toast(data.length + ' baris diparsing!');
+    toast(t('htmltable.parsed', '{n} baris diparsing!').replace('{n}', String(data.length)));
   });
 
   function toObj(keys: string[], vals: string[]) {
@@ -77,6 +84,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.getElementById('download-btn')!.addEventListener('click', () => {
     try {
       const out = (document.getElementById('output') as HTMLPreElement).textContent || '';
+      if (!out) { toast('Belum ada hasil.', 'info'); return; }
       const blob = new Blob([out], { type: 'application/json' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'table-data.json'; a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);

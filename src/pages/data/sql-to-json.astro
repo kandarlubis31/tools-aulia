@@ -3,22 +3,28 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="SQL to JSON" description="Konversi SQL INSERT statements ke JSON array. 100% client-side.">
-  <ToolPageHeader title="SQL to JSON" desc="Konversi SQL INSERT statements ke JSON array" icon='<path d="M4 6h16M4 12h16M4 18h7"/>' />
+  <ToolPageHeader title="SQL to JSON" titleKey="header.sql_to_json" desc="Konversi SQL INSERT statements ke JSON array" descKey="header.sql_to_json_desc" icon='<path d="M4 6h16M4 12h16M4 18h7"/>' />
 
   <div class="card-base p-5 space-y-4">
     <label for="sql-input" class="block text-sm text-matte-500 font-medium" data-i18n="label.sql_input">Input SQL</label>
     <textarea id="sql-input" class="input-field w-full h-40 font-mono text-sm" placeholder="Paste SQL INSERT di sini..." data-i18n-attr="placeholder" data-i18n="ph.paste_sql"></textarea>
+    <p class="text-xs text-matte-400" data-i18n="sqljson.hint">Mendukung INSERT INTO … VALUES (…) multi-row. Nilai NULL/angka/boolean di-coerce ke tipe JSON aslinya.</p>
     <button id="convert-btn" class="btn-primary" data-i18n="btn.convert_json">Konversi ke JSON</button>
 
     <div class="flex justify-between items-center">
       <label for="output" class="text-sm text-matte-500 font-medium" data-i18n="label.json_output">Output JSON</label>
-      <button id="copy-btn" class="btn-secondary text-xs" data-i18n="btn.copy_emoji">📋 Copy</button>
+      <div class="flex gap-2">
+        <button id="copy-btn" class="btn-secondary text-xs" data-i18n="btn.copy_emoji">📋 Copy</button>
+        <button id="download-btn" class="btn-secondary text-xs" data-i18n="btn.download_json">⬇️ JSON</button>
+      </div>
     </div>
     <pre id="output" class="bg-matte-900 text-green-400 rounded-lg p-3 h-40 overflow-auto text-sm font-mono whitespace-pre-wrap"></pre>
   </div>
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
   function init() {
     const sqlInp = document.getElementById('sql-input') as HTMLTextAreaElement;
     const output = document.getElementById('output') as HTMLElement;
@@ -32,7 +38,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       try {
         const rows = parseSQL(sql);
         output.textContent = JSON.stringify(rows, null, 2);
-        toast(rows.length + ' baris diparsing!');
+        toast(t('sqljson.parsed', '{n} baris diparsing!').replace('{n}', String(rows.length)));
       } catch (e) {
         output.textContent = 'Error: ' + (e instanceof Error ? e.message : String(e));
         toast('Format INSERT tidak dikenali', 'error');
@@ -58,6 +64,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           i = end + 1;
         } else i++;
       }
+      if (!rows.length) throw new Error('Format INSERT tidak dikenali');
       return rows;
     }
 
@@ -89,9 +96,23 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     document.getElementById('copy-btn')?.addEventListener('click', async () => {
       const text = output.textContent || '';
-      if (!text) { toast('Input kosong!', 'info'); return; }
+      if (!text) { toast('Belum ada hasil.', 'info'); return; }
       try { await navigator.clipboard.writeText(text); toast('Disalin!'); }
       catch { toast('Gagal menyalin', 'error'); }
+    });
+
+    document.getElementById('download-btn')?.addEventListener('click', () => {
+      const text = output.textContent || '';
+      if (!text) { toast('Belum ada hasil.', 'info'); return; }
+      try {
+        const blob = new Blob([text], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'query-result.json';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        toast('Diunduh!');
+      } catch { toast('Gagal membuat file', 'error'); }
     });
   }
 

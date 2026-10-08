@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="File Joiner" description="Gabung kembali file chunks jadi satu file utuh. 100% client-side.">
-  <ToolPageHeader title="File Joiner" desc="Gabung .part chunks jadi file utuh" icon='<path d="M12 5l7 7-7 7"/><path d="M5 12h14"/>' />
+  <ToolPageHeader title="File Joiner" titleKey="header.file_joiner" desc="Gabung .part chunks jadi file utuh" descKey="header.file_joiner_desc" icon='<path d="M12 5l7 7-7 7"/><path d="M5 12h14"/>' />
 
   <div class="card-base p-5 space-y-4">
     <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-8 text-center cursor-pointer hover:border-accent-blue transition-colors">
@@ -11,13 +11,22 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <input type="file" id="file-input" class="hidden" multiple>
     </div>
 
+    <p class="text-xs text-matte-400 text-center" data-i18n="joiner.hint">File diurutkan otomatis (numerik) sebelum digabung: part1, part2, … part10.</p>
+
     <div id="file-list" class="hidden space-y-2"></div>
     <div id="file-summary" class="hidden text-xs text-matte-400 text-center"></div>
     <button id="join-btn" class="btn-primary w-full hidden" data-i18n="btn.join_download">Gabung & Download File Utuh</button>
+    <p class="text-xs text-matte-400 text-center" data-i18n="joiner.privacy">Semua pemrosesan di browser — file tidak pernah diunggah.</p>
   </div>
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
+// Re-render summary saat ganti bahasa (summary dibangun via t())
+let __joinerRender: (() => void) | null = null;
+window.addEventListener('langchange', () => { __joinerRender?.(); });
+
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
@@ -29,6 +38,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
     window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
   function esc(s: unknown) { return String(s ?? '').replace(/</g, '&lt;'); }
+
+  function renderSummary() {
+    if (!parts.length) return;
+    const total = parts.reduce((s, p) => s + p.size, 0);
+    fileSummary.textContent = t('joiner.summary', '{n} file — total {kb} KB')
+      .replace('{n}', String(parts.length))
+      .replace('{kb}', (total / 1024).toFixed(1));
+    fileSummary.classList.remove('hidden');
+  }
+  __joinerRender = renderSummary;
 
   document.getElementById('file-input')!.addEventListener('change', function (this: HTMLInputElement) {
     handleFiles(Array.from(this.files || []));
@@ -47,7 +66,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         parts.push({ name: f.name, data: new Uint8Array(await f.arrayBuffer()), size: f.size });
       }
     } catch {
-      toast('Gagal membaca file', 'error');
+      toast(t('joiner.read_fail', 'Gagal membaca file'), 'error');
       return;
     }
     parts.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
@@ -56,11 +75,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     fileList.innerHTML = parts.map(p =>
       '<div class="flex justify-between text-sm p-2 rounded bg-matte-50 dark:bg-matte-800"><span>' + esc(p.name) + '</span><span class="text-matte-400">' + (p.size / 1024).toFixed(1) + ' KB</span></div>'
     ).join('');
-    const total = parts.reduce((s, p) => s + p.size, 0);
-    fileSummary.textContent = parts.length + ' file — total ' + (total / 1024).toFixed(1) + ' KB';
-    fileSummary.classList.remove('hidden');
+    renderSummary();
     if (!parts.some(p => /\.part\d+/i.test(p.name) || /\.\d{3}$/.test(p.name))) {
-      toast('Nama file tidak berpola .part — urutan gabungan mungkin salah', 'info');
+      toast(t('joiner.sort_warn', 'Nama file tidak berpola .part — urutan gabungan mungkin salah'), 'info');
     }
   }
 
@@ -76,9 +93,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = outName; a.click();
       setTimeout(() => URL.revokeObjectURL(url), 2000);
-      toast('File berhasil digabung!', 'success');
+      toast(t('joiner.joined', 'File berhasil digabung!'), 'success');
     } catch {
-      toast('Gagal menggabung file', 'error');
+      toast(t('joiner.merge_fail', 'Gagal menggabung file'), 'error');
     }
   });
 
@@ -87,7 +104,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   // SPA boot (#14): guard path + guard dobel-bind
   const __fileJoinerPage = (location.pathname.replace(/\/+$/, '') || '/');
   document.addEventListener('astro:page-load', () => {
-    if ((location.pathname.replace(/\/+$/, '') || '/') !== __fileJoinerPage) return;
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __fileJoinerPage) { __joinerRender = null; return; }
     const anchor = document.querySelector('main button, main input, main select, main textarea');
     if (!anchor || anchor.dataset.autoBound === 'true') return;
     anchor.dataset.autoBound = 'true';
