@@ -66,6 +66,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -99,11 +101,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     if (!file) return;
     const ok = /\.(xlsx|xls|csv)$/i.test(file.name);
     if (!ok) {
-      window.showToast?.('Hanya file .xlsx, .xls, atau .csv yang didukung.', 'warning');
+      toast('Hanya file .xlsx, .xls, atau .csv yang didukung.', 'warning');
       return;
     }
     if (file.size > MAX_SIZE) {
-      window.showToast?.('File terlalu besar (maksimal ~10 MB) untuk diproses di browser.', 'warning');
+      toast('File terlalu besar (maksimal ~10 MB) untuk diproses di browser.', 'warning');
       return;
     }
 
@@ -115,7 +117,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     // Load SheetJS lalu parse workbook untuk isi dropdown sheet
     const ready = await loadCdnLib('XLSX', XLSX_URLS);
     if (!ready) {
-      window.showToast?.('Gagal memuat library Excel. Cek koneksi internet.', 'error');
+      toast('Gagal memuat library Excel. Cek koneksi internet.', 'error');
       sheetSelect.innerHTML = '<option>—</option>';
       return;
     }
@@ -125,7 +127,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       workbook = XLSX.read(buf, { type: 'array' });
       const names: string[] = workbook.SheetNames ?? [];
       if (names.length === 0) {
-        window.showToast?.('Workbook tidak punya sheet.', 'error');
+        toast('Workbook tidak punya sheet.', 'error');
         sheetSelect.innerHTML = '<option>—</option>';
         return;
       }
@@ -138,7 +140,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       selectedFile = null;
       fileNameEl.textContent = '';
       sheetSelect.innerHTML = '<option>—</option>';
-      window.showToast?.('Gagal membaca file. Pastikan format Excel valid dan tidak terproteksi.', 'error');
+      toast('Gagal membaca file. Pastikan format Excel valid dan tidak terproteksi.', 'error');
     }
   }
 
@@ -165,7 +167,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     if (!selectedFile || !workbook || busy) return;
     const sheetName = sheetSelect.value;
     if (!sheetName || !workbook.Sheets?.[sheetName]) {
-      window.showToast?.('Pilih sheet dulu.', 'warning');
+      toast('Pilih sheet dulu.', 'warning');
       return;
     }
     busy = true;
@@ -188,7 +190,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
       ]);
       if (!cdnReady) {
-        window.showToast?.('Gagal memuat library PDF. Cek koneksi internet.', 'error');
+        toast('Gagal memuat library PDF. Cek koneksi internet.', 'error');
         return;
       }
 
@@ -210,10 +212,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         pagebreak: { mode: ['css', 'legacy'] },
       }).from(tmp).save();
 
-      window.showToast?.('PDF berhasil dibuat!', 'success');
+      toast('PDF berhasil dibuat!', 'success');
     } catch (err) {
       console.error('excel-to-pdf error:', err);
-      window.showToast?.('Gagal membuat PDF dari sheet ini. Coba sheet lain atau kecilkan datanya.', 'error');
+      toast('Gagal membuat PDF dari sheet ini. Coba sheet lain atau kecilkan datanya.', 'error');
     } finally {
       busy = false;
       convertBtn.innerHTML = original;

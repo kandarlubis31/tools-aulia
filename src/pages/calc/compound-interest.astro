@@ -94,6 +94,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -107,6 +109,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const monthly = parseFloat((document.getElementById('monthly') as HTMLInputElement).value) || 0;
       const annualRate = parseFloat((document.getElementById('rate') as HTMLInputElement).value) || 0;
       const years = Math.max(1, Math.min(60, parseFloat((document.getElementById('years') as HTMLInputElement).value) || 1));
+      if (principal <= 0) { toast('Masukkan angka yang valid!', 'error'); return; }
       const freq = parseInt((document.getElementById('freq') as HTMLSelectElement).value) || 1;
 
       const ratePerPeriod = annualRate / 100 / freq;

@@ -105,6 +105,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <script>
 import { ethnicGroups, mixedNames, fatherNames } from '../../data/indonesian-names';
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 document.addEventListener('astro:page-load', () => {
@@ -467,7 +469,7 @@ document.addEventListener('astro:page-load', () => {
   generateBtn.addEventListener('click', generate);
   copyAllBtn.addEventListener('click', () => {
     const text = currentResults.map(r => r.name).join('\n');
-    navigator.clipboard.writeText(text).then(() => bindCopyFeedback(copyAllBtn, '✅ Tersalin!'));
+    navigator.clipboard.writeText(text).then(() => { bindCopyFeedback(copyAllBtn, '✅ Tersalin!'); toast('Disalin!'); });
   });
   favCopyAllBtn.addEventListener('click', () => {
     if (!favorites.length) return;

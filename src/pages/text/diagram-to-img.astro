@@ -486,6 +486,8 @@ Alice -> Bob: Hello
 </style>
 
 <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
   // NOTE: Astro tidak punya export `onMount` dari paket "astro" — itu bug utama
   // di versi sebelumnya yang bikin seluruh script gagal dieksekusi.
   // Script inline Astro otomatis dibundle sebagai <script type="module">,
@@ -649,7 +651,7 @@ Alice -> Bob: Hello
       // @ts-ignore
       if (!mermaidReady || typeof mermaid === "undefined") {
         // @ts-ignore
-        window.showToast?.(
+        toast(
           "Gagal memuat library Mermaid.js. Cek koneksi internet.",
           "error",
         );
@@ -1284,7 +1286,7 @@ cloud "CDN" {
         a.click();
         URL.revokeObjectURL(url);
         // @ts-ignore
-        window.showToast?.("SVG diunduh!", "success");
+        toast("SVG diunduh!", "success");
         return;
       }
 
@@ -1305,13 +1307,13 @@ cloud "CDN" {
         a.click();
         URL.revokeObjectURL(url);
         // @ts-ignore
-        window.showToast?.(
+        toast(
           `Diagram diunduh sebagai ${ext.toUpperCase()}!`,
           "success",
         );
       } catch (err: any) {
         // @ts-ignore
-        window.showToast?.("Gagal render: " + err.message, "error");
+        toast("Gagal render: " + err.message, "error");
       } finally {
         downloadBtn.disabled = false;
         downloadBtn.innerHTML = originalHtml;
@@ -1324,10 +1326,10 @@ cloud "CDN" {
       try {
         await navigator.clipboard.writeText(currentSvgString);
         // @ts-ignore
-        window.showToast?.("SVG disalin ke clipboard!", "success");
+        toast("SVG disalin ke clipboard!", "success");
       } catch {
         // @ts-ignore
-        window.showToast?.("Gagal menyalin.", "error");
+        toast("Gagal menyalin.", "error");
       }
     });
 
@@ -1337,7 +1339,7 @@ cloud "CDN" {
       // @ts-ignore
       if (typeof ClipboardItem === "undefined") {
         // @ts-ignore
-        window.showToast?.(
+        toast(
           "Browser ini tidak mendukung copy gambar ke clipboard.",
           "error",
         );
@@ -1356,10 +1358,10 @@ cloud "CDN" {
           new ClipboardItem({ "image/png": blob }),
         ]);
         // @ts-ignore
-        window.showToast?.("Gambar disalin ke clipboard!", "success");
+        toast("Gambar disalin ke clipboard!", "success");
       } catch (err: any) {
         // @ts-ignore
-        window.showToast?.("Gagal menyalin gambar: " + err.message, "error");
+        toast("Gagal menyalin gambar: " + err.message, "error");
       } finally {
         copyPngBtn.disabled = false;
         copyPngBtn.innerHTML = originalHtml;
@@ -1385,6 +1387,10 @@ cloud "CDN" {
   const __dgPage = (location.pathname.replace(/\/+$/, '') || '/');
   document.addEventListener("astro:page-load", () => {
     if ((location.pathname.replace(/\/+$/, '') || '/') !== __dgPage) return;
+    // autoBound guard: cegah double-bind saat SPA balik ke halaman ini
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
     init();
   });
 </script>

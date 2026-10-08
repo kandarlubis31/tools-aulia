@@ -1310,8 +1310,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.addEventListener('astro:page-load', () => {
     if ((location.pathname.replace(/\/+$/, '') || '/') !== __hrdPage) return;
     const root = document.getElementById('auth-screen');
-    if (!root || root.dataset.hrdBound === 'true') return;
-    root.dataset.hrdBound = 'true';
+    if (!root || root.dataset.autoBound === 'true') return;
+    root.dataset.autoBound = 'true';
     boot();
   });
 </script>

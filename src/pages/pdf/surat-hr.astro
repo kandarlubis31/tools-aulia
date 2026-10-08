@@ -524,8 +524,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.addEventListener('astro:page-load', () => {
     if ((location.pathname.replace(/\/+$/, '') || '/') !== __letterPage) return;
     const btn = document.getElementById('btn-preview');
-    if (!btn || btn.dataset.letterBound === 'true') return;
-    btn.dataset.letterBound = 'true';
+    if (!btn || btn.dataset.autoBound === 'true') return;
+    btn.dataset.autoBound = 'true';
     init();
   });
 </script>

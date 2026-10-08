@@ -400,8 +400,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.addEventListener('astro:page-load', () => {
     if ((location.pathname.replace(/\/+$/, '') || '/') !== __slipPage) return;
     const btn = document.getElementById('btn-preview');
-    if (!btn || btn.dataset.slipBound === 'true') return;
-    btn.dataset.slipBound = 'true';
+    if (!btn || btn.dataset.autoBound === 'true') return;
+    btn.dataset.autoBound = 'true';
     init();
   });
 </script>

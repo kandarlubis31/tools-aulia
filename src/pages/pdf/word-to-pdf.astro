@@ -61,6 +61,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -81,11 +83,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     if (!file) return;
     const isDocx = /\.docx$/i.test(file.name) || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
     if (!isDocx) {
-      window.showToast?.('Hanya file .docx yang didukung. Simpan dokumen Word lama (.doc) sebagai .docx dulu.', 'warning');
+      toast('Hanya file .docx yang didukung. Simpan dokumen Word lama (.doc) sebagai .docx dulu.', 'warning');
       return;
     }
     if (file.size > MAX_SIZE) {
-      window.showToast?.('File terlalu besar (maksimal ~15 MB) untuk diproses di browser.', 'warning');
+      toast('File terlalu besar (maksimal ~15 MB) untuk diproses di browser.', 'warning');
       return;
     }
     selectedFile = file;
@@ -129,7 +131,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const html = result.value;
 
       if (!html || !html.trim()) {
-        window.showToast?.('Dokumen kosong atau tidak bisa dibaca.', 'error');
+        toast('Dokumen kosong atau tidak bisa dibaca.', 'error');
         return;
       }
 
@@ -141,7 +143,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
       ]);
       if (!cdnReady) {
-        window.showToast?.('Gagal memuat library PDF. Cek koneksi internet.', 'error');
+        toast('Gagal memuat library PDF. Cek koneksi internet.', 'error');
         return;
       }
 
@@ -164,10 +166,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         pagebreak: { mode: ['css', 'legacy'] },
       }).from(tmp).save();
 
-      window.showToast?.('PDF berhasil dibuat!', 'success');
+      toast('PDF berhasil dibuat!', 'success');
     } catch (err) {
       console.error('word-to-pdf error:', err);
-      window.showToast?.('Gagal mengonversi dokumen. Pastikan file .docx valid dan tidak terproteksi.', 'error');
+      toast('Gagal mengonversi dokumen. Pastikan file .docx valid dan tidak terproteksi.', 'error');
     } finally {
       busy = false;
       convertBtn.innerHTML = original;

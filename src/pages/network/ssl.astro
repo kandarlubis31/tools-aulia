@@ -36,6 +36,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -58,7 +60,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     async function checkSSL() {
       let domain = domainInput.value.trim().toLowerCase();
-      if (!domain) { window.showToast?.('Masukkan domain', 'error'); return; }
+      if (!domain) { toast('Masukkan domain', 'error'); return; }
       domain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
 
       checkBtn.disabled = true;
