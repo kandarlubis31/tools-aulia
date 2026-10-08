@@ -48,19 +48,23 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <input type="file" id="file-input" accept="application/pdf" class="hidden" />
     </div>
 
+    <p class="text-xs text-matte-400 text-center mt-4" data-i18n="ppt.hint">Setiap halaman PDF menjadi satu slide 16:9.</p>
+    <p class="text-xs text-matte-400 text-center mt-1" data-i18n="ppt.privacy">File diproses lokal di browser — tidak diunggah.</p>
+
     <div id="process-area" class="hidden max-w-xl mx-auto mt-10 text-center animate-fade-in">
       <h3 id="filename" class="font-bold text-lg mb-2 text-matte-700 dark:text-matte-200">filename.pdf</h3>
       
       <div class="w-full bg-matte-200 dark:bg-matte-700 rounded-full h-4 mb-4 overflow-hidden">
         <div id="progress-bar" class="bg-orange-500 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
       </div>
-      <p id="status-text" class="text-matte-500 text-sm">Menyiapkan konversi...</p>
+      <p id="status-text" class="text-matte-500 text-sm" data-i18n="ppt.preparing">Menyiapkan konversi...</p>
     </div>
 
   </div>
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -111,7 +115,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         // Update Progress
         const percent = Math.round((i / totalPages) * 100);
         progressBar.style.width = `${percent}%`;
-        statusText.innerText = `Memproses halaman ${i} dari ${totalPages}...`;
+        statusText.innerText = t('ppt.processing', 'Memproses halaman {i} dari {n}...').replace('{i}', String(i)).replace('{n}', String(totalPages));
 
         // Render Page to Canvas (renderPageToCanvas global — fill putih + scale 2.0)
         const page = await pdf.getPage(i);
@@ -126,17 +130,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         slide.background = { data: imgData };
       }
 
-      statusText.innerText = window._tToast ? window._tToast("Membuat file PowerPoint...") : "Membuat file PowerPoint...";
+      statusText.innerText = t('ppt.making', 'Membuat file PowerPoint...');
       
       // Save (strip .pdf extension biar gak double extension)
       const pptName = file.name.replace(/\.pdf$/i, '') + '.pptx';
       await pptx.writeFile({ fileName: `converted-${pptName}` });
       
-      statusText.innerText = window._tToast ? window._tToast("Selesai! File terunduh.") : "Selesai! File terunduh.";
+      statusText.innerText = t('ppt.done', 'Selesai! File terunduh.');
       window.showToast?.(window._tToast ? window._tToast("Berhasil konversi ke PowerPoint!") : "Berhasil konversi ke PowerPoint!", "success");
 
     } catch (err) {
-      statusText.innerText = window._tToast ? window._tToast("Gagal memproses file.") : "Gagal memproses file.";
+      statusText.innerText = t('ppt.fail', 'Gagal memproses file.');
       statusText.classList.add("text-red-500");
       window.showToast?.(window._tToast ? window._tToast("Gagal konversi.") : "Gagal konversi.", "error");
     }
