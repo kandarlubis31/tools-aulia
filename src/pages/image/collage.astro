@@ -20,19 +20,19 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <input type="file" id="file-input" accept="image/*" multiple class="hidden" />
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto text-rose-400 mb-4"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
         <p class="text-matte-500 font-bold" data-i18n="upload.drop_image">Drop gambar di sini atau klik untuk pilih</p>
-        <p class="text-xs text-matte-400 mt-2">Minimal 2 gambar, maksimal 12 gambar</p>
+        <p class="text-xs text-matte-400 mt-2" data-i18n="coll.max_hint">Minimal 2 gambar, maksimal 12 gambar</p>
       </div>
 
       <!-- Settings -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div><label class="text-xs text-matte-500 mb-1 block">Layout</label>
+        <div><label class="text-xs text-matte-500 mb-1 block" data-i18n="coll.layout">Layout</label>
           <select id="layout" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
             <option value="grid">Grid Equal</option>
             <option value="2-1">2:1 (2 besar, 1 kecil)</option>
             <option value="mosaic">Mosaic</option>
           </select></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Gap (px)</label><input id="gap" type="number" value="8" min="0" max="20" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Corner Radius</label><input id="radius" type="number" value="8" min="0" max="30" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label class="text-xs text-matte-500 mb-1 block" data-i18n="coll.gap">Gap (px)</label><input id="gap" type="number" value="8" min="0" max="20" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label class="text-xs text-matte-500 mb-1 block" data-i18n="coll.radius">Corner Radius</label><input id="radius" type="number" value="8" min="0" max="30" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
         <div><label class="text-xs text-matte-500 mb-1 block" data-i18n="label.background">Background</label>
           <select id="bg-color" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
             <option value="#ffffff">White</option>
@@ -52,8 +52,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       <!-- Actions -->
       <div class="flex gap-2">
-        <button id="build" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-colors">🔨 Build Collage</button>
-        <button id="download" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-700 dark:text-matte-300 rounded-xl font-bold hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors" disabled>📥 Download PNG</button>
+        <button id="build" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-colors" data-i18n="coll.build">🔨 Build Collage</button>
+        <button id="download" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-700 dark:text-matte-300 rounded-xl font-bold hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors" disabled data-i18n="coll.download">📥 Download PNG</button>
       </div>
     </div>
   </div>
