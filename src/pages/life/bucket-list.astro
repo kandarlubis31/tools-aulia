@@ -3,13 +3,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="Bucket List" description="Catat & track mimpi hidup. 100% client-side localStorage.">
-  <ToolPageHeader title="Bucket List" description="Catat mimpi & goals — progress tracker" icon='<path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z" />' />
+  <ToolPageHeader title="Bucket List" titleKey="header.bucket_list" desc="Catat mimpi & goals — progress tracker" descKey="header.bucket_list_desc" icon='<path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z" />' />
 
   <div class="card-base p-5 space-y-4">
     <div class="flex gap-2">
       <input id="goal-input" type="text" class="input-field flex-1 text-sm" placeholder="Apa yang ingin kamu capai?" data-i18n-attr="placeholder" data-i18n="ph.goal_placeholder">
       <button id="add-btn" class="btn-primary text-sm" data-i18n="btn.add_goal">Tambah Goal</button>
     </div>
+    <p class="text-xs text-matte-400" data-i18n="bucket.max_len">Maksimal 200 karakter per goal.</p>
+    <p class="text-xs text-matte-400" data-i18n="bucket.enter_hint">Tekan Enter untuk menambah goal dengan cepat.</p>
 
     <div id="goals" class="space-y-2"></div>
     <p class="text-xs text-matte-400 text-center" id="empty-msg" data-i18n="text.bucket_empty">✨ Tambah mimpi pertama kamu di atas!</p>
@@ -17,6 +19,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
+  // Render ulang list saat bahasa berganti (label dinamis di innerHTML)
+  let __bucketRender: (() => void) | null = null;
+  window.addEventListener('langchange', () => { __bucketRender?.(); });
+
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   function init() {
@@ -36,12 +44,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   function render() {
     const done = goals.filter(g => g.done).length;
     goalsEl.innerHTML = goals.length
-      ? `<p class="text-xs text-matte-400 text-center">${done}/${goals.length} <span data-i18n="text.goals_done">tercapai</span> 🎯</p>` +
+      ? `<p class="text-xs text-matte-400 text-center">${done}/${goals.length} <span>${esc(t('text.goals_done', 'tercapai'))}</span> 🎯</p>` +
         goals.map((g, i) => `<div class="card-base p-3 flex items-center gap-3 ${g.done ? 'opacity-60' : ''}">
         <input type="checkbox" data-idx="${i}" ${g.done ? 'checked' : ''} class="rounded w-5 h-5">
         <span class="flex-1 text-sm ${g.done ? 'line-through text-matte-400' : ''}">${esc(g.text)}</span>
         <span class="text-xs text-matte-400">${esc(g.date)}</span>
-        <button data-idx="${i}" class="text-red-400 hover:text-red-600 del-goal text-sm" aria-label="Delete">✕</button>
+        <button data-idx="${i}" class="text-red-400 hover:text-red-600 del-goal text-sm" aria-label="${esc(t('common.delete', 'Hapus'))}">✕</button>
       </div>`).join('')
       : '';
     emptyMsg.classList.toggle('hidden', goals.length > 0);
@@ -51,6 +59,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       else el.addEventListener('click', function (this: HTMLElement) { goals.splice(Number(this.dataset.idx), 1); save(); });
     });
   }
+
+  __bucketRender = render;
 
   document.getElementById('add-btn')!.addEventListener('click', () => {
     const text = goalInput.value.trim();
@@ -70,7 +80,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   // SPA boot (#14): guard path + guard dobel-bind
   const __lifeBucketListPage = (location.pathname.replace(/\/+$/, '') || '/');
   document.addEventListener('astro:page-load', () => {
-    if ((location.pathname.replace(/\/+$/, '') || '/') !== __lifeBucketListPage) return;
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __lifeBucketListPage) { __bucketRender = null; return; }
     const anchor = document.querySelector('main button, main input, main select, main textarea');
     if (!anchor || anchor.dataset.autoBound === 'true') return;
     anchor.dataset.autoBound = 'true';
