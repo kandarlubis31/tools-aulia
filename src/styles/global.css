@@ -635,3 +635,16 @@ html.dark .checkerboard {
   content-visibility: auto;
   contain-intrinsic-size: auto 400px;
 }
+
+/* ── App mode (halaman personal, mis. HRD Dashboard) ──────────────────
+   Sembunyikan chrome situs (navbar, footer, widget Lapor Bug, modal PWA)
+   tanpa menghapus DOM — binding script tetap null-safe dan navigasi
+   via link langsung tetap jalan. Dipasang via body.app-mode di BaseLayout. */
+body.app-mode > header,
+body.app-mode > footer,
+body.app-mode > #feedback-btn,
+body.app-mode > #feedback-modal,
+body.app-mode > #pwa-custom-modal,
+body.app-mode nav[aria-label='Breadcrumb'] {
+  display: none;
+}

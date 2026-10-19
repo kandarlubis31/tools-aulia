@@ -53,7 +53,7 @@ for (const file of files) {
 
 if (issues > 0) {
   console.error(`\n${issues} masalah prop BaseLayout ditemukan.`);
-  console.error('BaseLayout hanya menerima: pageTitle, description, ogImage, canonicalUrl, noIndex, pdfJs.');
+  console.error('BaseLayout hanya menerima: pageTitle, description, ogImage, canonicalUrl, noIndex, pdfJs, hideChrome.');
   process.exit(1);
 }
 
