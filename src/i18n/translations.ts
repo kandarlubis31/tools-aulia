@@ -223,6 +223,8 @@ export const translations: Record<string, { id: string; en: string }> = {
   'tool.studio_editor_desc': { id: 'Edit foto, filter, crop, & grading.', en: 'Edit photos, filters, crop, & grading.' },
   'tool.image_compressor': { id: 'Image Compressor', en: 'Image Compressor' },
   'tool.image_compressor_desc': { id: 'Kecilkan ukuran gambar.', en: 'Reduce image file size.' },
+  'tool.jpg_repair': { id: 'JPG Repair', en: 'JPG Repair' },
+  'tool.jpg_repair_desc': { id: 'Perbaiki foto JPG rusak/gagal dibuka.', en: 'Fix broken/unreadable JPG photos.' },
   'tool.image_converter': { id: 'Image Converter', en: 'Image Converter' },
   'tool.image_converter_desc': { id: 'Ubah format PNG/JPG/WEBP.', en: 'Convert PNG/JPG/WEBP formats.' },
   'tool.color_picker': { id: 'Color Picker', en: 'Color Picker' },
