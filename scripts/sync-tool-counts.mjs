@@ -20,7 +20,7 @@
  *                               404 → 404.html, tak kehitung)
  *   - offline.astro           = dinamis langsung di template ({publicTools.length})
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -67,9 +67,13 @@ const rules = [
 
 const missing = [];
 const changed = [];
+const skipped = [];
 
 for (const { file, re, to } of rules) {
   const path = join(root, file);
+  // File opsional — mis. docs/CONTEXT.md di-gitignore (internal docs) jadi
+  // TIDAK ADA di checkout build machine Vercel. Dilewati, bukan gagal.
+  if (!existsSync(path)) { skipped.push(file); continue; }
   const before = readFileSync(path, 'utf8');
   if (!re.test(before)) {
     missing.push(`${file}  ←  pola tidak ditemukan: ${re}`);
@@ -94,4 +98,7 @@ if (changed.length) {
   console.log(`   tools=${entries} public=${pub} pages=${pages} kategori=${catsOk}`);
 } else {
   console.log(`✅ sync-tool-counts: angka sudah sinkron (tools=${entries}, public=${pub}, pages=${pages})`);
+}
+if (skipped.length) {
+  console.log(`   catatan: file tak ada di checkout ini (gitignored?) → dilewati: ${[...new Set(skipped)].join(', ')}`);
 }
