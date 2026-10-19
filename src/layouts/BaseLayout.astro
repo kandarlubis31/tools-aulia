@@ -927,6 +927,11 @@ if (isPdfRoot) {
       });
 
       let offlineProbeTimer = null;
+      // Token urutan — event online/offline bisa beruntun (handover wifi→4G,
+      // sleep/wake, VPN flap). Hasil probe ASYNC dari urutan LAMA dilarang menimpa
+      // state baru: dulu inilah sumber false positive "Koneksi terputus" yang
+      // muncul sesaat SETELAH koneksi pulih, lalu hilang sendiri tiap poll 8 dtk.
+      let netSeq = 0;
       const showOnline = () => {
         const indicator = document.getElementById('offline-indicator');
         if (indicator) indicator.classList.add('hidden');
@@ -937,6 +942,8 @@ if (isPdfRoot) {
         window.showToast?.(window._tToast ? window._tToast('Koneksi terputus.') : 'Koneksi terputus.', 'error');
       };
       const updateOnlineStatus = async () => {
+        const seq = ++netSeq;
+        const stale = () => seq !== netSeq;
         const indicator = document.getElementById('offline-indicator');
         if (navigator.onLine) {
             const wasOffline = !!(indicator && !indicator.classList.contains('hidden'));
@@ -950,14 +957,22 @@ if (isPdfRoot) {
                 window.showToast?.(msg, 'success');
             }
             return;
-        }
-        // onLine=false — cek dulu sebelum memvonis offline.
-        if (await probeOnline(4000)) { showOnline(); return; }
+        }        // onLine=false — verifikasi DUA kali sebelum vonis offline. Satu probe
+        // gagal/timeout (jaringan sibuk, event offline palsu dari OS) belum cukup
+        // untuk menampilkan banner — itu false positive yang sering dikeluhkan.
+        if (await probeOnline(4000)) { if (!stale()) showOnline(); return; }
+        await new Promise((r) => setTimeout(r, 1500)); // jeda konfirmasi
+        if (stale()) return; // sudah diputuskan pemanggilan yang lebih baru
+        if (await probeOnline(3000)) { showOnline(); return; }
+        if (stale()) return;
         showOffline();
         if (!offlineProbeTimer) {
-            offlineProbeTimer = setInterval(async () => {
-                if (await probeOnline(3000)) { clearInterval(offlineProbeTimer); offlineProbeTimer = null; showOnline(); }
-            }, 8000);
+          offlineProbeTimer = setInterval(async () => {
+            if (await probeOnline(3000)) {
+              if (stale()) return;
+              clearInterval(offlineProbeTimer); offlineProbeTimer = null; showOnline();
+            }
+          }, 8000);
         }
       };
       window.addEventListener('online', updateOnlineStatus);

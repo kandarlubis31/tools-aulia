@@ -183,6 +183,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
+  import { probeOnline } from '../../composables/useOnline';
+
   // --- 1. LOCAL DATABASE (OFFLINE MODE) ---
   const localJokes = [
     { type: "twopart", setup: "Why do Java programmers wear glasses?", delivery: "Because they don't C#.", category: "Programming" },
@@ -224,6 +226,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   ];
 
   // --- 2. STATE MANAGEMENT ---
+
   let isOnline = localStorage.getItem('jokeMode') === 'online';
   let currentJoke = {};
   let originalJoke = {}; // Backup for translation revert
@@ -281,8 +284,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   // --- 4. CORE FUNCTIONS ---
 
   // Network Status
-  function updateNetworkStatus() {
-    if (navigator.onLine) {
+  async function updateNetworkStatus() {
+    if (await probeOnline(3000)) {
       networkStatus.className = 'fixed top-24 right-4 px-4 py-2 rounded-lg text-sm font-bold z-50 transition-all duration-300 bg-green-500 text-white shadow-lg border border-white/20';
       networkText.textContent = window._tToast ? window._tToast('Koneksi Stabil') : 'Koneksi Stabil';
       setTimeout(() => networkStatus.classList.add('hidden'), 3000);
@@ -468,7 +471,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           window.showToast?.(window._tToast ? window._tToast('Kembali ke bahasa asli') : 'Kembali ke bahasa asli', 'info');
       } else {
           // TRANSLATE LOGIC
-          if (!isOnline && !navigator.onLine) {
+          if (!isOnline && !(await probeOnline(2500))) {
               window.showToast?.(window._tToast ? window._tToast('Fitur translate butuh internet!') : 'Fitur translate butuh internet!', 'error');
               return;
           }

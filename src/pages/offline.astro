@@ -155,8 +155,7 @@ import { publicTools } from '../data/tools';
     // terdaftar ulang otomatis oleh BaseLayout). ──
     // navigator.onLine bisa false-positive (OS melaporkan offline padahal koneksi
     // jalan) → probe jaringan nyata dulu sebelum memvonis offline.
-    function isReallyOffline() {
-      if (navigator.onLine) return Promise.resolve(false);
+    function probeOnce() {
       return new Promise(function (resolve) {
         var done = false;
         var finish = function (v) { if (!done) { done = true; resolve(v); } };
@@ -165,6 +164,15 @@ import { publicTools } from '../data/tools';
         fetch('/__conncheck__?t=' + Date.now(), { method: 'HEAD', cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
           .then(function () { clearTimeout(to); finish(false); })
           .catch(function () { clearTimeout(to); finish(true); });
+      });
+    }
+    // Vonis offline butuh DUA probe gagal berturut — satu probe gagal
+    // (jaringan sibuk/handover/event offline palsu) belum cukup.
+    function isReallyOffline() {
+      if (navigator.onLine) return Promise.resolve(false);
+      return probeOnce().then(function (offline) {
+        if (!offline) return false;
+        return new Promise(function (r) { setTimeout(r, 1200); }).then(probeOnce);
       });
     }
     async function selfHeal() {
