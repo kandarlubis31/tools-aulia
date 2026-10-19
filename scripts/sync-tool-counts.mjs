@@ -7,26 +7,44 @@
  * Exit 1 kalau ada pola yang TIDAK ditemukan (biar kegagalan sinkron ketahuan,
  * bukan diam-diam basi).
  *
+ * Parsing teks biasa (BUKAN import `.ts`) — supaya jalan di SEMUA Node version
+ * yang didukung (engines >=20.3.0, termasuk build machine Vercel yang bisa beda
+ * dari lokal). Import TS mentah gagal di Node < 23.6 → prebuild crash → deploy
+ * error (insiden Oct 19, 2026: deploy 8s Error).
+ *
  * Catatan angka:
  *   - "N+ Tools" (marketing)  = publicTools.length (hero homepage juga pakai ini)
- *   - "N entries metadata"    = tools.length (baris di src/data/tools.ts)
+ *   - "N entries metadata"    = jumlah objek tool (baris `href: "..."` di tools.ts)
  *   - "N tool pages"          = entries (1 entry = 1 halaman tool, termasuk hub)
- *   - "N halaman/N pages"     = entries + 4 (home + offline + showcase + changelog)
+ *   - "N halaman/N pages"     = entries + 4 (home + offline + showcase + changelog;
+ *                               404 → 404.html, tak kehitung)
  *   - offline.astro           = dinamis langsung di template ({publicTools.length})
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { tools, publicTools, categoryIds } from '../src/data/tools.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const toolsSrc = readFileSync(join(root, 'src/data/tools.ts'), 'utf8');
 
-const entries = tools.length;
-const pub = publicTools.length;
-const cats = categoryIds.length;
-const pages = entries + 4; // + home, offline, showcase, changelog (404 → 404.html, tak kehitung); cek: find dist/client -name index.html
-const hasHub = tools.some((t) => t.href === '/pdf');
+// --- parse tools.ts sebagai teks ---
+const hrefs = [...toolsSrc.matchAll(/href: "([^"]+)"/g)].map((m) => m[1]);
+const hiddenBlock = toolsSrc.match(/hiddenToolHrefs = \[([^\]]*)\]/);
+const hidden = hiddenBlock ? [...hiddenBlock[1].matchAll(/'([^']+)'/g)].map((m) => m[1]) : [];
+const idsBlock = toolsSrc.match(/categoryIds = \[([^\]]*)\]/);
+const cats = idsBlock ? [...idsBlock[1].matchAll(/"([^"]+)"/g)].length : 0;
+
+const entries = hrefs.length;
+const pub = hrefs.filter((h) => !hidden.includes(h)).length;
+const catsOk = cats;
+const pages = entries + 4; // home + offline + showcase + changelog (245+4=249 == find dist/client -name index.html)
+const hasHub = hrefs.includes('/pdf');
 const hubTools = hasHub ? entries - 1 : entries;
+
+if (entries < 100 || catsOk === 0) {
+  console.error(`❌ sync-tool-counts: parse tools.ts gagal (entries=${entries}, kategori=${cats}) — cek format file.`);
+  process.exit(1);
+}
 
 const rules = [
   // README — hero/tagline (ID & EN)
@@ -40,7 +58,7 @@ const rules = [
   {
     file: 'docs/CONTEXT.md',
     re: /## Tool Categories \(\d+ entries: \d+ tools \+ PDF hub, \d+ kategori\)/,
-    to: `## Tool Categories (${entries} entries: ${hubTools} tools + PDF hub, ${cats} kategori)`,
+    to: `## Tool Categories (${entries} entries: ${hubTools} tools + PDF hub, ${catsOk} kategori)`,
   },
   // Komentar performa (jumlah halaman build)
   { file: 'src/layouts/BaseLayout.astro', re: /build output \d+ halaman/, to: `build output ${pages} halaman` },
@@ -73,7 +91,7 @@ if (missing.length) {
 
 if (changed.length) {
   console.log(`✅ sync-tool-counts: angka disinkronkan → ${[...new Set(changed)].join(', ')}`);
-  console.log(`   tools=${entries} public=${pub} entries=${entries} pages=${pages} kategori=${cats}`);
+  console.log(`   tools=${entries} public=${pub} pages=${pages} kategori=${catsOk}`);
 } else {
   console.log(`✅ sync-tool-counts: angka sudah sinkron (tools=${entries}, public=${pub}, pages=${pages})`);
 }
