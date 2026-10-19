@@ -66,16 +66,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
 
       <div class="relative z-10 flex justify-center gap-3 mt-8 pt-6 border-t border-matte-200 dark:border-surface-border">
-          <button id="translate-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan">
+          <button id="translate-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-blue-500 transition-colors tooltip-trigger" title="Terjemahkan" data-i18n="btn.translate" data-i18n-attr="title">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
           </button>
-          <button id="copy-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-amber-500 transition-colors" title="Copy">
+          <button id="copy-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-amber-500 transition-colors" title="Copy" data-i18n="bs.t_copy" data-i18n-attr="title">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
           </button>
-          <button id="favorite-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-red-500 transition-colors" title="Save">
+          <button id="favorite-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-red-500 transition-colors" title="Save" data-i18n="bs.t_save" data-i18n-attr="title">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           </button>
-          <button id="share-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-blue-500 transition-colors" title="Share">
+          <button id="share-btn" class="p-3 rounded-xl bg-surface-hover dark:bg-surface-hover text-matte-500 hover:text-blue-500 transition-colors" title="Share" data-i18n="bs.t_share" data-i18n-attr="title">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
           </button>
       </div>
@@ -118,9 +118,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             <div class="space-y-6">
                 <div>
                     <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.target_translate">Target Translate</label>
-                    <label for="target-lang" class="block text-xs font-bold text-matte-500 uppercase mb-1">Bahasa Target</label>
+                    <label for="target-lang" class="block text-xs font-bold text-matte-500 uppercase mb-1" data-i18n="bs.lang_target">Bahasa Target</label>
                      <select id="target-lang" class="w-full p-3 rounded-xl bg-surface-hover dark:bg-matte-900 border border-matte-200 dark:border-surface-border focus:border-amber-500 outline-none text-matte-700 dark:text-matte-200 font-medium">
                         <option value="id" selected>🇮🇩 Indonesia</option>
+                        <option value="en">🇬🇧 English</option>
                         <option value="es">🇪🇸 Spanish</option>
                         <option value="ja">🇯🇵 Japanese</option>
                         <option value="ko">🇰🇷 Korean</option>
@@ -137,7 +138,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
                 
                 <div>
                     <label class="block text-sm font-bold text-matte-700 dark:text-matte-300 mb-2" data-i18n="label.font_size">Ukuran Font</label>
-                    <label for="text-size" class="block text-xs font-bold text-matte-500 uppercase mb-1">Ukuran Teks</label>
+                    <label for="text-size" class="block text-xs font-bold text-matte-500 uppercase mb-1" data-i18n="label.text_size">Ukuran Teks</label>
                      <select id="text-size" class="w-full p-3 rounded-xl bg-surface-hover dark:bg-matte-900 border border-matte-200 dark:border-surface-border focus:border-amber-500 outline-none text-matte-700 dark:text-matte-200 font-medium">
                         <option value="text-xl" data-i18n="size.small">Kecil</option>
                         <option value="text-2xl" selected data-i18n="size.medium">Sedang</option>
@@ -172,10 +173,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
                 </div>
             </div>
             <div class="mb-3">
-                <input id="fav-search" type="text" placeholder="Cari favorit..." class="w-full p-2.5 text-sm rounded-xl bg-surface-hover dark:bg-matte-900 border border-matte-200 dark:border-surface-border focus:border-amber-500 outline-none text-matte-700 dark:text-matte-200">
+                <input id="fav-search" type="text" placeholder="Cari favorit..." data-i18n="bs.fav_search" data-i18n-attr="placeholder" class="w-full p-2.5 text-sm rounded-xl bg-surface-hover dark:bg-matte-900 border border-matte-200 dark:border-surface-border focus:border-amber-500 outline-none text-matte-700 dark:text-matte-200">
             </div>
             <div id="favorites-list" class="space-y-3 max-h-72 overflow-y-auto custom-scrollbar pr-2" data-fav-list></div>
-            <div id="fav-empty-search" class="hidden text-center py-6 text-sm text-matte-400">Tidak ada hasil yang cocok.</div>
+            <div id="fav-empty-search" class="hidden text-center py-6 text-sm text-matte-400" data-i18n="bs.no_match">Tidak ada hasil yang cocok.</div>
         </div>
     </div>
 
@@ -202,6 +203,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
+  import { t } from '../../i18n/translations';
   import { debounce } from '../../composables/useDebounce';
   // --- 1. DATABASES (Expanded) ---
   
@@ -353,6 +355,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   let currentContent = "";
   let originalContent = ""; // Backup for translation
   let isTranslated = false;
+  let contentLang = 'id'; // bahasa konten saat ini ('id' offline, 'en' online) — sumber buat langpair translate
   let isOnline = localStorage.getItem('brainMode') === 'online';
   // safeJSON + escapeHtml — localStorage corrupt / konten API jangan sampai matikan tool atau jadi XSS
   function safeJSON(key, fallback) {
@@ -366,8 +369,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   let userStats = safeJSON('brainStats', { total: 0, catCounts: {}, lastDate: null, streak: 0 });
   let settings = safeJSON('brainSettings', { autoRefresh: 0, textSize: 'text-2xl', targetLang: 'id' });
   let autoRefreshInterval = null;
+  let isGenerating = false; // cegah generate bertumpuk (klik cepat / spasi / auto-refresh)
+  let _bsEscapeKeydown = null; // handler keydown di module level — dipasang ulang oleh init(), tak pernah menumpuk
+  let _bsSpaceKeydown = null;
 
-  // --- 3. ELEMENTS ---
+  function init() {
+  // --- 3. ELEMENTS (di-query ulang tiap init — DOM baru setiap balik navigasi SPA) ---
   const contentText = document.getElementById('content-text');
   const categoryBadge = document.getElementById('category-badge');
   const generateBtn = document.getElementById('generate-btn');
@@ -456,8 +463,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   // Generate Content
   async function generateContent() {
+      if (isGenerating) return;
+      isGenerating = true;
       // Reset Translation
       isTranslated = false;
+      contentLang = 'id';
       translateBtn.classList.remove('text-blue-500', 'bg-blue-100', 'dark:bg-blue-900/30');
       translateBtn.classList.add('text-matte-500', 'bg-matte-100', 'dark:bg-matte-700');
 
@@ -482,6 +492,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
                       const res = await fetch('https://uselessfacts.jsph.pl/api/v2/facts/random');
                       const data = await res.json();
                       result = data.text;
+                      contentLang = 'en';
                   } else {
                       result = getRandomItem(offlineFacts);
                   }
@@ -513,6 +524,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           generateBtn.innerHTML = originalText;
           
           updateFavoriteButton();
+          isGenerating = false;
       }, 300);
   }
 
@@ -532,11 +544,15 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           }
 
           const target = settings.targetLang || 'id';
+          if (target === contentLang) {
+              window.showToast?.(window._tToast ? window._tToast(t('bs.same_lang', 'Konten sedang berbahasa ini — pilih bahasa lain di Pengaturan')) : 'Content is already in this language — pick another one in Settings', 'error');
+              return;
+          }
           translateBtn.disabled = true;
           translateBtn.innerHTML = '<span class="animate-spin">⏳</span>';
 
           try {
-              const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(currentContent)}&langpair=en|${target}`);
+              const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(currentContent)}&langpair=${contentLang}|${target}`);
               const data = await res.json();
               
               if(data.responseStatus === 200) {
@@ -733,7 +749,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   });
 
   // Escape key
-  const _bsEscapeKeydown = (e) => {
+  if (_bsEscapeKeydown) document.removeEventListener('keydown', _bsEscapeKeydown);
+  _bsEscapeKeydown = (e) => {
+      if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
       if (e.key === 'Escape' && !settingsModal.classList.contains('hidden')) {
           closeSettingsModal();
       }
@@ -820,8 +838,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       input.click();
   });
 
-  const _bsSpaceKeydown = (e) => {
-      if (e.code === 'Space' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+  if (_bsSpaceKeydown) document.removeEventListener('keydown', _bsSpaceKeydown);
+  _bsSpaceKeydown = (e) => {
+      if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+      const modalOpen = !document.getElementById('settings-modal')?.classList.contains('hidden');
+      const tag = e.target?.tagName;
+      if (e.code === 'Space' && !modalOpen && tag !== 'BUTTON' && tag !== 'SELECT' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
           e.preventDefault();
           generateContent();
       }
@@ -831,28 +853,31 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       }
   };
   document.addEventListener('keydown', _bsSpaceKeydown);
-  document.addEventListener('astro:page-leave', () => {
-    document.removeEventListener('keydown', _bsEscapeKeydown);
-    document.removeEventListener('keydown', _bsSpaceKeydown);
-    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-  }, { once: true });
-
-  // Init
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
       updateModeUI();
       renderFavorites();
       updateStatsDisplay();
       applySettings();
-      generateContent(); 
+      generateContent();
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind — semua binding sudah dibungkus
+  // init() supaya DOM baru tiap balik navigasi SPA tetap terikat. (Bug lama:
+  // binding top-level menempel di DOM lama → tool MATI setelah navigasi pergi-balik,
+  // terkonfirmasi via CDP round-trip test.)
+  document.addEventListener('astro:page-load', () => {
+    const path = (location.pathname.replace(/\/+$/, '') || '/');
+    if (path !== __page) {
+      // halaman lain: matikan timer auto-refresh biar gak nembak statistik bayangan
+      if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
+      return;
+    }
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
   });
 
-  // --- TOAST SYSTEM ---
-  // All toast calls now use window.showToast from BaseLayout
 
-  // Replace all local showToast calls with window.showToast
-
-  // Replace all window._tToast calls with local showToast
-  // (Already replaced above)
 
 </script>

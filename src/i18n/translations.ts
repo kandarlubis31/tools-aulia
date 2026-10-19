@@ -418,8 +418,8 @@ export const translations: Record<string, { id: string; en: string }> = {
   'header.motivation_desc': { id: 'Kutipan motivasi dan inspirasi untuk harimu.', en: 'Motivational and inspirational quotes for your day.' },
   'header.jokes': { id: 'Dev Jokes', en: 'Dev Jokes' },
   'header.jokes_desc': { id: 'Kumpulan lelucon developer untuk menghibur harimu.', en: 'A collection of developer jokes to brighten your day.' },
-  'header.brainstorm': { id: 'Brainstorm Facts', en: 'Brainstorm Facts' },
-  'header.brainstorm_desc': { id: 'Generator ide kreatif dan fakta menarik.', en: 'Creative idea generator and interesting facts.' },
+  'header.brainstorm': { id: 'Infinite Spark', en: 'Infinite Spark' },
+  'header.brainstorm_desc': { id: 'Generator ide proyek, fakta unik, dan trivia teknologi. Dilengkapi fitur translate dan statistik.', en: 'Project ideas, unique facts, and tech trivia generator — with translate and stats.' },
   'header.hash': { id: 'Hash Generator', en: 'Hash Generator' },
   'header.hash_desc': { id: 'Generate hash MD5, SHA-1, SHA-256, dan SHA-512.', en: 'Generate MD5, SHA-1, SHA-256, and SHA-512 hashes.' },
   'header.uuid': { id: 'UUID Generator', en: 'UUID Generator' },
@@ -3946,6 +3946,14 @@ export const translations: Record<string, { id: string; en: string }> = {
   'btn.delete_all': { id: 'Hapus Semua', en: 'Delete All' },
   'btn.select_emoji': { id: 'Pilih Emoji', en: 'Pick Emoji' },
   'label.characters': { id: 'Karakter', en: 'Characters' },
+  // --- utils/brainstorm poles (audit) ---
+  'bs.lang_target': { id: 'Bahasa Target', en: 'Target Language' },
+  'bs.fav_search': { id: 'Cari favorit...', en: 'Search favorites...' },
+  'bs.no_match': { id: 'Tidak ada hasil yang cocok.', en: 'No matching results.' },
+  'bs.same_lang': { id: 'Konten sedang berbahasa ini — pilih bahasa lain di Pengaturan', en: 'Content is already in this language — pick another one in Settings' },
+  'bs.t_copy': { id: 'Copy', en: 'Copy' },
+  'bs.t_save': { id: 'Save', en: 'Save' },
+  'bs.t_share': { id: 'Share', en: 'Share' },
 };
 
 export function t(key, fallback) {
