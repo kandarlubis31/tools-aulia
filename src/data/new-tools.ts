@@ -7,6 +7,8 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  '/calc/shoe-size',
+  '/image/jpg-repair',
   '/utils/url-shortener',
   '/calc/workdays',
   '/calc/thr-bpjs',
@@ -210,5 +212,4 @@ export const newToolHrefs: string[] = [
   '/life/grocery',
   '/life/bucket-list',
   '/media/audio-convert',
-  '/image/jpg-repair',
 ];

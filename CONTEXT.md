@@ -10,11 +10,23 @@ tidak pernah dikirim ke server. Live production: **https://tools.paklubis.my.id*
 - **Tool = 1 file `.astro`** di `src/pages/<kategori>/` (`pdf/`, `calc/`, `utils/`, `file/`, dst).
 - **Registrasi tool baru** — 3 file, semua wajib:
   1. `src/data/tools.ts` — daftar tool utama
-  2. `src/data/new-tools.ts` — daftar tool baru
+  2. `src/data/new-tools.ts` — daftar tool baru (href di **urutan paling atas** — homepage
+     "Baru Ditambahkan" menampilkan 8 teratas)
   3. `src/i18n/translations.ts` — key i18n
 - OG image otomatis ke-generate (`/og/<kategori>-<nama>.png`) — kalau muncul, registrasi valid.
-- **Prebuild guardrails** (`scripts/check-*.mjs`): client-side guarantee, no inline scripts, critical CSS.
-  Jalan tiap `pnpm build` — build hijau = semua lolos.
+- **Prebuild guardrails** (`scripts/check-*.mjs`, 6): client-side, inline scripts, critical CSS,
+  BaseLayout props, toast convention, ToolPageHeader props. Jalan tiap `pnpm build` — build hijau =
+  semua lolos. Ditambah `scripts/sync-tool-counts.mjs` (urutan pertama prebuild): **angka jumlah
+  tool di README, docs/CONTEXT.md & komentar performa disinkron otomatis dari `src/data/tools.ts`**
+  — tambah tool → angka ikut naik tiap build; kalau pola angganya tak ketemu, prebuild gagal
+  (exit 1) biar ketahuan, bukan diam-diam basi.
+- **Pola SPA buat tool interaktif (WAJIB)** — cegah "tool mati setelah navigasi": binding DOM di
+  dalam `init()`, boot di `astro:page-load` + guard path halaman (`const __page = …`) + anti
+  dobel-bind via `anchor.dataset.autoBound`, listener global idempoten, timer/interval dibersihkan
+  saat `astro:page-leave`/path miss. Bug ini pernah bikin 6 tool mati (jokes, motivation, bmi,
+  percentage, unit, photo) — fix `d55c969`.
+- **i18n audit**: `node scripts/audit-i18n.mjs` — exit 0 = 0 dup / 0 dangling key (gap sisa: 73
+  halaman belum full i18n).
 - **Script besar**: tulis sebagai `<script>` eksternal Astro, bukan inline.
 - **Lib pihak ketiga**: pola multi-CDN fallback via `src/composables/useCdnLib.ts`
   (SheetJS, html2pdf, dll). `mammoth` (docx→HTML) di-bundle lokal.
@@ -66,8 +78,16 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 - Vercel CLI via `npx` (gak global), login `kandarlubis31`, domain custom **tools.paklubis.my.id**.
 - Deploy: `pnpm build` dulu → `npx vercel --prod --yes` → verify endpoint dengan curl.
 
-## Status saat ini (September 2026)
+## Status saat ini (Oktober 2026)
 
+- ✅ **(Oct 19)** Audit SPA round-trip: **6 tool mati** setelah navigasi (jokes, motivation, bmi,
+  percentage, unit, photo) → ke-fix semua pola W6; 17 kandidat `?.addEventListener` lain terbukti
+  alive. Prod CDP 6/6 PASS (`d55c969`).
+- ✅ **(Oct 19)** Tool baru **`/calc/shoe-size`** (ukur kaki → EU/US/UK/Mondopoint/CM, bayi–dewasa)
+  + **EU jadi ukuran default** — kolom EU di depan tabel + badge "Ukuran utama" (`40f2915`, `326a571`).
+- ✅ **(Oct 19)** i18n: **FULL 169/242 (70%)**; 128 dangling key ditutup; harness resmi
+  `scripts/audit-i18n.mjs` — 0 dup/0 dangling (`3cb3b78`, `5b0e90f`, `72ae710`).
+- ✅ **(Oct 19)** Angka jumlah tool **otomatis** naik-turun via `scripts/sync-tool-counts.mjs` (prebuild).
 - ✅ Semua item dari audit HRD selesai — antrian kosong.
 - ✅ Dashboard gak tampil di landing/search dan gak keindeks (3 lapis, terverifikasi live).
 - ⚠️ Catatan: kalau halaman sempat keindeks sebelum noindex, minta user request removal via Google Search Console.
@@ -85,4 +105,9 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 
 ## Verifikasi standar selesai kerja
 
-`pnpm build` (guardrail + build hijau) → kalau perlu live: deploy Vercel → curl verify.
+1. `pnpm build` — prebuild (sync angka + 6 guardrail) + build hijau.
+2. `pnpm test` — vitest 62/62.
+3. `node scripts/audit-i18n.mjs` — exit 0 (0 dup / 0 dangling).
+4. Perubahan interaktif → smoke **CDP Chrome headless**: klik nyata, assert nilai DOM,
+   round-trip SPA (pergi → balik → tool harus tetap hidup), 0 page exception.
+5. Kalau live: push → tunggu deploy (poll marker URL/fitur baru) → verifikasi ulang di production.
