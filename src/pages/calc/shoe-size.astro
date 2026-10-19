@@ -1,0 +1,328 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Shoe Size Calculator">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh] py-10">
+
+    <ToolPageHeader
+      title="Kalkulator Ukuran Sepatu"
+      titleKey="header.shoe_size"
+      desc="Ukur kaki sekali, dapatkan ukuran EU, US, UK, Mondopoint & CM — dari bayi sampai dewasa."
+      descKey="header.shoe_size_desc"
+      icon='<path d="M4 15.5h11.6c2.3 0 4.5-1.1 5.9-2.9l.7-.9c.6-.8.5-1.9-.3-2.5l-2.4-1.8a2.5 2.5 0 0 1-1-2l-.2-1.3A1.6 1.6 0 0 0 16.7 2h-4.4c-.8 0-1.5.4-1.9 1.1L9.2 4.8 7.4 4C6.3 3.4 5 3.8 4.4 4.8L2.6 7.6A2.5 2.5 0 0 0 2.2 9v5c0 .8.7 1.5 1.5 1.5z"/><path d="M2 16.5V20h20v-3.5"/>'
+      gradient="from-amber-500 to-orange-600"
+    />
+
+    <!-- INPUT -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+        <div class="flex-1 min-w-[240px]">
+          <label for="foot-cm" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="shoe.foot_length">Panjang kaki (tumit → ujung jari terpanjang)</label>
+          <div class="flex items-center gap-3">
+            <input id="foot-cm" type="number" min="8" max="31" step="0.1" value="24"
+              class="w-32 px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-2xl font-black text-center text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/40 transition-all" />
+            <span class="font-bold text-matte-400 text-lg">cm</span>
+            <span id="foot-inch" class="text-xs font-semibold text-matte-400"></span>
+          </div>
+        </div>
+        <div>
+          <span class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="shoe.gender">Jenis kelamin (ukuran dewasa)</span>
+          <div class="inline-flex rounded-xl border border-matte-200 dark:border-matte-700 overflow-hidden">
+            <button id="gender-pria" type="button" class="px-5 py-3 text-xs font-bold bg-amber-500 text-white transition-all" data-i18n="shoe.male">Pria</button>
+            <button id="gender-wanita" type="button" class="px-5 py-3 text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="shoe.female">Wanita</button>
+          </div>
+        </div>
+      </div>
+
+      <input id="foot-range" type="range" min="8" max="31" step="0.1" value="24" aria-label="Panjang kaki (cm)"
+        class="w-full accent-amber-500 cursor-pointer" />
+
+      <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
+        <span id="zone-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-2xs font-black uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">Zona: Dewasa</span>
+        <span id="gender-hint" class="text-2xs text-matte-400" data-i18n="shoe.gender_hint">Gender berlaku untuk ukuran dewasa — bayi & anak memakai skala yang sama.</span>
+      </div>
+    </div>
+
+    <!-- HASIL -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white" data-i18n="shoe.result_title">Hasil Ukuran Kamu</h3>
+        <button id="copy-size-btn" type="button"
+          class="inline-flex items-center gap-1.5 text-xs font-semibold text-matte-500 dark:text-matte-400 hover:text-amber-600 dark:hover:text-amber-400 border border-matte-200 dark:border-matte-700 hover:border-amber-400/50 rounded-full px-3.5 py-1.5 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span data-i18n="shoe.copy">Salin Hasil</span>
+        </button>
+      </div>
+
+      <p id="empty-state" class="hidden text-sm text-matte-400" data-i18n="shoe.empty">Masukkan panjang kaki untuk melihat ukuran.</p>
+
+      <div id="result-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div class="rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-4 text-center">
+          <div class="text-2xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1" data-i18n="shoe.eu">EU (Eropa)</div>
+          <div id="r-eu" class="text-4xl font-black text-matte-900 dark:text-white">—</div>
+          <div id="r-eu-sub" class="text-2xs text-matte-400 mt-1"></div>
+        </div>
+        <div class="rounded-2xl bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900 p-4 text-center">
+          <div class="text-2xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider mb-1" data-i18n="shoe.us">US</div>
+          <div id="r-us" class="text-4xl font-black text-matte-900 dark:text-white">—</div>
+          <div id="r-us-sub" class="text-2xs text-matte-400 mt-1"></div>
+        </div>
+        <div class="rounded-2xl bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-900 p-4 text-center">
+          <div class="text-2xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1" data-i18n="shoe.uk">UK</div>
+          <div id="r-uk" class="text-4xl font-black text-matte-900 dark:text-white">—</div>
+          <div id="r-uk-sub" class="text-2xs text-matte-400 mt-1"></div>
+        </div>
+        <div class="rounded-2xl bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 p-4 text-center">
+          <div class="text-2xs font-bold text-matte-500 dark:text-matte-300 uppercase tracking-wider mb-1" data-i18n="shoe.mondo">Mondopoint</div>
+          <div id="r-mondo" class="text-4xl font-black text-matte-900 dark:text-white">—</div>
+          <div id="r-mondo-sub" class="text-2xs text-matte-400 mt-1">mm</div>
+        </div>
+        <div class="rounded-2xl bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 p-4 text-center">
+          <div class="text-2xs font-bold text-matte-500 dark:text-matte-300 uppercase tracking-wider mb-1" data-i18n="shoe.jp">CM / JP</div>
+          <div id="r-jp" class="text-4xl font-black text-matte-900 dark:text-white">—</div>
+          <div id="r-jp-sub" class="text-2xs text-matte-400 mt-1"></div>
+        </div>
+        <div class="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 p-4 text-center">
+          <div class="text-2xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1" data-i18n="shoe.insole">Insole ideal</div>
+          <div id="r-insole" class="text-4xl font-black text-matte-900 dark:text-white">—</div>
+          <div class="text-2xs text-matte-400 mt-1">cm</div>
+        </div>
+      </div>
+
+      <p class="mt-4 text-2xs leading-relaxed text-matte-400" data-i18n="shoe.between_note">Dapat dua ukuran? Pilih yang lebih besar. Kaki kanan-kiri biasanya beda — ukur keduanya dan pakai yang lebih besar.</p>
+    </div>
+
+    <!-- PANDUAN -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-4 flex items-center gap-3">
+        <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7"/><path d="M3 12h18"/><path d="M7 12V7a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v5"/><path d="M7 16v2"/><path d="M17 16v2"/></svg>
+        </div>
+        <span data-i18n="shoe.guide_title">Cara Ukur Kaki yang Benar</span>
+      </h3>
+      <ol class="space-y-3 text-sm text-matte-600 dark:text-matte-300 list-none counter-reset-step">
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-2xs font-black flex items-center justify-center">1</span><span data-i18n="shoe.guide_1">Ukur di sore hari saat kaki sedikit membesar, dengan kaus kaki tipis atau telanjang kaki.</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-2xs font-black flex items-center justify-center">2</span><span data-i18n="shoe.guide_2">Berdiri di atas kertas dengan beban tubuh merata di kedua kaki — jangan duduk.</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-2xs font-black flex items-center justify-center">3</span><span data-i18n="shoe.guide_3">Ukur kedua kaki. Untuk membeli sepatu, gunakan ukuran kaki yang LEBIH BESAR.</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-2xs font-black flex items-center justify-center">4</span><span data-i18n="shoe.guide_4">Gambar garis tumit dan ujung jari terpanjang, lalu ukur jaraknya hingga akurasi 0,1 cm.</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-2xs font-black flex items-center justify-center">5</span><span data-i18n="shoe.guide_5">Untuk anak: sisakan ruang tumbuh ± 1 cm (sekitar lebar jempol) di depan jari kaki.</span></li>
+      </ol>
+    </div>
+
+    <!-- TABEL -->
+    <div class="card-base p-6 animate-fade-in">
+      <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-4" data-i18n="shoe.table_title">Tabel Ukuran Lengkap (Bayi → Dewasa)</h3>
+      <div class="overflow-x-auto -mx-2 px-2">
+        <table class="w-full text-xs text-center border-collapse">
+          <thead>
+            <tr class="text-2xs font-black text-matte-400 uppercase tracking-wider">
+              <th class="py-2.5 px-2" data-i18n="shoe.th_cm">CM</th>
+              <th class="py-2.5 px-2" data-i18n="shoe.th_mondo">Mondopoint</th>
+              <th class="py-2.5 px-2" data-i18n="shoe.th_eu">EU</th>
+              <th class="py-2.5 px-2" data-i18n="shoe.th_us_kids">US Anak</th>
+              <th class="py-2.5 px-2" data-i18n="shoe.th_uk_kids">UK Anak</th>
+              <th class="py-2.5 px-2" data-i18n="shoe.th_us_men">US Pria</th>
+              <th class="py-2.5 px-2" data-i18n="shoe.th_us_women">US Wanita</th>
+              <th class="py-2.5 px-2" data-i18n="shoe.th_uk_adult">UK Dewasa</th>
+            </tr>
+          </thead>
+          <tbody id="size-tbody"></tbody>
+        </table>
+      </div>
+      <p class="mt-3 text-2xs text-matte-400">Sumber rumus: standar Paris point (EU), barleycorn (US/UK), ISO 9407 (Mondopoint) — Wikipedia “Shoe size”. Ukuran antar merek bisa beda ± ½.</p>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  // Rumus resmi (Wikipedia "Shoe size", berbasis panjang kaki aktual):
+  //   EU (Paris point) = 1,5 × cm + 2
+  //   US Pria = 3×in − 22 | US Wanita = 3×in − 20,5 (skala common: pria +1,5)
+  //   US Anak = 3×in − 9,75 | UK Dewasa = 3×in − 23 | UK Anak = 3×in − 10
+  //   Mondopoint = bulatkan ke 5 mm terdekat | CM/JP = panjang kaki
+  // Pembulatan: dewasa di-FLOOR ke ½ terdekat (anchor Brannock: kaki24,0 cm =
+  // US6 / UK5), anak di-ROUND (kaki15 cm = US8) — hasil sesuai chart retail.
+  const ADULT_MIN_CM = 20.0; // batas skala anak → dewasa (UK dewasa mulai ±20,3 cm)
+  const half = (x: number) => Math.round(x * 2) / 2;
+  const floorHalf = (x: number) => Math.floor(x * 2) / 2;
+  const fmt = (x: number) => (Math.round(x * 10) / 10).toFixed(1);
+
+  function zoneOf(cm: number): 'baby' | 'kids' | 'adult' {
+    if (cm < 10) return 'baby';
+    if (cm < ADULT_MIN_CM) return 'kids';
+    return 'adult';
+  }
+
+  function sizesFor(cm: number, wanita: boolean) {
+    const inch = cm / 2.54;
+    const zone = zoneOf(cm);
+    const adult = zone === 'adult';
+    return {
+      zone,
+      eu: Math.round(cm * 1.5 + 2),
+      us: adult
+        ? floorHalf(3 * inch - (wanita ? 20.5 : 22))
+        : Math.min(13.5, half(3 * inch - 9.75)),
+      uk: adult
+        ? floorHalf(3 * inch - 23)
+        : Math.min(13.5, half(3 * inch - 10)),
+      mondo: Math.round((cm * 10) / 5) * 5,
+      jp: Math.ceil(cm * 2) / 2,
+      insoleLo: cm + 1.0,
+      insoleHi: cm + 1.5,
+    };
+  }
+
+  function init() {
+    const footCm = document.getElementById('foot-cm') as HTMLInputElement;
+    const footRange = document.getElementById('foot-range') as HTMLInputElement;
+    const footInch = document.getElementById('foot-inch');
+    const genderPria = document.getElementById('gender-pria');
+    const genderWanita = document.getElementById('gender-wanita');
+    const zoneBadge = document.getElementById('zone-badge');
+    const emptyState = document.getElementById('empty-state');
+    const resultGrid = document.getElementById('result-grid');
+    const copyBtn = document.getElementById('copy-size-btn');
+    const tbody = document.getElementById('size-tbody');
+    if (!footCm || !footRange || !tbody) return;
+
+    let wanita = false;
+    let lastSummary = '';
+
+    const ZONE_LABEL: Record<string, string> = {
+      baby: 'shoe.zone_baby', kids: 'shoe.zone_kids', adult: 'shoe.zone_adult',
+    };
+    const zoneText: Record<string, string> = {
+      baby: 'Zona: Bayi', kids: 'Zona: Anak', adult: 'Zona: Dewasa',
+    };
+
+    function compute() {
+      const cm = parseFloat(footCm.value);
+      const valid = !isNaN(cm) && cm >= 8 && cm <= 31;
+      const inchEl = footInch;
+      if (inchEl) inchEl.textContent = valid ? `(${fmt(cm / 2.54)} in)` : '';
+
+      if (!valid) {
+        emptyState?.classList.remove('hidden');
+        resultGrid?.classList.add('hidden');
+        return;
+      }
+      emptyState?.classList.add('hidden');
+      resultGrid?.classList.remove('hidden');
+
+      const s = sizesFor(cm, wanita);
+      const set = (id: string, val: string) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      set('r-eu', String(s.eu));
+      set('r-eu-sub', `≈ ${s.mondo} mm`);
+      set('r-us', String(s.us));
+      set('r-us-sub', s.zone === 'adult' ? (wanita ? 'Wanita' : 'Pria') : 'Anak');
+      set('r-uk', String(s.uk));
+      set('r-uk-sub', s.zone === 'adult' ? (wanita ? 'Wanita' : 'Pria') : 'Anak');
+      set('r-mondo', String(s.mondo));
+      set('r-jp', `${fmt(s.jp)} cm`);
+      set('r-insole', `${fmt(s.insoleLo)}–${fmt(s.insoleHi)}`);
+
+      if (zoneBadge) {
+        const key = ZONE_LABEL[s.zone];
+        zoneBadge.textContent = (window._tToast ? window._tToast(zoneText[s.zone]) : zoneText[s.zone]) || zoneText[s.zone];
+        zoneBadge.dataset.i18n = key;
+        zoneBadge.classList.toggle('bg-rose-100', s.zone === 'baby');
+        zoneBadge.classList.toggle('text-rose-700', s.zone === 'baby');
+        zoneBadge.classList.toggle('dark:bg-rose-900/40', s.zone === 'baby');
+        zoneBadge.classList.toggle('dark:text-rose-300', s.zone === 'baby');
+        zoneBadge.classList.toggle('bg-sky-100', s.zone === 'kids');
+        zoneBadge.classList.toggle('text-sky-700', s.zone === 'kids');
+        zoneBadge.classList.toggle('dark:bg-sky-900/40', s.zone === 'kids');
+        zoneBadge.classList.toggle('dark:text-sky-300', s.zone === 'kids');
+        zoneBadge.classList.toggle('bg-amber-100', s.zone === 'adult');
+        zoneBadge.classList.toggle('text-amber-700', s.zone === 'adult');
+        zoneBadge.classList.toggle('dark:bg-amber-900/40', s.zone === 'adult');
+        zoneBadge.classList.toggle('dark:text-amber-300', s.zone === 'adult');
+      }
+
+      lastSummary = `Ukuran sepatu (kaki ${fmt(cm)} cm): EU ${s.eu} · UK ${s.uk} · US ${s.us} · Mondopoint ${s.mondo} mm · CM ${fmt(s.jp)}`;
+
+      // highlight baris tabel aktif
+      tbody!.querySelectorAll('tr[data-cm]').forEach((tr) => {
+        const rowCm = parseFloat((tr as HTMLElement).dataset.cm || '');
+        const active = Math.abs(rowCm - cm) < 0.25;
+        tr.classList.toggle('bg-amber-500/10', active);
+        tr.classList.toggle('font-bold', active);
+      });
+    }
+
+    function renderTable() {
+      const rows: string[] = [];
+      for (let cm = 8; cm <= 30.5; cm = Math.round((cm + 0.5) * 10) / 10) {
+        const s = sizesFor(cm, false);
+        const kids = s.zone !== 'adult';
+        const dash = '<td class="py-2 px-2 text-matte-300 dark:text-matte-600">—</td>';
+        const cell = (v: string) => `<td class="py-2 px-2 text-matte-600 dark:text-matte-300">${v}</td>`;
+        const zoneTint = s.zone === 'baby'
+          ? 'bg-rose-50/60 dark:bg-rose-950/20'
+          : (s.zone === 'kids' ? 'bg-sky-50/60 dark:bg-sky-950/20' : '');
+        rows.push(
+          `<tr data-cm="${cm}" class="${zoneTint} border-b border-matte-100 dark:border-matte-800">` +
+          cell(`<span class="text-matte-800 dark:text-white">${fmt(cm)}</span>`) +
+          cell(String(s.mondo)) +
+          cell(String(s.eu)) +
+          (kids ? cell(String(s.us)) + cell(String(s.uk)) : dash + dash) +
+          (!kids ? cell(String(s.us)) + cell(String(sizesFor(cm, true).us)) + cell(String(s.uk)) : dash + dash + dash) +
+          '</tr>'
+        );
+      }
+      tbody!.innerHTML = rows.join('');
+    }
+
+    function setGender(isWanita: boolean) {
+      wanita = isWanita;
+      genderPria!.className = isWanita
+        ? 'px-5 py-3 text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all'
+        : 'px-5 py-3 text-xs font-bold bg-amber-500 text-white transition-all';
+      genderWanita!.className = isWanita
+        ? 'px-5 py-3 text-xs font-bold bg-amber-500 text-white transition-all'
+        : 'px-5 py-3 text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all';
+      compute();
+    }
+
+    footCm.addEventListener('input', () => {
+      const v = parseFloat(footCm.value);
+      if (!isNaN(v)) footRange.value = String(Math.min(31, Math.max(8, v)));
+      compute();
+    });
+    footRange.addEventListener('input', () => {
+      footCm.value = footRange.value;
+      compute();
+    });
+    genderPria?.addEventListener('click', () => setGender(false));
+    genderWanita?.addEventListener('click', () => setGender(true));
+    copyBtn?.addEventListener('click', async () => {
+      if (!lastSummary) return;
+      try {
+        await navigator.clipboard.writeText(`${lastSummary} — ${window.location.href}`);
+        window.showToast?.(window._tToast ? window._tToast('Hasil disalin!') : 'Hasil disalin!', 'success');
+      } catch {
+        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin') : 'Gagal menyalin', 'error');
+      }
+    });
+
+    renderTable();
+    compute();
+  }
+
+  // SPA boot: guard path + guard dobel-bind — DOM baru tiap balik navigasi SPA.
+  // (Pola rumah W6: binding diinit() supaya tool gak mati setelah pergi-balik.)
+  document.addEventListener('astro:page-load', () => {
+    const path = (location.pathname.replace(/\/+$/, '') || '/');
+    if (path !== __page) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+</script>
