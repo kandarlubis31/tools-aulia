@@ -794,5 +794,8 @@ window._i18nPhrases = {
   'Gagal mengenali teks — coba gambar lain.':'Failed to recognize text — try another image.',
   'Memuat engine OCR…':'Loading OCR engine…','Menyiapkan engine…':'Initializing engine…',
   'Mengunduh model bahasa…':'Downloading language model…','Menyiapkan model…':'Preparing model…',
-  'Mengenali teks…':'Recognizing text…',
+  'Mengenali teks…':'Recognizing text…','Lengkapi data dulu!':'Fill in the data first!',
+  'Tempel data CSV dulu!':'Paste CSV data first!',
+  'CSV belum valid — cek baris & format angka.':'Invalid CSV — check rows and number format.',
+  'Gagal memuat pustaka grafik — cek koneksi internet.':'Failed to load chart library — check your connection.',
 };
