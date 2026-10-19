@@ -364,6 +364,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'shoe.result_title': { id: 'Hasil Ukuran Kamu', en: 'Your Shoe Size' },
   'shoe.empty': { id: 'Masukkan panjang kaki untuk melihat ukuran.', en: 'Enter foot length to see sizes.' },
   'shoe.eu': { id: 'EU (Eropa)', en: 'EU (Europe)' },
+  'shoe.primary': { id: 'Ukuran utama', en: 'Primary size' },
   'shoe.us': { id: 'US', en: 'US' },
   'shoe.uk': { id: 'UK', en: 'UK' },
   'shoe.mondo': { id: 'Mondopoint', en: 'Mondopoint' },
