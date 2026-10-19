@@ -1,6 +1,7 @@
 ---
 // Offline fallback page (used by the service worker navigateFallback).
 // It's a standalone route (not using BaseLayout) so it stays fully self-contained.
+import { publicTools } from '../data/tools';
 ---
 <!DOCTYPE html>
 <html lang="id">
@@ -142,7 +143,7 @@
     </div>
 
     <p id="status-text"><span id="status-dot"></span> <span id="status-label">Memeriksa koneksi...</span></p>
-    <p class="hint">🌐 Sambungkan internet untuk akses semua 232+ tools.</p>
+    <p class="hint">🌐 Sambungkan internet untuk akses semua {publicTools.length}+ tools.</p>
   </div>
 
   <script is:inline>
