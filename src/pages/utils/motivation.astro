@@ -164,6 +164,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
+  import { probeOnline } from '../../composables/useOnline';
+
   // --- 1. LOCAL DATABASE (OFFLINE MODE) ---
   const localDB = [
     { text: "Talk is cheap. Show me the code.", author: "Linus Torvalds", tag: "coding" },
@@ -352,6 +354,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   }
 
   // --- TRANSLATION LOGIC (FIXED) ---
+
   async function toggleTranslation() {
       if (isTranslated) {
           // REVERT LOGIC: Ambil dari backup originalQuote
@@ -364,7 +367,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           window.showToast?.(window._tToast ? window._tToast('Kembali ke teks asli') : 'Kembali ke teks asli', 'info');
       } else {
           // TRANSLATE LOGIC
-          if (!isOnline && !navigator.onLine) {
+          if (!isOnline && !(await probeOnline(2500))) {
               window.showToast?.(window._tToast ? window._tToast('Fitur translate butuh internet!') : 'Fitur translate butuh internet!', 'error');
               return;
           }

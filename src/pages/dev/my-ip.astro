@@ -403,15 +403,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
+  import { probeOnline } from '../../composables/useOnline';
+
   // ================================================================
   // 1. NETWORK STATUS
   // ================================================================
-  function updateNetworkStatus() {
+
+  async function updateNetworkStatus() {
     const statusText = document.getElementById('network-status');
     const text = document.getElementById('network-text');
     if (!statusText || !text) return;
     
-    if (navigator.onLine) {
+    if (await probeOnline(3000)) {
         statusText.classList.remove('bg-red-500', 'border-red-400');
         statusText.classList.add('bg-emerald-500', 'border-emerald-400', 'text-white');
         text.textContent = window._tToast ? window._tToast('● Online') : '● Online';
