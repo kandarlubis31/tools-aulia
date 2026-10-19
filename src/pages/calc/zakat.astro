@@ -1,0 +1,413 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Zakat Calculator">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh] py-10">
+
+    <ToolPageHeader
+      title="Kalkulator Zakat"
+      titleKey="header.zakat"
+      desc="Hitung zakat fitrah, penghasilan, harta (maal), emas & perak — nisab mengikuti standar BAZNAS. Semua perhitungan di browser."
+      descKey="header.zakat_desc"
+      icon='<circle cx="12" cy="7.5" r="3.5"/><path d="M12 5.5v4"/><path d="M10.7 6.6h1.9a1 1 0 0 1 0 2h-1.3a1 1 0 0 0 0 2h1.9"/><path d="M4 15.5c1.7-1 3.6-1.5 5.6-1.5h4.8c2 0 3.9.5 5.6 1.5"/><path d="M5.5 19c1.5-.8 3.1-1.2 4.8-1.2h3.4c1.7 0 3.3.4 4.8 1.2"/>'
+      gradient="from-emerald-500 to-teal-600"
+    />
+
+    <!-- MODE TABS -->
+    <div class="card-base p-4 mb-6 animate-fade-in">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <button id="tab-fitrah" type="button" data-mode="fitrah"
+          class="px-4 py-3 rounded-xl text-xs font-black transition-all bg-emerald-500 text-white shadow">
+          <span data-i18n="zakat.mode_fitrah">Zakat Fitrah</span>
+        </button>
+        <button id="tab-income" type="button" data-mode="income"
+          class="px-4 py-3 rounded-xl text-xs font-black transition-all bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover">
+          <span data-i18n="zakat.mode_income">Zakat Penghasilan</span>
+        </button>
+        <button id="tab-maal" type="button" data-mode="maal"
+          class="px-4 py-3 rounded-xl text-xs font-black transition-all bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover">
+          <span data-i18n="zakat.mode_maal">Zakat Maal (Harta)</span>
+        </button>
+        <button id="tab-gold" type="button" data-mode="gold"
+          class="px-4 py-3 rounded-xl text-xs font-black transition-all bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover">
+          <span data-i18n="zakat.mode_gold">Emas &amp; Perak</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- INPUT -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <div data-panel="fitrah">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="zf-jiwa" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="zakat.jiwa">Jumlah jiwa</label>
+            <input id="zf-jiwa" type="number" min="1" max="9999" step="1" value="4"
+              class="w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xl font-bold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all" />
+          </div>
+          <div>
+            <label for="zf-nilai" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="zakat.per_person">Nilai zakat per jiwa (Rp)</label>
+            <input id="zf-nilai" type="number" min="0" step="1000" value="50000"
+              class="w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xl font-bold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all" />
+          </div>
+        </div>
+        <p class="mt-3 text-2xs leading-relaxed text-matte-400" data-i18n="zakat.fitrah_note">Patokan BAZNAS: 2,5 kg (3,5 liter) beras per jiwa, atau setara uang Rp50.000 per jiwa. Nilai di atas bisa disesuaikan harga beras daerahmu.</p>
+      </div>
+
+      <div data-panel="income" class="hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="zi-income" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="zakat.income_month">Penghasilan per bulan (Rp)</label>
+            <input id="zi-income" type="number" min="0" step="100000" value="20000000"
+              class="w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xl font-bold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all" />
+          </div>
+          <div>
+            <label for="zi-emas" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="zakat.gold_price">Harga emas per gram (Rp)</label>
+            <input id="zi-emas" type="number" min="0" step="1000" value="2572000"
+              class="w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xl font-bold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all" />
+          </div>
+        </div>
+        <p class="mt-3 text-2xs leading-relaxed text-matte-400" data-i18n="zakat.income_note">Nisab zakat penghasilan = 85 gram emas per tahun (± Rp218.620.000 @ Rp2.572.000/gram). Kadar zakat 2,5% dari penghasilan.</p>
+      </div>
+
+      <div data-panel="maal" class="hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="zm-harta" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="zakat.assets">Total harta — tabungan, emas, investasi (Rp)</label>
+            <input id="zm-harta" type="number" min="0" step="100000" value="300000000"
+              class="w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xl font-bold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all" />
+          </div>
+          <div>
+            <label for="zm-emas" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="zakat.gold_price">Harga emas per gram (Rp)</label>
+            <input id="zm-emas" type="number" min="0" step="1000" value="2572000"
+              class="w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xl font-bold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all" />
+          </div>
+        </div>
+        <p class="mt-3 text-2xs leading-relaxed text-matte-400" data-i18n="zakat.maal_note">Nisab = 85 gram emas (± Rp218.620.000), kadar 2,5%, dengan syarat haul — harta dimiliki minimal satu tahun.</p>
+      </div>
+
+      <div data-panel="gold" class="hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="zg-emas" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="zakat.gold_weight">Berat emas (gram)</label>
+            <input id="zg-emas" type="number" min="0" step="0.1" value="100"
+              class="w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xl font-bold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all" />
+          </div>
+          <div>
+            <label for="zg-emas-harga" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="zakat.gold_price">Harga emas per gram (Rp)</label>
+            <input id="zg-emas-harga" type="number" min="0" step="1000" value="2572000"
+              class="w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xl font-bold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all" />
+          </div>
+          <div>
+            <label for="zg-perak" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="zakat.silver_weight">Berat perak (gram)</label>
+            <input id="zg-perak" type="number" min="0" step="0.1" value="0"
+              class="w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xl font-bold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all" />
+          </div>
+          <div>
+            <label for="zg-perak-harga" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="zakat.silver_price">Harga perak per gram (Rp)</label>
+            <input id="zg-perak-harga" type="number" min="0" step="100" value="38400"
+              class="w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xl font-bold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all" />
+          </div>
+        </div>
+        <p class="mt-3 text-2xs leading-relaxed text-matte-400" data-i18n="zakat.gold_note">Nisab emas: 85 gram. Nisab perak: 595 gram. Kadar masing-masing 2,5% dari nilai (berat × harga) dengan syarat haul satu tahun.</p>
+      </div>
+    </div>
+
+    <!-- HASIL -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white" data-i18n="zakat.result_title">Hasil Perhitungan</h3>
+        <button id="zakat-copy-btn" type="button"
+          class="inline-flex items-center gap-1.5 text-xs font-semibold text-matte-500 dark:text-matte-400 hover:text-emerald-600 dark:hover:text-emerald-400 border border-matte-200 dark:border-matte-700 hover:border-emerald-400/50 rounded-full px-3.5 py-1.5 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span data-i18n="zakat.copy">Salin Hasil</span>
+        </button>
+      </div>
+
+      <p id="zakat-empty" class="hidden text-sm text-matte-400" data-i18n="zakat.empty">Isi nilai di atas untuk melihat hasil.</p>
+
+      <!-- hasil: fitrah -->
+      <div data-result="fitrah" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 p-4 text-center">
+          <div class="text-2xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1" data-i18n="zakat.total_money">Total zakat fitrah (uang)</div>
+          <div id="r-fit-total" class="text-3xl font-black text-matte-900 dark:text-white">—</div>
+        </div>
+        <div class="rounded-2xl bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 p-4 text-center">
+          <div class="text-2xs font-bold text-matte-500 dark:text-matte-300 uppercase tracking-wider mb-1" data-i18n="zakat.total_rice">Setara beras</div>
+          <div id="r-fit-beras" class="text-3xl font-black text-matte-900 dark:text-white">—</div>
+          <div class="text-2xs text-matte-400 mt-1" data-i18n="zakat.rice_unit">kg (2,5 kg × jiwa)</div>
+        </div>
+      </div>
+
+      <!-- hasil: penghasilan -->
+      <div data-result="income" class="hidden">
+        <div class="mb-3 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300" id="r-inc-status" data-i18n="zakat.not_wajib">BELUM WAJIB</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="rounded-2xl bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 p-4 text-center">
+            <div class="text-2xs font-bold text-matte-500 dark:text-matte-300 uppercase tracking-wider mb-1" data-i18n="zakat.nisab_year">Nisab setahun</div>
+            <div id="r-inc-nisab-y" class="text-xl font-black text-matte-900 dark:text-white">—</div>
+          </div>
+          <div class="rounded-2xl bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 p-4 text-center">
+            <div class="text-2xs font-bold text-matte-500 dark:text-matte-300 uppercase tracking-wider mb-1" data-i18n="zakat.nisab_month">Nisab per bulan</div>
+            <div id="r-inc-nisab-m" class="text-xl font-black text-matte-900 dark:text-white">—</div>
+          </div>
+          <div class="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 p-4 text-center">
+            <div class="text-2xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1" data-i18n="zakat.zakat_month">Zakat per bulan</div>
+            <div id="r-inc-zakat-m" class="text-xl font-black text-matte-900 dark:text-white">—</div>
+          </div>
+          <div class="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 p-4 text-center">
+            <div class="text-2xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1" data-i18n="zakat.zakat_year">Zakat setahun</div>
+            <div id="r-inc-zakat-y" class="text-xl font-black text-matte-900 dark:text-white">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- hasil: maal -->
+      <div data-result="maal" class="hidden">
+        <div class="mb-3 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300" id="r-maal-status" data-i18n="zakat.not_wajib">BELUM WAJIB</div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="rounded-2xl bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 p-4 text-center">
+            <div class="text-2xs font-bold text-matte-500 dark:text-matte-300 uppercase tracking-wider mb-1" data-i18n="zakat.nisab">Nisab (85 g emas)</div>
+            <div id="r-maal-nisab" class="text-xl font-black text-matte-900 dark:text-white">—</div>
+          </div>
+          <div class="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 p-4 text-center">
+            <div class="text-2xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1" data-i18n="zakat.zakat">Zakat maal (2,5%)</div>
+            <div id="r-maal-zakat" class="text-xl font-black text-matte-900 dark:text-white">—</div>
+          </div>
+          <div class="rounded-2xl bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 p-4 text-center">
+            <div class="text-2xs font-bold text-matte-500 dark:text-matte-300 uppercase tracking-wider mb-1" data-i18n="zakat.short">Kurang menuju nisab</div>
+            <div id="r-maal-short" class="text-xl font-black text-matte-900 dark:text-white">—</div>
+          </div>
+        </div>
+        <p class="mt-3 text-2xs leading-relaxed text-matte-400" data-i18n="zakat.haul_hint">Zakat maal wajib bila harta ≥ nisab DAN sudah dimiliki minimal 1 tahun (haul).</p>
+      </div>
+
+      <!-- hasil: emas & perak -->
+      <div data-result="gold" class="hidden">
+        <div class="mb-3 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300" id="r-gold-status" data-i18n="zakat.not_wajib">BELUM WAJIB</div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+          <div class="rounded-2xl bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 p-4 text-center">
+            <div class="text-2xs font-bold text-matte-500 dark:text-matte-300 uppercase tracking-wider mb-1" data-i18n="zakat.gold_value">Nilai emas</div>
+            <div id="r-gold-value" class="text-xl font-black text-matte-900 dark:text-white">—</div>
+            <div id="r-gold-nisab" class="text-2xs text-matte-400 mt-1"></div>
+          </div>
+          <div class="rounded-2xl bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 p-4 text-center">
+            <div class="text-2xs font-bold text-matte-500 dark:text-matte-300 uppercase tracking-wider mb-1" data-i18n="zakat.silver_value">Nilai perak</div>
+            <div id="r-silver-value" class="text-xl font-black text-matte-900 dark:text-white">—</div>
+            <div id="r-silver-nisab" class="text-2xs text-matte-400 mt-1"></div>
+          </div>
+          <div class="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 p-4 text-center">
+            <div class="text-2xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1" data-i18n="zakat.total_zakat">Total zakat (2,5%)</div>
+            <div id="r-gold-total" class="text-xl font-black text-matte-900 dark:text-white">—</div>
+          </div>
+        </div>
+        <p class="text-2xs leading-relaxed text-matte-400" data-i18n="zakat.haul_hint">Zakat maal wajib bila harta ≥ nisab DAN sudah dimiliki minimal 1 tahun (haul).</p>
+      </div>
+    </div>
+
+    <!-- REFERENSI -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-4 flex items-center gap-3">
+        <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <span data-i18n="zakat.guide_title">Dasar Perhitungan</span>
+      </h3>
+      <ol class="space-y-3 text-sm text-matte-600 dark:text-matte-300">
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-2xs font-black flex items-center justify-center">1</span><span data-i18n="zakat.guide_1"><b>Zakat fitrah:</b> 2,5 kg (3,5 liter) beras atau uang senilai Rp50.000 per jiwa — dibayar sebelum salat Idulfitri.</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-2xs font-black flex items-center justify-center">2</span><span data-i18n="zakat.guide_2"><b>Zakat penghasilan:</b> nisab 85 gram emas per tahun, kadar 2,5% dari penghasilan.</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-2xs font-black flex items-center justify-center">3</span><span data-i18n="zakat.guide_3"><b>Zakat maal:</b> nisab 85 gram emas, kadar 2,5%, syarat haul (dimiliki ≥ 1 tahun).</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-2xs font-black flex items-center justify-center">4</span><span data-i18n="zakat.guide_4"><b>Zakat emas &amp; perak:</b> nisab 85 g emas / 595 g perak, kadar 2,5% dari nilai logam.</span></li>
+      </ol>
+      <p class="mt-4 text-2xs leading-relaxed text-matte-400" data-i18n="zakat.source">Rujukan: BAZNAS (baznas.go.id) &amp; zakat.or.id — nisab 20 dinar (85 g emas) / 200 dirham (595 g perak). Harga emas default Rp2.572.000/gram &amp; perak Rp38.400/gram (Antam, 17–18 Okt 2026) — silakan ganti sesuai harga hari ini.</p>
+      <p class="mt-2 text-2xs leading-relaxed text-matte-400" data-i18n="zakat.disclaimer">Kalkulator ini bersifat edukatif. Untuk ketentuan resmi ibadah, rujuk ulama/lembaga zakat setempat.</p>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  // Rumus (rujukan BAZNAS / zakat.or.id):
+  //   Fitrah     = jiwa × nilai-per-jiwa (default Rp50.000 ≈ 2,5 kg beras)
+  //   Penghasilan = 2,5% × penghasilan; nisab/tahun = 85 g emas (harga-editable)
+  //   Maal       = 2,5% × harta bila harta ≥ 85 g emas (haul dicek terpisah)
+  //   Emas/Perak = 2,5% × (berat × harga) bila berat ≥ 85 g / ≥ 595 g
+  const NISAB_EMAS_G = 85;
+  const NISAB_PERAK_G = 595;
+  const RATE = 0.025;
+
+  const rp = (n: number) => 'Rp' + Math.round(n).toLocaleString('id-ID');
+  const num = (n: number, d = 0) => n.toLocaleString('id-ID', { maximumFractionDigits: d });
+  const val = (id: string) => {
+    const el = document.getElementById(id) as HTMLInputElement | null;
+    const v = el ? parseFloat(el.value) : NaN;
+    return isNaN(v) ? 0 : v;
+  };
+
+  function init() {
+    const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('button[data-mode]'));
+    const panels = Array.from(document.querySelectorAll<HTMLElement>('[data-panel]'));
+    const results = Array.from(document.querySelectorAll<HTMLElement>('[data-result]'));
+    const emptyEl = document.getElementById('zakat-empty');
+    const copyBtn = document.getElementById('zakat-copy-btn');
+    if (!tabs.length) return;
+
+    let mode = 'fitrah';
+    let lastSummary = '';
+
+    const ACTIVE = 'px-4 py-3 rounded-xl text-xs font-black transition-all bg-emerald-500 text-white shadow';
+    const INACTIVE = 'px-4 py-3 rounded-xl text-xs font-black transition-all bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover';
+
+    // Badge status dinamis — i18n via dataset.i18n (pola shoe-size)
+    const setStatus = (id: string, wajib: boolean) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const idText = wajib ? 'WAJIB ZAKAT' : 'BELUM WAJIB';
+      const key = wajib ? 'zakat.wajib' : 'zakat.not_wajib';
+      el.dataset.i18n = key;
+      el.textContent = (window._tToast ? window._tToast(idText) : idText) || idText;
+      el.classList.toggle('bg-emerald-100', wajib);
+      el.classList.toggle('dark:bg-emerald-900/40', wajib);
+      el.classList.toggle('text-emerald-700', wajib);
+      el.classList.toggle('dark:text-emerald-300', wajib);
+      el.classList.toggle('bg-matte-100', !wajib);
+      el.classList.toggle('dark:bg-surface-elevated', !wajib);
+      el.classList.toggle('text-matte-500', !wajib);
+      el.classList.toggle('dark:text-matte-300', !wajib);
+    };
+
+    const set = (id: string, text: string) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+
+    function compute() {
+      let summary = '';
+      let valid = false;
+
+      if (mode === 'fitrah') {
+        const jiwa = Math.floor(val('zf-jiwa'));
+        const per = val('zf-nilai');
+        valid = jiwa >= 1 && per > 0;
+        if (valid) {
+          const total = jiwa * per;
+          const beras = jiwa * 2.5;
+          set('r-fit-total', rp(total));
+          set('r-fit-beras', num(beras, 1));
+          summary = `Zakat fitrah ${jiwa} jiwa × ${rp(per)} = ${rp(total)} (setara ${num(beras, 1)} kg beras)`;
+        }
+      } else if (mode === 'income') {
+        const bulan = val('zi-income');
+        const emas = val('zi-emas');
+        valid = bulan > 0 && emas > 0;
+        if (valid) {
+          const nisabY = NISAB_EMAS_G * emas;
+          const nisabM = nisabY / 12;
+          const tahun = bulan * 12;
+          const wajib = tahun >= nisabY;
+          setStatus('r-inc-status', wajib);
+          set('r-inc-nisab-y', rp(nisabY));
+          set('r-inc-nisab-m', rp(nisabM));
+          set('r-inc-zakat-m', wajib ? rp(bulan * RATE) : '—');
+          set('r-inc-zakat-y', wajib ? rp(tahun * RATE) : '—');
+          summary = wajib
+            ? `Zakat penghasilan: penghasilan ${rp(bulan)}/bulan ≥ nisab ${rp(nisabM)}/bulan → zakat ${rp(bulan * RATE)}/bulan (${rp(tahun * RATE)}/tahun)`
+            : `Zakat penghasilan: penghasilan ${rp(bulan)}/bulan (setahun ${rp(tahun)}) belum mencapai nisab ${rp(nisabY)}/tahun — belum wajib`;
+        }
+      } else if (mode === 'maal') {
+        const harta = val('zm-harta');
+        const emas = val('zm-emas');
+        valid = harta > 0 && emas > 0;
+        if (valid) {
+          const nisab = NISAB_EMAS_G * emas;
+          const wajib = harta >= nisab;
+          setStatus('r-maal-status', wajib);
+          set('r-maal-nisab', rp(nisab));
+          set('r-maal-zakat', wajib ? rp(harta * RATE) : '—');
+          set('r-maal-short', wajib ? '—' : rp(nisab - harta));
+          summary = wajib
+            ? `Zakat maal: harta ${rp(harta)} ≥ nisab ${rp(nisab)} → zakat ${rp(harta * RATE)} (syarat haul 1 tahun)`
+            : `Zakat maal: harta ${rp(harta)} < nisab ${rp(nisab)} (kurang ${rp(nisab - harta)}) — belum wajib`;
+        }
+      } else {
+        const emasG = val('zg-emas');
+        const emasH = val('zg-emas-harga');
+        const perakG = val('zg-perak');
+        const perakH = val('zg-perak-harga');
+        valid = emasG > 0 || perakG > 0;
+        if (valid) {
+          const nilaiE = emasG * emasH;
+          const nilaiP = perakG * perakH;
+          const wajibE = emasG >= NISAB_EMAS_G;
+          const wajibP = perakG >= NISAB_PERAK_G;
+          const zakatE = wajibE ? nilaiE * RATE : 0;
+          const zakatP = wajibP ? nilaiP * RATE : 0;
+          setStatus('r-gold-status', wajibE || wajibP);
+          set('r-gold-value', nilaiE > 0 ? rp(nilaiE) : '—');
+          set('r-silver-value', nilaiP > 0 ? rp(nilaiP) : '—');
+          set('r-gold-nisab', emasG > 0
+            ? (wajibE ? `✓ ≥ ${NISAB_EMAS_G} g → zakat ${rp(zakatE)}` : `kurang ${num(NISAB_EMAS_G - emasG, 1)} g lagi (nisab ${NISAB_EMAS_G} g)`)
+            : '');
+          set('r-silver-nisab', perakG > 0
+            ? (wajibP ? `✓ ≥ ${NISAB_PERAK_G} g → zakat ${rp(zakatP)}` : `kurang ${num(NISAB_PERAK_G - perakG, 1)} g lagi (nisab ${NISAB_PERAK_G} g)`)
+            : '');
+          const total = zakatE + zakatP;
+          set('r-gold-total', (wajibE || wajibP) ? rp(total) : '—');
+          summary = (wajibE || wajibP)
+            ? `Zakat emas/perak: emas ${num(emasG, 1)} g (${wajibE ? 'zakat ' + rp(zakatE) : 'di bawah nisab'}), perak ${num(perakG, 1)} g (${wajibP ? 'zakat ' + rp(zakatP) : 'di bawah nisab'}) → total ${rp(total)}`
+            : `Zakat emas/perak: emas ${num(emasG, 1)} g & perak ${num(perakG, 1)} g — keduanya di bawah nisab (${NISAB_EMAS_G} g / ${NISAB_PERAK_G} g), belum wajib`;
+        }
+      }
+
+      lastSummary = summary;
+      emptyEl?.classList.toggle('hidden', valid);
+      results.forEach((r) => {
+        r.classList.toggle('hidden', r.dataset.result !== mode || !valid);
+      });
+    }
+
+    function setMode(next: string) {
+      mode = next;
+      tabs.forEach((t) => {
+        const active = t.dataset.mode === next;
+        t.className = active ? ACTIVE : INACTIVE;
+      });
+      panels.forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== next));
+      compute();
+    }
+
+    tabs.forEach((t) => t.addEventListener('click', () => setMode(t.dataset.mode || 'fitrah')));
+
+    // Satu listener di container — input di semua panel (termasuk yang tersembunyi) aman.
+    panels.forEach((p) => p.addEventListener('input', compute));
+
+    copyBtn?.addEventListener('click', async () => {
+      if (!lastSummary) {
+        window.showToast?.(window._tToast ? window._tToast('Isi nilai di atas dulu.') : 'Fill in the values first.', 'error');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(`${lastSummary} — ${window.location.href}`);
+        window.showToast?.(window._tToast ? window._tToast('Hasil disalin!') : 'Result copied!', 'success');
+      } catch {
+        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin.') : 'Failed to copy.', 'error');
+      }
+    });
+
+    setMode('fitrah');
+  }
+
+  // SPA boot: guard path + guard dobel-bind — DOM baru tiap balik navigasi SPA.
+  // (Pola rumah W6: binding diinit() supaya tool gak mati setelah pergi-balik.)
+  document.addEventListener('astro:page-load', () => {
+    const path = (location.pathname.replace(/\/+$/, '') || '/');
+    if (path !== __page) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+</script>

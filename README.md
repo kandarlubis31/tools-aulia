@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**244+ Tools Developer & Produktivitas · 100% Client-Side · Gratis Selamanya**
+**245+ Tools Developer & Produktivitas · 100% Client-Side · Gratis Selamanya**
 
 [🇮🇩 Indonesia](#indonesia) · [🇬🇧 English](#english)
 
@@ -22,7 +22,7 @@
 
 ### Tentang
 
-**MasAul Tools** adalah koleksi 244+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
+**MasAul Tools** adalah koleksi 245+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
 
 ### ✨ Kenapa MasAul Tools?
 
@@ -81,11 +81,11 @@ pnpm build      # Production build
 ```
 tools-aulia/
 ├── src/
-│   ├── pages/          # 245+ tool pages (Astro)
+│   ├── pages/          # 246+ tool pages (Astro)
 │   ├── components/     # Shared UI components
 │   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading, usePdf*, useCdnLib
 │   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
-│   ├── data/           # tools.ts (245 entries metadata), indonesian-names.ts
+│   ├── data/           # tools.ts (246 entries metadata), indonesian-names.ts
 │   ├── i18n/           # translations.ts
 │   └── styles/         # global.css + critical.css (inline above-the-fold)
 ├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json, vendor/, editor/
@@ -117,7 +117,7 @@ tools-aulia/
 
 ### About
 
-**MasAul Tools** is a collection of 244+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
+**MasAul Tools** is a collection of 245+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
 
 ### ✨ Why MasAul Tools?
 
@@ -176,11 +176,11 @@ pnpm build      # Production build
 ```
 tools-aulia/
 ├── src/
-│   ├── pages/          # 245+ tool pages (Astro)
+│   ├── pages/          # 246+ tool pages (Astro)
 │   ├── components/     # Shared UI components
 │   ├── composables/    # useToast, useClipboard, useDebounce, useShare, useLoading, usePdf*, useCdnLib
 │   ├── layouts/        # BaseLayout (navbar, footer, SEO, PWA, i18n)
-│   ├── data/           # tools.ts (245 entries metadata), indonesian-names.ts
+│   ├── data/           # tools.ts (246 entries metadata), indonesian-names.ts
 │   ├── i18n/           # translations.ts
 │   └── styles/         # global.css + critical.css (inline above-the-fold)
 ├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json, vendor/, editor/
