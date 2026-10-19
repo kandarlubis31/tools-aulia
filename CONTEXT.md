@@ -87,6 +87,12 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
   + **EU jadi ukuran default** — kolom EU di depan tabel + badge "Ukuran utama" (`40f2915`, `326a571`).
 - ✅ **(Oct 19)** i18n: **FULL 169/242 (70%)**; 128 dangling key ditutup; harness resmi
   `scripts/audit-i18n.mjs` — 0 dup/0 dangling (`3cb3b78`, `5b0e90f`, `72ae710`).
+- ✅ **(Oct 19)** Fix **false positif offline** ("Koneksi terputus" sering muncul padahal online):
+  race guard `netSeq` di BaseLayout (probe basi gak boleh nimpa state baru), vonis offline butuh
+  **2 probe gagal** (jeda 1.5s), + komposable baru `src/composables/useOnline.ts` (`probeOnline`/
+  `verifyOffline`) dipakai jokes/my-ip/motivation/brainstorm yang tadinya percaya `navigator.onLine`
+  mentah. CDP: fake-offline event gak lagi tampil banner; offline nyata tetap tampil; 11/11 lokal +
+  9/9 prod PASS (`e6e12f2`).
 - ✅ **(Oct 19)** Angka jumlah tool **otomatis** naik-turun via `scripts/sync-tool-counts.mjs` (prebuild).
 - ✅ Semua item dari audit HRD selesai — antrian kosong.
 - ✅ Dashboard gak tampil di landing/search dan gak keindeks (3 lapis, terverifikasi live).
