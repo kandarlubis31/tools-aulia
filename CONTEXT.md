@@ -3,6 +3,10 @@
 Situs kumpulan tools 100% client-side (Astro + Tailwind). Data pengguna diproses di browser,
 tidak pernah dikirim ke server. Live production: **https://tools.paklubis.my.id** (Vercel).
 
+> **Handoff antar-agent:** entry point rules = `AGENTS.md` di root (lokal/gitignored — baca file itu
+> dulu tiap mulai session baru, isinya ringkasan guardrails + peta file konteks). `docs/CONTEXT.md`
+> (internal, gitignored) = detail arsitektur, 22 Keputusan teknis, Plan Status.
+
 ---
 
 ## Konvensi & Guardrails (WAJIB ikut)
@@ -80,6 +84,9 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 
 ## Status saat ini (Oktober 2026)
 
+- ✅ **(Oct 19)** Konteks di-migrasi buat pindah ke **opencode**: `AGENTS.md` root dibuat (rules
+  ringkas + pointer lazy-load ke `@CONTEXT.md` / `@docs/CONTEXT.md` / `@docs/AGENTS.md`), kebijakan
+  tetap lokal (gitignored), header `docs/CONTEXT.md` di-refresh ke Okt 19.
 - ✅ **(Oct 19)** Audit SPA round-trip: **6 tool mati** setelah navigasi (jokes, motivation, bmi,
   percentage, unit, photo) → ke-fix semua pola W6; 17 kandidat `?.addEventListener` lain terbukti
   alive. Prod CDP 6/6 PASS (`d55c969`).
