@@ -7,6 +7,7 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  '/calc/zakat',
   '/calc/shoe-size',
   '/image/jpg-repair',
   '/utils/url-shortener',
