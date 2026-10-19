@@ -1,0 +1,311 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="OCR Online — Gambar ke Teks">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+
+    <ToolPageHeader
+      title="OCR — Foto & Scan ke Teks"
+      titleKey="header.ocr"
+      desc="Ekstrak teks dari foto, screenshot, atau dokumen hasil scan. Bahasa Indonesia & Inggris, 100% offline di browser."
+      descKey="header.ocr_desc"
+      icon='<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/>'
+      gradient="from-indigo-500 to-violet-600"
+    />
+
+    <!-- INPUT -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <DropZone
+        accept="image/*"
+        label="Klik atau tarik gambar ke sini (foto, screenshot, scan)"
+        labelKey="ocr.drop_label"
+        subLabel="JPG, PNG, WebP — teks Indonesia & Inggris"
+        subLabelKey="ocr.drop_sub"
+        icon='<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>'
+        gradient="from-indigo-500 to-violet-600"
+        hoverClass="hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20"
+      />
+
+      <div class="flex flex-wrap items-end justify-between gap-4 mt-5">
+        <div>
+          <label for="ocr-lang" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="ocr.lang_label">Bahasa teks di gambar</label>
+          <select id="ocr-lang"
+            class="px-4 py-2.5 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-bold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/40">
+            <option value="ind+eng" selected data-i18n="ocr.lang_both">Indonesia + Inggris</option>
+            <option value="ind" data-i18n="ocr.lang_ind">Indonesia saja</option>
+            <option value="eng" data-i18n="ocr.lang_eng">Inggris saja</option>
+          </select>
+        </div>
+        <button id="ocr-start-btn" type="button" disabled
+          class="px-6 py-2.5 rounded-xl text-xs font-black bg-indigo-500 text-white opacity-40 cursor-not-allowed transition-all">
+          <span data-i18n="ocr.start">Mulai OCR</span>
+        </button>
+      </div>
+
+      <div id="ocr-progress-wrap" class="hidden mt-4">
+        <div class="flex justify-between text-2xs font-bold text-matte-400 uppercase tracking-wider mb-1.5">
+          <span id="ocr-stage" data-i18n="ocr.stage_loading">Memuat model…</span>
+          <span id="ocr-pct">0%</span>
+        </div>
+        <div class="h-2 rounded-full bg-matte-100 dark:bg-surface-elevated overflow-hidden">
+          <div id="ocr-bar" class="h-full bg-gradient-to-r from-indigo-500 to-violet-600 transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HASIL -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white" data-i18n="ocr.result_title">Teks Hasil Scan</h3>
+        <div class="flex gap-2">
+          <button id="ocr-copy-btn" type="button" class="hidden items-center gap-1.5 text-xs font-semibold text-matte-500 dark:text-matte-400 hover:text-indigo-600 dark:hover:text-indigo-400 border border-matte-200 dark:border-matte-700 hover:border-indigo-400/50 rounded-full px-3.5 py-1.5 transition-all">
+            <span data-i18n="common.copy">Salin</span>
+          </button>
+          <button id="ocr-dl-btn" type="button" class="hidden items-center gap-1.5 text-xs font-semibold bg-indigo-500 hover:bg-indigo-600 text-white rounded-full px-3.5 py-1.5 transition-all">
+            <span data-i18n="ocr.download_txt">Download .txt</span>
+          </button>
+          <button id="ocr-reset-btn" type="button" class="text-xs font-semibold text-matte-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-1.5 transition-colors" data-i18n="common.reset">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <p id="ocr-empty" class="text-sm text-matte-400" data-i18n="ocr.empty">Belum ada hasil. Pilih gambar lalu tekan “Mulai OCR”.</p>
+
+      <textarea id="ocr-out" rows="10" readonly
+        class="hidden w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm text-matte-800 dark:text-white font-mono leading-relaxed outline-none focus:ring-2 focus:ring-indigo-500/40 resize-y"></textarea>
+
+      <div id="ocr-stats" class="hidden mt-3 text-2xs text-matte-400">
+        <span data-i18n="ocr.stat_words">Kata</span>: <span id="ocr-words" class="font-bold">0</span>
+        · <span data-i18n="ocr.stat_chars">Karakter</span>: <span id="ocr-chars" class="font-bold">0</span>
+        · <span data-i18n="ocr.stat_time">Durasi</span>: <span id="ocr-time" class="font-bold">0</span>s
+      </div>
+
+      <div class="mt-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900 p-3">
+        <p id="ocr-preview-name" class="text-xs font-bold text-indigo-700 dark:text-indigo-300"></p>
+        <p class="text-2xs text-matte-500 dark:text-matte-400 mt-1" data-i18n="ocr.hint">Tips: gambar jelas & kontras hasilnya lebih akurat. Kalau hasilnya meleset, coba crop dulu ke bagian berteks saja.</p>
+      </div>
+    </div>
+
+    <!-- PANDUAN -->
+    <div class="card-base p-6 animate-fade-in">
+      <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-3" data-i18n="ocr.about_title">Cara kerja & privasi</h3>
+      <p class="text-sm leading-relaxed text-matte-600 dark:text-matte-300 mb-2" data-i18n="ocr.about_1">OCR (Optical Character Recognition) dijalankan penuh di browser memakai Tesseract.js — mesin OCR open-source yang sama dengan yang dipakai banyak proyek dokumentasi. Model bahasa (~beberapa MB) diunduh sekali lalu di-cache browser.</p>
+      <p class="text-sm leading-relaxed text-matte-600 dark:text-matte-300" data-i18n="ocr.about_2">Gambar & teks hasil TIDAK pernah dikirim ke server — semuanya diproses di perangkatmu.</p>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  // Worker modul-level: dipakai lintas init, di-terminate saat init ulang / reset
+  // supaya gak ada worker yatim yang terus makan memori setelah navigasi SPA.
+  let ocrWorker: any = null;
+  let libReady: Promise<boolean> | null = null;
+  let currentFile: File | null = null;
+
+  async function ensureTesseract(): Promise<boolean> {
+    if (!libReady) {
+      libReady = (window as any).loadCdnLib
+        ? (window as any).loadCdnLib('Tesseract', [
+            'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
+            'https://unpkg.com/tesseract.js@5/dist/tesseract.min.js',
+          ])
+        : Promise.resolve(false);
+    }
+    return libReady;
+  }
+
+  async function destroyWorker() {
+    if (ocrWorker) {
+      try { await ocrWorker.terminate(); } catch { /* worker sudah mati */ }
+      ocrWorker = null;
+    }
+  }
+
+  function init() {
+    // Bersihkan sisa sesi sebelumnya (SPA balik ke halaman ini)
+    destroyWorker();
+    currentFile = null;
+
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement | null;
+    const langSel = document.getElementById('ocr-lang') as HTMLSelectElement | null;
+    const startBtn = document.getElementById('ocr-start-btn') as HTMLButtonElement | null;
+    const progressWrap = document.getElementById('ocr-progress-wrap');
+    const stageEl = document.getElementById('ocr-stage');
+    const pctEl = document.getElementById('ocr-pct');
+    const barEl = document.getElementById('ocr-bar');
+    const emptyEl = document.getElementById('ocr-empty');
+    const outEl = document.getElementById('ocr-out') as HTMLTextAreaElement | null;
+    const statsEl = document.getElementById('ocr-stats');
+    const wordsEl = document.getElementById('ocr-words');
+    const charsEl = document.getElementById('ocr-chars');
+    const timeEl = document.getElementById('ocr-time');
+    const previewName = document.getElementById('ocr-preview-name');
+    const copyBtn = document.getElementById('ocr-copy-btn');
+    const dlBtn = document.getElementById('ocr-dl-btn');
+    const resetBtn = document.getElementById('ocr-reset-btn');
+    if (!dropZone || !fileInput || !startBtn || !outEl) return;
+
+    const STAGE: Record<string, string> = {
+      'loading tesseract core': 'Memuat engine OCR…|Loading OCR engine…',
+      'initializing tesseract': 'Menyiapkan engine…|Initializing engine…',
+      'loading language traineddata': 'Mengunduh model bahasa…|Downloading language model…',
+      'initializing api': 'Menyiapkan model…|Preparing model…',
+      'recognizing text': 'Mengenali teks…|Recognizing text…',
+    };
+
+    const setStage = (raw: string) => {
+      const pair = STAGE[raw];
+      if (!pair || !stageEl) return;
+      const [id, en] = pair.split('|');
+      stageEl.dataset.stage = raw;
+      stageEl.textContent = (window._tToast ? window._tToast(id) : en) || id;
+    };
+
+    const setProgress = (pct: number) => {
+      const p = Math.max(0, Math.min(100, Math.round(pct * 100)));
+      if (pctEl) pctEl.textContent = p + '%';
+      if (barEl) (barEl as HTMLElement).style.width = p + '%';
+    };
+
+    const setBusy = (busy: boolean) => {
+      startBtn.disabled = busy;
+      startBtn.classList.toggle('opacity-40', busy);
+      startBtn.classList.toggle('cursor-not-allowed', busy);
+      langSel && (langSel.disabled = busy);
+    };
+
+    function pickFile(file: File) {
+      if (!file.type.startsWith('image/')) {
+        window.showToast?.(window._tToast ? window._tToast('File harus gambar (JPG/PNG/WebP).') : 'File must be an image (JPG/PNG/WebP).', 'error');
+        return;
+      }
+      if (file.size > 20 * 1024 * 1024) {
+        window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 20MB.') : 'File too large! Max 20MB.', 'error');
+        return;
+      }
+      currentFile = file;
+      if (previewName) previewName.textContent = file.name + ' (' + Math.round(file.size / 1024) + ' KB)';
+      startBtn.disabled = false;
+      startBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+      fileInput.value = '';
+    }
+
+    // wiring dropzone
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => { if (fileInput.files?.[0]) pickFile(fileInput.files[0]); });
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-indigo-500'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-indigo-500'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-indigo-500');
+      if (e.dataTransfer?.files[0]) pickFile(e.dataTransfer.files[0]);
+    });
+
+    startBtn.addEventListener('click', async () => {
+      if (!currentFile) {
+        window.showToast?.(window._tToast ? window._tToast('Pilih gambar dulu.') : 'Pick an image first.', 'error');
+        return;
+      }
+      if (!(await ensureTesseract())) {
+        window.showToast?.(window._tToast ? window._tToast('Gagal memuat pustaka OCR — cek koneksi internet.') : 'Failed to load OCR library — check your connection.', 'error');
+        return;
+      }
+
+      const file = currentFile;
+      const t0 = Date.now();
+      setBusy(true);
+      progressWrap?.classList.remove('hidden');
+      emptyEl?.classList.add('hidden');
+      setStage('initializing tesseract');
+      setProgress(0);
+
+      try {
+        await destroyWorker();
+        const langs = langSel?.value || 'ind+eng';
+        ocrWorker = await (window as any).Tesseract.createWorker(langs, 1, {
+          logger: (m: any) => {
+            if (m.status) setStage(m.status);
+            if (typeof m.progress === 'number') setProgress(m.progress);
+          },
+        });
+        const { data } = await ocrWorker.recognize(file);
+        const text: string = (data.text || '').trim();
+
+        outEl.value = text;
+        outEl.classList.remove('hidden');
+        statsEl?.classList.remove('hidden');
+        if (wordsEl) wordsEl.textContent = String(text ? text.split(/\s+/).length : 0);
+        if (charsEl) charsEl.textContent = String(text.length);
+        if (timeEl) timeEl.textContent = ((Date.now() - t0) / 1000).toFixed(1);
+        copyBtn?.classList.remove('hidden'); copyBtn?.classList.add('flex');
+        dlBtn?.classList.remove('hidden'); dlBtn?.classList.add('flex');
+
+        if (text) {
+          window.showToast?.(window._tToast ? window._tToast('OCR selesai!') : 'OCR complete!', 'success');
+        } else {
+          window.showToast?.(window._tToast ? window._tToast('Teks tidak ditemukan di gambar ini.') : 'No text found in this image.', 'warning');
+        }
+      } catch {
+        window.showToast?.(window._tToast ? window._tToast('Gagal mengenali teks — coba gambar lain.') : 'Failed to recognize text — try another image.', 'error');
+      } finally {
+        progressWrap?.classList.add('hidden');
+        setBusy(false);
+        await destroyWorker(); // model sudah dipakai — bebaskan memori
+      }
+    });
+
+    copyBtn?.addEventListener('click', async () => {
+      if (!outEl.value) return;
+      try {
+        await navigator.clipboard.writeText(outEl.value);
+        window.showToast?.(window._tToast ? window._tToast('Hasil disalin!') : 'Result copied!', 'success');
+      } catch {
+        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin.') : 'Failed to copy.', 'error');
+      }
+    });
+
+    dlBtn?.addEventListener('click', () => {
+      if (!outEl.value) return;
+      const blob = new Blob([outEl.value], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = (currentFile?.name.replace(/\.[^.]+$/, '') || 'ocr') + '.txt';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      window.showToast?.(window._tToast ? window._tToast('Diunduh!') : 'Downloaded!', 'success');
+    });
+
+    resetBtn?.addEventListener('click', () => {
+      currentFile = null;
+      outEl.value = '';
+      outEl.classList.add('hidden');
+      emptyEl?.classList.remove('hidden');
+      statsEl?.classList.add('hidden');
+      copyBtn?.classList.add('hidden'); copyBtn?.classList.remove('flex');
+      dlBtn?.classList.add('hidden'); dlBtn?.classList.remove('flex');
+      if (previewName) previewName.textContent = '';
+      progressWrap?.classList.add('hidden');
+      startBtn.disabled = true;
+      startBtn.classList.add('opacity-40', 'cursor-not-allowed');
+      destroyWorker();
+    });
+  }
+
+  // SPA boot (pola W6): guard path + guard dobel-bind.
+  document.addEventListener('astro:page-load', () => {
+    const path = (location.pathname.replace(/\/+$/, '') || '/');
+    if (path !== __page) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+</script>

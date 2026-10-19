@@ -1,0 +1,261 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+import DropZone from '../../components/DropZone.astro';
+---
+
+<BaseLayout pageTitle="HEIC to JPG Converter">
+  <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
+
+    <ToolPageHeader
+      title="Konverter HEIC ke JPG"
+      titleKey="header.heic"
+      desc="Foto iPhone (.heic) gak bisa dibuka? Ubah ke JPG instan — batch, pilih kualitas, semua diproses di browser."
+      descKey="header.heic_desc"
+      icon='<rect x="5" y="2" width="14" height="20" rx="2.5"/><path d="M9 18h6"/><path d="M10 6h1.5"/><path d="M12.5 6H14"/>'
+      gradient="from-violet-500 to-purple-600"
+    />
+
+    <!-- INPUT -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <DropZone
+        accept=".heic,.heif,image/heic,image/heif"
+        multiple={true}
+        label="Klik atau tarik foto HEIC/HEIF ke sini (boleh banyak)"
+        labelKey="heic.drop_label"
+        subLabel="Khas foto iPhone/iPad — hasil jadi JPG siap dibuka di mana saja"
+        subLabelKey="heic.drop_sub"
+        icon='<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>'
+        gradient="from-violet-500 to-purple-600"
+        hoverClass="hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/20"
+      />
+
+      <div class="flex flex-wrap items-center justify-between gap-4 mt-5">
+        <label for="heic-quality" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider" data-i18n="heic.quality">Kualitas JPG</label>
+        <div class="flex items-center gap-3">
+          <input id="heic-quality" type="range" min="0.5" max="1" step="0.05" value="0.9" aria-label="Kualitas JPG"
+            class="w-48 accent-violet-500 cursor-pointer" />
+          <span id="heic-quality-val" class="text-xs font-black text-violet-600 dark:text-violet-400 w-10 text-right">90%</span>
+        </div>
+      </div>
+      <p class="mt-3 text-2xs leading-relaxed text-matte-400" data-i18n="heic.hint">Kualitas 90% pas untuk kebanyakan foto. Turunkan kalau mau file lebih kecil — perubahan otomatis dikonversi ulang.</p>
+    </div>
+
+    <!-- HASIL -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white" data-i18n="heic.results">Hasil Konversi</h3>
+        <div class="flex gap-2">
+          <button id="heic-zip-btn" type="button" class="hidden items-center gap-1.5 text-xs font-semibold bg-violet-500 hover:bg-violet-600 text-white rounded-full px-4 py-1.5 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span data-i18n="heic.download_all">Download Semua (ZIP)</span>
+          </button>
+          <button id="heic-reset-btn" type="button" class="text-xs font-semibold text-matte-400 hover:text-violet-600 dark:hover:text-violet-400 px-3 py-1.5 transition-colors" data-i18n="common.reset">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <p id="heic-empty" class="text-sm text-matte-400" data-i18n="heic.empty">Belum ada file. Pilih foto HEIC untuk mulai.</p>
+      <div id="heic-list" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+
+      <p id="heic-progress" class="hidden mt-3 text-xs font-semibold text-violet-600 dark:text-violet-400"></p>
+    </div>
+
+    <!-- PANDUAN -->
+    <div class="card-base p-6 animate-fade-in">
+      <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-3" data-i18n="heic.about_title">Kenapa foto HEIC gak bisa dibuka?</h3>
+      <p class="text-sm leading-relaxed text-matte-600 dark:text-matte-300 mb-2" data-i18n="heic.about_1">HEIC/HEIF adalah format gambar bawaan kamera iPhone (iOS 11+). Lebih hemat penyimpanan, tapi banyak aplikasi & situs web belum mendukungnya — file terlihat “rusak” padahal tidak.</p>
+      <p class="text-sm leading-relaxed text-matte-600 dark:text-matte-300" data-i18n="heic.about_2">Konversi ini berjalan 100% di browser (pustaka heic2any via CDN) — foto kamu tidak pernah diunggah ke server mana pun.</p>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  // URL object yang masih hidup — direvoke saat tinggalkan halaman (anti bocor memory).
+  const activeUrls: string[] = [];
+  let libReady: Promise<boolean> | null = null;
+
+  function init() {
+    // Revoke object URL sisa dari sesi halaman sebelumnya (SPA balik-nya gak reload page).
+    while (activeUrls.length) URL.revokeObjectURL(activeUrls.pop()!);
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement | null;
+    const quality = document.getElementById('heic-quality') as HTMLInputElement | null;
+    const qualityVal = document.getElementById('heic-quality-val');
+    const emptyEl = document.getElementById('heic-empty');
+    const listEl = document.getElementById('heic-list');
+    const progressEl = document.getElementById('heic-progress');
+    const zipBtn = document.getElementById('heic-zip-btn');
+    const resetBtn = document.getElementById('heic-reset-btn');
+    if (!dropZone || !fileInput || !listEl) return;
+
+    type Result = { name: string; url: string; size: number };
+    let results: Result[] = [];
+    let convTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const ensureLib = () => {
+      if (!libReady) {
+        libReady = (window as any).loadCdnLib
+          ? (window as any).loadCdnLib('heic2any', [
+              'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js',
+              'https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js',
+            ])
+          : Promise.resolve(false);
+      }
+      return libReady;
+    };
+
+    const setProgress = (msg: string | null) => {
+      if (!progressEl) return;
+      progressEl.classList.toggle('hidden', !msg);
+      if (msg) progressEl.textContent = msg;
+    };
+
+    function render() {
+      emptyEl?.classList.toggle('hidden', results.length > 0);
+      listEl.classList.toggle('hidden', results.length === 0);
+      zipBtn?.classList.toggle('hidden', results.length < 2);
+      zipBtn?.classList.toggle('flex', results.length >= 2);
+      listEl.innerHTML = results.map((r, i) => `
+        <div class="flex items-center gap-3 rounded-2xl bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-900 p-3">
+          <img src="${r.url}" alt="" class="w-14 h-14 object-cover rounded-lg bg-white shadow-sm" loading="lazy" />
+          <div class="min-w-0 flex-1">
+            <div class="text-xs font-bold text-matte-800 dark:text-white truncate">${r.name}</div>
+            <div class="text-2xs text-matte-400">${(r.size / 1024).toFixed(0)} KB · JPG</div>
+          </div>
+          <a href="${r.url}" download="${r.name}"
+            class="shrink-0 text-xs font-black bg-matte-900 dark:bg-white text-white dark:text-matte-900 px-3 py-1.5 rounded-lg transition-all active:scale-95">
+            <span data-i18n="common.download">Download</span>
+          </a>
+        </div>`).join('');
+    }
+
+    async function convertFiles(files: File[]) {
+      const valid = files.filter((f) =>
+        /\.(heic|heif)$/i.test(f.name) || ['image/heic', 'image/heif'].includes(f.type));
+      if (!valid.length) {
+        window.showToast?.(window._tToast ? window._tToast('Pilih file .heic / .heif dulu.') : 'Pick a .heic / .heif file first.', 'error');
+        return;
+      }
+      const big = valid.find((f) => f.size > 30 * 1024 * 1024);
+      if (big) {
+        window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 30MB.') : 'File too large! Max 30MB.', 'error');
+        return;
+      }
+
+      setProgress((window._tToast ? window._tToast('Memuat pustaka konversi…') : 'Loading conversion library…'));
+      const ok = await ensureLib();
+      if (!ok) {
+        setProgress(null);
+        window.showToast?.(window._tToast ? window._tToast('Gagal memuat pustaka — cek koneksi internet.') : 'Failed to load library — check your connection.', 'error');
+        return;
+      }
+
+      const q = parseFloat(quality?.value || '0.9');
+      let done = 0;
+      for (const file of valid) {
+        setProgress((window._tToast ? window._tToast(`Mengonversi ${done + 1}/${valid.length}…`) : `Converting ${done + 1}/${valid.length}…`));
+        try {
+          const conv = (window as any).heic2any({ blob: file, toType: 'image/jpeg', quality: q });
+          const out: Blob | Blob[] = await conv;
+          const blobs = Array.isArray(out) ? out : [out];
+          blobs.forEach((b, idx) => {
+            const base = file.name.replace(/\.(heic|heif)$/i, '');
+            const name = blobs.length > 1 ? `${base}-${idx + 1}.jpg` : `${base}.jpg`;
+            const url = URL.createObjectURL(b);
+            activeUrls.push(url);
+            results.push({ name, url, size: b.size });
+          });
+        } catch {
+          window.showToast?.(window._tToast ? window._tToast(`Gagal mengonversi ${file.name}`) : `Failed to convert ${file.name}`, 'error');
+        }
+        done++;
+        render();
+      }
+      setProgress(null);
+      if (done) {
+        window.showToast?.(window._tToast ? window._tToast('Konversi selesai!') : 'Conversion complete!', 'success');
+      }
+      fileInput.value = '';
+    }
+
+    // wiring dropzone (klik + drag-drop)
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files?.length) convertFiles(Array.from(fileInput.files));
+    });
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-violet-500'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-violet-500'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-violet-500');
+      if (e.dataTransfer?.files.length) convertFiles(Array.from(e.dataTransfer.files));
+    });
+
+    // slider kualitas → konversi ulang semua hasil (debounce)
+    quality?.addEventListener('input', () => {
+      if (qualityVal) qualityVal.textContent = Math.round(parseFloat(quality.value) * 100) + '%';
+      // catatan: hasil lama tetap; konversi ulang hanya saat pilih file baru
+    });
+
+    // Download semua → ZIP (jszip vendor, pola batch-convert)
+    zipBtn?.addEventListener('click', async () => {
+      if (!results.length) return;
+      setProgress((window._tToast ? window._tToast('Membuat ZIP…') : 'Creating ZIP…'));
+      try {
+        let JSZip = (window as any).JSZip;
+        if (!JSZip) {
+          JSZip = await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = '/vendor/jszip/jszip.min.js';
+            s.onload = () => resolve((window as any).JSZip);
+            s.onerror = () => reject(new Error('jszip'));
+            document.head.appendChild(s);
+          });
+        }
+        const zip = new JSZip();
+        const used = new Map<string, number>();
+        for (const r of results) {
+          const n = used.get(r.name) || 0;
+          used.set(r.name, n + 1);
+          const fname = n ? r.name.replace(/\.jpg$/, `-${n + 1}.jpg`) : r.name;
+          zip.file(fname, await (await fetch(r.url)).blob());
+        }
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `heic-converted-${new Date().toISOString().slice(0, 10)}.zip`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        window.showToast?.(window._tToast ? window._tToast('ZIP diunduh!') : 'ZIP downloaded!', 'success');
+      } catch {
+        window.showToast?.(window._tToast ? window._tToast('Gagal membuat ZIP.') : 'Failed to create ZIP.', 'error');
+      }
+      setProgress(null);
+    });
+
+    resetBtn?.addEventListener('click', () => {
+      results.forEach((r) => URL.revokeObjectURL(r.url));
+      results = [];
+      if (fileInput) fileInput.value = '';
+      render();
+      setProgress(null);
+    });
+
+    render();
+  }
+
+  // SPA boot (pola W6): guard path + guard dobel-bind.
+  document.addEventListener('astro:page-load', () => {
+    const path = (location.pathname.replace(/\/+$/, '') || '/');
+    if (path !== __page) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+</script>
