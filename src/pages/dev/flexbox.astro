@@ -17,7 +17,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <div class="grid gap-8 animate-fade-in">
       <!-- Controls -->
       <div class="card-base p-6">
-        <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4">Container Properties</h3>
+        <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4" data-i18n="fx.container_props">Container Properties</h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <div><label class="text-xs text-matte-500 mb-1 block">display</label><select id="display" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold"><option value="flex">flex</option><option value="inline-flex">inline-flex</option></select></div>
           <div><label class="text-xs text-matte-500 mb-1 block">flex-direction</label><select id="flexDir" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold"><option value="row">row</option><option value="row-reverse">row-reverse</option><option value="column">column</option><option value="column-reverse">column-reverse</option></select></div>
@@ -27,7 +27,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <div><label class="text-xs text-matte-500 mb-1 block">align-content</label><select id="alignContent" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold"><option value="flex-start">flex-start</option><option value="flex-end">flex-end</option><option value="center">center</option><option value="stretch">stretch</option><option value="space-between">space-between</option><option value="space-around">space-around</option></select></div>
           <div><label class="text-xs text-matte-500 mb-1 block">gap</label><input id="gap" type="number" value="8" min="0" max="40" class="w-full p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-sm font-bold" /></div>
           <div class="flex items-end gap-2">
-            <button id="add-item" class="px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg text-sm font-bold hover:bg-purple-200">+ Item</button>
+            <button id="add-item" class="px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg text-sm font-bold hover:bg-purple-200" data-i18n="fx.add_item">+ Item</button>
             <button id="reset" class="px-3 py-2 bg-matte-200 dark:bg-matte-700 text-matte-500 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/30" data-i18n="btn.reset">Reset</button>
           </div>
         </div>
@@ -35,15 +35,15 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       <!-- Preview -->
       <div class="card-base p-6">
-        <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4">Preview</h3>
+        <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4" data-i18n="fx.preview">Preview</h3>
         <div id="container" class="min-h-[200px] p-4 border-2 border-dashed border-purple-300 dark:border-purple-700 rounded-xl bg-matte-50 dark:bg-surface-hover"></div>
       </div>
 
       <!-- Generated CSS -->
       <div class="card-base p-6">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-bold text-matte-800 dark:text-white">Generated CSS</h3>
-          <button id="copy-css" class="text-xs px-3 py-1 bg-matte-200 dark:bg-matte-700 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">📋 Copy CSS</button>
+          <h3 class="text-lg font-bold text-matte-800 dark:text-white" data-i18n="fx.generated_css">Generated CSS</h3>
+          <button id="copy-css" class="text-xs px-3 py-1 bg-matte-200 dark:bg-matte-700 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors" data-i18n="fx.copy_css">📋 Copy CSS</button>
         </div>
         <pre id="css-output" class="p-4 bg-matte-100 dark:bg-surface-hover rounded-xl font-mono text-sm text-matte-700 dark:text-matte-300 overflow-x-auto whitespace-pre-wrap"></pre>
       </div>
@@ -52,6 +52,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
 const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
 
@@ -114,9 +116,9 @@ const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? win
   
   document.getElementById('copy-css').onclick = () => {
     navigator.clipboard.writeText(document.getElementById('css-output').textContent);
-    toast('Disalin!');
-    document.getElementById('copy-css').textContent = '✅ Copied!';
-    setTimeout(() => document.getElementById('copy-css').textContent = '📋 Copy CSS', 1500);
+    toast(t('fx.copied_toast', 'Disalin!'));
+    document.getElementById('copy-css').textContent = t('fx.copied', '✅ Copied!');
+    setTimeout(() => document.getElementById('copy-css').textContent = t('fx.copy_css', '📋 Copy CSS'), 1500);
   };
   
   renderContainer();

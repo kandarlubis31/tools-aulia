@@ -16,34 +16,36 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <div class="card-base p-8 animate-fade-in">
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        <div><label class="text-xs text-matte-500 mb-1 block">Tipe Barcode</label>
+        <div><label class="text-xs text-matte-500 mb-1 block" data-i18n="bc.type">Tipe Barcode</label>
           <select id="type" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold">
             <option value="CODE128">CODE128</option>
             <option value="EAN13">EAN-13</option>
             <option value="UPCA">UPC-A</option>
           </select></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Teks/Nilai</label><input id="value" type="text" value="TOOLS AULIA" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
-        <div><label class="text-xs text-matte-500 mb-1 block">Lebar Bar</label><input id="barwidth" type="number" value="2" min="1" max="5" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label class="text-xs text-matte-500 mb-1 block" data-i18n="bc.value">Teks/Nilai</label><input id="value" type="text" value="TOOLS AULIA" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
+        <div><label class="text-xs text-matte-500 mb-1 block" data-i18n="bc.barwidth">Lebar Bar</label><input id="barwidth" type="number" value="2" min="1" max="5" class="w-full p-3 border rounded-xl dark:bg-surface-hover dark:border-surface-border font-bold" /></div>
       </div>
       <div class="flex gap-4 mb-6">
-        <label class="flex items-center gap-2 text-sm text-matte-500"><input type="checkbox" id="showtext" checked class="rounded" /> Tampilkan teks di bawah barcode</label>
-        <label class="flex items-center gap-2 text-sm text-matte-500"><input type="checkbox" id="bg-transparent" class="rounded" /> Background transparan</label>
+        <label class="flex items-center gap-2 text-sm text-matte-500"><input type="checkbox" id="showtext" checked class="rounded" /> <span data-i18n="bc.show_text">Tampilkan teks di bawah barcode</span></label>
+        <label class="flex items-center gap-2 text-sm text-matte-500"><input type="checkbox" id="bg-transparent" class="rounded" /> <span data-i18n="bc.transparent">Background transparan</span></label>
       </div>
-      <button id="generate" class="w-full py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors mb-6">Generate Barcode</button>
+      <button id="generate" class="w-full py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors mb-6" data-i18n="bc.generate">Generate Barcode</button>
 
       <div id="preview" class="flex justify-center p-6 bg-matte-100 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border">
         <canvas id="barcode-canvas"></canvas>
       </div>
 
       <div class="flex gap-2 mt-4">
-        <button id="download-png" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-700 dark:text-matte-300 rounded-xl font-bold hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors">📥 Download PNG</button>
-        <button id="copy-value" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-700 dark:text-matte-300 rounded-xl font-bold hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors">📋 Copy Value</button>
+        <button id="download-png" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-700 dark:text-matte-300 rounded-xl font-bold hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors" data-i18n="bc.download">📥 Download PNG</button>
+        <button id="copy-value" class="flex-1 py-3 bg-matte-200 dark:bg-matte-700 text-matte-700 dark:text-matte-300 rounded-xl font-bold hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors" data-i18n="bc.copy_value">📋 Copy Value</button>
       </div>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
 const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
 
@@ -127,9 +129,9 @@ const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? win
   };
   document.getElementById('copy-value').onclick = () => {
     navigator.clipboard.writeText(document.getElementById('value').value);
-    toast('Disalin!');
-    document.getElementById('copy-value').textContent = '✅ Copied!';
-    setTimeout(() => document.getElementById('copy-value').textContent = '📋 Copy Value', 1500);
+    toast(t('bc.copied_toast', 'Disalin!'));
+    document.getElementById('copy-value').textContent = t('bc.copied', '✅ Copied!');
+    setTimeout(() => document.getElementById('copy-value').textContent = t('bc.copy_value', '📋 Copy Value'), 1500);
   };
   generate();
 
