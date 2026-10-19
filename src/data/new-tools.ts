@@ -7,6 +7,8 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  '/data/chart-maker',
+  '/calc/pesangon',
   '/image/ocr',
   '/image/heic-to-jpg',
   '/calc/zakat',

@@ -1,0 +1,346 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Chart Maker — CSV to PNG">
+  <div class="max-w-5xl mx-auto px-4 min-h-[60vh] py-10">
+
+    <ToolPageHeader
+      title="Chart Maker — CSV ke Grafik PNG"
+      titleKey="header.chart_maker"
+      desc="Tempel data CSV, pilih jenis grafik, unduh sebagai PNG — tanpa upload, langsung di browser."
+      descKey="header.chart_maker_desc"
+      icon='<path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-9"/>'
+      gradient="from-cyan-500 to-blue-600"
+    />
+
+    <!-- INPUT -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white" data-i18n="chart.sec_input">Data CSV</h3>
+        <button id="chart-example" type="button"
+          class="text-xs font-semibold text-matte-500 dark:text-matte-400 hover:text-cyan-600 dark:hover:text-cyan-400 border border-matte-200 dark:border-matte-700 hover:border-cyan-400/50 rounded-full px-3.5 py-1.5 transition-all"
+          data-i18n="chart.example">Muat Contoh</button>
+      </div>
+      <label for="chart-csv" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="chart.csv_label">Baris pertama = judul kolom (label, seri 1, seri 2, …)</label>
+      <textarea id="chart-csv" rows="8" spellcheck="false"
+        class="w-full px-4 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 font-mono text-xs leading-relaxed text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500/40 transition-all resize-y">Bulan,Penjualan,Target
+Jan,120,100
+Feb,150,110
+Mar,135,120
+Apr,170,130
+Mei,160,140
+Jun,190,150</textarea>
+      <p class="mt-2 text-2xs text-matte-400" data-i18n="chart.hint">Pisahkan kolom dengan koma (atau titik koma). Angka boleh pakai titik ribuan (1.200) atau koma desimal bila pemisah kolomnya titik koma.</p>
+
+      <div class="flex flex-wrap items-end gap-4 mt-4">
+        <div>
+          <span class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="chart.type_label">Jenis grafik</span>
+          <div id="chart-types" class="inline-flex rounded-xl border border-matte-200 dark:border-matte-700 overflow-hidden">
+            <button type="button" data-type="bar" class="chart-type px-4 py-2.5 text-xs font-bold bg-cyan-500 text-white transition-all" data-i18n="chart.type_bar">Bar</button>
+            <button type="button" data-type="line" class="chart-type px-4 py-2.5 text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="chart.type_line">Line</button>
+            <button type="button" data-type="area" class="chart-type px-4 py-2.5 text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="chart.type_area">Area</button>
+            <button type="button" data-type="pie" class="chart-type px-4 py-2.5 text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="chart.type_pie">Pie</button>
+            <button type="button" data-type="doughnut" class="chart-type px-4 py-2.5 text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="chart.type_doughnut">Doughnut</button>
+          </div>
+        </div>
+        <div class="flex-1 min-w-[220px]">
+          <label for="chart-title-input" class="block text-2xs font-bold text-matte-400 uppercase tracking-wider mb-2" data-i18n="chart.title_label">Judul grafik (opsional)</label>
+          <input id="chart-title-input" type="text" value="" placeholder="Penjualan Semester 1"
+            class="w-full px-4 py-2.5 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-semibold text-matte-800 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500/40 transition-all" />
+        </div>
+        <button id="chart-render" type="button"
+          class="shrink-0 bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95" data-i18n="chart.render">
+          Buat Grafik
+        </button>
+      </div>
+
+      <p id="chart-error" class="hidden mt-3 text-2xs font-semibold text-rose-500"></p>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="card-base p-6 mb-6 animate-fade-in">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h3 class="text-xl font-bold text-matte-800 dark:text-white" data-i18n="chart.preview_title">Pratinjau</h3>
+        <button id="chart-download" type="button" disabled
+          class="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-cyan-500 hover:bg-cyan-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-4 py-2 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span data-i18n="chart.download">Download PNG (1600×900)</span>
+        </button>
+      </div>
+
+      <p id="chart-empty" class="text-sm text-matte-400" data-i18n="chart.empty">Tekan “Buat Grafik” untuk melihat pratinjau — atau edit datanya dulu.</p>
+      <div id="chart-preview-wrap" class="hidden relative h-[420px] bg-white rounded-xl border border-matte-200 dark:border-matte-700 p-3">
+        <canvas id="chart-canvas" aria-label="Chart preview" role="img"></canvas>
+      </div>
+      <p class="mt-3 text-2xs text-matte-400" data-i18n="chart.series_note">Bar/line/area mendukung banyak seri (banyak kolom angka). Pie &amp; doughnut memakai kolom seri pertama saja.</p>
+    </div>
+
+    <!-- INFO -->
+    <div class="card-base p-6 animate-fade-in">
+      <h3 class="text-xl font-bold text-matte-800 dark:text-white mb-4 flex items-center gap-3">
+        <div class="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-xl flex items-center justify-center shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        </div>
+        <span data-i18n="chart.info_title">Cara pakai &amp; privasi</span>
+      </h3>
+      <ol class="space-y-3 text-sm text-matte-600 dark:text-matte-300 list-none">
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 text-2xs font-black flex items-center justify-center">1</span><span data-i18n="chart.info_1">Tempel data CSV dari Excel/Google Sheets (Copy → Paste). Baris pertama judul kolom: kolom pertama = label (kategori), kolom berikutnya = angka per seri.</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 text-2xs font-black flex items-center justify-center">2</span><span data-i18n="chart.info_2">Pilih jenis grafik &amp; judul, tekan “Buat Grafik”, lalu unduh PNG resolusi 1600×900 — cocok untuk laporan, slide, atau dibagikan.</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-lg bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300 text-2xs font-black flex items-center justify-center">3</span><span data-i18n="chart.info_3">Grafik dirender penuh di browser memakai Chart.js (dari CDN). Data TIDAK pernah dikirim ke server — aman untuk angka internal.</span></li>
+      </ol>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+const __page = (location.pathname.replace(/\/+$/, '') || '/');
+
+  const CHART_URLS = [
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
+    'https://unpkg.com/chart.js@4.4.1/dist/chart.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js',
+  ];
+
+  const EXAMPLE_CSV = `Bulan,Penjualan,Target
+Jan,120,100
+Feb,150,110
+Mar,135,120
+Apr,170,130
+Mei,160,140
+Jun,190,150`;
+
+  const PALETTE = ['#10b981', '#0ea5e9', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#84cc16'];
+  const TYPE_INACTIVE = 'chart-type px-4 py-2.5 text-xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all';
+  const TYPE_ACTIVE = 'chart-type px-4 py-2.5 text-xs font-bold bg-cyan-500 text-white transition-all';
+
+  // State di module scope — chart di-destroy saat pindah halaman (anti bocor SPA).
+  let chartInst: any = null;
+  let lastData: { labels: string[]; series: { name: string; values: number[] }[] } | null = null;
+  let currentType = 'bar';
+
+  interface ParsedCsv { labels: string[]; series: { name: string; values: number[] }[] }
+
+  function parseCsv(text: string): ParsedCsv {
+    const lines = text.replace(/\r/g, '').split('\n').filter((l) => l.trim() !== '');
+    if (lines.length < 2) throw new Error('Butuh minimal 2 baris: judul kolom + 1 baris data.');
+    const semi = (lines[0].match(/;/g) || []).length;
+    const comma = (lines[0].match(/,/g) || []).length;
+    const delim = semi > comma ? ';' : ',';
+    const split = (l: string) => l.split(delim).map((s) => s.trim().replace(/^"(.*)"$/, '$1'));
+    const headers = split(lines[0]);
+    if (headers.length < 2) throw new Error('Butuh minimal 2 kolom: label + 1 seri angka.');
+
+    const rows: string[][] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cells = split(lines[i]);
+      if (cells.length !== headers.length) {
+        throw new Error(`Baris ${i + 1}: jumlah kolom (${cells.length}) tidak sama dengan judul (${headers.length}).`);
+      }
+      rows.push(cells);
+    }
+
+    const parseNum = (raw: string, rowNo: number, colName: string) => {
+      let s = raw.replace(/\s/g, '');
+      if (delim === ';') s = s.replace(',', '.');
+      else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+      const n = parseFloat(s);
+      if (isNaN(n)) throw new Error(`Baris ${rowNo}: kolom “${colName}” bukan angka (“${raw}”).`);
+      return n;
+    };
+
+    const labels = rows.map((r) => r[0]);
+    const series = headers.slice(1).map((h, si) => ({
+      name: h || `Seri ${si + 1}`,
+      values: rows.map((r, ri) => parseNum(r[si + 1], ri + 2, h)),
+    }));
+    return { labels, series };
+  }
+
+  function buildConfig(data: ParsedCsv, forExport: boolean) {
+    const isRound = currentType === 'pie' || currentType === 'doughnut';
+    const baseType = currentType === 'area' ? 'line' : currentType;
+    const titleText = ((document.getElementById('chart-title-input') as HTMLInputElement | null)?.value || '').trim();
+
+    const datasets = isRound
+      ? [{
+          label: data.series[0].name,
+          data: data.series[0].values,
+          backgroundColor: data.labels.map((_, i) => PALETTE[i % PALETTE.length]),
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          hoverOffset: 8,
+        }]
+      : data.series.map((s, i) => ({
+          label: s.name,
+          data: s.values,
+          backgroundColor: currentType === 'area' ? PALETTE[i % PALETTE.length] + '40' : PALETTE[i % PALETTE.length],
+          borderColor: PALETTE[i % PALETTE.length],
+          borderWidth: currentType === 'bar' ? 0 : 2.5,
+          borderRadius: currentType === 'bar' ? 6 : 0,
+          fill: currentType === 'area',
+          tension: 0.35,
+        }));
+
+    return {
+      type: baseType as any,
+      data: { labels: data.labels, datasets },
+      options: {
+        responsive: !forExport,
+        maintainAspectRatio: false,
+        devicePixelRatio: forExport ? 2 : undefined,
+        animation: forExport ? false : { duration: 400 },
+        layout: { padding: forExport ? 24 : 8 },
+        plugins: {
+          title: { display: !!titleText, text: titleText, font: { size: forExport ? 30 : 20, weight: 'bold' as const }, color: '#111827', padding: { bottom: forExport ? 24 : 16 } },
+          legend: { display: isRound || data.series.length > 1, labels: { color: '#374151', font: { size: forExport ? 18 : 13 }, padding: 16 } },
+          tooltip: { enabled: !forExport },
+        },
+        scales: isRound ? undefined : {
+          x: { grid: { color: '#f3f4f6' }, ticks: { color: '#6b7280', font: { size: forExport ? 18 : 12 } } },
+          y: { beginAtZero: true, grid: { color: '#e5e7eb' }, ticks: { color: '#6b7280', font: { size: forExport ? 18 : 12 } } },
+        },
+      },
+    };
+  }
+
+  function init() {
+    const $ = (id: string) => document.getElementById(id);
+    const csvEl = $('chart-csv') as HTMLTextAreaElement | null;
+    const titleEl = $('chart-title-input') as HTMLInputElement | null;
+    const renderBtn = $('chart-render');
+    const exampleBtn = $('chart-example');
+    const downloadBtn = $('chart-download') as HTMLButtonElement | null;
+    const errorEl = $('chart-error');
+    const emptyEl = $('chart-empty');
+    const wrapEl = $('chart-preview-wrap');
+    const canvas = $('chart-canvas') as HTMLCanvasElement | null;
+    if (!csvEl || !canvas || !renderBtn) return;
+
+    const toast = (msg: string, kind: 'success' | 'error') =>
+      window.showToast?.(window._tToast ? window._tToast(msg) : msg, kind);
+
+    const showError = (msg: string | null) => {
+      if (!errorEl) return;
+      errorEl.textContent = msg || '';
+      errorEl.classList.toggle('hidden', !msg);
+    };
+
+    async function ensureChart(): Promise<boolean> {
+      if ((window as any).Chart) return true;
+      return await (window as any).loadCdnLib?.('Chart', CHART_URLS) ?? false;
+    }
+
+    function renderPreview(data: ParsedCsv) {
+      chartInst?.destroy();
+      chartInst = new (window as any).Chart(canvas!.getContext('2d')!, buildConfig(data, false));
+      emptyEl?.classList.add('hidden');
+      wrapEl?.classList.remove('hidden');
+      if (downloadBtn) downloadBtn.disabled = false;
+    }
+
+    async function doRender() {
+      const text = csvEl!.value.trim();
+      if (!text) {
+        showError(null);
+        toast('Tempel data CSV dulu!', 'error');
+        return;
+      }
+      let data: ParsedCsv;
+      try {
+        data = parseCsv(text);
+      } catch (e: any) {
+        showError(e?.message || 'CSV tidak valid.');
+        toast('CSV belum valid — cek baris & format angka.', 'error');
+        return;
+      }
+      const ok = await ensureChart();
+      if (!ok) {
+        showError(null);
+        toast('Gagal memuat pustaka grafik — cek koneksi internet.', 'error');
+        return;
+      }
+      showError(null);
+      lastData = data;
+      renderPreview(data);
+    }
+
+    renderBtn.addEventListener('click', doRender);
+
+    exampleBtn?.addEventListener('click', () => {
+      csvEl!.value = EXAMPLE_CSV;
+      showError(null);
+    });
+
+    // Tombol jenis grafik
+    document.querySelectorAll<HTMLButtonElement>('#chart-types .chart-type').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        currentType = btn.dataset.type || 'bar';
+        document.querySelectorAll('#chart-types .chart-type').forEach((b) => {
+          b.className = b === btn ? TYPE_ACTIVE : TYPE_INACTIVE;
+        });
+        if (lastData) renderPreview(lastData);
+      });
+    });
+
+    titleEl?.addEventListener('change', () => {
+      if (lastData) renderPreview(lastData);
+    });
+
+    // Download PNG 1600×900 — render ulang ke canvas offscreen agar resolusi tetap.
+    downloadBtn?.addEventListener('click', async () => {
+      if (!lastData) {
+        toast('Tempel data CSV dulu!', 'error');
+        return;
+      }
+      const ok = await ensureChart();
+      if (!ok) {
+        toast('Gagal memuat pustaka grafik — cek koneksi internet.', 'error');
+        return;
+      }
+      try {
+        const off = document.createElement('canvas');
+        off.width = 1600;
+        off.height = 900;
+        const offChart = new (window as any).Chart(off.getContext('2d')!, buildConfig(lastData, true));
+        await offChart.render();
+        await new Promise((r) => requestAnimationFrame(() => r(null)));
+        const blob = await new Promise<Blob | null>((res) => off.toBlob(res, 'image/png'));
+        offChart.destroy();
+        if (!blob) throw new Error('toBlob failed');
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const title = (titleEl?.value || 'grafik').trim().replace(/[^\w\d-]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'grafik';
+        a.href = url;
+        a.download = `chart-${title}.png`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        toast('Gambar di-download!', 'success');
+      } catch {
+        toast('Gagal mengonversi', 'error');
+      }
+    });
+
+    showError(null);
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind — pola rumah W6.
+  document.addEventListener('astro:page-load', () => {
+    const path = (location.pathname.replace(/\/+$/, '') || '/');
+    if (path !== __page) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
+  // Bersihkan instance chart saat pindah halaman (anti bocor memori lintas navigasi).
+  document.addEventListener('astro:page-leave', () => {
+    if (chartInst) {
+      chartInst.destroy();
+      chartInst = null;
+    }
+  });
+</script>
