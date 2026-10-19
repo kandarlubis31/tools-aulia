@@ -210,4 +210,5 @@ export const newToolHrefs: string[] = [
   '/life/grocery',
   '/life/bucket-list',
   '/media/audio-convert',
+  '/image/jpg-repair',
 ];
