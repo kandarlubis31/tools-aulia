@@ -241,35 +241,42 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   let userStats = safeJSON('jokeStats', { total: 0, catCounts: {}, lastDate: null, streak: 0 });
   let settings = safeJSON('jokeSettings', { autoRefresh: 0, textSize: 'text-2xl', targetLang: 'id' });
 
-  // --- 3. ELEMENTS ---
-  const setupText = document.getElementById('joke-setup');
-  const deliveryText = document.getElementById('joke-delivery');
-  const deliveryContainer = document.getElementById('joke-delivery-container');
-  const tagBadge = document.getElementById('joke-tag');
-  const generateBtn = document.getElementById('generate-btn');
-  const categorySelect = document.getElementById('category-select');
-  const modeToggle = document.getElementById('mode-toggle');
-  const modeIndicator = document.getElementById('mode-indicator');
-  const statusBadge = document.getElementById('status-badge');
-  const copyBtn = document.getElementById('copy-btn');
-  const shareBtn = document.getElementById('share-btn');
-  const translateBtn = document.getElementById('translate-btn');
-  const favoriteBtn = document.getElementById('favorite-btn');
-  const settingsBtn = document.getElementById('settings-btn');
-  const settingsModal = document.getElementById('settings-modal');
-  const closeSettingsBtn = document.getElementById('close-settings');
-  const saveSettingsBtn = document.getElementById('save-settings');
-  const autoRefreshInput = document.getElementById('auto-refresh');
-  const textSizeSelect = document.getElementById('text-size');
-  const targetLangSelect = document.getElementById('target-lang');
-  const favoritesSection = document.getElementById('favorites-section');
-  const favoritesList = document.getElementById('favorites-list');
-  const clearFavoritesBtn = document.getElementById('clear-favorites');
-  const totalViewEl = document.getElementById('total-view');
-  const favCatEl = document.getElementById('fav-cat');
-  const dailyStreakEl = document.getElementById('daily-streak');
-  const networkStatus = document.getElementById('network-status');
-  const networkText = document.getElementById('network-text');
+  // --- 3. ELEMENTS (let — di-query ulang tiap init(), DOM baru tiap balik navigasi SPA) ---
+  let setupText, deliveryText, deliveryContainer, tagBadge, generateBtn, categorySelect,
+      modeToggle, modeIndicator, statusBadge, copyBtn, shareBtn, translateBtn, favoriteBtn,
+      settingsBtn, settingsModal, closeSettingsBtn, saveSettingsBtn, autoRefreshInput,
+      textSizeSelect, targetLangSelect, favoritesSection, favoritesList, clearFavoritesBtn,
+      totalViewEl, favCatEl, dailyStreakEl, networkStatus, networkText;
+  function refreshElements() {
+    setupText = document.getElementById('joke-setup');
+    deliveryText = document.getElementById('joke-delivery');
+    deliveryContainer = document.getElementById('joke-delivery-container');
+    tagBadge = document.getElementById('joke-tag');
+    generateBtn = document.getElementById('generate-btn');
+    categorySelect = document.getElementById('category-select');
+    modeToggle = document.getElementById('mode-toggle');
+    modeIndicator = document.getElementById('mode-indicator');
+    statusBadge = document.getElementById('status-badge');
+    copyBtn = document.getElementById('copy-btn');
+    shareBtn = document.getElementById('share-btn');
+    translateBtn = document.getElementById('translate-btn');
+    favoriteBtn = document.getElementById('favorite-btn');
+    settingsBtn = document.getElementById('settings-btn');
+    settingsModal = document.getElementById('settings-modal');
+    closeSettingsBtn = document.getElementById('close-settings');
+    saveSettingsBtn = document.getElementById('save-settings');
+    autoRefreshInput = document.getElementById('auto-refresh');
+    textSizeSelect = document.getElementById('text-size');
+    targetLangSelect = document.getElementById('target-lang');
+    favoritesSection = document.getElementById('favorites-section');
+    favoritesList = document.getElementById('favorites-list');
+    clearFavoritesBtn = document.getElementById('clear-favorites');
+    totalViewEl = document.getElementById('total-view');
+    favCatEl = document.getElementById('fav-cat');
+    dailyStreakEl = document.getElementById('daily-streak');
+    networkStatus = document.getElementById('network-status');
+    networkText = document.getElementById('network-text');
+  }
   
   // --- 4. CORE FUNCTIONS ---
 
@@ -615,6 +622,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     });
   }
 
+  function init() {
+    refreshElements();
+
   // --- ACTIONS ---
   modeToggle.addEventListener('click', () => {
       isOnline = !isOnline;
@@ -700,6 +710,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     }
   });
 
+  }
+
   const _jokeKeydown = (e) => {
       if (e.code === 'Space' && document.activeElement.tagName !== 'BUTTON' && document.activeElement.tagName !== 'SELECT' && document.activeElement.tagName !== 'INPUT') {
           e.preventDefault();
@@ -713,25 +725,40 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         settingsModal.classList.add('hidden');
       }
   };
-  document.addEventListener('keydown', _jokeKeydown);
-  document.addEventListener('astro:page-leave', () => {
+
+  // keydown + online/offline: dilepas sebelum dipasang (idempoten) — listener di
+  // document/window gak ikut ke-swap DOM, jadi tanpa pola ini bisa menumpuk atau
+  // mati permanen (dulu di-remove oleh astro:page-leave {once} dan tak pernah balik)
+  function bindLifecycle() {
     document.removeEventListener('keydown', _jokeKeydown);
-    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    document.addEventListener('keydown', _jokeKeydown);
     window.removeEventListener('online', updateNetworkStatus);
     window.removeEventListener('offline', updateNetworkStatus);
-  }, { once: true });
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+  }
 
-  // Init
-  window.addEventListener('online', updateNetworkStatus);
-  window.addEventListener('offline', updateNetworkStatus);
-
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
-
-      updateModeUI();
-      updateStatsDisplay();
-      renderFavorites();
-      applySettings();
-      getJoke();
-      updateNetworkStatus();
+  // SPA boot (#14): guard path + guard dobel-bind — semua binding sudah dibungkus
+  // init() supaya DOM baru tiap balik navigasi SPA tetap terikat. (Bug lama:
+  // binding top-level menempel di DOM lama → tool MATI setelah pergi-balik,
+  // terkonfirmasi via CDP round-trip test.)
+  document.addEventListener('astro:page-load', () => {
+    const path = (location.pathname.replace(/\/+$/, '') || '/');
+    if (path !== __page) {
+      // halaman lain: matikan timer auto-refresh biar gak nembak joke bayangan
+      if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
+      return;
+    }
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+    bindLifecycle();
+    updateModeUI();
+    updateStatsDisplay();
+    renderFavorites();
+    applySettings();
+    getJoke();
+    updateNetworkStatus();
   });
 </script>

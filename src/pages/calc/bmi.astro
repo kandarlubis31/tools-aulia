@@ -203,26 +203,31 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  // Elements
-  const metricBtn = document.getElementById('metric-btn');
-  const imperialBtn = document.getElementById('imperial-btn');
-  const heightInput = document.getElementById('height');
-  const heightFtInput = document.getElementById('height-ft');
-  const heightInInput = document.getElementById('height-in');
-  const weightInput = document.getElementById('weight');
-  const ageInput = document.getElementById('age');
-  const calcBtn = document.getElementById('calc-btn');
-  const resultDiv = document.getElementById('result');
-  const bmiScoreEl = document.getElementById('bmi-score');
-  const bmiStatusEl = document.getElementById('bmi-status');
-  const bmiIndicatorEl = document.getElementById('bmi-indicator');
-  const idealWeightEl = document.getElementById('ideal-weight');
-  const bmiCategoryEl = document.getElementById('bmi-category');
-  const healthRecommendationEl = document.getElementById('health-recommendation');
-  const saveBtn = document.getElementById('save-btn');
-  const shareBtn = document.getElementById('share-btn');
-  const clearHistoryBtn = document.getElementById('clear-history-btn');
-  const historyContainer = document.getElementById('history-container');
+  // Elements (let — di-query ulang tiap init(), DOM baru tiap balik navigasi SPA)
+  let metricBtn, imperialBtn, heightInput, heightFtInput, heightInInput, weightInput,
+      ageInput, calcBtn, resultDiv, bmiScoreEl, bmiStatusEl, bmiIndicatorEl, idealWeightEl,
+      bmiCategoryEl, healthRecommendationEl, saveBtn, shareBtn, clearHistoryBtn, historyContainer;
+  function refreshElements() {
+    metricBtn = document.getElementById('metric-btn');
+    imperialBtn = document.getElementById('imperial-btn');
+    heightInput = document.getElementById('height');
+    heightFtInput = document.getElementById('height-ft');
+    heightInInput = document.getElementById('height-in');
+    weightInput = document.getElementById('weight');
+    ageInput = document.getElementById('age');
+    calcBtn = document.getElementById('calc-btn');
+    resultDiv = document.getElementById('result');
+    bmiScoreEl = document.getElementById('bmi-score');
+    bmiStatusEl = document.getElementById('bmi-status');
+    bmiIndicatorEl = document.getElementById('bmi-indicator');
+    idealWeightEl = document.getElementById('ideal-weight');
+    bmiCategoryEl = document.getElementById('bmi-category');
+    healthRecommendationEl = document.getElementById('health-recommendation');
+    saveBtn = document.getElementById('save-btn');
+    shareBtn = document.getElementById('share-btn');
+    clearHistoryBtn = document.getElementById('clear-history-btn');
+    historyContainer = document.getElementById('history-container');
+  }
 
   // State
   let isMetric = true;
@@ -232,11 +237,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   }
   let bmiHistory = safeJSON('bmiHistory', []);
 
-  // Initialize
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
-
-    renderHistory();
-  });
+  // Initialize — boot SPA dipindah ke akhir script (setelah init())
+  function init() {
+    refreshElements();
 
   // Toggle Units
   function toggleUnits(metric) {
@@ -495,6 +498,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     errEl.textContent = msg;
   }
 
+    // render awal (dulu dijalankan boot listener lama)
+    renderHistory();
+  }
+
   function clearInlineErrors() {
     document.querySelectorAll('.inline-error').forEach(el => el.remove());
     [heightInput, heightFtInput, heightInInput, weightInput, ageInput].forEach(el => {
@@ -502,4 +509,16 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     });
   }
 
+  // SPA boot (#14): guard path + guard dobel-bind — semua binding & render awal
+  // sudah dibungkus init() supaya DOM baru tiap balik navigasi SPA tetap terikat.
+  // (Bug lama: binding top-level menempel di DOM lama → tool MATI setelah
+  // pergi-balik, terkonfirmasi via CDP round-trip test.)
+  document.addEventListener('astro:page-load', () => {
+    const path = (location.pathname.replace(/\/+$/, '') || '/');
+    if (path !== __page) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
 </script>

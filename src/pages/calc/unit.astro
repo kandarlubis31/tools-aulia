@@ -254,34 +254,33 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   let conversionHistory = safeJSON('conversionHistory', []);
   let favorites = safeJSON('conversionFavorites', []);
 
-  // Elements
-  const tabs = document.querySelectorAll('.tab-btn');
-  const inputVal = document.getElementById('input-val');
-  const outputVal = document.getElementById('output-val');
-  const selectFrom = document.getElementById('select-from');
-  const selectTo = document.getElementById('select-to');
-  const swapBtn = document.getElementById('swap-btn');
-  const reverseBtn = document.getElementById('reverse-btn');
-  const copyBtn = document.getElementById('copy-btn');
-  const addFavoriteBtn = document.getElementById('add-favorite-btn');
-  const clearHistoryBtn = document.getElementById('clear-history-btn');
-  const favoritesContainer = document.getElementById('favorites-container');
-  const historyContainer = document.getElementById('history-container');
-  const commonConversionsContainer = document.getElementById('common-conversions');
-  const formulaContainer = document.getElementById('formula-container');
-  const formulaText = document.getElementById('formula-text');
-  const comparisonContainer = document.getElementById('comparison-container');
-  const comparisonTbody = document.getElementById('comparison-tbody');
+  // Elements (let — di-query ulang tiap init(), DOM baru tiap balik navigasi SPA)
+  let tabs, inputVal, outputVal, selectFrom, selectTo, swapBtn, reverseBtn, copyBtn,
+      addFavoriteBtn, clearHistoryBtn, favoritesContainer, historyContainer,
+      commonConversionsContainer, formulaContainer, formulaText, comparisonContainer, comparisonTbody;
+  function refreshElements() {
+    tabs = document.querySelectorAll('.tab-btn');
+    inputVal = document.getElementById('input-val');
+    outputVal = document.getElementById('output-val');
+    selectFrom = document.getElementById('select-from');
+    selectTo = document.getElementById('select-to');
+    swapBtn = document.getElementById('swap-btn');
+    reverseBtn = document.getElementById('reverse-btn');
+    copyBtn = document.getElementById('copy-btn');
+    addFavoriteBtn = document.getElementById('add-favorite-btn');
+    clearHistoryBtn = document.getElementById('clear-history-btn');
+    favoritesContainer = document.getElementById('favorites-container');
+    historyContainer = document.getElementById('history-container');
+    commonConversionsContainer = document.getElementById('common-conversions');
+    formulaContainer = document.getElementById('formula-container');
+    formulaText = document.getElementById('formula-text');
+    comparisonContainer = document.getElementById('comparison-container');
+    comparisonTbody = document.getElementById('comparison-tbody');
+  }
 
-  // Initialize
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
-
-    populateSelects();
-    renderHistory();
-    renderFavorites();
-    renderCommonConversions();
-    convert();
-  });
+  // Initialize — boot SPA dipindah ke akhir script (setelah init())
+  function init() {
+    refreshElements();
 
   function populateSelects() {
     selectFrom.innerHTML = '';
@@ -650,6 +649,14 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus') : 'Riwayat dihapus', 'success');
   });
 
+    // render awal (dulu dijalankan boot listener lama)
+    populateSelects();
+    renderHistory();
+    renderFavorites();
+    renderCommonConversions();
+    convert();
+  }
+
   // Shortcuts
   const _unitKeydown = (e) => {
     if (e.ctrlKey || e.metaKey) {
@@ -661,6 +668,24 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       }
     }
   };
-  document.addEventListener('keydown', _unitKeydown);
-  document.addEventListener('astro:page-leave', () => { document.removeEventListener('keydown', _unitKeydown); }, { once: true });
+  // keydown: dilepas sebelum dipasang (idempoten) — listener di document gak ikut
+  // ke-swap DOM, dulu di-remove oleh astro:page-leave {once} dan tak pernah balik
+  function bindLifecycle() {
+    document.removeEventListener('keydown', _unitKeydown);
+    document.addEventListener('keydown', _unitKeydown);
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind — semua binding & render awal
+  // sudah dibungkus init() supaya DOM baru tiap balik navigasi SPA tetap terikat.
+  // (Bug lama: binding top-level menempel di DOM lama → tool MATI setelah
+  // pergi-balik, terkonfirmasi via CDP round-trip test.)
+  document.addEventListener('astro:page-load', () => {
+    const path = (location.pathname.replace(/\/+$/, '') || '/');
+    if (path !== __page) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+    bindLifecycle();
+  });
 </script>

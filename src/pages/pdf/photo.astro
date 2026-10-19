@@ -194,38 +194,45 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     free: null,
   };
 
-  // --- 2. ELEMENTS ---
-  const dropZone = document.getElementById('drop-zone');
-  const workspace = document.getElementById('workspace');
-  const pdfCanvas = document.getElementById('pdf-render') as HTMLCanvasElement;
-  const previewContainer = document.getElementById('preview-container');
-  const renderLoading = document.getElementById('render-loading');
-  const snapV = document.getElementById('snap-v');
-  const snapH = document.getElementById('snap-h');
-  const photoInput = document.getElementById('photo-input') as HTMLInputElement;
-  const bgRemoveToggle = document.getElementById('bg-remove-toggle');
-  const toleranceRow = document.getElementById('tolerance-row');
-  const toleranceSlider = document.getElementById('tolerance') as HTMLInputElement;
-  const toleranceVal = document.getElementById('tolerance-val');
-  const presetBtns = document.querySelectorAll('.preset-btn');
-  const borderToggle = document.getElementById('border-toggle');
-  const borderRow = document.getElementById('border-row');
-  const borderColor = document.getElementById('border-color') as HTMLInputElement;
-  const borderWidth = document.getElementById('border-width') as HTMLInputElement;
-  const borderWidthVal = document.getElementById('border-width-val');
-  const photoOpacity = document.getElementById('photo-opacity') as HTMLInputElement;
-  const opacityVal = document.getElementById('opacity-val');
-  const savePdfBtn = document.getElementById('save-pdf-btn');
-  const undoBtn = document.getElementById('undo-btn');
-  const redoBtn = document.getElementById('redo-btn');
-  const clearAllBtn = document.getElementById('clear-all-btn');
-  const photoListPanel = document.getElementById('photo-list-panel');
-  const photoListEl = document.getElementById('photo-list');
-  const prevPageBtn = document.getElementById('prev-page');
-  const nextPageBtn = document.getElementById('next-page');
-  const pageSelect = document.getElementById('page-select') as HTMLSelectElement;
-  const pageIndicator = document.getElementById('page-indicator');
-  const pageNav = document.getElementById('page-nav');
+  // --- 2. ELEMENTS (let — di-query ulang tiap init(), DOM baru tiap balik navigasi SPA) ---
+  let dropZone, workspace, pdfCanvas, previewContainer, renderLoading, snapV, snapH,
+      photoInput, bgRemoveToggle, toleranceRow, toleranceSlider, toleranceVal, presetBtns,
+      borderToggle, borderRow, borderColor, borderWidth, borderWidthVal, photoOpacity,
+      opacityVal, savePdfBtn, undoBtn, redoBtn, clearAllBtn, photoListPanel, photoListEl,
+      prevPageBtn, nextPageBtn, pageSelect, pageIndicator, pageNav;
+  function refreshElements() {
+    dropZone = document.getElementById('drop-zone');
+    workspace = document.getElementById('workspace');
+    pdfCanvas = document.getElementById('pdf-render') as HTMLCanvasElement;
+    previewContainer = document.getElementById('preview-container');
+    renderLoading = document.getElementById('render-loading');
+    snapV = document.getElementById('snap-v');
+    snapH = document.getElementById('snap-h');
+    photoInput = document.getElementById('photo-input') as HTMLInputElement;
+    bgRemoveToggle = document.getElementById('bg-remove-toggle');
+    toleranceRow = document.getElementById('tolerance-row');
+    toleranceSlider = document.getElementById('tolerance') as HTMLInputElement;
+    toleranceVal = document.getElementById('tolerance-val');
+    presetBtns = document.querySelectorAll('.preset-btn');
+    borderToggle = document.getElementById('border-toggle');
+    borderRow = document.getElementById('border-row');
+    borderColor = document.getElementById('border-color') as HTMLInputElement;
+    borderWidth = document.getElementById('border-width') as HTMLInputElement;
+    borderWidthVal = document.getElementById('border-width-val');
+    photoOpacity = document.getElementById('photo-opacity') as HTMLInputElement;
+    opacityVal = document.getElementById('opacity-val');
+    savePdfBtn = document.getElementById('save-pdf-btn');
+    undoBtn = document.getElementById('undo-btn');
+    redoBtn = document.getElementById('redo-btn');
+    clearAllBtn = document.getElementById('clear-all-btn');
+    photoListPanel = document.getElementById('photo-list-panel');
+    photoListEl = document.getElementById('photo-list');
+    prevPageBtn = document.getElementById('prev-page');
+    nextPageBtn = document.getElementById('next-page');
+    pageSelect = document.getElementById('page-select') as HTMLSelectElement;
+    pageIndicator = document.getElementById('page-indicator');
+    pageNav = document.getElementById('page-nav');
+  }
 
   // --- 3. STATE ---
   type PhotoEntry = {
@@ -437,6 +444,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     }
   }
 
+  function bindPageNav() {
   prevPageBtn?.addEventListener('click', async () => {
     if (currentPageIndex > 0) { currentPageIndex--; await renderCurrentPage(); updatePageNav(); }
   });
@@ -451,6 +459,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       updatePageNav();
     }
   });
+  }
 
   // --- 7. OVERLAY RENDERING ---
   function renderAllOverlays() {
@@ -761,8 +770,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     if (redoBtn) redoBtn.disabled = redoStack.length === 0;
   }
 
-  undoBtn?.addEventListener('click', undo);
-  redoBtn?.addEventListener('click', redo);
+  function bindUndoRedo() {
+    undoBtn?.addEventListener('click', undo);
+    redoBtn?.addEventListener('click', redo);
+  }
 
   // --- 10. ADD / REMOVE PHOTOS ---
   async function addPhotoFromFile(file: File) {
@@ -819,10 +830,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     }
   }
 
+  function bindPhotoInput() {
   photoInput?.addEventListener('change', (e: any) => {
     const file = e.target.files?.[0];
     if (file) void addPhotoFromFile(file);
   });
+  }
 
   function removePhoto(id: string) {
     pushHistory();
@@ -832,6 +845,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     renderPhotoList();
   }
 
+  function bindClearAll() {
   clearAllBtn?.addEventListener('click', () => {
     if (photos.length === 0) return;
     pushHistory();
@@ -841,6 +855,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     renderPhotoList();
     window.showToast?.(_tt('Semua foto dihapus.'), 'success');
   });
+  }
 
   // --- 11. PHOTO LIST PANEL ---
   function renderPhotoList() {
@@ -906,6 +921,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     });
   }
 
+  function bindDropZoneAndControls() {
   // --- 12. SETTINGS CONTROLS ---
   presetBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1009,6 +1025,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       }
     },
   });
+  }
 
   function resetToDropZone() {
     currentFile = null;
@@ -1027,6 +1044,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
 
   // --- 14. EXPORT (pdf-lib) ---
+  function bindExport() {
   savePdfBtn?.addEventListener('click', async () => {
     if (!currentFile) return;
     if (photos.length === 0) {
@@ -1102,10 +1120,28 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       restoreBtn();
     }
   });
+  }
 
   // --- 15. INIT (SPA convention: astro:page-load + pathname guard) ---
+  // Semua binding elemen dibungkus init() — DOM baru tiap balik navigasi SPA.
+  // (Bug lama: binding top-level menempel di DOM lama → tool MATI setelah
+  // pergi-balik, terkonfirmasi via CDP round-trip test.)
+  function init() {
+    refreshElements();
+    bindPageNav();
+    bindUndoRedo();
+    bindPhotoInput();
+    bindClearAll();
+    bindDropZoneAndControls();
+    bindExport();
+  }
+
   document.addEventListener('astro:page-load', () => {
     if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
     attachGlobalListeners();
   });
 
