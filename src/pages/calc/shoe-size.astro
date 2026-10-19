@@ -63,6 +63,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <div class="text-2xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1" data-i18n="shoe.eu">EU (Eropa)</div>
           <div id="r-eu" class="text-4xl font-black text-matte-900 dark:text-white">—</div>
           <div id="r-eu-sub" class="text-2xs text-matte-400 mt-1"></div>
+          <div class="mt-2 inline-block rounded-full bg-amber-500 text-white text-2xs font-black uppercase tracking-wider px-2 py-0.5" data-i18n="shoe.primary">Ukuran utama</div>
         </div>
         <div class="rounded-2xl bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900 p-4 text-center">
           <div class="text-2xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider mb-1" data-i18n="shoe.us">US</div>
@@ -119,8 +120,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <thead>
             <tr class="text-2xs font-black text-matte-400 uppercase tracking-wider">
               <th class="py-2.5 px-2" data-i18n="shoe.th_cm">CM</th>
-              <th class="py-2.5 px-2" data-i18n="shoe.th_mondo">Mondopoint</th>
               <th class="py-2.5 px-2" data-i18n="shoe.th_eu">EU</th>
+              <th class="py-2.5 px-2" data-i18n="shoe.th_mondo">Mondopoint</th>
               <th class="py-2.5 px-2" data-i18n="shoe.th_us_kids">US Anak</th>
               <th class="py-2.5 px-2" data-i18n="shoe.th_uk_kids">UK Anak</th>
               <th class="py-2.5 px-2" data-i18n="shoe.th_us_men">US Pria</th>
@@ -269,8 +270,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         rows.push(
           `<tr data-cm="${cm}" class="${zoneTint} border-b border-matte-100 dark:border-matte-800">` +
           cell(`<span class="text-matte-800 dark:text-white">${fmt(cm)}</span>`) +
-          cell(String(s.mondo)) +
           cell(String(s.eu)) +
+          cell(String(s.mondo)) +
           (kids ? cell(String(s.us)) + cell(String(s.uk)) : dash + dash) +
           (!kids ? cell(String(s.us)) + cell(String(sizesFor(cm, true).us)) + cell(String(s.uk)) : dash + dash + dash) +
           '</tr>'
