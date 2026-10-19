@@ -206,29 +206,35 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   let autoRefreshInterval = null;
   let settings = safeJSON('quoteSettings', { autoRefresh: 0, textSize: 'text-2xl', showAuthor: true, targetLang: 'id' });
 
-  // --- 3. ELEMENTS ---
-  const quoteText = document.getElementById('quote-text');
-  const quoteAuthor = document.getElementById('quote-author');
-  const statusBadge = document.getElementById('status-badge');
-  const modeToggle = document.getElementById('mode-toggle');
-  const modeIndicator = document.getElementById('mode-indicator');
-  const categorySelect = document.getElementById('category-select');
-  const generateBtn = document.getElementById('generate-btn');
-  const copyBtn = document.getElementById('copy-btn');
-  const favoriteBtn = document.getElementById('favorite-btn');
-  const shareBtn = document.getElementById('share-btn');
-  const translateBtn = document.getElementById('translate-btn');
-  const settingsBtn = document.getElementById('settings-btn');
-  const settingsModal = document.getElementById('settings-modal');
-  const closeSettingsBtn = document.getElementById('close-settings');
-  const saveSettingsBtn = document.getElementById('save-settings');
-  const autoRefreshInput = document.getElementById('auto-refresh');
-  const textSizeSelect = document.getElementById('text-size');
-  const showAuthorCheckbox = document.getElementById('show-author');
-  const targetLangSelect = document.getElementById('target-lang');
-  const favoritesSection = document.getElementById('favorites-section');
-  const favoritesList = document.getElementById('favorites-list');
-  const clearFavoritesBtn = document.getElementById('clear-favorites');
+  // --- 3. ELEMENTS (let — di-query ulang tiap init(), DOM baru tiap balik navigasi SPA) ---
+  let quoteText, quoteAuthor, statusBadge, modeToggle, modeIndicator, categorySelect,
+      generateBtn, copyBtn, favoriteBtn, shareBtn, translateBtn, settingsBtn, settingsModal,
+      closeSettingsBtn, saveSettingsBtn, autoRefreshInput, textSizeSelect, showAuthorCheckbox,
+      targetLangSelect, favoritesSection, favoritesList, clearFavoritesBtn;
+  function refreshElements() {
+    quoteText = document.getElementById('quote-text');
+    quoteAuthor = document.getElementById('quote-author');
+    statusBadge = document.getElementById('status-badge');
+    modeToggle = document.getElementById('mode-toggle');
+    modeIndicator = document.getElementById('mode-indicator');
+    categorySelect = document.getElementById('category-select');
+    generateBtn = document.getElementById('generate-btn');
+    copyBtn = document.getElementById('copy-btn');
+    favoriteBtn = document.getElementById('favorite-btn');
+    shareBtn = document.getElementById('share-btn');
+    translateBtn = document.getElementById('translate-btn');
+    settingsBtn = document.getElementById('settings-btn');
+    settingsModal = document.getElementById('settings-modal');
+    closeSettingsBtn = document.getElementById('close-settings');
+    saveSettingsBtn = document.getElementById('save-settings');
+    autoRefreshInput = document.getElementById('auto-refresh');
+    textSizeSelect = document.getElementById('text-size');
+    showAuthorCheckbox = document.getElementById('show-author');
+    targetLangSelect = document.getElementById('target-lang');
+    favoritesSection = document.getElementById('favorites-section');
+    favoritesList = document.getElementById('favorites-list');
+    clearFavoritesBtn = document.getElementById('clear-favorites');
+  }
 
   // --- 4. CORE FUNCTIONS ---
 
@@ -494,6 +500,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     });
   }
 
+  function init() {
+    refreshElements();
+
   // --- LISTENERS ---
   modeToggle.addEventListener('click', () => {
       isOnline = !isOnline;
@@ -581,6 +590,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     }
   });
 
+  }
+
   const _motKeydown = (e) => {
       if (e.code === 'Space' && document.activeElement.tagName !== 'BUTTON' && document.activeElement.tagName !== 'SELECT' && document.activeElement.tagName !== 'INPUT') {
           e.preventDefault();
@@ -594,17 +605,33 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         settingsModal.classList.add('hidden');
       }
   };
-  document.addEventListener('keydown', _motKeydown);
-  document.addEventListener('astro:page-leave', () => {
+
+  // keydown: dilepas sebelum dipasang (idempoten) — listener di document gak ikut
+  // ke-swap DOM, dulu di-remove oleh astro:page-leave {once} dan tak pernah balik
+  function bindLifecycle() {
     document.removeEventListener('keydown', _motKeydown);
-    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-  }, { once: true });
+    document.addEventListener('keydown', _motKeydown);
+  }
 
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
-
-      updateModeUI();
-      renderFavorites();
-      applySettings();
-      getQuote();
+  // SPA boot (#14): guard path + guard dobel-bind — semua binding sudah dibungkus
+  // init() supaya DOM baru tiap balik navigasi SPA tetap terikat. (Bug lama:
+  // binding top-level menempel di DOM lama → tool MATI setelah pergi-balik,
+  // terkonfirmasi via CDP round-trip test.)
+  document.addEventListener('astro:page-load', () => {
+    const path = (location.pathname.replace(/\/+$/, '') || '/');
+    if (path !== __page) {
+      // halaman lain: matikan timer auto-refresh biar gak nembak quote bayangan
+      if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
+      return;
+    }
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+    bindLifecycle();
+    updateModeUI();
+    renderFavorites();
+    applySettings();
+    getQuote();
   });
 </script>

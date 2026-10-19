@@ -141,22 +141,22 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  // Elements
-  const p1X = document.getElementById('p1-x');
-  const p1Y = document.getElementById('p1-y');
-  const res1 = document.getElementById('res-1');
-  
-  const p2X = document.getElementById('p2-x');
-  const p2Y = document.getElementById('p2-y');
-  const res2 = document.getElementById('res-2');
-  
-  const p3X = document.getElementById('p3-x');
-  const p3Percent = document.getElementById('p3-percent');
-  const res3Inc = document.getElementById('res-3-inc');
-  const res3Dec = document.getElementById('res-3-dec');
-  
-  const historyList = document.getElementById('history-list');
-  const clearHistoryBtn = document.getElementById('clear-history');
+  // Elements (let — di-query ulang tiap init(), DOM baru tiap balik navigasi SPA)
+  let p1X, p1Y, res1, p2X, p2Y, res2, p3X, p3Percent, res3Inc, res3Dec, historyList, clearHistoryBtn;
+  function refreshElements() {
+    p1X = document.getElementById('p1-x');
+    p1Y = document.getElementById('p1-y');
+    res1 = document.getElementById('res-1');
+    p2X = document.getElementById('p2-x');
+    p2Y = document.getElementById('p2-y');
+    res2 = document.getElementById('res-2');
+    p3X = document.getElementById('p3-x');
+    p3Percent = document.getElementById('p3-percent');
+    res3Inc = document.getElementById('res-3-inc');
+    res3Dec = document.getElementById('res-3-dec');
+    historyList = document.getElementById('history-list');
+    clearHistoryBtn = document.getElementById('clear-history');
+  }
   
   // Helper
   const formatNumber = (num) => {
@@ -171,11 +171,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   }
   let calculationHistory = safeJSON('percentageHistory', []);
 
-  // Initialize
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
-
-    renderHistory();
-  });
+  // Initialize — boot SPA dipindah ke akhir script (setelah init())
+  function init() {
+    refreshElements();
 
   // Calculator 1: What is X% of Y
   function calc1() {
@@ -328,6 +326,22 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   [p2X, p2Y].forEach(el => el.addEventListener('input', calc2));
   [p3X, p3Percent].forEach(el => el.addEventListener('input', calc3));
 
+    // render awal (dulu dijalankan boot listener lama)
+    renderHistory();
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind — semua binding & render awal
+  // sudah dibungkus init() supaya DOM baru tiap balik navigasi SPA tetap terikat.
+  // (Bug lama: binding top-level menempel di DOM lama → tool MATI setelah
+  // pergi-balik, terkonfirmasi via CDP round-trip test.)
+  document.addEventListener('astro:page-load', () => {
+    const path = (location.pathname.replace(/\/+$/, '') || '/');
+    if (path !== __page) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
 </script>
 
 <style>
