@@ -13,6 +13,7 @@ interface Props {
   canonicalUrl?: string;
   noIndex?: boolean;
   pdfJs?: boolean;
+  hideChrome?: boolean; // Halaman app mandiri (mis. HRD Dashboard): sembunyikan navbar/footer/widget situs
 }
 
 const { 
@@ -21,7 +22,8 @@ const {
   ogImage: ogImageProp = '',
   canonicalUrl,
   noIndex = false,
-  pdfJs = false
+  pdfJs = false,
+  hideChrome = false
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
@@ -47,7 +49,8 @@ const seoDesc = matchedTool?.seoDesc;
 const defaultDescription = `${pageTitle} — gunakan gratis, 100% di browser tanpa upload data. Cepat, aman, dan tanpa iklan.`;
 const description = propDescription ?? seoDesc ?? defaultDescription;
 const titleSuffix = isHome ? `Koleksi ${tools.length}+ Tools Developer & Produktivitas Gratis | MasAul Tools` : 'Gratis & Offline | MasAul Tools';
-const fullTitle = isHome ? titleSuffix : (seoTitle ?? `${pageTitle} — ${titleSuffix}`);
+// Halaman personal (hideChrome): tab browser cukup nama halaman — tanpa suffix situs.
+const fullTitle = hideChrome ? pageTitle : (isHome ? titleSuffix : (seoTitle ?? `${pageTitle} — ${titleSuffix}`));
 
 // hreflang alternates — self-referencing since site uses client-side i18n (same URL, localStorage-based language toggle)
 const pageUrl = Astro.url.href;
@@ -357,7 +360,7 @@ if (isPdfRoot) {
       }
     })();
   </script>
-</head>  <body class="antialiased bg-[#fafafa] dark:bg-matte-950 text-matte-800 dark:text-white min-h-screen flex flex-col font-sans">
+</head>  <body class={`antialiased bg-[#fafafa] dark:bg-matte-950 text-matte-800 dark:text-white min-h-screen flex flex-col font-sans${hideChrome ? ' app-mode' : ''}`}>
   
   <!-- Skip to content -->
   <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-accent-blue focus:text-white focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg focus:outline-none">

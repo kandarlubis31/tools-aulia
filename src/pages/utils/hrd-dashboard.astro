@@ -1,16 +1,20 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
-<BaseLayout pageTitle="HRD Dashboard" noIndex />
-  <div class="max-w-4xl mx-auto px-4 min-h-[70vh]">
-    <ToolPageHeader
-      title="HRD Dashboard"
-      desc="Kelola data karyawan, absensi, cuti, dan payroll. Data tersimpan 100% lokal di browser Anda."
-      icon='<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
-      gradient="from-emerald-500 to-teal-600"
-    />
+<BaseLayout pageTitle="HRD Dashboard" description="Kelola data karyawan, absensi, cuti, dan payroll. Data tersimpan 100% lokal di browser Anda." noIndex hideChrome>
+  <!-- App header personal (bukan ToolPageHeader — biar gak bawa tombol share situs) -->
+  <header class="text-center mb-8 pt-6 animate-fade-in">
+    <div class="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl mb-4 shadow-lg shadow-emerald-500/20">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <h1 class="text-3xl md:text-4xl font-extrabold mb-3 tracking-tight text-matte-900 dark:text-white">HRD Dashboard</h1>
+    <p class="text-matte-400 dark:text-matte-300 max-w-xl mx-auto leading-relaxed">Kelola data karyawan, absensi, cuti, dan payroll. Data tersimpan 100% lokal di browser Anda.</p>
+    <div class="flex items-center justify-center gap-2 mt-4 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+      <span class="inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-full px-3 py-1">🔒 Privat</span>
+      <span class="inline-flex items-center gap-1.5 bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 rounded-full px-3 py-1 text-sky-600 dark:text-sky-400">💾 Lokal</span>
+    </div>
+  </header>
 
     <!-- ============ AUTH SCREEN ============ -->
     <div id="auth-screen" class="card-base p-6 md:p-8 animate-fade-in">
@@ -372,6 +376,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </form>
       </div>
     </div>
+
+    <!-- App footer personal -->
+    <footer class="mt-12 pt-6 border-t border-matte-200 dark:border-surface-border text-center text-xs text-matte-400 leading-relaxed">
+      <p>HRD Dashboard — data hanya tersimpan di browser ini. Backup rutin via tab <span class="font-semibold text-matte-500 dark:text-matte-300">Data</span>.</p>
+    </footer>
   </div>
 </BaseLayout>
 
