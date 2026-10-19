@@ -58,9 +58,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script is:inline src="/vendor/js-yaml/js-yaml.min.js"></script>
 
 <script>
+import { t } from '../../i18n/translations';
+
+const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+  // autoBound guard: cegah double-bind listener saat SPA balik ke halaman ini
+  const anchor = document.querySelector('main button, main input, main select, main textarea');
+  if (!anchor || anchor.dataset.autoBound === 'true') return;
+  anchor.dataset.autoBound = 'true';
 
     const toYamlBtn = document.getElementById('to-yaml-btn');
     const toJsonBtn = document.getElementById('to-json-btn');
@@ -96,7 +104,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     fileInput?.addEventListener('change', async () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (f.size > 2 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('File maksimal 2 MB') : 'File maksimal 2 MB', 'error'); return; }
+      if (f.size > 2 * 1024 * 1024) { toast(t('jsonyaml.maxsize', 'File maksimal 2 MB'), 'error'); return; }
       const text = await f.text();
       // deteksi arah dari ekstensi/isi
       const trimmed = text.trimStart();
@@ -104,7 +112,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       else setMode('toJson');
       inputArea.value = text;
       convert();
-      window.showToast?.(window._tToast ? window._tToast('File dimuat!') : 'File dimuat!', 'info');
+      toast(t('jsonyaml.file_loaded', 'File dimuat!'), 'info');
     });
 
     clearInputBtn?.addEventListener('click', () => { inputArea.value = ''; outputArea!.innerHTML = ''; errorBox!.classList.add('hidden'); });
@@ -120,7 +128,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const text = inputArea.value.trim();
       if (!text) { outputArea!.innerHTML = ''; return; }
       const ready = await window.waitForCdnLib?.('jsyaml', { maxRetries: 40 });
-      if (!ready) { window.showToast?.(window._tToast ? window._tToast('Library YAML gagal dimuat, cek koneksi') : 'Library YAML gagal dimuat, cek koneksi', 'error'); return; }
+      if (!ready) { toast(t('jsonyaml.lib_fail', 'Library YAML gagal dimuat, cek koneksi'), 'error'); return; }
 
       try {
         let result: string;
@@ -144,9 +152,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       if (!text) return;
       try {
         await navigator.clipboard.writeText(text);
-        window.showToast?.(window._tToast ? window._tToast('Tersalin!') : 'Tersalin!', 'info');
+        toast(t('jsonyaml.copied', 'Tersalin!'), 'info');
       } catch {
-        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin') : 'Gagal menyalin', 'error');
+        toast(t('jsonyaml.copy_fail', 'Gagal menyalin'), 'error');
       }
     });
 

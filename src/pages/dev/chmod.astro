@@ -75,12 +75,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <p class="text-2xs text-matte-400 mb-2" data-i18n="chmod.result">chmod</p>
         <p id="chmod-number" class="text-5xl font-mono font-bold text-green-600 dark:text-green-400">755</p>
         <p id="chmod-string" class="text-lg font-mono text-matte-500 mt-2">rwxr-xr-x</p>
-        <p id="chmod-command" class="text-sm font-mono text-matte-400 mt-2">chmod 755 file</p>
+        <p id="chmod-command" class="text-sm font-mono text-matte-400 mt-2" data-i18n="chmod.copy_hint" data-i18n-attr="title" title="Klik untuk salin perintah">chmod 755 file</p>
       </div>
 
       <!-- Presets -->
       <div class="mt-6">
-        <p class="section-title mb-3">Preset Umum</p>
+        <p class="section-title mb-3" data-i18n="chmod.presets">Preset Umum</p>
         <div class="grid grid-cols-2 gap-2">
           <button class="preset-btn px-4 py-2 rounded-xl text-sm font-medium bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-perms="755">755 — rwxr-xr-x</button>
           <button class="preset-btn px-4 py-2 rounded-xl text-sm font-medium bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-perms="777">777 — rwxrwxrwx</button>
@@ -92,11 +92,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+import { t } from '../../i18n/translations';
+
 const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+      // autoBound guard: cegah double-bind listener saat SPA balik ke halaman ini
+      const anchor = document.querySelector('main button, main input, main select, main textarea');
+      if (!anchor || anchor.dataset.autoBound === 'true') return;
+      anchor.dataset.autoBound = 'true';
 
       function calculateChmod() {
         const ownerR = (document.getElementById('owner-r') as HTMLInputElement).checked ? 4 : 0;
@@ -118,7 +124,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
         document.getElementById('chmod-number')!.textContent = number;
         document.getElementById('chmod-string')!.textContent = string;
-        document.getElementById('chmod-command')!.textContent = `chmod ${number} file`;
+        document.getElementById('chmod-command')!.textContent = t('chmod.command', 'chmod {n} file').replace('{n}', number);
       }
 
       // Add event listeners to all checkboxes
@@ -130,6 +136,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       document.querySelectorAll('.preset-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const perms = (btn as HTMLElement).dataset.perms!;
+          toast(t('chmod.preset_applied', 'Preset {n} diterapkan').replace('{n}', perms), 'info');
           const owner = parseInt(perms[0]);
           const group = parseInt(perms[1]);
           const other = parseInt(perms[2]);
@@ -149,6 +156,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       });
 
       calculateChmod();
+
+      // Klik perintah untuk salin (W6 batch 20 deepening)
+      document.getElementById('chmod-command')?.addEventListener('click', (e) => {
+        navigator.clipboard.writeText((e.currentTarget as HTMLElement).textContent || '');
+        toast(t('chmod.copied', 'Perintah disalin!'), 'info');
+      });
     });
   </script>
 </BaseLayout>
