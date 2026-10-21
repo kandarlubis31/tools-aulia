@@ -4321,6 +4321,53 @@ export const translations: Record<string, { id: string; en: string }> = {
   'wave.mono': { id: 'Mono', en: 'Mono' },
   'wave.stereo': { id: 'Stereo', en: 'Stereo' },
   'wave.unsupported': { id: 'Format audio tidak didukung', en: 'Unsupported audio format' },
+  // --- W6 batch 24 — dev/timestamp, media/audio-recorder, calc/case, calc/scientific, calc/matrix, pdf/word-to-pdf ---
+  // dev/timestamp (header.timestamp_desc sudah ada)
+  'ts.now': { id: 'Saat Ini', en: 'Now' },
+  'ts.to_date': { id: 'Timestamp → Date', en: 'Timestamp → Date' },
+  'ts.to_ts': { id: 'Date → Timestamp', en: 'Date → Timestamp' },
+  'ts.relative': { id: 'Relative', en: 'Relative' },
+  'ts.seconds': { id: 'Seconds', en: 'Seconds' },
+  'ts.millis': { id: 'Milliseconds', en: 'Milliseconds' },
+  'ts.invalid': { id: 'Timestamp tidak valid!', en: 'Invalid timestamp!' },
+  // media/audio-recorder
+  'rec.dl_wav': { id: 'Download WAV', en: 'Download WAV' },
+  'rec.dl_webm': { id: 'Download WebM', en: 'Download WebM' },
+  'rec.privacy': { id: '🔒 Rekaman diproses dan disimpan 100% di perangkatmu — tidak pernah dikirim ke server mana pun.', en: '🔒 Recording is processed and stored 100% on your device — never sent to any server.' },
+  'rec.mic_denied': { id: 'Akses mikrofon ditolak — periksa izin browser.', en: 'Microphone access denied — check your browser permissions.' },
+  'rec.mic_blocked': { id: 'Mikrofon tidak diizinkan', en: 'Microphone not allowed' },
+  'rec.recording': { id: 'Merekam...', en: 'Recording...' },
+  'rec.ready_dl': { id: 'Rekaman siap — pilih format download.', en: 'Recording ready — choose a download format.' },
+  'rec.wav_ok': { id: 'WAV berhasil di-download!', en: 'WAV downloaded successfully!' },
+  'rec.wav_fail': { id: 'Gagal konversi ke WAV — gunakan WebM', en: 'Failed to convert to WAV — use WebM' },
+  // calc/case
+  'case.lines': { id: 'baris', en: 'lines' },
+  'case.preview_all': { id: 'Preview Semua Format', en: 'Preview All Formats' },
+  'case.copied': { id: 'Teks disalin!', en: 'Text copied!' },
+  // calc/scientific
+  'sci.clear_btn': { id: 'Bersihkan', en: 'Clear' },
+  'sci.backspace': { id: 'Hapus satu karakter', en: 'Backspace' },
+  'sci.equals': { id: 'Hitung', en: 'Calculate' },
+  'sci.privacy': { id: 'Kalkulator berjalan 100% di browser.', en: 'Calculator runs 100% in your browser.' },
+  'sci.hist_cleared': { id: 'Riwayat dibersihkan!', en: 'History cleared!' },
+  'sci.error': { id: 'Error', en: 'Error' },
+  // calc/matrix
+  'matrix.a': { id: 'Matriks A', en: 'Matrix A' },
+  'matrix.b': { id: 'Matriks B', en: 'Matrix B' },
+  'matrix.pick_op': { id: 'Pilih operasi di atas untuk melihat hasil', en: 'Pick an operation above to see the result' },
+  'matrix.invalid_size': { id: 'Ukuran matrix tidak valid!', en: 'Invalid matrix size!' },
+  // pdf/word-to-pdf
+  'header.word_to_pdf': { id: 'Word to PDF', en: 'Word to PDF' },
+  'header.word_to_pdf_desc': { id: 'Konversi dokumen Word (.docx) menjadi PDF. 100% di browser — file tidak pernah di-upload.', en: 'Convert Word documents (.docx) to PDF. 100% in browser — files are never uploaded.' },
+  'w2p.drop': { id: 'Drop file .docx di sini atau klik', en: 'Drop a .docx file here or click' },
+  'w2p.drop_hint': { id: 'Format Word modern (.docx). Maksimal ~15 MB. Tidak di-upload ke server.', en: 'Modern Word format (.docx). Max ~15 MB. Never uploaded to a server.' },
+  'w2p.paper': { id: 'Kertas', en: 'Paper' },
+  'w2p.orientation': { id: 'Orientasi', en: 'Orientation' },
+  'w2p.download': { id: 'Download PDF', en: 'Download PDF' },
+  'w2p.info_title': { id: 'Yang perlu diketahui', en: 'Good to know' },
+  'w2p.info_1': { id: 'Konversi mempertahankan struktur: heading, paragraf, list, tabel, gambar, bold/italic.', en: 'Conversion preserves structure: headings, paragraphs, lists, tables, images, bold/italic.' },
+  'w2p.info_2': { id: 'Format kompleks (kolom, header/footer Word, smart art) bisa berbeda dari aslinya.', en: 'Complex layouts (columns, Word headers/footers, smart art) may differ from the original.' },
+  'w2p.info_3': { id: 'File diproses lokal di browser — tidak ada upload, cocok untuk dokumen internal/perusahaan.', en: 'Files are processed locally in the browser — no upload, suitable for internal/company documents.' },
 };
 
 export function t(key, fallback) {

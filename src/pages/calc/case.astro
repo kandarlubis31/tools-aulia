@@ -30,7 +30,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <span class="section-title" data-i18n="text.case_editor">Text Editor</span>
           <div class="flex gap-3">
              <button id="copy-btn" class="text-xs font-bold text-violet-500 hover:text-violet-600 transition-colors" data-i18n="btn.copy_emoji">📋 Copy</button>
-             <button id="clear-btn" class="text-xs font-bold text-rose-500 hover:text-rose-600 transition-colors">🗑 Clear</button>
+             <button id="clear-btn" class="text-xs font-bold text-rose-500 hover:text-rose-600 transition-colors" data-i18n="btn.clear">🗑 Clear</button>
           </div>
        </div>
        <textarea id="text-input" class="flex-1 w-full p-6 font-sans text-lg bg-transparent text-matte-800 dark:text-white outline-none resize-none" placeholder="Ketik atau tempel teks di sini..." data-i18n-attr="placeholder" data-i18n="ph.type_or_paste"></textarea>
@@ -38,13 +38,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
        <div class="bg-matte-100 dark:bg-surface-hover px-4 py-2 border-t border-matte-200 dark:border-surface-border text-xs text-matte-400 flex flex-wrap justify-between gap-x-4">
           <span><span id="char-count-num">0</span> <span data-i18n="text.characters">karakter</span></span>
           <span><span id="word-count-num">0</span> <span data-i18n="text.words">kata</span></span>
-          <span><span id="line-count-num">0</span> baris</span>
+          <span><span id="line-count-num">0</span> <span data-i18n="case.lines">baris</span></span>
        </div>
     </div>
 
     <!-- Live Preview Strip -->
     <div id="preview-strip" class="hidden mt-6 space-y-2 animate-fade-in">
-      <h3 class="text-xs font-bold uppercase tracking-wider text-matte-400 mb-2">📋 Preview Semua Format</h3>
+      <h3 class="text-xs font-bold uppercase tracking-wider text-matte-400 mb-2">📋 <span data-i18n="case.preview_all">Preview Semua Format</span></h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-2" id="preview-grid"></div>
     </div>
 
@@ -52,6 +52,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -177,7 +178,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const orig = copyBtn.innerHTML;
     copyBtn.innerHTML = '✅ Copied!';
     setTimeout(() => { copyBtn.innerHTML = orig; }, 1500);
-    window.showToast?.(window._tToast ? window._tToast('Teks disalin!') : 'Teks disalin!', "success");
+    window.showToast?.(window._tToast ? window._tToast(t('case.copied', 'Teks disalin!')) : 'Teks disalin!', "success");
   });
 
   clearBtn?.addEventListener('click', () => {

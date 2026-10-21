@@ -16,20 +16,20 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <div class="grid gap-8 animate-fade-in">
       <div class="card-base p-6">
-        <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4">Matriks A</h3>
+        <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4" data-i18n="matrix.a">Matriks A</h3>
         <div class="flex gap-4 mb-4">
-          <label class="text-sm text-matte-500">Baris: <input id="rows-a" type="number" value="2" min="1" max="5" class="w-16 p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-center" /></label>
-          <label class="text-sm text-matte-500">Kolom: <input id="cols-a" type="number" value="2" min="1" max="5" class="w-16 p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-center" /></label>
+          <label class="text-sm text-matte-500"><span data-i18n="matrix.rows">Baris</span>: <input id="rows-a" type="number" value="2" min="1" max="5" class="w-16 p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-center" /></label>
+          <label class="text-sm text-matte-500"><span data-i18n="matrix.cols">Kolom</span>: <input id="cols-a" type="number" value="2" min="1" max="5" class="w-16 p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-center" /></label>
           <button id="gen-a" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-bold hover:bg-indigo-200" data-i18n="btn.generate">Generate</button>
         </div>
         <div id="matrix-a" class="grid gap-1"></div>
       </div>
 
       <div class="card-base p-6">
-        <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4">Matriks B</h3>
+        <h3 class="text-lg font-bold text-matte-800 dark:text-white mb-4" data-i18n="matrix.b">Matriks B</h3>
         <div class="flex gap-4 mb-4">
-          <label class="text-sm text-matte-500">Baris: <input id="rows-b" type="number" value="2" min="1" max="5" class="w-16 p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-center" /></label>
-          <label class="text-sm text-matte-500">Kolom: <input id="cols-b" type="number" value="2" min="1" max="5" class="w-16 p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-center" /></label>
+          <label class="text-sm text-matte-500"><span data-i18n="matrix.rows">Baris</span>: <input id="rows-b" type="number" value="2" min="1" max="5" class="w-16 p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-center" /></label>
+          <label class="text-sm text-matte-500"><span data-i18n="matrix.cols">Kolom</span>: <input id="cols-b" type="number" value="2" min="1" max="5" class="w-16 p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-center" /></label>
           <button id="gen-b" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-bold hover:bg-indigo-200" data-i18n="btn.generate">Generate</button>
         </div>
         <div id="matrix-b" class="grid gap-1"></div>
@@ -49,7 +49,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
         <label id="scale-label" class="text-sm text-matte-500 hidden">Skalar k: <input id="scale-val" type="number" value="2" class="w-20 p-2 border rounded-lg dark:bg-surface-hover dark:border-surface-border text-center" /></label>
         <div id="result" class="mt-4 p-4 bg-matte-50 dark:bg-surface-hover rounded-xl border border-matte-200 dark:border-surface-border">
-          <p class="text-matte-400 text-sm italic">Pilih operasi di atas untuk melihat hasil</p>
+          <p class="text-matte-400 text-sm italic" data-i18n="matrix.pick_op">Pilih operasi di atas untuk melihat hasil</p>
         </div>
       </div>
     </div>
@@ -57,6 +57,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
 
@@ -78,7 +79,7 @@ const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? win
   function genGrid(id) {
     const rows = parseInt(document.getElementById('rows-' + id).value);
     const cols = parseInt(document.getElementById('cols-' + id).value);
-    if (!rows || !cols || rows < 1 || cols < 1 || rows > 12 || cols > 12) { toast('Ukuran matrix tidak valid!', 'error'); return; }
+    if (!rows || !cols || rows < 1 || cols < 1 || rows > 12 || cols > 12) { toast(t('matrix.invalid_size', 'Ukuran matrix tidak valid!'), 'error'); return; }
     const el = document.getElementById('matrix-' + id);
     el.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
     el.innerHTML = '';

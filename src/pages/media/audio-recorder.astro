@@ -40,20 +40,21 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div id="result" class="hidden mt-8 pt-6 border-t border-matte-100 dark:border-matte-800 animate-fade-in">
         <audio id="preview-audio" controls class="w-full max-w-md mx-auto mb-4"></audio>
         <div class="flex flex-wrap items-center justify-center gap-3">
-          <button id="download-wav-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-emerald-500 text-white hover:bg-emerald-600 transition-all">🎵 Download WAV</button>
-          <button id="download-webm-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">🎞️ Download WebM</button>
+          <button id="download-wav-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-emerald-500 text-white hover:bg-emerald-600 transition-all">🎵 <span data-i18n="rec.dl_wav">Download WAV</span></button>
+          <button id="download-webm-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">🎞️ <span data-i18n="rec.dl_webm">Download WebM</span></button>
           <button id="reset-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="btn.reset">Reset</button>
         </div>
       </div>
     </div>
 
     <p class="text-center text-xs text-matte-400 mt-6 max-w-lg mx-auto">
-      🔒 Rekaman diproses dan disimpan 100% di perangkatmu — tidak pernah dikirim ke server mana pun.
+      <span data-i18n="rec.privacy">🔒 Rekaman diproses dan disimpan 100% di perangkatmu — tidak pernah dikirim ke server mana pun.</span>
     </p>
   </div>
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -105,9 +106,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
       } catch {
-        statusText!.textContent = '❌ Akses mikrofon ditolak — periksa izin browser.';
+        statusText!.textContent = '❌ ' + t('rec.mic_denied', 'Akses mikrofon ditolak — periksa izin browser.');
         statusText!.dataset.i18n = '';
-        window.showToast?.(window._tToast ? window._tToast('Mikrofon tidak diizinkan') : 'Mikrofon tidak diizinkan', 'error');
+        window.showToast?.(window._tToast ? window._tToast(t('rec.mic_blocked', 'Mikrofon tidak diizinkan')) : 'Mikrofon tidak diizinkan', 'error');
         return;
       }
       chunks = [];
@@ -117,7 +118,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         finalBlob = new Blob(chunks, { type: mediaRecorder?.mimeType || 'audio/webm' });
         previewAudio.src = URL.createObjectURL(finalBlob);
         result?.classList.remove('hidden');
-        stream?.getTracks().forEach(t => t.stop());
+        stream?.getTracks().forEach(trk => trk.stop());
         cancelAnimationFrame(rafId);
       };
       mediaRecorder.start();
@@ -134,7 +135,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       recordBtn!.classList.add('hidden');
       stopBtn!.classList.remove('hidden');
       result?.classList.add('hidden');
-      statusText!.textContent = '🔴 Merekam...';
+      statusText!.textContent = '🔴 ' + t('rec.recording', 'Merekam...');
       statusText!.dataset.i18n = '';
       pulseRing!.classList.remove('opacity-0');
       recIcon!.classList.add('scale-50');
@@ -149,7 +150,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       pulseRing!.classList.add('opacity-0');
       recIcon!.classList.remove('scale-50');
       levelBar!.style.width = '0%';
-      statusText!.textContent = '✅ Rekaman siap — pilih format download.';
+      statusText!.textContent = '✅ ' + t('rec.ready_dl', 'Rekaman siap — pilih format download.');
       statusText!.dataset.i18n = '';
     });
 
@@ -162,9 +163,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const wav = encodeWav(buf);
         downloadBlob(wav, 'rekaman.wav');
         ctx.close();
-        window.showToast?.(window._tToast ? window._tToast('WAV berhasil di-download!') : 'WAV berhasil di-download!', 'info');
+        window.showToast?.(window._tToast ? window._tToast(t('rec.wav_ok', 'WAV berhasil di-download!')) : 'WAV berhasil di-download!', 'info');
       } catch {
-        window.showToast?.(window._tToast ? window._tToast('Gagal konversi ke WAV — gunakan WebM') : 'Gagal konversi ke WAV — gunakan WebM', 'error');
+        window.showToast?.(window._tToast ? window._tToast(t('rec.wav_fail', 'Gagal konversi ke WAV — gunakan WebM')) : 'Gagal konversi ke WAV — gunakan WebM', 'error');
       }
     });
 
