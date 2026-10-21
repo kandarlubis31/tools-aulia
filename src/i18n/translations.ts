@@ -4278,6 +4278,49 @@ export const translations: Record<string, { id: string; en: string }> = {
   'overlay.download': { id: 'Download Hasil (PNG)', en: 'Download Result (PNG)' },
   'overlay.downloaded': { id: 'Gambar di-download!', en: 'Image downloaded!' },
   'label.blend_mode': { id: 'Mode Blend', en: 'Blend Mode' },
+  // --- W6 batch 23 — pdf/extract, image/to-pdf, pdf/annotate, regex-tester, waveform ---
+  // pdf/extract
+  'header.pdf_extract': { id: 'Extract Pages', en: 'Extract Pages' },
+  'header.pdf_extract_desc': { id: 'Pilih halaman yang ingin Anda ambil dan simpan sebagai file terpisah.', en: 'Pick the pages you want and save them as a separate file.' },
+  'extract.download_sel': { id: 'Download Terpilih', en: 'Download Selected' },
+  'extract.privacy': { id: 'Ekstraksi berjalan di browser — PDF tidak pernah diupload.', en: 'Extraction runs in your browser — the PDF is never uploaded.' },
+  'extract.processing': { id: 'Memproses...', en: 'Processing...' },
+  'extract.success': { id: 'Berhasil ekstrak halaman!', en: 'Pages extracted successfully!' },
+  'extract.fail': { id: 'Gagal memproses PDF.', en: 'Failed to process the PDF.' },
+  // image/to-pdf
+  'img.topdf.download': { id: '💾 Download PDF', en: '💾 Download PDF' },
+  'img.topdf.files_count': { id: 'gambar', en: 'image(s)' },
+  'img.topdf.processing': { id: 'Memproses...', en: 'Processing...' },
+  'img.topdf.done': { id: 'Selesai!', en: 'Done!' },
+  'img.topdf.ready': { id: 'PDF siap didownload!', en: 'PDF is ready to download!' },
+  'img.topdf.fail': { id: 'Gagal memproses gambar.', en: 'Failed to process the image.' },
+  // pdf/annotate
+  'annotate.drop': { id: 'Drop PDF di sini atau klik untuk pilih', en: 'Drop a PDF here or click to choose' },
+  'annotate.max_size': { id: 'Max 25MB', en: 'Max 25MB' },
+  'annotate.highlight': { id: '🟡 Highlight', en: '🟡 Highlight' },
+  'annotate.underline': { id: '📝 Underline', en: '📝 Underline' },
+  'annotate.note': { id: '📌 Sticky Note', en: '📌 Sticky Note' },
+  'annotate.add': { id: 'Tambah Anotasi', en: 'Add Annotation' },
+  'annotate.none': { id: 'Belum ada anotasi. Tambahkan di atas.', en: 'No annotations yet. Add some above.' },
+  'annotate.apply': { id: 'Terapkan Anotasi & Download PDF', en: 'Apply Annotations & Download PDF' },
+  'annotate.max_25': { id: 'File maksimal 25MB', en: 'Maximum file size is 25MB' },
+  'annotate.pages_word': { id: 'halaman', en: 'pages' },
+  'annotate.invalid_page': { id: 'Halaman tidak valid', en: 'Invalid page' },
+  'annotate.added': { id: 'Anotasi ditambahkan!', en: 'Annotation added!' },
+  'annotate.no_annotations': { id: 'Belum ada anotasi untuk diterapkan', en: 'No annotations to apply' },
+  'annotate.processing': { id: 'Memproses anotasi...', en: 'Processing annotations...' },
+  'annotate.done': { id: 'PDF berhasil dianotasi!', en: 'PDF annotated successfully!' },
+  'annotate.download_started': { id: 'Download dimulai!', en: 'Download started!' },
+  // dev/regex-tester
+  'regex.test_string': { id: 'Test String', en: 'Test String' },
+  'regex.sample_filled': { id: 'Contoh terisi!', en: 'Sample filled!' },
+  // media/waveform
+  'wave.not_audio': { id: 'File harus berupa audio', en: 'File must be an audio' },
+  'wave.max_60': { id: 'Ukuran maksimal 60 MB', en: 'Maximum size is 60 MB' },
+  'wave.minutes': { id: 'menit', en: 'min' },
+  'wave.mono': { id: 'Mono', en: 'Mono' },
+  'wave.stereo': { id: 'Stereo', en: 'Stereo' },
+  'wave.unsupported': { id: 'Format audio tidak didukung', en: 'Unsupported audio format' },
 };
 
 export function t(key, fallback) {

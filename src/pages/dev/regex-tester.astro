@@ -32,7 +32,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
 
       <div class="mb-4">
-        <label for="test-input" class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5">🧪 Test String</label>
+        <label for="test-input" class="block text-xs font-bold text-matte-500 dark:text-matte-300 mb-1.5">🧪 <span data-i18n="regex.test_string">Test String</span></label>
         <textarea id="test-input" rows="7" placeholder="Tempel teks yang mau diuji di sini…" class="w-full px-3 py-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm font-mono leading-relaxed focus:ring-2 focus:ring-purple-500/40 outline-none resize-y"></textarea>
       </div>
 
@@ -74,6 +74,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -185,7 +186,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       patternInput.value = '[\\w.+-]+@[\\w-]+\\.[\\w.]+';
       testInput.value = 'Hubungi kami di support@toolsaulia.com atau admin@paklubis.my.id — balasan dalam 1x24 jam.\nEmail lain: halo@example.co.id, test@mail.org';
       run();
-      window.showToast?.(window._tToast ? window._tToast('Contoh terisi!') : 'Contoh terisi!', 'info');
+      window.showToast?.(window._tToast ? window._tToast(t('regex.sample_filled', 'Contoh terisi!')) : 'Contoh terisi!', 'info');
     });
   });
 </script>

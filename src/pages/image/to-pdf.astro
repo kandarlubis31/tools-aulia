@@ -43,13 +43,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </button>
 
       <button id="download-btn" class="hidden gradient-brand px-8 py-3 rounded-lg text-sm font-bold mt-3">
-        💾 Download PDF
+        <span data-i18n="img.topdf.download">💾 Download PDF</span>
       </button>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+    import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -63,8 +64,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const fitCheck = document.getElementById('fit-check') as HTMLInputElement;
     const marginSelect = document.getElementById('margin-select') as HTMLSelectElement;
 
-    const toast = (m: string, t: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
+    const toast = (m: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, type);
 
     let imageFiles: File[] = [];
     let pdfBytes: Uint8Array | null = null;
@@ -101,14 +102,14 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         });
       });
 
-      filesCount.textContent = `${imageFiles.length} gambar`;
+      filesCount.textContent = `${imageFiles.length} ` + t('img.topdf.files_count', 'gambar');
       convertBtn.disabled = imageFiles.length < 1;
     }
 
     async function convert() {
       if (!imageFiles.length) return;
       convertBtn.disabled = true;
-      convertBtn.innerHTML = '⏳ ' + (window._tToast ? window._tToast('Memproses...') : 'Memproses...');
+      convertBtn.innerHTML = '⏳ ' + t('img.topdf.processing', 'Memproses...');
       try {
         const PDFLib = await loadPdfLib();
         const doc = await PDFLib.PDFDocument.create();
@@ -143,11 +144,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         }
 
         pdfBytes = await doc.save();
-        convertBtn.innerHTML = '✅ ' + (window._tToast ? window._tToast('Selesai!') : 'Selesai!');
+        convertBtn.innerHTML = '✅ ' + t('img.topdf.done', 'Selesai!');
         downloadBtn.classList.remove('hidden');
-        toast('PDF siap didownload!');
+        toast(t('img.topdf.ready', 'PDF siap didownload!'));
       } catch {
-        toast('Gagal memproses gambar.', 'error');
+        toast(t('img.topdf.fail', 'Gagal memproses gambar.'), 'error');
         convertBtn.innerHTML = '🔄 Convert to PDF';
       } finally {
         convertBtn.disabled = false;
