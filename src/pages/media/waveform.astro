@@ -60,6 +60,7 @@ import DropZone from '../../components/DropZone.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -104,10 +105,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const f = fileInput.files?.[0];
       if (!f) return;
       if (!f.type.startsWith('audio/') && !/\.(mp3|wav|ogg|m4a|flac)$/i.test(f.name)) {
-        window.showToast?.(window._tToast ? window._tToast('File harus berupa audio') : 'File harus berupa audio', 'error');
+        window.showToast?.(window._tToast ? window._tToast(t('wave.not_audio', 'File harus berupa audio')) : 'File harus berupa audio', 'error');
         return;
       }
-      if (f.size > 60 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('Ukuran maksimal 60 MB') : 'Ukuran maksimal 60 MB', 'error'); return; }
+      if (f.size > 60 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast(t('wave.max_60', 'Ukuran maksimal 60 MB')) : 'Ukuran maksimal 60 MB', 'error'); return; }
 
       try {
         const { decodeAudioFile, computePeaks, encodeWav, drawWaveform } = await import('../../composables/useAudioWav');
@@ -125,7 +126,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         audioEl.volume = parseFloat(volumeInput!.value);
 
         fileName!.textContent = f.name;
-        fileMeta!.textContent = `${(buffer.duration / 60).toFixed(1)} menit · ${buffer.numberOfChannels === 1 ? 'Mono' : 'Stereo'} · ${(f.size / 1024 / 1024).toFixed(1)} MB`;
+        fileMeta!.textContent = `${(buffer.duration / 60).toFixed(1)} ${t('wave.minutes', 'menit')} · ${buffer.numberOfChannels === 1 ? t('wave.mono', 'Mono') : t('wave.stereo', 'Stereo')} · ${(f.size / 1024 / 1024).toFixed(1)} MB`;
         timeTotal!.textContent = fmtTime(duration);
         player?.classList.remove('hidden');
         player?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -141,7 +142,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           redraw(1);
         });
       } catch {
-        window.showToast?.(window._tToast ? window._tToast('Format audio tidak didukung') : 'Format audio tidak didukung', 'error');
+        window.showToast?.(window._tToast ? window._tToast(t('wave.unsupported', 'Format audio tidak didukung')) : 'Format audio tidak didukung', 'error');
       }
     });
 

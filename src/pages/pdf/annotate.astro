@@ -3,15 +3,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 <BaseLayout pageTitle="PDF Annotate" description="Tambah highlight, underline, dan sticky notes ke halaman PDF. 100% client-side di browser.">
-  <ToolPageHeader title="PDF Annotate" desc="Tambah highlight, underline, dan sticky notes ke halaman PDF" icon='<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>' />
+  <ToolPageHeader title="PDF Annotate" titleKey="header.pdf_annotate" desc="Tambah highlight, underline, dan sticky notes ke halaman PDF" descKey="header.pdf_annotate_desc" icon='<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>' />
 
   <div class="card-base p-5 space-y-4">
     <div id="drop-zone"
          class="border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-10 text-center cursor-pointer
                 hover:border-accent-blue dark:hover:border-accent-blue/70 transition-colors">
       <div class="text-3xl mb-2">📄</div>
-      <p class="text-matte-600 dark:text-matte-300 font-medium">Drop PDF di sini atau klik untuk pilih</p>
-      <p class="text-sm text-matte-400 mt-1">Max 25MB</p>
+      <p class="text-matte-600 dark:text-matte-300 font-medium" data-i18n="annotate.drop">Drop PDF di sini atau klik untuk pilih</p>
+      <p class="text-sm text-matte-400 mt-1" data-i18n="annotate.max_size">Max 25MB</p>
       <input type="file" id="file-input" class="hidden" accept=".pdf">
     </div>
 
@@ -19,21 +19,21 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div class="flex flex-wrap gap-3 items-center">
         <span class="text-sm text-matte-500 font-medium" id="filename"></span>
         <select id="annot-type" class="input-field text-sm">
-          <option value="highlight">🟡 Highlight</option>
-          <option value="underline">📝 Underline</option>
-          <option value="note">📌 Sticky Note</option>
+          <option value="highlight" data-i18n="annotate.highlight">🟡 Highlight</option>
+          <option value="underline" data-i18n="annotate.underline">📝 Underline</option>
+          <option value="note" data-i18n="annotate.note">📌 Sticky Note</option>
         </select>
         <input id="annot-color" type="color" value="#FFEB3B" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
-        <input id="annot-page" type="number" min="1" value="1" class="input-field w-20 text-sm" title="Halaman">
-        <button id="add-annot-btn" class="btn-primary text-sm">Tambah Anotasi</button>
+        <input id="annot-page" type="number" min="1" value="1" class="input-field w-20 text-sm" title="Halaman" data-i18n-attr="title" data-i18n="label.page">
+        <button id="add-annot-btn" class="btn-primary text-sm" data-i18n="annotate.add">Tambah Anotasi</button>
       </div>
 
       <div class="bg-matte-50 dark:bg-matte-800 rounded-lg p-3">
         <div class="flex flex-wrap gap-2" id="annot-list"></div>
-        <p id="no-annot" class="text-sm text-matte-400">Belum ada anotasi. Tambahkan di atas.</p>
+        <p id="no-annot" class="text-sm text-matte-400" data-i18n="annotate.none">Belum ada anotasi. Tambahkan di atas.</p>
       </div>
 
-      <button id="apply-btn" class="btn-primary w-full">Terapkan Anotasi & Download PDF</button>
+      <button id="apply-btn" class="btn-primary w-full" data-i18n="annotate.apply">Terapkan Anotasi & Download PDF</button>
     </div>
 
     <div id="progress-area" class="hidden">
@@ -46,6 +46,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -85,13 +86,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   });
 
   async function handleFile(file: File) {
-    if (file.size > 25 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('File maksimal 25MB') : 'Max file size 25MB', 'error'); return; }
+    if (file.size > 25 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast(t('annotate.max_25', 'File maksimal 25MB')) : 'Max file size 25MB', 'error'); return; }
     pdfBytes = new Uint8Array(await file.arrayBuffer());
     const { PDFDocument } = await import('../../composables/useCdnLib').then(function(m){ return m.waitForCdnLib('pdf-lib'); });
     const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
     pageCount = doc.getPageCount();
     annotPage.max = String(pageCount);
-    filename.textContent = `${file.name} (${pageCount} halaman)`;
+    filename.textContent = `${file.name} (${pageCount} ${t('annotate.pages_word', 'halaman')})`;
     dropZone.classList.add('hidden');
     processArea.classList.remove('hidden');
     annotList.innerHTML = '';
@@ -101,11 +102,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   addAnnotBtn.addEventListener('click', () => {
     const page = parseInt(annotPage.value);
-    if (page < 1 || page > pageCount) { window.showToast?.(window._tToast ? window._tToast('Halaman tidak valid') : 'Invalid page', 'error'); return; }
+    if (page < 1 || page > pageCount) { window.showToast?.(window._tToast ? window._tToast(t('annotate.invalid_page', 'Halaman tidak valid')) : 'Invalid page', 'error'); return; }
     annotations.push({ type: annotType.value, color: annotColor.value, page });
     renderAnnotList();
     noAnnot?.classList.add('hidden');
-    window.showToast?.(window._tToast ? window._tToast('Anotasi ditambahkan!') : 'Annotation added!', 'success');
+    window.showToast?.(window._tToast ? window._tToast(t('annotate.added', 'Anotasi ditambahkan!')) : 'Annotation added!', 'success');
   });
 
   function renderAnnotList() {
@@ -128,12 +129,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   applyBtn.addEventListener('click', async () => {
     if (!pdfBytes || !annotations.length) {
-      window.showToast?.(window._tToast ? window._tToast('Belum ada anotasi untuk diterapkan') : 'No annotations to apply', 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('annotate.no_annotations', 'Belum ada anotasi untuk diterapkan')) : 'No annotations to apply', 'error');
       return;
     }
     processArea.classList.add('hidden');
     progressArea.classList.remove('hidden');
-    statusText.textContent = (window._tToast ? window._tToast('Memproses anotasi...') : 'Processing annotations...');
+    statusText.textContent = t('annotate.processing', 'Memproses anotasi...');
 
     const { PDFDocument, rgb, StandardFonts } = await import('../../composables/useCdnLib').then(function(m){ return m.waitForCdnLib('pdf-lib'); });
     const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
@@ -168,8 +169,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const a = document.createElement('a'); a.href = url; a.download = 'annotated.pdf';
     a.click(); URL.revokeObjectURL(url);
 
-    statusText.textContent = (window._tToast ? window._tToast('PDF berhasil dianotasi!') : 'PDF annotated!');
-    window.showToast?.(window._tToast ? window._tToast('Download dimulai!') : 'Download started!', 'success');
+    statusText.textContent = t('annotate.done', 'PDF berhasil dianotasi!');
+    window.showToast?.(window._tToast ? window._tToast(t('annotate.download_started', 'Download dimulai!')) : 'Download started!', 'success');
     setTimeout(() => { progressArea.classList.add('hidden'); processArea.classList.remove('hidden'); }, 2000);
   });
 
