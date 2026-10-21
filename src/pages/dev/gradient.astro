@@ -40,7 +40,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <span class="text-sm text-matte-500 w-10">100%</span>
         </div>
       </div>
-      <button id="add-color" class="text-sm text-rose-500 hover:text-rose-600 font-medium mb-4">+ Tambah warna</button>
+      <button id="add-color" class="text-sm text-rose-500 hover:text-rose-600 font-medium mb-4" data-i18n="gradient.add_color">+ Tambah warna</button>
 
       <!-- Angle (for linear) -->
       <div id="angle-container">
@@ -49,10 +49,20 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
 
       <!-- CSS output -->
-      <label class="section-title mb-2 mt-4 block">CSS Code</label>
+      <label class="section-title mb-2 mt-4 block" data-i18n="gradient.css_code">CSS Code</label>
       <div class="flex gap-2">
         <code id="css-output" class="flex-1 p-4 bg-matte-50 dark:bg-matte-900 rounded-xl text-xs font-mono text-rose-600 dark:text-rose-400 break-all border border-matte-200 dark:border-surface-border"></code>
         <button id="copy-css" class="px-4 py-2 rounded-xl font-bold text-sm bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" data-i18n="gradient.copy_css">Copy</button>
+      </div>
+
+      <!-- Info -->
+      <div class="text-2xs text-matte-400 bg-matte-50 dark:bg-surface-hover rounded-xl p-4 mt-6 leading-relaxed">
+        <p class="font-bold text-matte-600 dark:text-matte-300 mb-1" data-i18n="gradient.info_title">Yang perlu diketahui</p>
+        <ul class="list-disc list-inside space-y-0.5">
+          <li data-i18n="gradient.info_1">Kode CSS langsung bisa disalin &amp; ditempel ke stylesheet Anda — mendukung linear, radial, dan conic gradient.</li>
+          <li data-i18n="gradient.info_2">Maksimal 5 warna per gradient. Geser posisi tiap warna untuk mengatur peralihan.</li>
+          <li data-i18n="gradient.info_3">Semua diproses di browser tanpa upload — kode CSS milik Anda sepenuhnya.</li>
+        </ul>
       </div>
     </div>
   </div>
