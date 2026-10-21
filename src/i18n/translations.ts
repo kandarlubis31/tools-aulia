@@ -4239,6 +4239,45 @@ export const translations: Record<string, { id: string; en: string }> = {
   'cal.monthly': { id: 'Bulanan', en: 'Monthly' },
   'cal.yearly': { id: 'Tahunan', en: 'Yearly' },
   'cal.downloaded': { id: 'Diunduh!', en: 'Downloaded!' },
+  // --- W6 batch 22 — screen-recorder, xlsx-viewer, reorder, ssl, overlay ---
+  // media/screen-recorder
+  'screen.privacy': { id: '🔒 Rekaman diproses 100% di browser. Tidak ada video yang diupload. Format: WebM.', en: '🔒 Recording is processed 100% in your browser. No video is uploaded. Format: WebM.' },
+  'screen.done': { id: 'Selesai.', en: 'Done.' },
+  'screen.recording': { id: 'Merekam…', en: 'Recording…' },
+  'screen.rec_fail': { id: 'Gagal mulai rekam.', en: 'Failed to start recording.' },
+  // data/xlsx-viewer
+  'xlsx.max_size': { id: 'File maksimal 20 MB', en: 'Maximum file size is 20 MB' },
+  'xlsx.lib_fail': { id: 'Gagal memuat library Excel (XLSX). Cek koneksi internet.', en: 'Failed to load the Excel (XLSX) library. Check your connection.' },
+  'xlsx.no_sheet': { id: 'Tidak ada sheet', en: 'No sheets found' },
+  'xlsx.unreadable': { id: 'File Excel tidak bisa dibaca', en: 'The Excel file could not be read' },
+  'xlsx.rows_limit': { id: '… hanya menampilkan 500 baris pertama (total {n})', en: '… showing only the first 500 rows (total {n})' },
+  'xlsx.exported': { id: 'CSV berhasil di-export!', en: 'CSV exported successfully!' },
+  'xlsx.privacy': { id: 'File dibaca 100% di browser via library XLSX — tidak ada data yang diupload.', en: 'Files are read 100% in your browser via the XLSX library — no data is uploaded.' },
+  // pdf/reorder
+  'header.pdf_reorder': { id: 'Reorder Pages', en: 'Reorder Pages' },
+  'header.pdf_reorder_desc': { id: 'Seret dan lepas (Drag & Drop) halaman untuk mengatur ulang urutannya.', en: 'Drag & drop pages to rearrange their order.' },
+  'reorder.drag_hint': { id: 'Drag halaman untuk menukar posisi', en: 'Drag pages to swap positions' },
+  'reorder.save': { id: 'Simpan Urutan Baru', en: 'Save New Order' },
+  'reorder.drop_hint': { id: 'PDF dengan urutan halaman yang berantakan? Seret kartu halaman untuk memperbaikinya.', en: 'PDF pages in the wrong order? Drag the page cards to fix it.' },
+  'reorder.privacy': { id: 'Semua diproses di browser — PDF tidak pernah diupload ke mana pun.', en: 'Everything runs in your browser — the PDF is never uploaded anywhere.' },
+  'reorder.processing': { id: 'Memproses...', en: 'Processing...' },
+  'reorder.success': { id: 'Berhasil mengatur ulang halaman!', en: 'Pages reordered successfully!' },
+  'reorder.save_fail': { id: 'Gagal menyimpan PDF.', en: 'Failed to save the PDF.' },
+  // network/ssl
+  'ssl.no_domain': { id: 'Masukkan domain', en: 'Enter a domain' },
+  'ssl.fetching': { id: 'Fetching SSL info dari crt.sh...', en: 'Fetching SSL info from crt.sh...' },
+  'ssl.not_found': { id: 'Tidak ditemukan sertifikat untuk', en: 'No certificate found for' },
+  'ssl.in_ct': { id: 'di CT logs.', en: 'in the CT logs.' },
+  'ssl.fetch_fail': { id: 'Gagal mengambil data SSL. Pastikan domain valid dan coba lagi.', en: 'Failed to fetch SSL data. Make sure the domain is valid and try again.' },
+  // image/overlay
+  'overlay.bg_label': { id: 'Gambar Background', en: 'Background Image' },
+  'overlay.ov_label': { id: 'Gambar Overlay', en: 'Overlay Image' },
+  'overlay.position': { id: 'Posisi Overlay', en: 'Overlay Position' },
+  'overlay.bg_placeholder': { id: '📸 Klik upload background', en: '📸 Click to upload background' },
+  'overlay.ov_placeholder': { id: '🖼️ Klik upload overlay', en: '🖼️ Click to upload overlay' },
+  'overlay.download': { id: 'Download Hasil (PNG)', en: 'Download Result (PNG)' },
+  'overlay.downloaded': { id: 'Gambar di-download!', en: 'Image downloaded!' },
+  'label.blend_mode': { id: 'Mode Blend', en: 'Blend Mode' },
 };
 
 export function t(key, fallback) {
