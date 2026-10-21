@@ -44,11 +44,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <div>
           <label class="section-title mb-1 block" data-i18n="ascii.color">Warna</label>
           <input id="color-mode" type="checkbox" class="w-4 h-4 accent-slate-500 mt-2" />
-          <span class="text-sm text-matte-500 ml-1">Color</span>
+          <span class="text-sm text-matte-500 ml-1" data-i18n="ascii.color_label">Color</span>
         </div>
       </div>
 
-      <button id="convert-btn" class="w-full gradient-brand py-3 rounded-xl font-bold text-sm">Convert to ASCII</button>
+      <button id="convert-btn" class="w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="ascii.convert">Convert to ASCII</button>
 
       <!-- Preview -->
       <div id="preview-container" class="hidden mt-4">
@@ -58,7 +58,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <!-- ASCII Output -->
       <div id="ascii-container" class="hidden mt-4">
         <div class="flex items-center justify-between mb-2">
-          <span class="section-title">ASCII Art</span>
+          <span class="section-title" data-i18n="ascii.art_label">ASCII Art</span>
           <button id="copy-ascii" class="text-xs font-bold px-3 py-1.5 bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 rounded-lg hover:bg-matte-200 dark:hover:bg-surface-hover transition" data-i18n="ascii.copy">Copy ASCII</button>
         </div>
         <pre id="ascii-output" class="w-full p-4 bg-matte-50 dark:bg-matte-900 rounded-xl text-xs font-mono text-matte-700 dark:text-matte-300 border border-matte-200 dark:border-surface-border overflow-x-auto whitespace-pre leading-none"></pre>
@@ -67,6 +67,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+    import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -101,7 +102,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       function handleFile(file: File) {
         if (!file.type.startsWith('image/')) {
-          window.showToast?.(window._tToast ? window._tToast('File harus gambar!') : 'File harus gambar!', 'error');
+          window.showToast?.(window._tToast ? window._tToast(t('ascii.not_image', 'File harus gambar!')) : 'File harus gambar!', 'error');
           return;
         }
 
@@ -135,7 +136,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       // Convert button
       document.getElementById('convert-btn')?.addEventListener('click', () => {
         if (!imageData) {
-          window.showToast?.(window._tToast ? window._tToast('Upload gambar terlebih dahulu!') : 'Upload gambar terlebih dahulu!', 'error');
+          window.showToast?.(window._tToast ? window._tToast(t('ascii.upload_first', 'Upload gambar terlebih dahulu!')) : 'Upload gambar terlebih dahulu!', 'error');
           return;
         }
 
@@ -191,7 +192,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           }
         }
         document.getElementById('ascii-container')?.classList.remove('hidden');
-        window.showToast?.(window._tToast ? window._tToast('ASCII art dibuat!') : 'ASCII art dibuat!', 'success');
+        window.showToast?.(window._tToast ? window._tToast(t('ascii.done', 'ASCII art dibuat!')) : 'ASCII art dibuat!', 'success');
       });
 
       // Copy ASCII
@@ -199,7 +200,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const output = document.getElementById('ascii-output');
         if (output) {
           navigator.clipboard.writeText(output.textContent || '');
-          window.showToast?.(window._tToast ? window._tToast('ASCII disalin!') : 'ASCII disalin!', 'success');
+          window.showToast?.(window._tToast ? window._tToast(t('ascii.copied', 'ASCII disalin!')) : 'ASCII disalin!', 'success');
         }
       });
     });

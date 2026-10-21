@@ -50,6 +50,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
 document.addEventListener('astro:page-load', () => {
@@ -147,14 +148,14 @@ document.addEventListener('astro:page-load', () => {
         statusMsg.className = 'text-sm font-bold text-red-600 dark:text-red-400';
         pagesInfo.textContent = '';
         resultArea.classList.remove('hidden');
-        toast('Tidak ada halaman yang bisa dipulihkan.', 'error');
+        toast(t('repair.no_pages', 'Tidak ada halaman yang bisa dipulihkan.'), 'error');
         return;
       }
 
       repairedBytes = await newDoc.save();
       statusMsg.innerHTML = '✅ <span class="ok-label">PDF berhasil diperbaiki!</span>';
       statusMsg.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400';
-      pagesInfo.innerHTML = `<b>${okPages}</b>/<b>${totalPages}</b> <span class="pages-label">halaman direkonstruksi</span>`;
+      pagesInfo.innerHTML = `<b>${okPages}</b>/<b>${totalPages}</b> <span class="pages-label">${t('repair.reconstructed', 'halaman direkonstruksi')}</span>`;
       resultArea.classList.remove('hidden');
       resultArea.scrollIntoView({ behavior: 'smooth' });
     } catch {
@@ -163,7 +164,7 @@ document.addEventListener('astro:page-load', () => {
       statusMsg.className = 'text-sm font-bold text-red-600 dark:text-red-400';
       pagesInfo.textContent = '';
       resultArea.classList.remove('hidden');
-      toast('Gagal memperbaiki PDF.', 'error');
+      toast(t('repair.fail', 'Gagal memperbaiki PDF.'), 'error');
     }
   }
 
@@ -191,7 +192,7 @@ document.addEventListener('astro:page-load', () => {
       a.download = `${origName}-repaired.pdf`;
       a.click();
       URL.revokeObjectURL(a.href);
-      toast('PDF diperbaiki didownload!');
+      toast(t('repair.downloaded', 'PDF diperbaiki didownload!'));
     } catch {
       toast('Gagal mengunduh!', 'error');
     }

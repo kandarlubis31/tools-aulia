@@ -47,12 +47,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     </div>
 
     <p class="text-center text-xs text-matte-400 mt-6">
-      ℹ️ Menggunakan pdf-lib untuk embed teks ke halaman PDF A4. Font default: Helvetica.
+      ℹ️ <span data-i18n="tpdf.info">Menggunakan pdf-lib untuk embed teks ke halaman PDF A4. Font default: Helvetica.</span>
     </p>
   </div>
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -103,7 +104,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     async function convert() {
       const text = textInput.value.trim();
-      if (!text) { toast('Tulis teks dulu.', 'error'); return; }
+      if (!text) { toast(t('tpdf.empty', 'Tulis teks dulu.'), 'error'); return; }
 
       convertBtn.disabled = true;
       convertBtn.innerHTML = '⏳ …';
@@ -143,10 +144,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       downloadBtn.classList.remove('hidden');
       convertBtn.innerHTML = '✅ Converted';
       convertBtn.disabled = false;
-      toast('PDF dibuat!');
+      toast(t('tpdf.created', 'PDF dibuat!'));
       await previewFirstPage(pdfBytes);
       } catch {
-        toast('Gagal membuat PDF.', 'error');
+        toast(t('tpdf.fail', 'Gagal membuat PDF.'), 'error');
         convertBtn.innerHTML = '🔄 Convert to PDF';
         convertBtn.disabled = false;
       }

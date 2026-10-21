@@ -18,11 +18,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div class="card-base p-5">
         <div class="flex gap-2 mb-3">
           <button id="upload-btn" class="px-4 py-2 rounded-lg text-sm font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 transition-all">
-            📁 Upload GeoJSON
+            📁 <span data-i18n="geo.upload">Upload GeoJSON</span>
           </button>
           <input type="file" id="file-input" accept=".json,.geojson" class="hidden" />
           <button id="paste-btn" class="px-4 py-2 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 transition-all">
-            📋 Paste
+            📋 <span data-i18n="geo.paste">Paste</span>
           </button>
           <button id="sample-btn" class="px-4 py-2 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 transition-all" data-i18n="data.sample">📦 Sample Data</button>
           <div class="ml-auto flex items-center gap-1.5">
@@ -43,13 +43,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
 
       <p class="text-center text-xs text-matte-400">
-        ℹ️ Powered by Leaflet + OpenStreetMap. GeoJSON diproses 100% di browser.
+        ℹ️ <span data-i18n="geo.privacy">Powered by Leaflet + OpenStreetMap. GeoJSON diproses 100% di browser.</span>
       </p>
     </div>
   </div>
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -65,8 +66,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     let geoLayer: any = null;
     let lastValid: any = null;
 
-    const toast = (m: string, t: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
+    const toast = (m: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, type);
 
     // Multi-CDN fallback (pola sama seperti qrious): kalau CDN utama gagal/blokir,
     // coba CDN cadangan. CSS ikut dari CDN yang sama dengan JS yang berhasil.
@@ -123,12 +124,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         if (bounds.isValid()) map.fitBounds(bounds, { padding: [20, 20] });
 
         const features = data.type === 'FeatureCollection' ? data.features : [data];
-        geojsonInfo.textContent = `${features.length} feature(s)`;
+        geojsonInfo.textContent = `${features.length} ` + t('geo.features', 'feature(s)');
         geojsonInfo.classList.remove('hidden');
         lastValid = data;
-        toast('GeoJSON ditampilkan!');
+        toast(t('geo.shown', 'GeoJSON ditampilkan!'));
       } catch (e: any) {
-        toast('GeoJSON tidak valid: ' + (e.message || 'unknown'), 'error');
+        toast(t('geo.invalid', 'GeoJSON tidak valid') + ': ' + (e.message || 'unknown'), 'error');
       }
     }
 
@@ -189,7 +190,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     });
 
     document.getElementById('copy-btn')?.addEventListener('click', async () => {
-      if (!lastValid) { toast('Belum ada data valid.', 'error'); return; }
+      if (!lastValid) { toast(t('geo.no_valid', 'Belum ada data valid.'), 'error'); return; }
       try {
         const fmt = (document.getElementById('fmt-select') as HTMLSelectElement).value;
         await navigator.clipboard.writeText(fmt === 'minify' ? JSON.stringify(lastValid) : JSON.stringify(lastValid, null, 2));

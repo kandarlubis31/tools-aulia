@@ -17,7 +17,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       
       <div class="flex flex-wrap gap-4 items-center justify-between mb-6">
          <div class="flex items-center gap-3">
-            <span class="text-sm font-semibold text-matte-700 dark:text-white">Jumlah:</span>
+            <span class="text-sm font-semibold text-matte-700 dark:text-white" data-i18n="uuid.count">Jumlah:</span>
             <div class="flex items-center gap-1">
               <button id="count-minus" class="w-8 h-8 rounded-lg bg-matte-100 dark:bg-surface-hover text-matte-500 hover:text-matte-700 dark:hover:text-white font-bold transition">−</button>
               <input type="number" id="count" min="1" max="100" value="5" class="w-16 p-2 text-center rounded-lg bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border outline-none focus:border-green-500 font-mono" autocomplete="off" />
@@ -29,7 +29,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             <button id="copy-btn" class="px-4 py-2 text-sm font-bold text-matte-500 dark:text-matte-300 bg-matte-100 dark:bg-surface-elevated hover:bg-matte-200 rounded-lg transition" data-i18n="btn.copy_all">📋 Copy All</button>
             <button id="generate-btn" class="px-6 py-2 text-sm font-bold text-white dark:text-matte-900 bg-matte-900 dark:bg-white rounded-lg transition active:scale-95 flex items-center gap-2 hover:opacity-90">
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
-               Regenerate
+               <span data-i18n="uuid.regenerate">Regenerate</span>
             </button>
          </div>
       </div>
@@ -52,14 +52,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </p>
         <button id="history-btn" class="text-xs font-medium text-matte-400 hover:text-green-500 transition flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Riwayat
+          <span data-i18n="uuid.history">Riwayat</span>
         </button>
       </div>
 
       <!-- History Panel -->
       <div id="history-panel" class="hidden mt-4 card-base p-4 animate-fade-in">
         <div class="flex justify-between items-center mb-3">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-matte-400">📜 Riwayat Generate</h4>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-matte-400">📜 <span data-i18n="uuid.history_title">Riwayat Generate</span></h4>
           <button id="clear-history" class="text-2xs text-rose-500 hover:text-rose-600" data-i18n="btn.remove">Hapus</button>
         </div>
         <div id="history-list" class="text-xs text-matte-500 space-y-1 max-h-40 overflow-y-auto"></div>
@@ -70,6 +70,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -168,7 +169,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         e.stopPropagation();
         const uuid = (btn as HTMLElement).dataset.uuid || '';
         navigator.clipboard.writeText(uuid);
-        window.showToast?.(window._tToast ? window._tToast('UUID disalin!') : 'UUID disalin!', 'success');
+        window.showToast?.(window._tToast ? window._tToast(t('uuid.copied', 'UUID disalin!')) : 'UUID disalin!', 'success');
       });
     });
   }
@@ -178,7 +179,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   copyBtn?.addEventListener('click', () => {
     if(currentUuids.length === 0) return;
     navigator.clipboard.writeText(currentUuids.join('\n'));
-    window.showToast?.(window._tToast ? window._tToast("Semua UUID disalin!") : "Semua UUID disalin!", "success");
+    window.showToast?.(window._tToast ? window._tToast(t('uuid.copied_all', 'Semua UUID disalin!')) : 'Semua UUID disalin!', 'success');
   });
 
   // +/- buttons
