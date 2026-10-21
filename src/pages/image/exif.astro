@@ -35,7 +35,7 @@ import DropZone from '../../components/DropZone.astro';
         <div class="card-base p-4">
           <img id="preview" alt="Preview foto" class="rounded-lg max-h-72 w-auto mx-auto object-contain bg-matte-100 dark:bg-matte-800" />
           <div id="gps-warning" class="hidden mt-3 p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm">
-            ⚠️ <b>GPS location terdeteksi!</b> Foto ini menyimpan koordinat lokasi. Hapus metadata sebelum membagikannya.
+            ⚠️ <b data-i18n="exif.gps_title">GPS location terdeteksi!</b> <span data-i18n="exif.gps_desc">Foto ini menyimpan koordinat lokasi. Hapus metadata sebelum membagikannya.</span>
           </div>
         </div>
 
@@ -60,6 +60,9 @@ import DropZone from '../../components/DropZone.astro';
 <script is:inline src="/vendor/exif-js/exif.min.js"></script>
 
 <script>
+  import { t } from '../../i18n/translations';
+  const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -88,8 +91,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     fileInput?.addEventListener('change', () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (!/image\/(jpeg|webp|tiff)/.test(f.type)) { window.showToast?.(window._tToast ? window._tToast('Pilih file JPG/JPEG/TIFF') : 'Pilih file JPG/JPEG/TIFF', 'error'); return; }
-      if (f.size > 25 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('Ukuran maksimal 25 MB') : 'Ukuran maksimal 25 MB', 'error'); return; }
+      if (!/image\/(jpeg|webp|tiff)/.test(f.type)) { toast(t('exif.pick_jpg', 'Pilih file JPG/JPEG/TIFF'), 'error'); return; }
+      if (f.size > 25 * 1024 * 1024) { toast(t('exif.max_size', 'Ukuran maksimal 25 MB'), 'error'); return; }
       currentFile = f;
       preview.src = URL.createObjectURL(f);
 
@@ -168,7 +171,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         a.href = canvas.toDataURL('image/jpeg', 0.92);
         a.download = currentFile!.name.replace(/\.[^.]+$/, '') + '-bersih.jpg';
         a.click();
-        window.showToast?.(window._tToast ? window._tToast('Metadata berhasil dihapus!') : 'Metadata berhasil dihapus!', 'info');
+        toast(t('exif.stripped', 'Metadata berhasil dihapus!'), 'info');
       };
       image.src = URL.createObjectURL(currentFile);
     });

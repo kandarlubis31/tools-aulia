@@ -18,7 +18,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <!-- Drop zone -->
       <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-surface-border rounded-xl p-8 text-center hover:border-pink-400 dark:hover:border-pink-500 transition-all cursor-pointer mb-4">
         <input id="file-input" type="file" accept="image/*" class="hidden" />
-        <p class="text-sm text-matte-500 dark:text-matte-400">Drop gambar di sini atau klik untuk upload</p>
+        <p class="text-sm text-matte-500 dark:text-matte-400" data-i18n="meme.drop_hint">Drop gambar di sini atau klik untuk upload</p>
       </div>
 
       <!-- Text inputs -->
@@ -35,12 +35,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <input id="font-size" type="range" min="20" max="80" value="40" class="w-full accent-pink-500" />
         </div>
         <div>
-          <label class="section-title mb-1 block">Warna teks</label>
+          <label class="section-title mb-1 block" data-i18n="meme.text_color">Warna teks</label>
           <input id="text-color" type="color" value="#ffffff" class="w-full h-10 rounded-lg cursor-pointer" />
         </div>
       </div>
 
-      <button id="generate-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm">Generate Meme</button>
+      <button id="generate-btn" class="mt-4 w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="meme.generate">Generate Meme</button>
 
       <!-- Preview -->
       <div id="preview-container" class="hidden mt-4 text-center">
@@ -51,6 +51,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+    import { t } from '../../i18n/translations';
+    const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -78,7 +81,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       function handleFile(file: File) {
         if (!file.type.startsWith('image/')) {
-          window.showToast?.(window._tToast ? window._tToast('File harus gambar!') : 'File harus gambar!', 'error');
+          toast(t('meme.not_image', 'File harus gambar!'), 'error');
           return;
         }
         const reader = new FileReader();
@@ -170,7 +173,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           link.download = 'meme.png';
           link.href = canvas.toDataURL('image/png');
           link.click();
-          window.showToast?.(window._tToast ? window._tToast('Meme didownload!') : 'Meme didownload!', 'success');
+          toast(t('meme.downloaded', 'Meme didownload!'));
         }
       });
     });

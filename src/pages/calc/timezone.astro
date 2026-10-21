@@ -100,6 +100,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+    import { t } from '../../i18n/translations';
+    const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -116,7 +119,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const toTz = (document.getElementById('tz-to') as HTMLSelectElement).value;
 
         if (!time) {
-          window.showToast?.(window._tToast ? window._tToast('Masukkan waktu!') : 'Masukkan waktu!', 'error');
+          toast(t('tz.no_time', 'Masukkan waktu!'), 'error');
           return;
         }
 
@@ -153,9 +156,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           document.getElementById('result-to-tz')!.textContent = toAbbr;
           document.getElementById('tz-result')?.classList.remove('hidden');
 
-          window.showToast?.(window._tToast ? window._tToast('Konversi berhasil!') : 'Konversi berhasil!', 'success');
+          toast(t('tz.converted', 'Konversi berhasil!'));
         } catch (e: any) {
-          window.showToast?.(window._tToast ? window._tToast('Error konversi: ') + e.message : 'Error konversi: ' + e.message, 'error');
+          toast(t('tz.error', 'Error konversi: ') + e.message, 'error');
         }
       });
 
@@ -166,7 +169,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const temp = fromSelect.value;
         fromSelect.value = toSelect.value;
         toSelect.value = temp;
-        window.showToast?.(window._tToast ? window._tToast('Zona ditukar!') : 'Zona ditukar!', 'success');
+        toast(t('tz.swapped', 'Zona ditukar!'));
       });
     });
   </script>

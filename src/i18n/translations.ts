@@ -4210,6 +4210,35 @@ export const translations: Record<string, { id: string; en: string }> = {
   'bs.t_copy': { id: 'Copy', en: 'Copy' },
   'bs.t_save': { id: 'Save', en: 'Save' },
   'bs.t_share': { id: 'Share', en: 'Share' },
+  // --- W6 batch 21 — timezone, json, exif, meme, calendar ---
+  // calc/timezone
+  'tz.no_time': { id: 'Masukkan waktu!', en: 'Enter a time!' },
+  'tz.converted': { id: 'Konversi berhasil!', en: 'Conversion successful!' },
+  'tz.error': { id: 'Error konversi: ', en: 'Conversion error: ' },
+  'tz.swapped': { id: 'Zona ditukar!', en: 'Timezones swapped!' },
+  // dev/json
+  'json.valid': { id: '✓ Valid', en: '✓ Valid' },
+  'json.invalid': { id: '✗ Invalid', en: '✗ Invalid' },
+  'json.copied': { id: 'JSON disalin!', en: 'JSON copied!' },
+  'json.output_placeholder': { id: 'Hasil akan muncul di sini...', en: 'Result will appear here...' },
+  // image/exif
+  'exif.pick_jpg': { id: 'Pilih file JPG/JPEG/TIFF', en: 'Pick a JPG/JPEG/TIFF file' },
+  'exif.max_size': { id: 'Ukuran maksimal 25 MB', en: 'Maximum size is 25 MB' },
+  'exif.stripped': { id: 'Metadata berhasil dihapus!', en: 'Metadata successfully removed!' },
+  'exif.gps_title': { id: 'GPS location terdeteksi!', en: 'GPS location detected!' },
+  'exif.gps_desc': { id: 'Foto ini menyimpan koordinat lokasi. Hapus metadata sebelum membagikannya.', en: 'This photo stores GPS coordinates. Strip the metadata before sharing it.' },
+  // image/meme
+  'meme.drop_hint': { id: 'Drop gambar di sini atau klik untuk upload', en: 'Drop an image here or click to upload' },
+  'meme.text_color': { id: 'Warna teks', en: 'Text color' },
+  'meme.generate': { id: 'Generate Meme', en: 'Generate Meme' },
+  'meme.not_image': { id: 'File harus gambar!', en: 'File must be an image!' },
+  'meme.downloaded': { id: 'Meme didownload!', en: 'Meme downloaded!' },
+  // utils/calendar
+  'label.year': { id: 'Tahun', en: 'Year' },
+  'cal.start_day': { id: 'Hari Mulai', en: 'Start Day' },
+  'cal.monthly': { id: 'Bulanan', en: 'Monthly' },
+  'cal.yearly': { id: 'Tahunan', en: 'Yearly' },
+  'cal.downloaded': { id: 'Diunduh!', en: 'Downloaded!' },
 };
 
 export function t(key, fallback) {
