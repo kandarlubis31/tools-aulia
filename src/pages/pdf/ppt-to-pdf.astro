@@ -212,6 +212,7 @@ const toast = (msg: string, type = 'success') => window.showToast?.(window._tToa
     async function mediaUrl(target: string): Promise<string | null> {
       if (mediaCache.has(target)) return mediaCache.get(target)!;
       let path = target.replace(/^\.\.\//, 'ppt/').replace(/^\//, '');
+      if (!zip.file(path)) path = 'ppt/' + target.replace(/^\//, '');
       if (!zip.file(path)) return null;
       const ext = (path.split('.').pop() || '').toLowerCase();
       const mime = MIME[ext];
@@ -322,11 +323,19 @@ const toast = (msg: string, type = 'success') => window.showToast?.(window._tToa
             const gh = parseInt(ext.getAttribute('cy') || '1', 10) || 1;
             const chW = chExt ? (parseInt(chExt.getAttribute('cx') || '1', 10) || 1) : gw;
             const chH = chExt ? (parseInt(chExt.getAttribute('cy') || '1', 10) || 1) : gh;
+            const sX = gw / chW, sY = gh / chH;
+            // Transform afine: ruang-ANAK → ruang-slide.
+            // posisi_slide = (p - c0) * s + g, lalu dibungkus T(ctx): (· − ctx.x)·ctx.sx
+            // → x' = c0 + (ctx.x − g)/s , sx' = ctx.sx · s
+            const gxRaw = parseInt(off.getAttribute('x') || '0', 10);
+            const gyRaw = parseInt(off.getAttribute('y') || '0', 10);
+            const c0x = chOff ? parseInt(chOff.getAttribute('x') || '0', 10) : 0;
+            const c0y = chOff ? parseInt(chOff.getAttribute('y') || '0', 10) : 0;
             await walk(node, {
-              x: chOff ? parseInt(chOff.getAttribute('x') || '0', 10) : 0,
-              y: chOff ? parseInt(chOff.getAttribute('y') || '0', 10) : 0,
-              sx: ctx.sx * (gw / chW),
-              sy: ctx.sy * (gh / chH),
+              x: c0x + (ctx.x - gxRaw) / sX,
+              y: c0y + (ctx.y - gyRaw) / sY,
+              sx: ctx.sx * sX,
+              sy: ctx.sy * sY,
             });
             continue;
           }
@@ -492,14 +501,31 @@ const toast = (msg: string, type = 'success') => window.showToast?.(window._tToa
 
       try {
         const baseName = selectedFile.name.replace(/\.pptx$/i, '');
-        await (window as any).html2pdf().set({
-          margin: 0,
-          filename: baseName + '.pdf',
-          image: { type: 'jpeg', quality: 0.95 },
-          html2canvas: { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' },
-          jsPDF: { unit: 'mm', format: [pgW, pgH], orientation: 'landscape' },
-          pagebreak: { mode: ['none'] },
-        }).from(host).save();
+        const JSPDF = (window as any).jspdf?.jsPDF;
+        const html2canvasLib = (window as any).html2canvas;
+        if (JSPDF && html2canvasLib) {
+          // Path presisi: 1 canvas per halaman → dijamin 1 slide = 1 halaman,
+          // tanpa risiko geser-potong akibat slicing kumulatif html2pdf.
+          const pdf = new JSPDF({ unit: 'mm', format: [pgW, pgH], orientation: 'landscape', compress: true });
+          for (let i = 0; i < pages.length; i++) {
+            convertLabel.textContent = `⏳ Merender halaman ${i + 1} dari ${pages.length}…`;
+            await new Promise((r) => setTimeout(r, 0));
+            const canvas = await html2canvasLib(pages[i], { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' });
+            if (i > 0) pdf.addPage([pgW, pgH], 'landscape');
+            pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pgW, pgH);
+          }
+          pdf.save(baseName + '.pdf');
+        } else {
+          // Fallback: kalau global bundle tak terexpose, pakai html2pdf slicing biasa.
+          await (window as any).html2pdf().set({
+            margin: 0,
+            filename: baseName + '.pdf',
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' },
+            jsPDF: { unit: 'mm', format: [pgW, pgH], orientation: 'landscape' },
+            pagebreak: { mode: ['none'] },
+          }).from(host).save();
+        }
 
         // Pratinjau (kecil) di halaman
         previewContainer.innerHTML = '';
