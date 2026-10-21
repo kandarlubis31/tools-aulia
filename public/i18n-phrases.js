@@ -798,4 +798,10 @@ window._i18nPhrases = {
   'Tempel data CSV dulu!':'Paste CSV data first!',
   'CSV belum valid — cek baris & format angka.':'Invalid CSV — check rows and number format.',
   'Gagal memuat pustaka grafik — cek koneksi internet.':'Failed to load chart library — check your connection.',
+  'Hanya file .pptx yang didukung. Simpan presentasi lama (.ppt) sebagai .pptx dulu.':'Only .pptx files are supported. Re-save the old (.ppt) presentation as .pptx first.',
+  'File terlalu besar (maksimal ~25 MB) untuk diproses di browser.':'File too large (max ~25 MB) to process in the browser.',
+  'Presentasi tidak punya slide.':'The presentation has no slides.',
+  'Gagal membaca file. Pastikan file .pptx valid dan tidak terproteksi.':'Failed to read the file. Make sure the .pptx is valid and not protected.',
+  'Gagal memuat pustaka PDF — cek koneksi internet.':'Failed to load PDF library — check your connection.',
+  'Gagal mengonversi presentasi. Pastikan file .pptx valid dan tidak terproteksi.':'Failed to convert the presentation. Make sure the .pptx is valid and not protected.',
 };

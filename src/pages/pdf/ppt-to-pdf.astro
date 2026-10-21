@@ -1,0 +1,551 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="PPT to PDF — Konversi PPTX ke PDF">
+  <div class="max-w-3xl mx-auto px-4 min-h-[70vh]">
+    <ToolPageHeader
+      title="PPT to PDF"
+      titleKey="header.ppt_to_pdf"
+      desc="Konversi presentasi PowerPoint (.pptx) menjadi PDF — teks, gambar & tabel diekstrak langsung di browser. Tanpa upload."
+      descKey="header.ppt_to_pdf_desc"
+      icon='<rect x="3" y="3" width="18" height="12" rx="2"/><path d="M12 15v6"/><path d="M8 21h8"/>'
+      gradient="from-orange-500 to-amber-600"
+    />
+
+    <div class="card-base p-5 md:p-6 animate-fade-in space-y-4">
+      <!-- Drop zone -->
+      <div id="drop-zone" class="border-2 border-dashed border-orange-300 dark:border-orange-800 rounded-2xl p-10 text-center cursor-pointer hover:border-orange-400 transition-colors">
+        <input type="file" id="file-input" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" class="hidden" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-3 text-orange-500"><rect x="3" y="3" width="18" height="12" rx="2"/><path d="M12 15v6"/><path d="M8 21h8"/></svg>
+        <p class="font-bold text-matte-700 dark:text-white" data-i18n="pptp.drop_title">Drop file .pptx di sini atau klik</p>
+        <p class="text-xs text-matte-400 mt-1" data-i18n="pptp.drop_hint">Format PowerPoint modern (.pptx). Maksimal ~25 MB. Tidak di-upload ke server.</p>
+        <p id="file-name" class="text-sm font-semibold text-orange-500 mt-2"></p>
+        <p id="slide-info" class="text-xs text-matte-400 mt-1"></p>
+      </div>
+
+      <!-- Options -->
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex gap-2 items-center">
+          <label class="text-xs font-bold uppercase text-matte-400" for="paper-size" data-i18n="pptp.paper">Kertas</label>
+          <select id="paper-size" class="text-sm bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border rounded-lg px-3 py-2 text-matte-700 dark:text-matte-200">
+            <option value="ratio" data-i18n="pptp.paper_ratio">Ikuti rasio slide</option>
+            <option value="a4">A4</option>
+            <option value="letter">Letter</option>
+          </select>
+        </div>
+        <label class="flex items-center gap-2 text-sm text-matte-600 dark:text-matte-300 cursor-pointer select-none">
+          <input type="checkbox" id="slide-numbers" class="w-4 h-4 rounded accent-orange-500" />
+          <span data-i18n="pptp.slide_no">Tambah nomor slide</span>
+        </label>
+      </div>
+
+      <!-- Convert -->
+      <button id="convert-btn" disabled class="w-full bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-500/20 transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span id="convert-label">Download PDF</span>
+      </button>
+
+      <!-- Preview -->
+      <div id="preview-wrap" class="hidden space-y-4">
+        <p class="text-xs font-bold uppercase text-matte-400" data-i18n="pptp.preview">Pratinjau slide</p>
+        <div id="preview-container" class="rounded-xl overflow-hidden border border-matte-200 dark:border-surface-border bg-matte-50 dark:bg-surface-elevated space-y-3 p-3 max-h-[520px] overflow-y-auto"></div>
+      </div>
+
+      <!-- Info -->
+      <div class="text-xs text-matte-400 bg-matte-100 dark:bg-surface-hover rounded-xl p-4 leading-relaxed">
+        <p class="font-bold text-matte-600 dark:text-matte-300 mb-1" data-i18n="pptp.info_title">Yang perlu diketahui</p>
+        <ul class="list-disc list-inside space-y-0.5">
+          <li data-i18n="pptp.info_1">Setiap slide menjadi satu halaman PDF. Posisi teks, gambar &amp; tabel dipertahankan sebisa mungkin.</li>
+          <li data-i18n="pptp.info_2">Format lama (.ppt) belum didukung — simpan ulang sebagai .pptx dulu. Animasi, transisi, chart &amp; SmartArt tidak ikut (diekstrak statis).</li>
+          <li data-i18n="pptp.info_3">File diproses lokal di browser — tidak ada upload, cocok untuk presentasi internal/perusahaan.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+const toast = (msg: string, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  // Namespace OOXML
+  const PML = 'http://schemas.openxmlformats.org/presentationml/2006/main';
+  const A = 'http://schemas.openxmlformats.org/drawingml/2006/main';
+  const R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  const PR = 'http://schemas.openxmlformats.org/package/2006/relationships';
+
+  const MIME: Record<string, string> = {
+    png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif',
+    svg: 'image/svg+xml', bmp: 'image/bmp', webp: 'image/webp', tif: 'image/tiff', tiff: 'image/tiff',
+  };
+
+  const HTML2PDF_URLS = [
+    'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+    'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
+    'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
+  ];
+
+  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
+  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
+  async function init() {
+
+  const dropZone = document.getElementById('drop-zone') as HTMLDivElement;
+  const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  const fileNameEl = document.getElementById('file-name') as HTMLParagraphElement;
+  const slideInfoEl = document.getElementById('slide-info') as HTMLParagraphElement;
+  const convertBtn = document.getElementById('convert-btn') as HTMLButtonElement;
+  const convertLabel = document.getElementById('convert-label') as HTMLSpanElement;
+  const paperSize = document.getElementById('paper-size') as HTMLSelectElement;
+  const slideNumbers = document.getElementById('slide-numbers') as HTMLInputElement;
+  const previewWrap = document.getElementById('preview-wrap') as HTMLDivElement;
+  const previewContainer = document.getElementById('preview-container') as HTMLDivElement;
+
+  const MAX_SIZE = 25 * 1024 * 1024; // 25 MB
+  let selectedFile: File | null = null;
+  let zip: any = null;
+  let slidePaths: string[] = [];      // urutan slide ('ppt/slides/slideN.xml')
+  let slideW = 12192000;              // EMU (default 16:9)
+  let slideH = 6858000;
+  let busy = false;
+
+  function qs(el: Element | null, ns: string, tag: string): Element | null {
+    if (!el) return null;
+    const list = el.getElementsByTagNameNS(ns, tag);
+    return list.length ? list[0] : null;
+  }
+  function qsa(el: Element | null, ns: string, tag: string): Element[] {
+    if (!el) return [];
+    return Array.from(el.getElementsByTagNameNS(ns, tag));
+  }
+
+  async function getJSZip(): Promise<any> {
+    let JSZip = (window as any).JSZip;
+    if (JSZip) return JSZip;
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = '/vendor/jszip/jszip.min.js';
+      s.onload = () => resolve((window as any).JSZip);
+      s.onerror = () => reject(new Error('jszip'));
+      document.head.appendChild(s);
+    });
+  }
+
+  async function setFile(file: File | null) {
+    if (!file) return;
+    if (!/\.pptx$/i.test(file.name)) {
+      toast('Hanya file .pptx yang didukung. Simpan presentasi lama (.ppt) sebagai .pptx dulu.', 'warning');
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      toast('File terlalu besar (maksimal ~25 MB) untuk diproses di browser.', 'warning');
+      return;
+    }
+    try {
+      const JSZip = await getJSZip();
+      zip = await JSZip.loadAsync(file);
+      const presFile = zip.file('ppt/presentation.xml');
+      if (!presFile) throw new Error('bukan pptx');
+      const presDoc = new DOMParser().parseFromString(await presFile.async('string'), 'application/xml');
+      const sldSz = qs(presDoc.documentElement, PML, 'sldSz');
+      if (sldSz) {
+        slideW = parseInt(sldSz.getAttribute('cx') || '12192000', 10) || 12192000;
+        slideH = parseInt(sldSz.getAttribute('cy') || '6858000', 10) || 6858000;
+      }
+      // Urutan slide dari presentation.xml.rels + sldIdLst
+      const relsFile = zip.file('ppt/_rels/presentation.xml.rels');
+      const ridToTarget: Record<string, string> = {};
+      if (relsFile) {
+        const relsDoc = new DOMParser().parseFromString(await relsFile.async('string'), 'application/xml');
+        for (const rel of Array.from(relsDoc.getElementsByTagNameNS(PR, 'Relationship'))) {
+          const t = rel.getAttribute('Target') || '';
+          if (/^slides\/slide\d+\.xml$/.test(t)) ridToTarget[rel.getAttribute('Id') || ''] = 'ppt/' + t;
+        }
+      }
+      const sldIds = qsa(presDoc.documentElement, PML, 'sldId');
+      slidePaths = sldIds
+        .map((s) => ridToTarget[s.getAttributeNS(R, 'id') || s.getAttribute('r:id') || ''])
+        .filter(Boolean);
+      if (slidePaths.length === 0) {
+        // fallback: urut numerik
+        slidePaths = Object.keys(zip.files)
+          .filter((p) => /^ppt\/slides\/slide\d+\.xml$/.test(p))
+          .sort((a, b) => parseInt(a.match(/(\d+)/)![1], 10) - parseInt(b.match(/(\d+)/)![1], 10));
+      }
+      if (slidePaths.length === 0) {
+        toast('Presentasi tidak punya slide.', 'error');
+        selectedFile = null; zip = null;
+        fileNameEl.textContent = ''; slideInfoEl.textContent = '';
+        convertBtn.disabled = true;
+        return;
+      }
+      selectedFile = file;
+      fileNameEl.textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+      const ratio = (slideW / slideH).toFixed(2);
+      slideInfoEl.textContent = slidePaths.length + ' slide · rasio ' + ratio + ':1';
+      convertBtn.disabled = false;
+      previewWrap.classList.add('hidden');
+      previewContainer.innerHTML = '';
+    } catch (err) {
+      console.error('ppt-to-pdf parse error:', err);
+      zip = null; selectedFile = null;
+      fileNameEl.textContent = ''; slideInfoEl.textContent = '';
+      convertBtn.disabled = true;
+      toast('Gagal membaca file. Pastikan file .pptx valid dan tidak terproteksi.', 'error');
+    }
+  }
+
+  // ---- Render satu slide → div berposisi absolut ----
+  async function renderSlide(slidePath: string, index: number, k: number, addNum: boolean, wPx: number, hPx: number): Promise<HTMLDivElement> {
+    const slideDoc = new DOMParser().parseFromString(await zip.file(slidePath).async('string'), 'application/xml');
+    // rels slide → media
+    const ridToTarget: Record<string, string> = {};
+    const relsPath = slidePath.replace(/^ppt\//, 'ppt/').replace(/([^/]+)$/, '_rels/$1.rels');
+    const relsFile = zip.file(relsPath);
+    if (relsFile) {
+      const relsDoc = new DOMParser().parseFromString(await relsFile.async('string'), 'application/xml');
+      for (const rel of Array.from(relsDoc.getElementsByTagNameNS(PR, 'Relationship'))) {
+        ridToTarget[rel.getAttribute('Id') || ''] = rel.getAttribute('Target') || '';
+      }
+    }
+    const mediaCache = new Map<string, string>();
+    async function mediaUrl(target: string): Promise<string | null> {
+      if (mediaCache.has(target)) return mediaCache.get(target)!;
+      let path = target.replace(/^\.\.\//, 'ppt/').replace(/^\//, '');
+      if (!zip.file(path)) return null;
+      const ext = (path.split('.').pop() || '').toLowerCase();
+      const mime = MIME[ext];
+      if (!mime) return null; // emf/wmf tak bisa dirender browser
+      const b64 = await zip.file(path).async('base64');
+      const url = 'data:' + mime + ';base64,' + b64;
+      mediaCache.set(target, url);
+      return url;
+    }
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText = `position:relative;width:${wPx}px;height:${hPx}px;background:#fff;overflow:hidden;font-family:Calibri,system-ui,-apple-system,sans-serif;`;
+
+    // Latar slide (kalau ada solid fill)
+    const bg = qs(slideDoc.documentElement, PML, 'bg');
+    const bgSrgb = bg ? qs(bg, A, 'srgbClr') : null;
+    if (bgSrgb?.getAttribute('val')) wrap.style.background = '#' + bgSrgb.getAttribute('val');
+
+    function makeTextDiv(txBody: Element | null, defaultSize: number): HTMLDivElement {
+      const box = document.createElement('div');
+      box.style.cssText = 'position:absolute;inset:0;padding:2px 4px;';
+      if (!txBody) return box;
+      for (const p of qsa(txBody, A, 'p')) {
+        const line = document.createElement('div');
+        line.style.cssText = 'line-height:1.3;margin-bottom:2px;';
+        const pPr = qs(p, A, 'pPr');
+        if (pPr) {
+          const lvl = parseInt(pPr.getAttribute('lvl') || '0', 10) || 0;
+          if (lvl) line.style.marginLeft = (lvl * 18) + 'px';
+          const algn = pPr.getAttribute('algn');
+          if (algn === 'ctr') line.style.textAlign = 'center';
+          else if (algn === 'r') line.style.textAlign = 'right';
+          else if (algn === 'just') line.style.textAlign = 'justify';
+          const hasBuNone = qs(pPr, A, 'buNone') !== null || qs(pPr, A, 'buFont') !== null;
+          const buChar = qs(pPr, A, 'buChar');
+          if (buChar) {
+            line.style.marginLeft = ((lvl) * 18 + 14) + 'px';
+            line.style.textIndent = '-14px';
+            const b = document.createElement('span');
+            b.textContent = (buChar.getAttribute('char') || '•') + ' ';
+            line.appendChild(b);
+          } else if (!hasBuNone && lvl > 0) {
+            line.style.marginLeft = ((lvl) * 18 + 14) + 'px';
+            line.style.textIndent = '-14px';
+            const b = document.createElement('span');
+            b.textContent = '• ';
+            line.appendChild(b);
+          }
+        }
+        // Runs teks
+        for (const child of Array.from(p.children)) {
+          const local = child.localName;
+          if (local === 'r' || local === 'fld') {
+            const rPr = qs(child, A, 'rPr');
+            const t = qs(child, A, 't');
+            const span = document.createElement('span');
+            let sz = defaultSize;
+            if (rPr?.getAttribute('sz')) sz = parseInt(rPr.getAttribute('sz')!, 10);
+            span.style.fontSize = Math.max(6, (sz / 100) * 12700 * k) + 'px';
+            if (rPr?.getAttribute('b') === '1') span.style.fontWeight = '700';
+            if (rPr?.getAttribute('i') === '1') span.style.fontStyle = 'italic';
+            if (rPr?.getAttribute('u') && rPr.getAttribute('u') !== 'none') span.style.textDecoration = 'underline';
+            const srgb = rPr ? qs(rPr, A, 'srgbClr') : null;
+            if (srgb?.getAttribute('val')) span.style.color = '#' + srgb.getAttribute('val');
+            span.textContent = t?.textContent || '';
+            line.appendChild(span);
+          } else if (local === 'br') {
+            line.appendChild(document.createElement('br'));
+          }
+        }
+        box.appendChild(line);
+      }
+      return box;
+    }
+
+    // Walk children spTree — termasuk rekursi grup dengan transform koordinat
+    const spTree = qs(slideDoc.documentElement, PML, 'spTree');
+    async function walk(parent: Element, ctx: { x: number; y: number; sx: number; sy: number }) {
+      for (const node of Array.from(parent.children)) {
+        const local = node.localName;
+        if (local === 'nvGrpSpPr' || local === 'grpSpPr' || local === 'nvPr') continue;
+        if (local === 'sp' || local === 'pic' || local === 'graphicFrame' || local === 'grpSp' || local === 'cxnSp') {
+          const xfrm = qs(node, A, 'xfrm') || qs(node, PML, 'xfrm');
+          const off = xfrm ? qs(xfrm, A, 'off') : null;
+          const ext = xfrm ? qs(xfrm, A, 'ext') : null;
+          if (!off || !ext) {
+            // Placeholder tanpa posisi (diwarisi dari layout) — lewati agar tak numpuk di pojok
+            if (local === 'sp') {
+              const tx = qs(node, PML, 'txBody');
+              if (tx && qsa(tx, A, 'r').length) {
+                const flow = makeTextDiv(tx, 1800);
+                flow.style.cssText += 'position:relative;inset:auto;display:block;padding:4px 8px;';
+                wrap.appendChild(flow);
+              }
+            }
+            continue;
+          }
+          const x = (parseInt(off.getAttribute('x') || '0', 10) - (ctx.x || 0)) * ctx.sx;
+          const y = (parseInt(off.getAttribute('y') || '0', 10) - (ctx.y || 0)) * ctx.sy;
+          const w = parseInt(ext.getAttribute('cx') || '0', 10) * ctx.sx;
+          const h = parseInt(ext.getAttribute('cy') || '0', 10) * ctx.sy;
+          const px = (emu: number) => emu * k;
+
+          if (local === 'grpSp') {
+            const chOff = qs(xfrm, A, 'chOff');
+            const chExt = qs(xfrm, A, 'chExt');
+            const gw = parseInt(ext.getAttribute('cx') || '1', 10) || 1;
+            const gh = parseInt(ext.getAttribute('cy') || '1', 10) || 1;
+            const chW = chExt ? (parseInt(chExt.getAttribute('cx') || '1', 10) || 1) : gw;
+            const chH = chExt ? (parseInt(chExt.getAttribute('cy') || '1', 10) || 1) : gh;
+            await walk(node, {
+              x: chOff ? parseInt(chOff.getAttribute('x') || '0', 10) : 0,
+              y: chOff ? parseInt(chOff.getAttribute('y') || '0', 10) : 0,
+              sx: ctx.sx * (gw / chW),
+              sy: ctx.sy * (gh / chH),
+            });
+            continue;
+          }
+
+          if (local === 'cxnSp') continue; // connector/garis dekoratif — lewati
+
+          if (local === 'pic') {
+            const blip = qs(node, A, 'blip');
+            const rid = blip ? (blip.getAttributeNS(R, 'embed') || blip.getAttribute('r:embed') || '') : '';
+            const target = ridToTarget[rid];
+            if (!target) continue;
+            const url = await mediaUrl(target);
+            if (!url) continue;
+            const img = document.createElement('img');
+            img.src = url;
+            img.style.cssText = `position:absolute;left:${px(x)}px;top:${px(y)}px;width:${px(w)}px;height:${px(h)}px;object-fit:contain;`;
+            wrap.appendChild(img);
+            continue;
+          }
+
+          if (local === 'graphicFrame') {
+            const tbl = qs(node, A, 'tbl');
+            if (!tbl) continue; // chart / SmartArt / OLE — tidak dirender statis
+            const table = document.createElement('table');
+            table.style.cssText = `position:absolute;left:${px(x)}px;top:${px(y)}px;border-collapse:collapse;font-size:${Math.max(7, px(105000))}px;table-layout:fixed;max-width:${px(w)}px;`;
+            const colWs: number[] = qsa(tbl, A, 'gridCol').map((c) => parseInt(c.getAttribute('w') || '914400', 10));
+            const totalW = colWs.reduce((a, b) => a + b, 0) || 1;
+            for (const tr of qsa(tbl, A, 'tr')) {
+              const row = document.createElement('tr');
+              let ci = 0;
+              for (const tc of Array.from(tr.children).filter((c) => c.localName === 'tc')) {
+                const cell = document.createElement('td');
+                const spanAttr = parseInt(tc.getAttribute('gridSpan') || '1', 10);
+                cell.colSpan = spanAttr;
+                cell.style.cssText = 'border:1px solid #94a3b8;padding:2px 5px;vertical-align:top;';
+                let cellW = 0;
+                for (let s = 0; s < spanAttr && ci + s < colWs.length; s++) cellW += colWs[ci + s];
+                cell.style.width = Math.max(30, (cellW / totalW) * Math.min(px(w), 900)) + 'px';
+                const txBody = qs(tc, PML, 'txBody');
+                if (txBody) {
+                  const inner = makeTextDiv(txBody, 1400);
+                  inner.style.cssText = 'position:relative;inset:auto;padding:0;';
+                  cell.appendChild(inner);
+                }
+                row.appendChild(cell);
+                ci += spanAttr;
+              }
+              table.appendChild(row);
+            }
+            wrap.appendChild(table);
+            continue;
+          }
+
+          // p:sp — kotak teks / shape
+          const spPr = qs(node, PML, 'spPr');
+          const el = document.createElement('div');
+          el.style.cssText = `position:absolute;left:${px(x)}px;top:${px(y)}px;width:${px(w)}px;height:${px(h)}px;overflow:hidden;`;
+          // Isi shape (solid fill) + garis tepi
+          const fill = spPr ? qs(spPr, A, 'solidFill') : null;
+          const fillSrgb = fill ? qs(fill, A, 'srgbClr') : null;
+          if (fillSrgb?.getAttribute('val')) el.style.background = '#' + fillSrgb.getAttribute('val');
+          const ln = spPr ? qs(spPr, A, 'ln') : null;
+          const lnFill = ln ? qs(ln, A, 'solidFill') : null;
+          const lnSrgb = lnFill ? qs(lnFill, A, 'srgbClr') : null;
+          if (ln && lnSrgb?.getAttribute('val')) {
+            const wAttr = parseInt(ln.getAttribute('w') || '9525', 10);
+            el.style.border = `${Math.max(1, px(wAttr))}px solid #${lnSrgb.getAttribute('val')}`;
+          }
+          const txBody = qs(node, PML, 'txBody');
+          if (txBody) {
+            // Ukuran default dari endParaRPr / ph → fallback 18pt
+            const endPr = qs(txBody, A, 'endParaRPr');
+            const defSize = endPr?.getAttribute('sz') ? parseInt(endPr.getAttribute('sz')!, 10) : 1800;
+            el.appendChild(makeTextDiv(txBody, defSize));
+          }
+          wrap.appendChild(el);
+        }
+      }
+    }
+    if (spTree) await walk(spTree, { x: 0, y: 0, sx: 1, sy: 1 });
+
+    if (addNum) {
+      const num = document.createElement('div');
+      num.textContent = String(index + 1);
+      num.style.cssText = 'position:absolute;bottom:8px;right:12px;font-size:12px;color:#94a3b8;';
+      wrap.appendChild(num);
+    }
+    return wrap;
+  }
+
+  // Drop zone interactions
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files && fileInput.files[0]) setFile(fileInput.files[0]);
+    fileInput.value = '';
+  });
+  ['dragover', 'dragenter'].forEach(ev => dropZone.addEventListener(ev, (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-orange-500', 'bg-orange-500/5');
+  }));
+  ['dragleave', 'drop'].forEach(ev => dropZone.addEventListener(ev, (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-orange-500', 'bg-orange-500/5');
+  }));
+  dropZone.addEventListener('drop', (e) => {
+    const dt = (e as DragEvent).dataTransfer;
+    if (dt && dt.files && dt.files[0]) setFile(dt.files[0]);
+  });
+
+  convertBtn.addEventListener('click', async () => {
+    if (!selectedFile || !zip || busy) return;
+    busy = true;
+    convertBtn.disabled = true;
+    try {
+      // 1) html2pdf via CDN fallback chain (pola word-to-pdf)
+      convertLabel.textContent = '⏳ Memuat library PDF…';
+      const cdnReady = await loadCdnLib('html2pdf', HTML2PDF_URLS);
+      if (!cdnReady) {
+        toast('Gagal memuat pustaka PDF — cek koneksi internet.', 'error');
+        return;
+      }
+
+      const addNum = slideNumbers.checked;
+      const mode = paperSize.value;
+      const ratio = slideW / slideH;
+      // dimensi halaman (mm)
+      let pgW: number, pgH: number;
+      if (mode === 'a4') { pgW = 297; pgH = 210; }
+      else if (mode === 'letter') { pgW = 279.4; pgH = 215.9; }
+      else { pgW = 297; pgH = Math.round((297 / ratio) * 10) / 10; }
+      const mmToPx = 96 / 25.4;
+      const pgWPx = Math.round(pgW * mmToPx);
+      const pgHPx = Math.round(pgH * mmToPx);
+      // scale EMU → px berdasar rasio slide di halaman (fit contain)
+      const fit = Math.min(pgWPx / slideW, pgHPx / slideH);
+      const k = fit;
+
+      // 2) Render tiap slide ke halaman (offscreen)
+      const pages: HTMLDivElement[] = [];
+      for (let i = 0; i < slidePaths.length; i++) {
+        convertLabel.textContent = `⏳ Merender slide ${i + 1} dari ${slidePaths.length}…`;
+        await new Promise((r) => setTimeout(r, 0)); // yield UI
+        const slideWPx = Math.round(slideW * k);
+        const slideHPx = Math.round(slideH * k);
+        const slideEl = await renderSlide(slidePaths[i], i, k, addNum, slideWPx, slideHPx);
+        const page = document.createElement('div');
+        page.className = 'ppt2pdf-page';
+        page.style.cssText = `position:relative;width:${pgWPx}px;height:${pgHPx}px;background:#fff;overflow:hidden;page-break-after:always;break-after:page;`;
+        slideEl.style.left = Math.round((pgWPx - slideWPx) / 2) + 'px';
+        slideEl.style.top = Math.round((pgHPx - slideHPx) / 2) + 'px';
+        page.appendChild(slideEl);
+        pages.push(page);
+      }
+      if (pages.length) pages[pages.length - 1].style.pageBreakAfter = 'auto';
+
+      // 3) Sembunyikan page terakhir (CSS break-after) + generate PDF
+      convertLabel.textContent = '⏳ Membuat PDF…';
+      await new Promise((r) => setTimeout(r, 0));
+      const host = document.createElement('div');
+      host.style.cssText = 'position:absolute;left:-99999px;top:0;background:#fff;';
+      pages.forEach((p) => host.appendChild(p));
+      document.body.appendChild(host);
+
+      try {
+        const baseName = selectedFile.name.replace(/\.pptx$/i, '');
+        await (window as any).html2pdf().set({
+          margin: 0,
+          filename: baseName + '.pdf',
+          image: { type: 'jpeg', quality: 0.95 },
+          html2canvas: { scale: 2, logging: false, useCORS: true, backgroundColor: '#ffffff' },
+          jsPDF: { unit: 'mm', format: [pgW, pgH], orientation: 'landscape' },
+          pagebreak: { mode: ['none'] },
+        }).from(host).save();
+
+        // Pratinjau (kecil) di halaman
+        previewContainer.innerHTML = '';
+        for (let i = 0; i < Math.min(pages.length, 5); i++) {
+          const clone = pages[i].cloneNode(true) as HTMLElement;
+          const scale = Math.min(1, (previewContainer.clientWidth || 700) / pgWPx);
+          const holder = document.createElement('div');
+          holder.style.cssText = `overflow:hidden;border-radius:8px;height:${Math.round(pgHPx * scale)}px;position:relative;background:#fff;`;
+          clone.style.transform = `scale(${scale})`;
+          clone.style.transformOrigin = 'top left';
+          clone.style.position = 'absolute';
+          holder.appendChild(clone);
+          previewContainer.appendChild(holder);
+        }
+        if (pages.length > 5) {
+          const more = document.createElement('p');
+          more.className = 'text-2xs text-matte-400 text-center';
+          more.textContent = `+ ${pages.length - 5} slide lainnya ikut ke PDF`;
+          previewContainer.appendChild(more);
+        }
+        previewWrap.classList.remove('hidden');
+
+        toast('PDF berhasil dibuat!', 'success');
+      } finally {
+        host.remove();
+      }
+    } catch (err) {
+      console.error('ppt-to-pdf error:', err);
+      toast('Gagal mengonversi presentasi. Pastikan file .pptx valid dan tidak terproteksi.', 'error');
+    } finally {
+      busy = false;
+      convertBtn.disabled = !selectedFile;
+      convertLabel.textContent = 'Download PDF';
+    }
+  });
+
+  }
+
+  // SPA boot (#14): guard path + guard dobel-bind
+  const __pdfPptToPdfPage = (location.pathname.replace(/\/+$/, '') || '/');
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __pdfPptToPdfPage) return;
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
+    init();
+  });
+
+</script>
