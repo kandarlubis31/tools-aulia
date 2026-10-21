@@ -7,6 +7,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <div class="max-w-2xl mx-auto px-4 min-h-[70vh]">
         <ToolPageHeader
       title="Todo List"
+      titleKey="header.todo"
       desc="Catat tugas harian Anda. Tersimpan otomatis di browser."
       descKey="header.todo_desc"
       icon='<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'
@@ -31,6 +32,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       <div class="p-3 bg-matte-100 dark:bg-surface-hover border-t border-matte-200 dark:border-surface-border text-xs text-matte-400 flex justify-between items-center">
          <span id="task-count" data-i18n="label.tasks_remaining">0 Tugas</span>
+         <span data-i18n="text.todo_autosave" class="opacity-70">Tersimpan otomatis di browser</span>
          <button id="clear-all" class="text-rose-500 hover:text-rose-600 font-bold hover:underline" data-i18n="btn.delete_all">Hapus Semua</button>
       </div>
 
@@ -58,6 +60,10 @@ const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? win
     id: number;
     text: string;
     completed: boolean;
+  }
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
   }
 
   const todoHistory = useLocalHistory<Todo>('my_todos');
@@ -89,7 +95,7 @@ const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? win
                     <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${todo.completed ? 'border-accent-blue bg-accent-blue' : 'border-matte-300 dark:border-matte-500'}">
                         ${todo.completed ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="text-white"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
                     </div>
-                    <span class="text-sm font-medium ${todo.completed ? 'text-matte-400 line-through' : 'text-matte-700 dark:text-white'}">${todo.text}</span>
+                    <span class="text-sm font-medium ${todo.completed ? 'text-matte-400 line-through' : 'text-matte-700 dark:text-white'}">${escapeHtml(todo.text)}</span>
                 </div>
                 <button class="delete-btn p-2 text-matte-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100" aria-label="Delete">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>

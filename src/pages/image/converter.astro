@@ -29,7 +29,23 @@ import DropZone from '../../components/DropZone.astro';
         <div class="flex justify-center mb-6">
           <img id="preview-img" class="max-h-48 rounded-lg border border-matte-200 dark:border-matte-600 shadow-lg" alt="Converted image preview" loading="lazy" />
         </div>
-        
+
+        <div class="flex flex-wrap gap-4 justify-center items-center mb-6">
+          <div class="flex items-center gap-2">
+            <label for="out-format" class="text-2xs font-bold text-matte-400 uppercase tracking-wider" data-i18n="conv.format">Format</label>
+            <select id="out-format" class="px-3 py-2 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-bold outline-none">
+              <option value="image/jpeg" selected>JPG</option>
+              <option value="image/png">PNG</option>
+              <option value="image/webp">WebP</option>
+            </select>
+          </div>
+          <div id="quality-wrap" class="flex items-center gap-2">
+            <label for="quality" class="text-2xs font-bold text-matte-400 uppercase tracking-wider" data-i18n="conv.quality">Kualitas</label>
+            <input id="quality" type="range" min="10" max="100" value="90" class="w-28 accent-sky-500" />
+            <span id="quality-val" class="text-2xs font-mono text-matte-500 w-8">90%</span>
+          </div>
+        </div>
+
         <div class="flex gap-4 justify-center">
           <button id="convert-btn" class="bg-matte-900 dark:bg-white text-white dark:text-matte-900 px-6 py-2 rounded-lg font-bold transition-all active:scale-95" data-i18n="btn.download_jpg">
             Download JPG
@@ -38,6 +54,16 @@ import DropZone from '../../components/DropZone.astro';
             Reset
           </button>
         </div>
+      </div>
+
+      <!-- Info -->
+      <div class="text-2xs text-matte-400 bg-matte-50 dark:bg-surface-hover rounded-xl p-4 mt-8 text-left leading-relaxed">
+        <p class="font-bold text-matte-600 dark:text-matte-300 mb-1" data-i18n="conv.info_title">Yang perlu diketahui</p>
+        <ul class="list-disc list-inside space-y-0.5">
+          <li data-i18n="conv.info_1">Pilih format tujuan (JPG, PNG, atau WebP) sebelum menekan tombol download.</li>
+          <li data-i18n="conv.info_2">Slider kualitas berlaku untuk JPG &amp; WebP. PNG lossless — ukuran bisa lebih besar dari aslinya.</li>
+          <li data-i18n="conv.info_3">JPG tidak mendukung transparansi, jadi latar otomatis diisi putih. File diproses lokal di browser tanpa upload.</li>
+        </ul>
       </div>
 
     </div>
@@ -55,6 +81,10 @@ import DropZone from '../../components/DropZone.astro';
   const previewImg = document.getElementById('preview-img') as HTMLImageElement;
   const convertBtn = document.getElementById('convert-btn');
   const resetBtn = document.getElementById('reset-btn');
+  const outFormat = document.getElementById('out-format') as HTMLSelectElement;
+  const qualityWrap = document.getElementById('quality-wrap') as HTMLDivElement;
+  const quality = document.getElementById('quality') as HTMLInputElement;
+  const qualityVal = document.getElementById('quality-val') as HTMLSpanElement;
 
   let currentFile: File | null = null;
 
@@ -96,6 +126,8 @@ import DropZone from '../../components/DropZone.astro';
       window.showToast?.(window._tToast ? window._tToast('Format tidak didukung! Upload PNG, JPG, atau WebP.') : 'Format tidak didukung! Upload PNG, JPG, atau WebP.', 'error');
       return;
     }
+    // Sinkronkan tombol & visibility kualitas dengan format tujuan
+    syncFormatUI();
     currentFile = file;
     
     const reader = new FileReader();
@@ -109,36 +141,54 @@ import DropZone from '../../components/DropZone.astro';
     reader.readAsDataURL(file);
   }
 
-  // 2. Logic Konversi (Canvas Magic)
+  // 2. Logic Konversi (Canvas Magic) — dukung JPG / PNG / WebP + slider kualitas
+  function syncFormatUI() {
+    if (!outFormat) return;
+    const isJpg = outFormat.value === 'image/jpeg';
+    const lossy = isJpg || outFormat.value === 'image/webp';
+    if (qualityWrap) qualityWrap.style.display = lossy ? '' : 'none';
+    if (convertBtn) {
+      const fmt = isJpg ? 'JPG' : outFormat.value === 'image/png' ? 'PNG' : 'WebP';
+      convertBtn.textContent = 'Download ' + fmt;
+    }
+  }
+  outFormat?.addEventListener('change', syncFormatUI);
+  quality?.addEventListener('input', () => { if (qualityVal) qualityVal.textContent = quality.value + '%'; });
+  syncFormatUI();
+
   convertBtn?.addEventListener('click', () => {
     if (!previewImg.src) return;
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    if (!ctx) { window.showToast?.('Gagal render: context tidak tersedia', 'error'); return; }
+    if (!ctx) { window.showToast?.(window._tToast ? window._tToast('Gagal render: context tidak tersedia.') : 'Gagal render: context tidak tersedia.', 'error'); return; }
     const img = new Image();
 
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
-      
-      // Fill background putih (karena JPG gak support transparan)
-      if(ctx) {
-        ctx.fillStyle = '#FFFFFF'; 
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const mime = outFormat?.value || 'image/jpeg';
+      // JPG tidak support transparan → fill putih dulu (PNG/WebP pertahankan alpha)
+      if (ctx) {
+        if (mime === 'image/jpeg') {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
         ctx.drawImage(img, 0, 0);
       }
 
-      // Convert ke JPG Data URL
-      const jpgUrl = canvas.toDataURL('image/jpeg', 0.9); // 0.9 = Kualitas 90%
-      
-      // Trigger Download Otomatis
+      const q = (parseInt(quality?.value || '90', 10) || 90) / 100;
+      const dataUrl = mime === 'image/png' ? canvas.toDataURL(mime) : canvas.toDataURL(mime, q);
+      const ext = mime === 'image/jpeg' ? 'jpg' : mime === 'image/png' ? 'png' : 'webp';
+
       const link = document.createElement('a');
-      link.download = `converted-${Date.now()}.jpg`;
-      link.href = jpgUrl;
+      link.download = `converted-${Date.now()}.${ext}`;
+      link.href = dataUrl;
       link.click();
+      window.showToast?.(window._tToast ? window._tToast('Gambar berhasil dikonversi!') : 'Gambar berhasil dikonversi!', 'success');
     };
-    
+
     img.src = previewImg.src;
   });
 

@@ -804,4 +804,5 @@ window._i18nPhrases = {
   'Gagal membaca file. Pastikan file .pptx valid dan tidak terproteksi.':'Failed to read the file. Make sure the .pptx is valid and not protected.',
   'Gagal memuat pustaka PDF — cek koneksi internet.':'Failed to load PDF library — check your connection.',
   'Gagal mengonversi presentasi. Pastikan file .pptx valid dan tidak terproteksi.':'Failed to convert the presentation. Make sure the .pptx is valid and not protected.',
+  'Gambar berhasil dikonversi!':'Image converted successfully!','Gagal render: context tidak tersedia.':'Failed to render: context unavailable.',
 };
