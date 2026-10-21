@@ -4368,6 +4368,55 @@ export const translations: Record<string, { id: string; en: string }> = {
   'w2p.info_1': { id: 'Konversi mempertahankan struktur: heading, paragraf, list, tabel, gambar, bold/italic.', en: 'Conversion preserves structure: headings, paragraphs, lists, tables, images, bold/italic.' },
   'w2p.info_2': { id: 'Format kompleks (kolom, header/footer Word, smart art) bisa berbeda dari aslinya.', en: 'Complex layouts (columns, Word headers/footers, smart art) may differ from the original.' },
   'w2p.info_3': { id: 'File diproses lokal di browser — tidak ada upload, cocok untuk dokumen internal/perusahaan.', en: 'Files are processed locally in the browser — no upload, suitable for internal/company documents.' },
+  // --- W6 batch 25 — text/to-pdf, pdf/repair, media/video-to-gif, data/geojson, image/ascii, security/uuid, pdf/to-text ---
+  // text/to-pdf
+  'tpdf.info': { id: 'Menggunakan pdf-lib untuk embed teks ke halaman PDF A4. Font default: Helvetica.', en: 'Uses pdf-lib to embed text into A4 PDF pages. Default font: Helvetica.' },
+  'tpdf.empty': { id: 'Tulis teks dulu.', en: 'Write some text first.' },
+  'tpdf.created': { id: 'PDF dibuat!', en: 'PDF created!' },
+  'tpdf.fail': { id: 'Gagal membuat PDF.', en: 'Failed to create PDF.' },
+  // pdf/repair
+  'repair.no_pages': { id: 'Tidak ada halaman yang bisa dipulihkan.', en: 'No pages could be recovered.' },
+  'repair.reconstructed': { id: 'halaman direkonstruksi', en: 'pages reconstructed' },
+  'repair.downloaded': { id: 'PDF diperbaiki didownload!', en: 'Repaired PDF downloaded!' },
+  'repair.fail': { id: 'Gagal memperbaiki PDF.', en: 'Failed to repair the PDF.' },
+  // media/video-to-gif
+  'vid.formats': { id: 'MP4, WebM (max 50MB)', en: 'MP4, WebM (max 50MB)' },
+  'vid.info': { id: 'Frame diekstrak dari video → download sebagai urutan PNG. Gunakan GIF Maker untuk gabung jadi animasi GIF.', en: 'Frames are extracted from the video → downloaded as a PNG sequence. Use GIF Maker to combine them into an animated GIF.' },
+  'v2g.max_50': { id: 'Ukuran file maksimal 50MB.', en: 'Maximum file size is 50MB.' },
+  'v2g.load_fail': { id: 'Gagal memuat video. Format mungkin tidak didukung.', en: 'Failed to load video. The format may not be supported.' },
+  'v2g.done': { id: 'Ekstraksi selesai!', en: 'Extraction finished!' },
+  'v2g.extract_first': { id: 'Ekstrak frame dulu.', en: 'Extract frames first.' },
+  // data/geojson
+  'geo.upload': { id: 'Upload GeoJSON', en: 'Upload GeoJSON' },
+  'geo.paste': { id: 'Paste', en: 'Paste' },
+  'geo.privacy': { id: 'Powered by Leaflet + OpenStreetMap. GeoJSON diproses 100% di browser.', en: 'Powered by Leaflet + OpenStreetMap. GeoJSON is processed 100% in your browser.' },
+  'geo.features': { id: 'feature(s)', en: 'feature(s)' },
+  'geo.shown': { id: 'GeoJSON ditampilkan!', en: 'GeoJSON displayed!' },
+  'geo.invalid': { id: 'GeoJSON tidak valid', en: 'Invalid GeoJSON' },
+  'geo.no_valid': { id: 'Belum ada data valid.', en: 'No valid data yet.' },
+  // image/ascii
+  'ascii.color_label': { id: 'Color', en: 'Color' },
+  'ascii.convert': { id: 'Convert to ASCII', en: 'Convert to ASCII' },
+  'ascii.art_label': { id: 'ASCII Art', en: 'ASCII Art' },
+  'ascii.not_image': { id: 'File harus gambar!', en: 'File must be an image!' },
+  'ascii.upload_first': { id: 'Upload gambar terlebih dahulu!', en: 'Upload an image first!' },
+  'ascii.done': { id: 'ASCII art dibuat!', en: 'ASCII art created!' },
+  'ascii.copied': { id: 'ASCII disalin!', en: 'ASCII copied!' },
+  // security/uuid
+  'uuid.count': { id: 'Jumlah:', en: 'Count:' },
+  'uuid.regenerate': { id: 'Regenerate', en: 'Regenerate' },
+  'uuid.history': { id: 'Riwayat', en: 'History' },
+  'uuid.history_title': { id: 'Riwayat Generate', en: 'Generation History' },
+  'uuid.copied': { id: 'UUID disalin!', en: 'UUID copied!' },
+  'uuid.copied_all': { id: 'Semua UUID disalin!', en: 'All UUIDs copied!' },
+  // pdf/to-text
+  'header.pdf_to_text': { id: 'PDF to Text', en: 'PDF to Text' },
+  'header.pdf_to_text_desc': { id: 'Ekstrak teks plain dari PDF secara lokal. Data tidak pernah keluar dari browser kamu.', en: 'Extract plain text from PDF locally. Data never leaves your browser.' },
+  'p2t.drop': { id: 'Pilih atau Tarik File PDF', en: 'Choose or Drag a PDF File' },
+  'p2t.privacy': { id: 'Data diproses 100% lokal di browser — tidak ada upload ke server.', en: 'Data is processed 100% locally in your browser — nothing is uploaded.' },
+  'p2t.hint': { id: 'Mendukung PDF teks (bukan scanned image)', en: 'Supports text-based PDFs (not scanned images)' },
+  'p2t.result_title': { id: 'Hasil Teks', en: 'Text Result' },
+  'p2t.placeholder': { id: 'Hasil ekstraksi akan muncul di sini...', en: 'Extraction result will appear here...' },
 };
 
 export function t(key, fallback) {

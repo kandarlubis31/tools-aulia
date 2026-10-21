@@ -20,7 +20,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <input type="file" id="file-input" accept="video/*" class="hidden" />
           <svg class="w-12 h-12 mx-auto mb-3 text-matte-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <p class="text-sm font-bold text-matte-500 dark:text-matte-300" data-i18n="vid.upload">Upload file video</p>
-          <p class="text-2xs text-matte-400 mt-1">MP4, WebM (max 50MB)</p>
+          <p class="text-2xs text-matte-400 mt-1" data-i18n="vid.formats">MP4, WebM (max 50MB)</p>
         </div>
 
         <div id="video-preview" class="hidden mb-4">
@@ -65,12 +65,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     </div>
 
     <p class="text-center text-xs text-matte-400 mt-6">
-      ℹ️ Frame diekstrak dari video → download sebagai urutan PNG. Gunakan GIF Maker untuk gabung jadi animasi GIF.
+      ℹ️ <span data-i18n="vid.info">Frame diekstrak dari video → download sebagai urutan PNG. Gunakan GIF Maker untuk gabung jadi animasi GIF.</span>
     </p>
   </div>
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -90,15 +91,15 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     let animInterval: number | null = null;
     let videoName = 'video';
 
-    const toast = (m: string, t: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
+    const toast = (m: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, type);
 
     const progressWrap = document.getElementById('gif-progress-wrap')!;
     const progressBar = document.getElementById('gif-progress-bar')!;
     const progressLabel = document.getElementById('gif-progress-label')!;
 
     function loadVideo(file: File) {
-      if (file.size > 50 * 1024 * 1024) { toast('Ukuran file maksimal 50MB.', 'error'); return; }
+      if (file.size > 50 * 1024 * 1024) { toast(t('v2g.max_50', 'Ukuran file maksimal 50MB.'), 'error'); return; }
       videoName = file.name.replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '-').slice(0, 40) || 'video';
       const url = URL.createObjectURL(file);
       sourceVideo.src = url;
@@ -107,7 +108,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         outputArea.classList.add('hidden');
         frames = [];
       };
-      sourceVideo.onerror = () => toast('Gagal memuat video. Format mungkin tidak didukung.', 'error');
+      sourceVideo.onerror = () => toast(t('v2g.load_fail', 'Gagal memuat video. Format mungkin tidak didukung.'), 'error');
     }
 
     function extractFrames() {
@@ -141,7 +142,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           extractBtn.disabled = false;
           outputArea.classList.remove('hidden');
           outputArea.scrollIntoView({ behavior: 'smooth' });
-          toast('Ekstraksi selesai!');
+          toast(t('v2g.done', 'Ekstraksi selesai!'));
           previewFrame(0);
         }
       };
@@ -176,7 +177,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     extractBtn.addEventListener('click', extractFrames);
     downloadFrames.addEventListener('click', async () => {
-      if (!frames.length) { toast('Ekstrak frame dulu.', 'error'); return; }
+      if (!frames.length) { toast(t('v2g.extract_first', 'Ekstrak frame dulu.'), 'error'); return; }
       try {
         const JSZip = await new Promise<any>((resolve, reject) => {
           const s = document.createElement('script');
