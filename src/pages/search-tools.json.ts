@@ -6,7 +6,7 @@ import { publicTools as tools } from '../data/tools';
  *
  * Single shared search index for the command-palette search modal (BaseLayout).
  * Previously this data (~60KB) was inlined as <script type="application/json">
- * into EVERY page's HTML — ~14MB duplication across 254 pages in the build
+ * into EVERY page's HTML — ~14MB duplication across 255 pages in the build
  * output (and the same data re-downloaded on every page load).
  *
  * Now it is served once as a static file, fetched lazily by the search modal

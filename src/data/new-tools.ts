@@ -7,6 +7,7 @@
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */
 export const newToolHrefs: string[] = [
+  '/pdf/ppt-to-pdf',
   '/data/chart-maker',
   '/calc/pesangon',
   '/image/ocr',
