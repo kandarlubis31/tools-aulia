@@ -36,6 +36,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
 const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
@@ -60,12 +61,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     async function checkSSL() {
       let domain = domainInput.value.trim().toLowerCase();
-      if (!domain) { toast('Masukkan domain', 'error'); return; }
+      if (!domain) { toast(t('ssl.no_domain', 'Masukkan domain'), 'error'); return; }
       domain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
 
       checkBtn.disabled = true;
       checkBtn.innerHTML = '<span class="animate-pulse">Checking...</span>';
-      resultArea.innerHTML = '<p class="text-matte-400 text-center py-6 animate-pulse">Fetching SSL info dari crt.sh...</p>';
+      resultArea.innerHTML = `<p class="text-matte-400 text-center py-6 animate-pulse">${t('ssl.fetching', 'Fetching SSL info dari crt.sh...')}</p>`;
 
       try {
         // Use server-side proxy to bypass CORS (crt.sh added to proxy allowlist)
@@ -76,7 +77,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const certs = await ctRes.json();
         if (!certs || certs.length === 0) {
           resultArea.innerHTML = `<div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-sm">
-            Tidak ditemukan sertifikat untuk <strong>${escHtml(domain)}</strong> di CT logs.
+            ${t('ssl.not_found', 'Tidak ditemukan sertifikat untuk')} <strong>${escHtml(domain)}</strong> ${t('ssl.in_ct', 'di CT logs.')}
           </div>`;
           return;
         }
@@ -167,7 +168,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       } catch (e: any) {
         resultArea.innerHTML = `<div class="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
-          Gagal mengambil data SSL. Pastikan domain valid dan coba lagi.
+          ${t('ssl.fetch_fail', 'Gagal mengambil data SSL. Pastikan domain valid dan coba lagi.')}
           <br><br><span class="font-mono text-xs">${escHtml(e.message || 'Unknown error')}</span>
         </div>`;
       } finally {

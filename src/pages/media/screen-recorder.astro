@@ -49,13 +49,14 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
     </div>
 
-    <p class="text-center text-xs text-matte-400 mt-6">
+    <p class="text-center text-xs text-matte-400 mt-6" data-i18n="screen.privacy">
       ⚠️ Rekaman diproses 100% di browser. Tidak ada video yang diupload. Format: WebM.
     </p>
   </div>
 </BaseLayout>
 
 <script>
+    import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -70,8 +71,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const previewVideo = document.getElementById('preview-video') as HTMLVideoElement;
     const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
 
-    const toast = (m: string, t: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
+    const toast = (m: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, type);
 
     let mediaRecorder: MediaRecorder | null = null;
     let stream: MediaStream | null = null;
@@ -112,7 +113,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           previewArea.classList.remove('hidden');
           stopTimer();
           recDot.innerHTML = '<span class="w-3 h-3 rounded-full bg-matte-400"></span>';
-          recStatus.textContent = window._tToast ? window._tToast('Selesai.') : 'Selesai.';
+          recStatus.textContent = t('screen.done', 'Selesai.');
           startBtn.innerHTML = '🔄 <span data-i18n="screen.rerecord">Rekam Ulang</span>';
           (startBtn.querySelector('[data-i18n]') || startBtn).textContent = 'Rekam Ulang';
           stopBtn.disabled = true;
@@ -125,7 +126,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         recTime.textContent = '00:00';
         startTimer();
         recDot.innerHTML = '<span class="animate-pulse w-3 h-3 rounded-full bg-red-500"></span>';
-        recStatus.textContent = window._tToast ? window._tToast('Merekam…') : 'Merekam…';
+        recStatus.textContent = t('screen.recording', 'Merekam…');
         startBtn.innerHTML = '⏳ …';
         stopBtn.disabled = false;
         previewArea.classList.add('hidden');
@@ -136,7 +137,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         };
       } catch (e: any) {
         if (e.name === 'AbortError') return;
-        toast('Gagal mulai rekam.', 'error');
+        toast(t('screen.rec_fail', 'Gagal mulai rekam.'), 'error');
       }
     }
 
