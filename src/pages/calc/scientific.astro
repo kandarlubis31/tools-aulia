@@ -56,15 +56,17 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
         <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num="0">0</button>
         <button class="num-btn py-3 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-hover text-matte-700 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-elevated transition-all" data-num=".">.</button>
-        <button class="py-3 rounded-lg text-sm font-bold bg-red-500 text-white hover:bg-red-600 transition-all" id="clear-btn">C</button>
+        <button class="py-3 rounded-lg text-sm font-bold bg-red-500 text-white hover:bg-red-600 transition-all" id="clear-btn" title="Bersihkan" data-i18n-attr="title" data-i18n="sci.clear_btn">C</button>
         <button class="op-btn py-3 rounded-lg text-sm font-bold bg-blue-500 text-white hover:bg-blue-600 transition-all" data-op="+">+</button>
       </div>
 
       <!-- Bottom row -->
       <div class="grid grid-cols-2 gap-1 mt-2">
-        <button class="py-3 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" id="backspace-btn">⌫</button>
-        <button class="py-3 rounded-lg text-sm font-bold bg-green-500 text-white hover:bg-green-600 transition-all" id="equals-btn">=</button>
+        <button class="py-3 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-600 dark:text-matte-400 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" id="backspace-btn" title="Hapus satu karakter" data-i18n-attr="title" data-i18n="sci.backspace">⌫</button>
+        <button class="py-3 rounded-lg text-sm font-bold bg-green-500 text-white hover:bg-green-600 transition-all" id="equals-btn" title="Hitung" data-i18n-attr="title" data-i18n="sci.equals">=</button>
       </div>
+
+      <p class="text-center text-xs text-matte-400 mt-4">🔒 <span data-i18n="sci.privacy">Kalkulator berjalan 100% di browser.</span></p>
 
       <!-- History -->
       <div id="history-container" class="hidden mt-4">
@@ -78,6 +80,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+    import { t } from '../../i18n/translations';
 const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
@@ -166,7 +169,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           }
           document.getElementById('history-container')?.classList.remove('hidden');
         } catch {
-          current = 'Error';
+          current = t('sci.error', 'Error');
           updateDisplay();
         }
       });
@@ -188,7 +191,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       document.getElementById('clear-history')?.addEventListener('click', () => {
         history = [];
         document.getElementById('history')!.innerHTML = '';
-        toast('Riwayat dibersihkan!', 'info');
+        toast(t('sci.hist_cleared', 'Riwayat dibersihkan!'), 'info');
         document.getElementById('history-container')?.classList.add('hidden');
       });
 
