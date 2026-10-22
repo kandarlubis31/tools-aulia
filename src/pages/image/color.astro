@@ -23,8 +23,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.9.9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l-9 9H6v-3l9-9Z"/></svg>
                  </div>
                  <div>
-                    <h3 class="font-bold text-matte-800 dark:text-white">Pipet Layar (EyeDropper)</h3>
-                    <p class="text-xs text-matte-500">Ambil warna dari pixel mana saja di monitor Anda.</p>
+                    <h3 class="font-bold text-matte-800 dark:text-white" data-i18n="color.eyedropper_title">Pipet Layar (EyeDropper)</h3>
+                    <p class="text-xs text-matte-500" data-i18n="color.eyedropper_desc">Ambil warna dari pixel mana saja di monitor Anda.</p>
                  </div>
               </div>
               <button id="btn-eyedropper" class="w-full sm:w-auto px-6 py-3 bg-matte-900 dark:bg-white text-white dark:text-matte-900 font-bold rounded-lg hover:scale-105 transition shadow-lg flex items-center justify-center gap-2">
@@ -36,7 +36,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
         <div class="card-base overflow-hidden">
            <div class="p-4 border-b border-matte-200 dark:border-surface-border flex justify-between items-center bg-matte-100 dark:bg-surface-hover">
-              <span class="font-bold text-matte-400 text-sm uppercase">Image Color Picker</span>
+              <span class="font-bold text-matte-400 text-sm uppercase" data-i18n="color.img_picker">Image Color Picker</span>
               <label class="cursor-pointer text-xs font-bold text-pink-600 hover:text-pink-700 bg-pink-100 dark:bg-pink-900/30 px-3 py-1.5 rounded-lg transition hover:shadow-sm">
                  📂 Upload Gambar
                  <input type="file" id="file-input" accept="image/*" class="hidden" />
@@ -46,8 +46,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
            <div class="relative bg-matte-100 dark:bg-matte-950 flex items-center justify-center min-h-[400px] overflow-hidden group cursor-crosshair">
               <div id="placeholder-text" class="absolute text-center px-4 pointer-events-none">
                 <div class="text-6xl mb-4 opacity-50">🖼️</div>
-                <p class="text-matte-400 font-medium">Upload gambar untuk mulai picking</p>
-                <p class="text-matte-500 text-sm mt-2">Mendukung JPG, PNG, WEBP</p>
+                <p class="text-matte-400 font-medium" data-i18n="color.upload_hint">Upload gambar untuk mulai picking</p>
+                <p class="text-matte-500 text-sm mt-2" data-i18n="color.supported">Mendukung JPG, PNG, WEBP</p>
               </div>
               
               <canvas id="image-canvas" class="max-w-full max-h-[500px] shadow-2xl hidden cursor-crosshair"></canvas>
@@ -163,6 +163,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -222,7 +223,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const file = (e.target as HTMLInputElement).files[0];
     if (file) {
         if (file.size > MAX_FILE_SIZE) {
-          window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 20MB.') : 'File terlalu besar! Maksimal 20MB.', 'error');
+          window.showToast?.(window._tToast ? window._tToast(t('color.too_big', 'File terlalu besar! Maksimal 20MB.')) : 'File terlalu besar! Maksimal 20MB.', 'error');
           return;
         }
         const reader = new FileReader();
@@ -515,7 +516,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         const targetId = e.currentTarget.dataset.target;
         const target = document.getElementById(targetId) as HTMLInputElement;
         navigator.clipboard.writeText(target.value);
-        window.showToast?.(window._tToast ? window._tToast("Copied!") : "Copied!", "success");
+        window.showToast?.(window._tToast ? window._tToast(t('color.copied', 'Copied!')) : 'Copied!', 'success');
     });
   });
 

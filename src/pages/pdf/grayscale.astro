@@ -17,8 +17,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div class="w-16 h-16 bg-matte-100 dark:bg-surface-elevated text-matte-400 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
       </div>
-      <h3 class="text-xl font-bold text-matte-700 dark:text-matte-200 mb-1">Pilih PDF Warna</h3>
-      <p class="text-sm text-matte-400">Drag & drop atau klik untuk memilih file (maks 50MB)</p>
+      <h3 class="text-xl font-bold text-matte-700 dark:text-matte-200 mb-1" data-i18n="gray.pick_pdf">Pilih PDF Warna</h3>
+      <p class="text-sm text-matte-400" data-i18n="gray.drop_hint">Drag & drop atau klik untuk memilih file (maks 50MB)</p>
       <input type="file" id="file-input" accept="application/pdf" class="hidden" />
     </div>
 
@@ -45,18 +45,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
           <!-- Mode Preset -->
           <div class="card-base p-5">
-            <h4 class="text-sm font-semibold text-matte-700 dark:text-white mb-3">Mode Scan</h4>
+            <h4 class="text-sm font-semibold text-matte-700 dark:text-white mb-3" data-i18n="gray.scan_mode">Mode Scan</h4>
             <div class="grid grid-cols-2 gap-2">
-              <button class="scan-mode-btn active" data-mode="document">📄 Dokumen</button>
-              <button class="scan-mode-btn" data-mode="photo">📸 Foto B&W</button>
-              <button class="scan-mode-btn" data-mode="receipt">🧾 Struk/Bon</button>
-              <button class="scan-mode-btn" data-mode="sketch">✏️ Sketsa</button>
+              <button class="scan-mode-btn active" data-mode="document" data-i18n="gray.mode_doc">📄 Dokumen</button>
+              <button class="scan-mode-btn" data-mode="photo" data-i18n="gray.mode_photo">📸 Foto B&W</button>
+              <button class="scan-mode-btn" data-mode="receipt" data-i18n="gray.mode_receipt">🧾 Struk/Bon</button>
+              <button class="scan-mode-btn" data-mode="sketch" data-i18n="gray.mode_sketch">✏️ Sketsa</button>
             </div>
           </div>
 
           <!-- Adjustments -->
           <div class="card-base p-5 space-y-4">
-            <h4 class="text-sm font-semibold text-matte-700 dark:text-white">Pengaturan</h4>
+            <h4 class="text-sm font-semibold text-matte-700 dark:text-white" data-i18n="gray.settings">Pengaturan</h4>
 
             <!-- Brightness -->
             <div>
@@ -218,6 +218,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script>
+  import { t } from '../../i18n/translations';
 const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
 
@@ -518,7 +519,7 @@ const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? win
     const pagesToProcess = isCustomRange && rangeStr ? parsePageRange(rangeStr, totalPages) : Array.from({ length: totalPages }, (_, i) => i + 1);
 
     if (pagesToProcess.length === 0) {
-      toast('Tidak ada halaman yang dipilih.', 'error');
+      toast(t('gray.no_pages', 'Tidak ada halaman yang dipilih.'), 'error');
       return;
     }
 
@@ -632,11 +633,11 @@ const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? win
       statusText.innerText = 'Menyusun file PDF...';
       const pdfBytes = await newPdf.save();
       window.downloadBytes(pdfBytes, `grayscale-${currentFile.name}`);
-      toast('Berhasil! PDF Grayscale siap diunduh.', 'success');
+      toast(t('gray.done', 'Berhasil! PDF Grayscale siap diunduh.'), 'success');
 
     } catch (err) {
       console.error(err);
-      toast('Gagal memproses PDF. Coba file yang lebih kecil.', 'error');
+      toast(t('gray.fail', 'Gagal memproses PDF. Coba file yang lebih kecil.'), 'error');
     } finally {
       restoreBtn();
       statusText.innerText = 'Selesai!';

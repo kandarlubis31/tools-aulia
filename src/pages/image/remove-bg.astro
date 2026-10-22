@@ -140,6 +140,7 @@ import DropZone from '../../components/DropZone.astro';
 </style>
 
 <script>
+  import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -330,13 +331,13 @@ import DropZone from '../../components/DropZone.astro';
     if (!originalFile || isProcessing) return;
     isProcessing = true;
 
-    showLoading(window._tToast ? window._tToast('Mendownload model AI...') : 'Mendownload model AI...');
+    showLoading(window._tToast ? window._tToast(t('rb.downloading_model', 'Mendownload model AI...')) : 'Mendownload model AI...');
     resetResult();
 
     try {
       const { default: removeBg } = await import('@imgly/background-removal');
 
-      showLoading(window._tToast ? window._tToast('Menghapus background...') : 'Menghapus background...');
+      showLoading(window._tToast ? window._tToast(t('rb.removing_bg', 'Menghapus background...')) : 'Menghapus background...');
 
       const startTime = Date.now();
       resultBlob = await removeBg(originalFile, {
@@ -367,7 +368,7 @@ import DropZone from '../../components/DropZone.astro';
       resultSize.textContent = `${formatBytes(resultBlob.size)} · ${elapsed}s`;
 
       window.showToast?.(
-        window._tToast ? window._tToast('Background berhasil dihapus!') : 'Background berhasil dihapus!',
+        window._tToast ? window._tToast(t('rb.done', 'Background berhasil dihapus!')) : 'Background berhasil dihapus!',
         'success'
       );
 
@@ -390,7 +391,7 @@ import DropZone from '../../components/DropZone.astro';
   function handleFile(file: File) {
     if (!file.type.startsWith('image/')) {
       window.showToast?.(
-        window._tToast ? window._tToast('File harus berupa gambar (JPG, PNG, WEBP).') : 'File harus berupa gambar (JPG, PNG, WEBP).',
+        window._tToast ? window._tToast(t('rb.must_image', 'File harus berupa gambar (JPG, PNG, WEBP).')) : 'File harus berupa gambar (JPG, PNG, WEBP).',
         'error'
       );
       return;
@@ -398,7 +399,7 @@ import DropZone from '../../components/DropZone.astro';
 
     if (file.size > MAX_FILE_SIZE) {
       window.showToast?.(
-        window._tToast ? window._tToast('File terlalu besar! Maksimal 10MB.') : 'File terlalu besar! Maksimal 10MB.',
+        window._tToast ? window._tToast(t('rb.max_10', 'File terlalu besar! Maksimal 10MB.')) : 'File terlalu besar! Maksimal 10MB.',
         'error'
       );
       return;
@@ -443,7 +444,7 @@ import DropZone from '../../components/DropZone.astro';
       updateBgToggleUI();
       updatePreview().catch(() => {
         window.showToast?.(
-          window._tToast ? window._tToast('Gagal mengganti background.') : 'Gagal mengganti background.',
+          window._tToast ? window._tToast(t('rb.bg_fail', 'Gagal mengganti background.')) : 'Gagal mengganti background.',
           'error'
         );
       });
@@ -505,7 +506,7 @@ import DropZone from '../../components/DropZone.astro';
     }
     bgImageFile = file;
     bgImageName.textContent = file.name;
-    bgImageLabel.textContent = window._tToast ? window._tToast('Ganti Background') : 'Ganti Background';
+    bgImageLabel.textContent = window._tToast ? window._tToast(t('rb.change_bg', 'Ganti Background')) : 'Ganti Background';
     updatePreview();
   });
 
@@ -519,7 +520,7 @@ import DropZone from '../../components/DropZone.astro';
     link.download = `${baseName}-nobg.png`;
     link.click();
     window.showToast?.(
-      window._tToast ? window._tToast('Gambar berhasil diunduh!') : 'Gambar berhasil diunduh!',
+      window._tToast ? window._tToast(t('rb.downloaded', 'Gambar berhasil diunduh!')) : 'Gambar berhasil diunduh!',
       'success'
     );
   });

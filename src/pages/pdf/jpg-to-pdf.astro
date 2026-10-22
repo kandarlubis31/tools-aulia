@@ -131,6 +131,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -269,7 +270,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   function removeImage(index) {
     selectedFiles.splice(index, 1);
     renderPreview();
-    window.showToast?.(window._tToast ? window._tToast('Gambar dihapus') : 'Gambar dihapus', 'info');
+    window.showToast?.(window._tToast ? window._tToast(t('j2p.removed', 'Gambar dihapus')) : 'Gambar dihapus', 'info');
   }
 
   // --- FILE INPUT HANDLERS ---
@@ -278,13 +279,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       f.type === 'image/jpeg' || f.type === 'image/png' || f.type === 'image/webp'
     );
     if (validFiles.length === 0) {
-      window.showToast?.(window._tToast ? window._tToast('Format tidak didukung. Gunakan JPG, PNG, atau WEBP.') : 'Format tidak didukung. Gunakan JPG, PNG, atau WEBP.', 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('j2p.bad_format', 'Format tidak didukung. Gunakan JPG, PNG, atau WEBP.')) : 'Format tidak didukung. Gunakan JPG, PNG, atau WEBP.', 'error');
       return;
     }
     selectedFiles = [...selectedFiles, ...validFiles];
     renderPreview();
     if (validFiles.length > 0) {
-      window.showToast?.(window._tToast ? window._tToast(`${validFiles.length} gambar ditambahkan`) : `${validFiles.length} gambar ditambahkan`, 'success');
+      window.showToast?.(window._tToast ? window._tToast(`${validFiles.length} ` + t('j2p.added', 'gambar ditambahkan')) : `${validFiles.length} gambar ditambahkan`, 'success');
     }
   }
 
@@ -312,7 +313,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   clearAllBtn?.addEventListener('click', () => {
     selectedFiles = [];
     renderPreview();
-    window.showToast?.(window._tToast ? window._tToast('Semua gambar dihapus') : 'Semua gambar dihapus', 'info');
+    window.showToast?.(window._tToast ? window._tToast(t('j2p.cleared_all', 'Semua gambar dihapus')) : 'Semua gambar dihapus', 'info');
   });
 
   addMoreBtn?.addEventListener('click', () => fileInput.click());
@@ -443,7 +444,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
               image = await pdfDoc.embedPng(pngBuf);
               bmp.close();
             } catch (webpErr) {
-              window.showToast?.(window._tToast ? window._tToast(`Gagal konversi ${file.name}`) : `Gagal konversi ${file.name}`, 'error');
+              window.showToast?.(window._tToast ? window._tToast(t('j2p.convert_fail', 'Gagal konversi') + ' ' + file.name) : `Gagal konversi ${file.name}`, 'error');
               continue;
             }
           }
@@ -518,9 +519,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         }
       }
 
-      window.showToast?.(window._tToast ? window._tToast('✅ PDF berhasil dibuat!') : '✅ PDF berhasil dibuat!', 'success');
+      window.showToast?.(window._tToast ? window._tToast(t('j2p.done', '✅ PDF berhasil dibuat!')) : '✅ PDF berhasil dibuat!', 'success');
     } catch (err) {
-      window.showToast?.(window._tToast ? window._tToast('Gagal membuat PDF.') : 'Gagal membuat PDF.', 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('j2p.fail', 'Gagal membuat PDF.')) : 'Gagal membuat PDF.', 'error');
     } finally {
       restoreBtn();
     }

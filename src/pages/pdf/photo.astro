@@ -166,6 +166,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
   // ============================================================
   // PDF PHOTO INSERT — pas foto ke slot foto PDF form
   // Pattern dari sign.astro (placement/undo/render) + sign-to-png
@@ -411,13 +412,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         await page.render({ canvasContext: context, viewport }).promise;
       } catch (renderErr) {
         console.error('PDF page render failed:', renderErr);
-        window.showToast?.(_tt('Gagal merender halaman PDF.'), 'error');
+        window.showToast?.(_tt(t('ph.render_fail', 'Gagal merender halaman PDF.')), 'error');
       }
 
       if (!signal.aborted) renderAllOverlays();
     } catch (err) {
       console.error('PDF page load failed:', err);
-      window.showToast?.(_tt('Gagal memuat halaman PDF.'), 'error');
+      window.showToast?.(_tt(t('ph.load_fail', 'Gagal memuat halaman PDF.')), 'error');
     } finally {
       renderLock = false;
       if (renderLoading) renderLoading.classList.add('hidden');
@@ -1048,7 +1049,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   savePdfBtn?.addEventListener('click', async () => {
     if (!currentFile) return;
     if (photos.length === 0) {
-      window.showToast?.(_tt('Belum ada foto yang ditempel!'), 'error');
+      window.showToast?.(_tt(t('ph.no_photo', 'Belum ada foto yang ditempel!')), 'error');
       return;
     }
 
@@ -1112,10 +1113,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       const pdfBytes = await doc.save();
       window.downloadBytes(pdfBytes, `photo-${currentFile.name}`);
-      window.showToast?.(_tt(`Berhasil! ${photos.length} foto ditambahkan.`), 'success');
+      window.showToast?.(_tt(t('ph.no_photos_added', `Berhasil! ${photos.length} foto ditambahkan.`)), 'success');
     } catch (err) {
       console.error('Save failed:', err);
-      window.showToast?.(_tt('Gagal menyimpan PDF.'), 'error');
+      window.showToast?.(_tt(t('ph.save_fail', 'Gagal menyimpan PDF.')), 'error');
     } finally {
       restoreBtn();
     }

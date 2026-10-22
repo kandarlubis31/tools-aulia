@@ -109,6 +109,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 <script>
   import { loadCdnLib } from '../../composables/useCdnLib';
   import { useLocalHistory } from '../../composables/useLocalHistory';
+  import { t } from '../../i18n/translations';
 
   const DATA_KEY = 'hrd_data_v1';
   interface Emp { id: number; name: string; position: string; division: string; salary: number; }
@@ -178,7 +179,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   function buildSlip(): HTMLElement | null {
     const emp = resolveEmployee();
-    if (!emp) { window.showToast?.(window._tToast ? window._tToast('Pilih karyawan (dengan gaji terisi) atau isi nama & gaji manual.') : 'Pilih karyawan (dengan gaji terisi) atau isi nama & gaji manual.', 'error'); return null; }
+    if (!emp) { window.showToast?.(window._tToast ? window._tToast(t('slipg.pick_emp', 'Pilih karyawan (dengan gaji terisi) atau isi nama & gaji manual.')) : 'Pilih karyawan (dengan gaji terisi) atau isi nama & gaji manual.', 'error'); return null; }
 
     const period = periodEl.value || new Date().toISOString().slice(0, 7);
     const [y, m] = period.split('-').map(Number);
@@ -295,7 +296,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     scaled.style.overflow = 'hidden';
     previewWrap.classList.remove('hidden');
     addToSlipHistory();
-    window.showToast?.(window._tToast ? window._tToast('Preview slip siap.') : 'Preview slip siap.', 'info');
+    window.showToast?.(window._tToast ? window._tToast(t('slipg.preview_ready', 'Preview slip siap.')) : 'Preview slip siap.', 'info');
   };
 
   (document.getElementById('btn-pdf') as HTMLButtonElement).onclick = async () => {
@@ -306,7 +307,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
       'https://unpkg.com/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js',
     ]);
-    if (!cdnReady) { window.showToast?.(window._tToast ? window._tToast('Library PDF gagal dimuat — cek koneksi internet.') : 'Library PDF gagal dimuat — cek koneksi internet.', 'error'); return; }
+    if (!cdnReady) { window.showToast?.(window._tToast ? window._tToast(t('slipg.cdn_fail', 'Library PDF gagal dimuat — cek koneksi internet.')) : 'Library PDF gagal dimuat — cek koneksi internet.', 'error'); return; }
     const holder = document.createElement('div');
     holder.style.cssText = 'position:fixed;left:-10000px;top:0;';
     holder.appendChild(slip);
@@ -326,7 +327,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       holder.remove();
     }
     addToSlipHistory();
-    window.showToast?.(window._tToast ? window._tToast('Slip gaji diunduh sebagai PDF!') : 'Slip gaji diunduh sebagai PDF!', 'success');
+    window.showToast?.(window._tToast ? window._tToast(t('slipg.downloaded', 'Slip gaji diunduh sebagai PDF!')) : 'Slip gaji diunduh sebagai PDF!', 'success');
   };
 
   // ===== Riwayat form-snapshot =====
@@ -370,7 +371,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>`).join('');
     list.querySelectorAll<HTMLButtonElement>('[data-load]').forEach(b => b.addEventListener('click', () => {
       const it = slipHistory.getAll().find(x => x.id === +(b.dataset.load || 0));
-      if (it) { restore(it.snapshot); window.showToast?.(window._tToast ? window._tToast('Form dimuat dari riwayat.') : 'Form dimuat dari riwayat.', 'info'); }
+      if (it) { restore(it.snapshot); window.showToast?.(window._tToast ? window._tToast(t('ter.loaded', 'Form dimuat dari riwayat.')) : 'Form dimuat dari riwayat.', 'info'); }
     }));
     list.querySelectorAll<HTMLButtonElement>('[data-del]').forEach(b => b.addEventListener('click', () => {
       slipHistory.remove(x => x.id === +(b.dataset.del || 0));
@@ -389,7 +390,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.getElementById('slip-history-clear')?.addEventListener('click', () => {
     slipHistory.clear();
     renderSlipHistory();
-    window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus!') : 'Riwayat dihapus!', 'success');
+    window.showToast?.(window._tToast ? window._tToast(t('ter.cleared', 'Riwayat dihapus!')) : 'Riwayat dihapus!', 'success');
   });
 
   renderSlipHistory();

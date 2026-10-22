@@ -20,37 +20,37 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div class="w-20 h-20 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
       </div>
-      <h3 class="text-2xl font-bold text-matte-700 dark:text-matte-200 mb-2">Upload PDF</h3>
-      <p class="text-matte-500 text-sm mb-4">Seret file ke sini atau klik untuk memilih</p>
-      <p class="text-xs text-matte-400">Maksimal ukuran file: 15MB</p>
+      <h3 class="text-2xl font-bold text-matte-700 dark:text-matte-200 mb-2" data-i18n="del.upload_pdf">Upload PDF</h3>
+      <p class="text-matte-500 text-sm mb-4" data-i18n="del.drop_text">Seret file ke sini atau klik untuk memilih</p>
+      <p class="text-xs text-matte-400" data-i18n="del.max_15mb">Maksimal ukuran file: 15MB</p>
       <input type="file" id="file-input" accept="application/pdf" class="hidden" />
     </div>
 
     <div id="loading" class="hidden flex-col items-center justify-center py-20">
       <div class="animate-spin rounded-full h-12 w-12 border-4 border-matte-200 border-t-red-600 mb-4"></div>
-      <p class="text-matte-600 dark:text-matte-300 font-semibold animate-pulse">Memuat halaman...</p>
+      <p class="text-matte-600 dark:text-matte-300 font-semibold animate-pulse" data-i18n="del.loading_pages">Memuat halaman...</p>
       <p id="loading-progress" class="text-xs text-matte-500 mt-2">0%</p>
     </div>
 
     <div id="editor-area" class="hidden pb-20">
         <div class="sticky top-20 z-40 mx-auto max-w-4xl bg-matte-900/90 dark:bg-matte-800/90 backdrop-blur-md text-white p-4 rounded-xl shadow-2xl mb-8 flex flex-wrap gap-4 items-center justify-between border border-matte-700/50 ring-1 ring-white/10">
             <div class="flex flex-col">
-              <span id="selected-count" class="text-sm font-bold text-red-400 bg-red-400/10 px-3 py-1 rounded-lg border border-red-400/20 w-fit">0 Akan Dihapus</span>
-              <p id="error-msg" class="text-[10px] text-red-400 mt-1 hidden">*Minimal sisakan 1 halaman</p>
+              <span id="selected-count" class="text-sm font-bold text-red-400 bg-red-400/10 px-3 py-1 rounded-lg border border-red-400/20 w-fit" data-i18n="del.selected_count">0 Akan Dihapus</span>
+              <p id="error-msg" class="text-[10px] text-red-400 mt-1 hidden" data-i18n="del.keep_one">*Minimal sisakan 1 halaman</p>
               <p id="file-info" class="text-xs text-matte-400 mt-1 hidden"></p>
             </div>
             <div class="flex gap-2">
-              <button id="select-all-btn" class="text-sm px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">Pilih Semua</button>
-              <button id="deselect-all-btn" class="text-sm px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">Hapus Pilihan</button>
-              <button id="cancel-btn" class="text-sm px-4 py-2 hover:bg-white/10 rounded-lg transition-colors">Batal</button>
-              <button id="delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg shadow-red-600/30 transition-all active:scale-95 flex items-center gap-2 border border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+              <button id="select-all-btn" class="text-sm px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors" data-i18n="btn.select_all">Pilih Semua</button>
+              <button id="deselect-all-btn" class="text-sm px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors" data-i18n="del.deselect_all">Hapus Pilihan</button>
+              <button id="cancel-btn" class="text-sm px-4 py-2 hover:bg-white/10 rounded-lg transition-colors" data-i18n="btn.cancel">Batal</button>
+              <button id="delete-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg shadow-red-600/30 transition-all active:scale-95 flex items-center gap-2 border border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed" data-i18n="del.delete_save">
                 Hapus & Simpan PDF
               </button>
             </div>
         </div>
         <div id="pages-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 relative"></div>
         <div id="load-more-container" class="hidden text-center mt-8">
-          <button id="load-more-btn" class="bg-matte-100 hover:bg-matte-200 dark:bg-matte-700 dark:hover:bg-matte-600 text-matte-700 dark:text-matte-300 font-medium py-2 px-4 rounded-lg transition-colors">
+          <button id="load-more-btn" class="bg-matte-100 hover:bg-matte-200 dark:bg-matte-700 dark:hover:bg-matte-600 text-matte-700 dark:text-matte-300 font-medium py-2 px-4 rounded-lg transition-colors" data-i18n="btn.load_more">
             Muat Lebih Banyak
           </button>
         </div>
@@ -59,6 +59,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -160,7 +161,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     // Batasi ukuran file (15MB)
     const maxSize = 15 * 1024 * 1024; // 15MB
     if (file.size > maxSize) {
-      window.showToast?.(window._tToast ? window._tToast('File terlalu besar. Maksimal ukuran file adalah 15MB.') : 'File terlalu besar. Maksimal ukuran file adalah 15MB.', 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('del.too_big', 'File terlalu besar. Maksimal ukuran file adalah 15MB.')) : 'File terlalu besar. Maksimal ukuran file adalah 15MB.', 'error');
       return;
     }
     
@@ -206,7 +207,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       setupIntersectionObserver();
       
     } catch (err) {
-      window.showToast?.(window._tToast ? window._tToast("Gagal memuat PDF. File mungkin rusak atau tidak didukung.") : "Gagal memuat PDF. File mungkin rusak atau tidak didukung.", 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('del.load_fail', 'Gagal memuat PDF. File mungkin rusak atau tidak didukung.')) : 'Gagal memuat PDF. File mungkin rusak atau tidak didukung.', 'error');
       resetUI();
     }
   }
@@ -315,7 +316,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   }
 
   function updateUI() {
-    if(selectedCountSpan) selectedCountSpan.innerText = `${pagesToDelete.size} Akan Dihapus`;
+    if(selectedCountSpan) selectedCountSpan.innerText = `${pagesToDelete.size} ` + t('del.will_delete', 'Akan Dihapus');
     
     const isAllSelected = pagesToDelete.size === totalPages;
     const isNoneSelected = pagesToDelete.size === 0;
@@ -351,7 +352,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   deleteBtn?.addEventListener('click', async () => {
     if (!currentFile || pagesToDelete.size === 0) return;
 
-    const restoreBtn = window.showButtonSpinner(deleteBtn, 'Memproses...');
+    const restoreBtn = window.showButtonSpinner(deleteBtn, t('del.processing', 'Memproses...'));
 
     try {
       // Import pdf-lib secara dinamis untuk mengurangi ukuran bundle awal
@@ -369,11 +370,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       const pdfBytes = await pdfDoc.save();
       window.downloadBytes(pdfBytes, `cleaned-${currentFile.name}`, 'application/pdf');
 
-      window.showToast?.(window._tToast ? window._tToast("Halaman berhasil dihapus!") : "Halaman berhasil dihapus!", 'success');
+      window.showToast?.(window._tToast ? window._tToast(t('del.done', 'Halaman berhasil dihapus!')) : 'Halaman berhasil dihapus!', 'success');
       resetUI();
 
     } catch (err) {
-      window.showToast?.(window._tToast ? window._tToast("Gagal menyimpan PDF.") : "Gagal menyimpan PDF.", 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('del.save_fail', 'Gagal menyimpan PDF.')) : 'Gagal menyimpan PDF.', 'error');
     } finally {
       restoreBtn();
     }
