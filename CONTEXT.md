@@ -1,4 +1,4 @@
-# CONTEXT — MasAul Tools
+# CONTEXT — Tools MasAul
 
 Situs kumpulan tools 100% client-side (Astro + Tailwind). Data pengguna diproses di browser,
 tidak pernah dikirim ke server. Live production: **https://tools.paklubis.my.id** (Vercel).
@@ -69,7 +69,7 @@ Semua di bawah `/pdf/*` & `/calc/*` + dashboard semi-privat. Data inti: **localS
   3. Meta `noindex, nofollow` via prop `noIndex` BaseLayout
 - **Akses dashboard hanya via link langsung** — simpan di bookmark/WhatsApp.
 - **Auth lokal** (`hrd_auth_v1` + `hrd_session_v1`): salt + SHA-256 Web Crypto, rate-limit 5× gagal → lock 5 menit, auto-lock idle 15 menit (sessionStorage stamp, throttle 10 dtk). Gak ada backend, sesuai prinsip client-side.
-- **Prop `hideChrome` di BaseLayout** (Oktober 2026): halaman app mandiri (HRD Dashboard) pakai `<BaseLayout … noIndex hideChrome>` — menambahkan class `app-mode` di `<body>`; CSS di `global.css` menyembunyikan navbar/footer situs, widget Lapor Bug, modal PWA, dan breadcrumb **tanpa menghapus DOM** (semua binding script null-guarded). Tab title jadi polos tanpa suffix "MasAul Tools". Dashboard punya header + footer personal sendiri di dalam `<slot>`. **Jangan pernah pakai `<BaseLayout … />` self-closing** — bug Oktober 2026: konten jatuh keluar slot, render di bawah footer situs.
+- **Prop `hideChrome` di BaseLayout** (Oktober 2026): halaman app mandiri (HRD Dashboard) pakai `<BaseLayout … noIndex hideChrome>` — menambahkan class `app-mode` di `<body>`; CSS di `global.css` menyembunyikan navbar/footer situs, widget Lapor Bug, modal PWA, dan breadcrumb **tanpa menghapus DOM** (semua binding script null-guarded). Tab title jadi polos tanpa suffix "Tools MasAul". Dashboard punya header + footer personal sendiri di dalam `<slot>`. **Jangan pernah pakai `<BaseLayout … />` self-closing** — bug Oktober 2026: konten jatuh keluar slot, render di bawah footer situs.
 - **Import Excel/CSV**: SheetJS CDN, header dikenali fleksibel (ID/EN), tanggal flexibel termasuk serial date Excel, konfirmasi sebelum insert.
 
 ### Alur kerja HR yang sudah nyambung
@@ -84,6 +84,18 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 - Deploy: `pnpm build` dulu → `npx vercel --prod --yes` → verify endpoint dengan curl.
 
 ## Status saat ini (Oktober 2026)
+
+- 🆕 **(Oct 22)** Rebrand kedua + favicon monogram: nama **"MasAul Tools" → "Tools MasAul"**
+  (415 replacements / 36 file tracked — src, config, i18n-phrases key+value, root md; `editor/`
+  + `omniclip/` + `public/editor/` sengaja dikecualikan = sub-project terproteksi AGENTS.md #11).
+  H1 homepage "My Toolbox" → "Tools MasAul" (gradient di "MasAul"), navbar/footer markup split
+  ikut, grammar EN manual (`showcase.desc` "tools on Tools MasAul"). **Favicon baru N1 "MA"
+  chevron** (huruf condensed geometric, crossbar A = chevron » DNA mark lama, putih di tile
+  #0b0b10): favicon.svg 501B (dari 10KB), favicon-16/32 rounded rx=14, apple-touch-180 +
+  pwa-192/512 **full-bleed rx=0** (iOS/Android mask sendiri), logo.png 12.7KB @512 (dari 287KB).
+  Verifikasi: build hijau, 62/62 test, audit FULL 249/249, dup NONE, CDP smoke 15/15 (0 exception,
+  roundtrip SPA hidup). ⚠️ `public/og-image.png` masih statis branding lama — deferred. Belum
+  di-push (nunggu approve user).
 
 - ✅ **(Oct 19)** Konteks di-migrasi buat pindah ke **opencode**: `AGENTS.md` root dibuat (rules
   ringkas + pointer lazy-load ke `@CONTEXT.md` / `@docs/CONTEXT.md` / `@docs/AGENTS.md`), kebijakan
@@ -106,7 +118,7 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 - ✅ Dashboard gak tampil di landing/search dan gak keindeks (3 lapis, terverifikasi live).
 - ⚠️ Catatan: kalau halaman sempat keindeks sebelum noindex, minta user request removal via Google Search Console.
 - 💡 Backlog opsional (belum diminta): multi-device sync → butuh backend (kandidat: Supabase), PPT → PDF, absensi dari HP karyawan.
-- ✅ **Rebrand (Sep 24, 2026): ToolsAulia → MasAul Tools** — nama baru + logo baru (`public/logo.png`, 1254×1254). Navbar/footer pakai `<img>` `/logo.png`, favicon 16/32, apple-touch 180, PWA 192/512 digenerate dari logo (ffmpeg lanczos), favicon.svg = wrapper logo, safari mask-icon + safari-pinned-tab.svg dihapus, manifest PWA + JSON-LD + seluruh page title `| ToolsAulia` → `| MasAul Tools` (97 file; special-case "ToolsAulia by Mas Aul" tetap), title + favicon 32 di editor ikut. Nama personal "Aulia Iskandar Lubis" di copyright footer/LICENSE tetap.
+- ✅ **Rebrand (Sep 24, 2026): ToolsAulia → Tools MasAul** — nama baru + logo baru (`public/logo.png`, 1254×1254). Navbar/footer pakai `<img>` `/logo.png`, favicon 16/32, apple-touch 180, PWA 192/512 digenerate dari logo (ffmpeg lanczos), favicon.svg = wrapper logo, safari mask-icon + safari-pinned-tab.svg dihapus, manifest PWA + JSON-LD + seluruh page title `| ToolsAulia` → `| Tools MasAul` (97 file; special-case "ToolsAulia by Mas Aul" tetap), title + favicon 32 di editor ikut. Nama personal "Aulia Iskandar Lubis" di copyright footer/LICENSE tetap.
 
 - 🆕 **URL Shortener (Okt 2026):** `/utils/url-shortener` — pendekkan link via **spoo.me**
   (browser → API langsung, tanpa server). Custom alias, batch (maks 15 URL + jeda 400ms), riwayat

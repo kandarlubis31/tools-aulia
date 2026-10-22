@@ -17,8 +17,8 @@ export default defineConfig({
     injectRegister: false,
     includeAssets: ['favicon.svg', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'og-image.png', 'pwa-192x192.png', 'pwa-512x512.png'],
     manifest: {
-      name: 'MasAul Tools',
-      short_name: 'MasAul Tools',
+      name: 'Tools MasAul',
+      short_name: 'Tools MasAul',
       description: 'Koleksi tools developer dan produktivitas lengkap.',
       theme_color: '#ffffff',
       background_color: '#ffffff',

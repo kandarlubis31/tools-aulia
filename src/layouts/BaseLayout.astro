@@ -34,7 +34,7 @@ const currentPath = pathname.endsWith('/') && pathname.length > 1 ? pathname.sli
 const ogImage = ogImageProp || (currentPath === '/' ? '/og/home.png' : `/og/${currentPath.slice(1).replace(/\//g, '-')}.png`);
 
 // --- Analytics (D2): Umami, privacy-first ---
-// Website ID aktif (MasAul Tools). Override kapan pun via env var PUBLIC_UMAMI_WEBSITE_ID di Vercel.
+// Website ID aktif (Tools MasAul). Override kapan pun via env var PUBLIC_UMAMI_WEBSITE_ID di Vercel.
 const UMAMI_WEBSITE_ID = (import.meta.env.PUBLIC_UMAMI_WEBSITE_ID as string | undefined) || 'e52b94c6-d2fc-41bd-a258-d6f9db81a9ec';
 const UMAMI_SRC = (import.meta.env.PUBLIC_UMAMI_SRC as string | undefined) || 'https://cloud.umami.is/script.js';
 
@@ -48,7 +48,7 @@ const seoTitle = matchedTool?.seoTitle;
 const seoDesc = matchedTool?.seoDesc;
 const defaultDescription = `${pageTitle} — gunakan gratis, 100% di browser tanpa upload data. Cepat, aman, dan tanpa iklan.`;
 const description = propDescription ?? seoDesc ?? defaultDescription;
-const titleSuffix = isHome ? `Koleksi ${tools.length}+ Tools Developer & Produktivitas Gratis | MasAul Tools` : 'Gratis & Offline | MasAul Tools';
+const titleSuffix = isHome ? `Koleksi ${tools.length}+ Tools Developer & Produktivitas Gratis | Tools MasAul` : 'Gratis & Offline | Tools MasAul';
 // Halaman personal (hideChrome): tab browser cukup nama halaman — tanpa suffix situs.
 const fullTitle = hideChrome ? pageTitle : (isHome ? titleSuffix : (seoTitle ?? `${pageTitle} — ${titleSuffix}`));
 
@@ -126,7 +126,7 @@ if (isPdfRoot) {
     <script type="application/ld+json" set:html={JSON.stringify({
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "MasAul Tools",
+      "name": "Tools MasAul",
       "url": "https://tools.paklubis.my.id",
       "description": `Koleksi ${tools.length}+ tools developer & produktivitas gratis. Semua tools berjalan 100% offline di browser — tidak ada data yang dikirim ke server.`,
       "applicationCategory": "DeveloperApplication",
@@ -142,7 +142,7 @@ if (isPdfRoot) {
     <script type="application/ld+json" set:html={JSON.stringify({
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      "name": matchedTool.seoTitle || `${matchedTool.title} — Gratis & Offline | MasAul Tools`,
+      "name": matchedTool.seoTitle || `${matchedTool.title} — Gratis & Offline | Tools MasAul`,
       "url": canonicalUrl || Astro.url.href,
       "description": matchedTool.seoDesc || matchedTool.desc,
       "applicationCategory": "WebApplication",
@@ -391,7 +391,7 @@ if (isPdfRoot) {
       <div class="flex items-center justify-between p-5 border-b border-matte-100 dark:border-surface-border">
         <div>
           <h2 class="text-base font-bold text-matte-800 dark:text-white" data-i18n="feedback.title">Lapor Bug</h2>
-          <p class="text-xs text-matte-400 mt-0.5" data-i18n="feedback.subtitle">Bantu kami memperbaiki MasAul Tools</p>
+          <p class="text-xs text-matte-400 mt-0.5" data-i18n="feedback.subtitle">Bantu kami memperbaiki Tools MasAul</p>
         </div>
         <button id="feedback-close" aria-label="Tutup" class="w-11 h-11 flex items-center justify-center rounded-lg text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -439,7 +439,7 @@ if (isPdfRoot) {
         </div>
         
         <div class="p-5 text-center">
-            <h3 class="text-base font-semibold text-matte-800 dark:text-white mb-2" data-i18n="pwa.install_title">Install MasAul Tools</h3>
+            <h3 class="text-base font-semibold text-matte-800 dark:text-white mb-2" data-i18n="pwa.install_title">Install Tools MasAul</h3>
             <p class="text-xs text-matte-400 dark:text-matte-300 mb-5" data-i18n="pwa.install_desc">
                 Akses semua tools secara offline, lebih cepat, dan langsung dari layar utama.
             </p>
@@ -459,9 +459,9 @@ if (isPdfRoot) {
   <header class="sticky top-0 z-50 w-full border-b border-matte-200 dark:border-surface-border bg-white dark:bg-matte-950 md:bg-white/80 md:dark:bg-matte-950/80 md:backdrop-blur-lg" data-astro-transition-persist="navbar">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
       <a href="/" class="flex items-center gap-2 font-bold text-base tracking-tight z-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/40 rounded-md p-1">
-        <img src="/logo.png" alt="MasAul Tools" width="32" height="32" class="w-8 h-8 rounded-lg shadow-md" loading="eager" />
+        <img src="/logo.png" alt="Tools MasAul" width="32" height="32" class="w-8 h-8 rounded-lg shadow-md" loading="eager" />
         <span class="text-matte-800 dark:text-white">
-          MasAul <span class="gradient-text">Tools</span>
+          Tools <span class="gradient-text">MasAul</span>
         </span>
       </a>
       
@@ -675,8 +675,8 @@ if (isPdfRoot) {
         <!-- Brand -->
         <div class="col-span-2 md:col-span-1">
           <a href="/" class="inline-flex items-center gap-2 font-bold text-lg tracking-tight mb-3">
-            <img src="/logo.png" alt="MasAul Tools" width="32" height="32" class="w-8 h-8 rounded-lg shadow-md" loading="lazy" />
-            <span class="text-matte-800 dark:text-white">MasAul <span class="gradient-text">Tools</span></span>
+            <img src="/logo.png" alt="Tools MasAul" width="32" height="32" class="w-8 h-8 rounded-lg shadow-md" loading="lazy" />
+            <span class="text-matte-800 dark:text-white">Tools <span class="gradient-text">MasAul</span></span>
           </a>
           <p class="text-xs text-matte-400 dark:text-matte-300 leading-relaxed mb-4 max-w-xs" data-i18n="footer.about_desc">
             Koleksi tools developer yang berjalan 100% di browser.
@@ -984,7 +984,7 @@ if (isPdfRoot) {
         navigator.serviceWorker.ready.then(() => {
           localStorage.setItem('_sw_cached', '1');
           window.showToast?.(
-            window._tToast ? window._tToast('⚡ Siap untuk offline! MasAul Tools tetap bisa diakses tanpa internet.') : '⚡ Siap untuk offline! MasAul Tools tetap bisa diakses tanpa internet.',
+            window._tToast ? window._tToast('⚡ Siap untuk offline! Tools MasAul tetap bisa diakses tanpa internet.') : '⚡ Siap untuk offline! Tools MasAul tetap bisa diakses tanpa internet.',
             'success'
           );
           // Show offline-ready badge in footer
@@ -1838,7 +1838,7 @@ if (isPdfRoot) {
       if (lang === 'en') {
         const mod = await ensureTranslations();
         if (originalTitle) {
-          document.title = `${allPhrases[originalTitle] || originalTitle} | MasAul Tools`;
+          document.title = `${allPhrases[originalTitle] || originalTitle} | Tools MasAul`;
         }
         document.querySelectorAll('[data-i18n]').forEach(el => {
           const key = el.getAttribute('data-i18n');
@@ -1858,7 +1858,7 @@ if (isPdfRoot) {
         });
       } else {
         if (originalTitle) {
-          document.title = `${originalTitle} | MasAul Tools`;
+          document.title = `${originalTitle} | Tools MasAul`;
         }
         // Restore semua elemen [data-i18n] dari snapshot -> ID benar-benar kembali
         document.querySelectorAll('[data-i18n]').forEach(el => {

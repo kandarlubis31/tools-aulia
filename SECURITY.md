@@ -9,7 +9,7 @@
 
 ## 🔒 Security Model
 
-MasAul Tools is a **client-side only** application. This means:
+Tools MasAul is a **client-side only** application. This means:
 
 - ✅ **No server-side processing** - All operations happen in the browser
 - ✅ **No data upload** - Your files never leave your device
@@ -40,7 +40,7 @@ Some tools load libraries from CDNs:
 
 ### XSS Prevention
 
-Since MasAul Tools processes user input (file names, text, etc.):
+Since Tools MasAul processes user input (file names, text, etc.):
 
 - All user input is properly escaped
 - No `innerHTML` with user data (DOM APIs used instead)
