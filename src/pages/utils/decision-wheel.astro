@@ -33,7 +33,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div class="mb-4">
         <label class="section-title mb-2 block" data-i18n="wheel.add">Tambah Opsi</label>
         <div class="flex gap-2">
-          <input id="option-input" type="text" class="flex-1 px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-purple-500 transition-colors text-sm" placeholder="Masukkan opsi..." data-i18n-attr="placeholder" autocomplete="off" />
+          <input id="option-input" type="text" class="flex-1 px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-purple-500 transition-colors text-sm" placeholder="Masukkan opsi..." data-i18n-attr="placeholder" data-i18n="wheel.placeholder" autocomplete="off" />
           <button id="add-option-btn" class="px-4 py-3 gradient-brand rounded-xl font-bold text-sm">+</button>
         </div>
       </div>
@@ -53,6 +53,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+    import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -138,12 +139,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const value = input.value.trim();
         
         if (!value) {
-          window.showToast?.(window._tToast ? window._tToast('Masukkan opsi!') : 'Masukkan opsi!', 'error');
+          window.showToast?.(window._tToast ? window._tToast(t('wheel.enter_option', 'Masukkan opsi!')) : 'Masukkan opsi!', 'error');
           return;
         }
 
         if (options.length >= 10) {
-          window.showToast?.(window._tToast ? window._tToast('Maksimal 10 opsi!') : 'Maksimal 10 opsi!', 'error');
+          window.showToast?.(window._tToast ? window._tToast(t('wheel.max_10', 'Maksimal 10 opsi!')) : 'Maksimal 10 opsi!', 'error');
           return;
         }
 
@@ -151,7 +152,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         input.value = '';
         renderOptions();
         renderWheel();
-        window.showToast?.(window._tToast ? window._tToast('Opsi ditambahkan!') : 'Opsi ditambahkan!', 'success');
+        window.showToast?.(window._tToast ? window._tToast(t('wheel.added', 'Opsi ditambahkan!')) : 'Opsi ditambahkan!', 'success');
       });
 
       // Enter key
@@ -176,7 +177,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       // Spin wheel
       document.getElementById('spin-btn')?.addEventListener('click', () => {
         if (isSpinning || options.length < 2) {
-          if (options.length < 2) window.showToast?.(window._tToast ? window._tToast('Minimal 2 opsi!') : 'Minimal 2 opsi!', 'error');
+          if (options.length < 2) window.showToast?.(window._tToast ? window._tToast(t('wheel.min_2', 'Minimal 2 opsi!')) : 'Minimal 2 opsi!', 'error');
           return;
         }
 

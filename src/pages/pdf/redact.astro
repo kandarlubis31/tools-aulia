@@ -18,16 +18,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <!-- Drop zone -->
       <div id="drop-zone" class="border-2 border-dashed border-matte-300 dark:border-surface-border rounded-xl p-8 text-center hover:border-red-400 dark:hover:border-red-500 transition-all cursor-pointer mb-4">
         <input id="file-input" type="file" accept=".pdf" class="hidden" />
-        <p class="text-sm text-matte-500 dark:text-matte-400">Drop PDF di sini atau klik untuk upload</p>
+        <p class="text-sm text-matte-500 dark:text-matte-400" data-i18n="redact.drop">Drop PDF di sini atau klik untuk upload</p>
         <p id="filename" class="text-xs text-red-600 dark:text-red-400 mt-2 font-medium hidden"></p>
       </div>
 
       <!-- Page selector -->
       <div id="page-controls" class="hidden mb-4">
         <div class="flex items-center justify-between">
-          <button id="prev-page" class="px-3 py-1 rounded-lg bg-matte-100 dark:bg-surface-elevated text-matte-500 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all text-sm">← Prev</button>
-          <span class="text-sm text-matte-600 dark:text-matte-400">Halaman <span id="current-page">1</span> / <span id="total-pages">1</span></span>
-          <button id="next-page" class="px-3 py-1 rounded-lg bg-matte-100 dark:bg-surface-elevated text-matte-500 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all text-sm">Next →</button>
+          <button id="prev-page" class="px-3 py-1 rounded-lg bg-matte-100 dark:bg-surface-elevated text-matte-500 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all text-sm" data-i18n="redact.prev">← Prev</button>
+          <span class="text-sm text-matte-600 dark:text-matte-400"><span data-i18n="label.page">Halaman</span> <span id="current-page">1</span> / <span id="total-pages">1</span></span>
+          <button id="next-page" class="px-3 py-1 rounded-lg bg-matte-100 dark:bg-surface-elevated text-matte-500 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all text-sm" data-i18n="redact.next">Next →</button>
         </div>
       </div>
 
@@ -38,10 +38,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       </div>
 
       <!-- Instructions -->
-      <p id="instructions" class="hidden text-xs text-matte-400 mb-4">Drag untuk memilih area yang ingin di-sensor. Area yang dipilih akan dihitamkan secara permanen.</p>
+      <p id="instructions" class="hidden text-xs text-matte-400 mb-4" data-i18n="redact.instructions">Drag untuk memilih area yang ingin di-sensor. Area yang dipilih akan dihitamkan secara permanen.</p>
 
       <!-- Redact button -->
-      <button id="redact-btn" class="hidden w-full gradient-brand py-3 rounded-xl font-bold text-sm">Hitamkan Area Terpilih</button>
+      <button id="redact-btn" class="hidden w-full gradient-brand py-3 rounded-xl font-bold text-sm" data-i18n="redact.hitamkan">Hitamkan Area Terpilih</button>
 
       <!-- Download -->
       <div id="download-container" class="hidden mt-4">
@@ -54,6 +54,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+    import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -118,7 +119,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         document.getElementById('redact-btn')?.classList.remove('hidden');
 
         await renderPage(currentPage);
-        window.showToast?.(window._tToast ? window._tToast('PDF dimuat!') : 'PDF dimuat!', 'success');
+        window.showToast?.(window._tToast ? window._tToast(t('redact.loaded', 'PDF dimuat!')) : 'PDF dimuat!', 'success');
       }
 
       async function renderPage(pageNum: number) {
@@ -191,7 +192,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           ctx.fillStyle = '#000000';
           ctx.fillRect(x / 1.5, y / 1.5, w / 1.5, h / 1.5);
           
-          window.showToast?.(window._tToast ? window._tToast('Area ditambahkan!') : 'Area ditambahkan!', 'success');
+          window.showToast?.(window._tToast ? window._tToast(t('redact.area_added', 'Area ditambahkan!')) : 'Area ditambahkan!', 'success');
         }
       });
 

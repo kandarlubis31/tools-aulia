@@ -33,7 +33,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     </div>
 
     <div class="flex gap-4 mb-10 animate-fade-in">
-        <button id="btn-reset" class="w-16 h-16 rounded-full bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 font-bold hover:bg-matte-200 dark:hover:bg-surface-hover transition shadow-lg flex items-center justify-center active:scale-95" title="Reset (R)">
+        <button id="btn-reset" class="w-16 h-16 rounded-full bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 font-bold hover:bg-matte-200 dark:hover:bg-surface-hover transition shadow-lg flex items-center justify-center active:scale-95" title="Reset (R)" data-i18n-attr="title" data-i18n="sw.reset_title">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
         </button>
 
@@ -41,7 +41,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             Start
         </button>
 
-        <button id="btn-lap" class="w-16 h-16 rounded-full bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 font-bold hover:bg-matte-200 dark:hover:bg-surface-hover transition shadow-lg flex items-center justify-center active:scale-95" title="Lap (L)" disabled>
+        <button id="btn-lap" class="w-16 h-16 rounded-full bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 font-bold hover:bg-matte-200 dark:hover:bg-surface-hover transition shadow-lg flex items-center justify-center active:scale-95" title="Lap (L)" data-i18n-attr="title" data-i18n="sw.lap_title" disabled>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
         </button>
     </div>
@@ -55,9 +55,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
     <div id="laps-container" class="w-full max-w-md card-base overflow-hidden hidden animate-fade-in">
         <div class="px-6 py-3 bg-matte-100 dark:bg-surface-hover border-b border-matte-200 dark:border-surface-border flex justify-between font-bold text-matte-400 text-xs uppercase tracking-wider">
-            <span>Lap #</span>
-            <span>Waktu Lap</span>
-            <span>Total</span>
+            <span data-i18n="sw.lap_num">Lap #</span>
+            <span data-i18n="sw.lap_time">Waktu Lap</span>
+            <span data-i18n="sw.total">Total</span>
         </div>
         <div id="laps-list" class="max-h-56 overflow-y-auto custom-scrollbar">
         </div>
@@ -67,6 +67,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -115,7 +116,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     isRunning = true;
     
     if(btnStartStop) {
-        btnStartStop.innerText = window._tToast ? window._tToast("Stop") : "Stop";
+        btnStartStop.innerText = t('btn.stop', 'Stop');
         btnStartStop.classList.replace('bg-cyan-500', 'bg-red-500');
         btnStartStop.classList.replace('hover:bg-cyan-600', 'hover:bg-red-600');
         btnStartStop.classList.replace('shadow-cyan-500/30', 'shadow-red-500/30');
@@ -132,7 +133,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     isRunning = false;
 
     if(btnStartStop) {
-        btnStartStop.innerText = window._tToast ? window._tToast("Start") : "Start";
+        btnStartStop.innerText = t('btn.start', 'Start');
         btnStartStop.classList.replace('bg-red-500', 'bg-cyan-500');
         btnStartStop.classList.replace('hover:bg-red-600', 'hover:bg-cyan-600');
         btnStartStop.classList.replace('shadow-red-500/30', 'shadow-cyan-500/30');
