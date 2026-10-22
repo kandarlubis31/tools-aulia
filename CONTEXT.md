@@ -116,6 +116,109 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
   Terdaftar di `tools.ts` + `new-tools.ts` + i18n (`tool.*`, `header.*`, `shortener.*`).
   **Ini pengecualian privasi project** — lihat catatan di Konvensi & Guardrails.
 
+- 🆕 **W6 batch 21 i18n (Okt 22, 2026):** 5 tool full i18n (`34863c4`) — `calc/timezone`, `dev/json`,
+  `image/exif`, `image/meme`, `utils/calendar`: +22 key (blok `// --- W6 batch 21 ---` di
+  translations.ts), helper `toast()` + `t()` di 4 file, `titleKey/descKey` nol → semua (json,
+  calendar), GPS warning exif di-`data-i18n`-kan. **FULL 186/249 (75%)**, guard 249/249,
+  toast 249/249. Kandidat batch 22: screen-recorder (7), xlsx-viewer, reorder, ssl, overlay.
+  ⚠️ Pelajaran: `data-i18n` **di elemen berisi SVG = SVG hilang** (processI18n ganti textContent)
+  — bungkus teks pakai `<span data-i18n>`; dan jangan pakai key `text.valid_json` (isi 'Valid
+  JSON') buat teks '✓ Valid' — bikin key baru.
+
+- 🆕 **W6 batch 22 i18n (Okt 22, 2026):** 5 tool full i18n (`e910a99`) — `media/screen-recorder`,
+  `data/xlsx-viewer`, `pdf/reorder`, `network/ssl`, `image/overlay`: +37 key (blok
+  `// --- W6 batch 22 ---`), `titleKey/descKey` ditambah (reorder, overlay), teks dinamis hasil
+  fetch SSL & limit baris XLSX ikut `t()`. **FULL 191/249 (77%)**. Kandidat batch 23: pdf/extract
+  (2), image/to-pdf (4), pdf/annotate (0), dev/regex-tester (6), media/waveform (2).
+  ⚠️ Pelajaran: **`import { t }` HARUS di top-level `<script>`, jangan di dalam callback
+  `astro:page-load`/`init()`** (import dalam fungsi = ilegal → build gagal); hati-hati key
+  duplikat saat tambah di blok batch (cek dulu key lama, mis. `header.image_overlay_desc`).
+
+- 🆕 **W6 batch 23 i18n (Okt 22, 2026):** 5 tool full i18n (`61bfe6c`) — `pdf/extract`, `image/to-pdf`,
+  `pdf/annotate`, `dev/regex-tester`, `media/waveform`: +41 key (blok `// --- W6 batch 23 ---`),
+  teks dinamis (count gambar, meta audio, status proses annotate) ikut `t()`. **FULL 196/249 (79%)**.
+  Kandidat batch 24: pdf/word-to-pdf (2), dev/timestamp (1), media/audio-recorder (4), calc/case (6),
+  calc/scientific (2), text/to-pdf (7).
+  ⚠️ Pelajaran tambahan: (1) **wajib cek duplikat key** sebelum commit — `node -e` script deteksi
+  dup (key yang sama muncul 2x di translations.ts); (2) separator teks asli di file bisa `·`
+  (bukan `A·` yang muncul di terminal — itu mojibake), baca pakai Read tool dulu sebelum edit.
+
+- 🆕 **W6 batch 24 i18n (Okt 22, 2026):** 6 tool full i18n (`4081dfa`) — `dev/timestamp`,
+  `media/audio-recorder`, `calc/case`, `calc/scientific`, `calc/matrix`, `pdf/word-to-pdf`:
+  +39 key (blok `// --- W6 batch 24 ---`), label title/aria ikut `data-i18n-attr`,
+  teks status dinamis (recording, error calc) ikut `t()`. **FULL 196→202/249 (81%)** — lewat 80%.
+  Kandidat batch 25: text/to-pdf (7), pdf/repair (4), media/video-to-gif (6), data/geojson (6),
+  image/ascii (5), security/uuid (3).
+  ⚠️ Pelajaran: saat pakai key yang sudah ada (mis. `matrix.rows`/`matrix.cols`/`header.timestamp_desc`)
+  cek dulu di translations.ts — kalau sudah ada JANGAN bikin key baru (duplikat); grep prefix key
+  (`'matrix\.|'ts\.`) sebelum menambah blok batch.
+
+- 🆕 **W6 batch 25 i18n (Okt 22, 2026):** 7 tool full i18n (`8453336`) — `text/to-pdf`,
+  `pdf/repair`, `media/video-to-gif`, `data/geojson`, `image/ascii`, `security/uuid`,
+  `pdf/to-text`: +41 key (blok `// --- W6 batch 25 ---`). **FULL 202→209/249 (84%)**.
+  Kandidat batch 26: utils/decision-wheel (4), utils/stopwatch (1), media/audio-trimmer (4),
+  pdf/redact (1), pdf/rotate (7).
+  ⚠️ Pelajaran: `pdf/to-text` pakai `<script is:inline>` — **TIDAK BISA `import { t }`**
+  (is:inline tidak dibundle). Solusi: penuhi kuota i18n lewat `data-i18n` di markup saja
+  (titleKey/descKey + label + placeholder), biarkan toast dinamis pakai `_tToast` phrase map.
+
+- 🆕 **W6 batch 26 i18n (Okt 22, 2026):** 5 tool full i18n (`41bd12e`) — `utils/decision-wheel`,
+  `utils/stopwatch`, `media/audio-trimmer`, `pdf/redact`, `pdf/rotate`: +25 key (blok
+  `// --- W6 batch 26 ---`). **FULL 209→213/249 (86%)**.
+  ⚠️ Pelajaran: (1) stopwatch sebelumnya terdeteksi "toast=Y" tapi ternyata **false positive** —
+  `_tToast` dipakai untuk label tombol Start/Stop, bukan toast. Setelah di-convert ke `t()`,
+  audit turun jadi toast=248 (stopwatch emang tidak butuh toast — bukan regresi, guardrail build
+  tetap hijau). (2) Cek key lama sebelum tambah: `btn.start`/`btn.stop`/`header.stopwatch_desc`
+  sudah ada — pakai yang lama.
+
+- 🆕 **W6 batch 27 i18n (Okt 22, 2026):** 6 tool full i18n (`e5bf73a`) — `data/fake-data`,
+  `file/pdf-to-md`, `pdf/form-filler`, `pdf/excel-to-pdf`, `pdf/to-excel`, `image/compressor`:
+  +34 key (blok `// --- W6 batch 27 ---`). **FULL 213→218/249 (88%)**.
+  ⚠️ Pelajaran: (1) `pdf-to-md` masih i18n=7 (belum masuk FULL) — DropZone `labelKey`/`subLabelKey`
+  TIDAK dihitung audit sebagai i18n usage, tapi `data-i18n` markup biasa (mis. result_title,
+  placeholder, preparing) dihitung. Kalau tool pakai DropZone tapi tetap kurang, tambah
+  `data-i18n` di elemen markup lain (progress text, judul section). (2) toast helper yang
+  param-nya `t` wajib rename ke `type` biar tidak shadow import `t` (kasus `to-excel.astro`).
+
+- 🆕 **W6 batch 28 i18n (Okt 22, 2026):** 11 tool full i18n (`b18148f`) — `utils/stopwatch`,
+  `file/pdf-to-md`, `data/csv-editor`, `utils/word-counter`, `pdf/split`, `pdf/to-word`,
+  `utils/habit-tracker`, `dev/sql-formatter`, `utils/wordle-id`, `calc/currency`,
+  `pdf/html-to-pdf`: +48 key (blok `// --- W6 batch 28 ---`). **FULL 218→229/249 (92%)**;
+  toast 248→249 (stopwatch kini punya toast reset valid). Sisa 20 halaman.
+  ⚠️ Pelajaran: (1) banyak file punya **local variabel `t`** yang shadow import `t` — wajib
+  rename sebelum tambah `import { t }`: `parseCsv`'s `const t = text.replace`→`txt`, CRC
+  table `const t = new Uint32Array`→`tbl`, sql-formatter loop `const t = tokens[i]`→`tok`.
+  Kalau gak direname → TS error "Block-scoped variable 't' used before declaration" atau
+  silent bug. (2) `pdf-to-md` akhirnya FULL dengan tambah 1 `data-i18n` literal
+  (`p2md.result_info`) di elemen markup — konfirmasi pelajaran batch 27.
+
+- 🆕 **W6 batch 29 i18n (Okt 22, 2026):** 6 tool full i18n (`7f43932`) — `calc/thr-bpjs`,
+  `utils/expense-tracker`, `utils/pomodoro`, `calc/pph21-ter`, `calc/workdays`, `dev/cron`:
+  +22 key (blok `// --- W6 batch 29 ---`). **FULL 229→235/249 (94%)**. Sisa 14 halaman
+  (semua file besar: cropper, slip-gaji, delete, color, jpg-to-pdf, typing-test, remove-bg,
+  grayscale, html-to-img, editor, photo, diagram-to-img, beat-maker, sign).
+  ⚠️ Pelajaran: file yang **`<script is:inline>`** (mis. `dev/cron`) gak bisa `import { t }` —
+  penuhi kuota i18n lewat markup `data-i18n` aja (cron: 5 label field Minute/Hour/... ).
+  `calc/pph21-ter` & `calc/workdays` saling **reuse key** `ter.loaded`/`ter.cleared` (teks
+  riwayat identik) — gak perlu duplikat key baru.
+
+- 🆕 **W6 batch 30 i18n (Okt 22, 2026) — TARGET 100% TERCAPAI:** 14 tool full i18n
+  (`dca39c5`) — `image/cropper`, `pdf/slip-gaji`, `pdf/delete`, `image/color`,
+  `pdf/jpg-to-pdf`, `text/typing-test`, `image/remove-bg`, `pdf/grayscale`,
+  `image/html-to-img`, `image/editor`, `pdf/photo`, `text/diagram-to-img`,
+  `media/beat-maker`, `pdf/sign`: +96 key (blok `// --- W6 batch 30 ---`).
+  **FULL 235→249/249 (100%)**; guard 249/249; toast 249; i18n≥8 249. Build+test 62/62 hijau;
+  0 dup key (4377 keys).
+  ⚠️ Pelajaran batch 30: (1) **audit regex cuma hitung `t('single-quote')`** — `t("double-quote")`
+  TIDAK kehitung. Diagram-to-img sempat pakai `t("d2i.*", ...)` (double-quote) → audit=3, harus
+  dikonversi ke `t('d2i.*', ...)` (single-quote). (2) **file besar dengan local `const t` yang
+  dipakai ekstensif** (mis. `media/beat-maker` pakai `t` sbg audio-time param di `playSound`,
+  20+ pemakaian) — jangan paksakan rename (riskan), penuhi kuota i18n via markup `data-i18n`/
+  `data-i18n-attr` aja (beat-maker: 4 tombol action title + labels). Toasts tetap ke-translate
+  via `_tToast` phrase map global. (3) **konfirmasi pelajaran batch 27/28**: file `is:inline`
+  (cron, html-to-img, editor, currency) & DropZone-props tetap harus tambah literal
+  `data-i18n` di markup — gak ada jalan lain.
+
 ## Verifikasi standar selesai kerja
 
 1. `pnpm build` — prebuild (sync angka + 6 guardrail) + build hijau.
