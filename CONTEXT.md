@@ -94,8 +94,9 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
   #0b0b10): favicon.svg 501B (dari 10KB), favicon-16/32 rounded rx=14, apple-touch-180 +
   pwa-192/512 **full-bleed rx=0** (iOS/Android mask sendiri), logo.png 12.7KB @512 (dari 287KB).
   Verifikasi: build hijau, 62/62 test, audit FULL 249/249, dup NONE, CDP smoke 15/15 (0 exception,
-  roundtrip SPA hidup). ⚠️ `public/og-image.png` masih statis branding lama — deferred. Belum
-  di-push (nunggu approve user).
+  roundtrip SPA hidup). **Pushed `623e206` → live di-prod, CDP smoke live 17/17 PASS, 0 exception**
+  (title suffix, H1, navbar/footer, favicon link+render, no-old-brand, roundtrip SPA).
+  ⚠️ `public/og-image.png` masih statis branding lama — deferred.
 
 - ✅ **(Oct 19)** Konteks di-migrasi buat pindah ke **opencode**: `AGENTS.md` root dibuat (rules
   ringkas + pointer lazy-load ke `@CONTEXT.md` / `@docs/CONTEXT.md` / `@docs/AGENTS.md`), kebijakan
