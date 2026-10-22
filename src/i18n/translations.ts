@@ -4688,6 +4688,33 @@ export const translations: Record<string, { id: string; en: string }> = {
   'sign.render_fail': { id: 'Gagal merender halaman PDF.', en: 'Failed to render the PDF page.' },
   'sign.load_fail': { id: 'Gagal memuat halaman PDF.', en: 'Failed to load the PDF page.' },
   'sign.too_big': { id: 'Ukuran gambar terlalu besar (max 10MB).', en: 'Image size is too large (max 10MB).' },
+  // --- W7 header title/desc gap — dev/nginx (batch 1) ---
+  'header.nginx': { id: 'NGINX Config Gen', en: 'NGINX Config Generator' },
+  'header.nginx_desc': { id: 'Generate NGINX config: proxy, SSL, cache, security', en: 'Generate NGINX config: proxy, SSL, cache, security' },
+  // --- W7 header title/desc gap — 12 manual-key pages ---
+  'header.gpa': { id: 'GPA Calculator', en: 'GPA Calculator' },
+  'header.gpa_desc': { id: 'Hitung IPK dari nilai & SKS mata kuliah. 100% client-side.', en: 'Calculate GPA from grades & credit hours. 100% client-side.' },
+  'header.pph21_ter': { id: 'Kalkulator PPh 21 TER', en: 'PPh 21 TER Calculator' },
+  'header.pph21_ter_desc': { id: 'Hitung PPh 21 bulanan dengan tarif efektif rata-rata (TER) Kategori A/B/C sesuai PP 58/2023 & PMK 168/2023, plus simulasi Desember. 100% offline.', en: 'Calculate monthly PPh 21 with effective average tax rates (TER) category A/B/C per PP 58/2023 & PMK 168/2023, plus December simulation. 100% offline.' },
+  'header.workdays': { id: 'Hari Kerja Efektif', en: 'Effective Workdays' },
+  'header.workdays_desc': { id: 'Hitung hari kerja antara dua tanggal: exclude akhir pekan & libur nasional/custom. Lengkap prorata gaji & sisa cuti. 100% offline.', en: 'Count workdays between two dates: exclude weekends & national/custom holidays. Includes salary proration & leave balance. 100% offline.' },
+  'header.merge': { id: 'PDF Merger', en: 'PDF Merger' },
+  'header.photo': { id: 'PDF Photo Insert', en: 'PDF Photo Insert' },
+  'header.photo_desc': { id: 'Tempel pas foto ke slot foto di PDF — form lamaran, pendaftaran, administrasi. Preset 2x3, 3x4, 4x6 cm.', en: 'Insert passport photos into PDF slots — application, registration, admin forms. Presets 2x3, 3x4, 4x6 cm.' },
+  'header.slip_gaji': { id: 'Slip Gaji Generator', en: 'Payslip Generator' },
+  'header.slip_gaji_desc': { id: 'Buat slip gaji (payslip) PDF rapi. Tarik data karyawan & absensi dari HRD Dashboard, atau isi manual. 100% di browser — data gaji tidak pernah di-upload.', en: 'Create neat payslip PDFs. Pull employee & attendance data from HRD Dashboard, or fill manually. 100% in browser — salary data never uploaded.' },
+  'header.surat_hr': { id: 'Surat HR Generator', en: 'HR Letter Generator' },
+  'header.surat_hr_desc': { id: 'Buat surat resmi siap print & tanda tangan: Surat Keterangan Kerja, Surat Peringatan SP-1/2/3, dan Perjanjian Kerja PKWT. 100% di browser — dokumen tidak pernah di-upload.', en: 'Create official letters ready to print & sign: Employment Certificate, Warning Letters SP-1/2/3, and PKWT Work Agreement. 100% in browser — documents never uploaded.' },
+  'header.to_svg': { id: 'PDF to SVG', en: 'PDF to SVG' },
+  'header.to_svg_desc': { id: 'Render halaman PDF ke SVG — vector scalable. 100% client-side.', en: 'Render PDF pages to SVG — scalable vector. 100% client-side.' },
+  'header.headers_gen': { id: 'Security Headers Gen', en: 'Security Headers Generator' },
+  'header.headers_gen_desc': { id: 'Generate header keamanan: CSP, HSTS, CORS, X-Frame. 100% client-side.', en: 'Generate security headers: CSP, HSTS, CORS, X-Frame. 100% client-side.' },
+  'header.totp': { id: 'Two-Factor Code', en: 'Two-Factor Code' },
+  'header.totp_desc': { id: 'Generate & verifikasi kode TOTP 6-digit. 100% client-side WebCrypto.', en: 'Generate & verify 6-digit TOTP codes. 100% client-side WebCrypto.' },
+  'header.charmap': { id: 'Character Map', en: 'Character Map' },
+  'header.charmap_desc': { id: 'Unicode browser: cari, klik, copy karakter. 100% client-side.', en: 'Unicode browser: search, click, copy characters. 100% client-side.' },
+  'header.receipt': { id: 'Receipt Generator', en: 'Receipt Generator' },
+  'header.receipt_desc': { id: 'Buat struk belanja lucu — konten & fun. 100% client-side.', en: 'Create fun shopping receipts — content & fun. 100% client-side.' },
 };
 
 export function t(key, fallback) {
