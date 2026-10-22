@@ -29,8 +29,9 @@ tidak pernah dikirim ke server. Live production: **https://tools.paklubis.my.id*
   dobel-bind via `anchor.dataset.autoBound`, listener global idempoten, timer/interval dibersihkan
   saat `astro:page-leave`/path miss. Bug ini pernah bikin 6 tool mati (jokes, motivation, bmi,
   percentage, unit, photo) — fix `d55c969`.
-- **i18n audit**: `node scripts/audit-i18n.mjs` — exit 0 = 0 dup / 0 dangling key (gap sisa: 73
-  halaman belum full i18n).
+- **i18n audit**: `node scripts/audit-i18n.mjs` — exit 0 = 0 dup / 0 dangling key. **Status i18n:
+  FULL 249/249 (100%) sejak W6 batch 30 (Okt 22, 2026)** + W7 header title/desc gap 59→0.
+  Sisa opsional: placeholder keys (170 unwired, mayoritas contoh numerik) — lihat entri W7.
 - **Script besar**: tulis sebagai `<script>` eksternal Astro, bukan inline.
 - **Lib pihak ketiga**: pola multi-CDN fallback via `src/composables/useCdnLib.ts`
   (SheetJS, html2pdf, dll). `mammoth` (docx→HTML) di-bundle lokal.
