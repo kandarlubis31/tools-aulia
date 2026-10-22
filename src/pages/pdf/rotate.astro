@@ -60,6 +60,7 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -149,7 +150,7 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
       }
 
     } catch (err) {
-      window.showToast?.(window._tToast ? window._tToast('Gagal memuat PDF. File mungkin rusak.') : 'Gagal memuat PDF. File mungkin rusak.', 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('rotate.load_fail', 'Gagal memuat PDF. File mungkin rusak.')) : 'Gagal memuat PDF. File mungkin rusak.', 'error');
       loading.classList.add('hidden');
       dropZone.classList.remove('hidden');
     }
@@ -183,7 +184,7 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
       degrees = pdfLib.degrees;
     }
 
-    const restoreBtn = window.showButtonSpinner(saveBtn, 'Menyimpan...');
+    const restoreBtn = window.showButtonSpinner(saveBtn, t('rotate.saving', 'Menyimpan...'));
 
     try {
       const arrayBuffer = await currentFile.arrayBuffer();
@@ -202,7 +203,7 @@ import LoadingSpinner from '../../components/LoadingSpinner.astro';
       window.downloadBytes(pdfBytes, `rotated-${currentFile.name}`, 'application/pdf');
 
     } catch (err) {
-      window.showToast?.(window._tToast ? window._tToast("Gagal menyimpan PDF.") : "Gagal menyimpan PDF.", 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('rotate.save_fail', 'Gagal menyimpan PDF.')) : 'Gagal menyimpan PDF.', 'error');
     } finally {
       restoreBtn();
     }

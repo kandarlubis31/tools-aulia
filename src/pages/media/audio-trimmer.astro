@@ -61,6 +61,7 @@ import DropZone from '../../components/DropZone.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -101,10 +102,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const f = fileInput.files?.[0];
       if (!f) return;
       if (!f.type.startsWith('audio/') && !/\.(mp3|wav|ogg|m4a|flac)$/i.test(f.name)) {
-        window.showToast?.(window._tToast ? window._tToast('File harus berupa audio') : 'File harus berupa audio', 'error');
+        window.showToast?.(window._tToast ? window._tToast(t('trim.not_audio', 'File harus berupa audio')) : 'File harus berupa audio', 'error');
         return;
       }
-      if (f.size > 60 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('Ukuran maksimal 60 MB') : 'Ukuran maksimal 60 MB', 'error'); return; }
+      if (f.size > 60 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast(t('trim.max_60', 'Ukuran maksimal 60 MB')) : 'Ukuran maksimal 60 MB', 'error'); return; }
 
       try {
         const { decodeAudioFile, computePeaks, drawWaveform } = await import('../../composables/useAudioWav');
@@ -123,7 +124,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         drawWaveform(canvas, peaks, { color: '#c4b5fd', progressColor: '#8b5cf6' });
         layout();
       } catch {
-        window.showToast?.(window._tToast ? window._tToast('Format audio tidak didukung') : 'Format audio tidak didukung', 'error');
+        window.showToast?.(window._tToast ? window._tToast(t('trim.unsupported', 'Format audio tidak didukung')) : 'Format audio tidak didukung', 'error');
       }
     });
 
@@ -182,7 +183,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       previewAudio!.src = URL.createObjectURL(sliceBuffer(buffer, start, end));
       previewAudio!.classList.remove('hidden');
       previewAudio!.play();
-      window.showToast?.(window._tToast ? window._tToast('Memutar hasil potongan…') : 'Memutar hasil potongan…', 'info');
+      window.showToast?.(window._tToast ? window._tToast(t('trim.playing', 'Memutar hasil potongan…')) : 'Memutar hasil potongan…', 'info');
     });
 
     exportBtn?.addEventListener('click', async () => {
@@ -194,7 +195,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       a.href = URL.createObjectURL(wav);
       a.download = fileName!.textContent!.replace(/\.[^.]+$/, '') + '-trimmed.wav';
       a.click();
-      window.showToast?.(window._tToast ? window._tToast('Audio berhasil dipotong!') : 'Audio berhasil dipotong!', 'info');
+      window.showToast?.(window._tToast ? window._tToast(t('trim.done', 'Audio berhasil dipotong!')) : 'Audio berhasil dipotong!', 'info');
     });
 
     function sliceBuffer(buf: AudioBuffer, s: number, e: number): AudioBuffer {

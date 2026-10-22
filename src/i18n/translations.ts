@@ -4417,6 +4417,37 @@ export const translations: Record<string, { id: string; en: string }> = {
   'p2t.hint': { id: 'Mendukung PDF teks (bukan scanned image)', en: 'Supports text-based PDFs (not scanned images)' },
   'p2t.result_title': { id: 'Hasil Teks', en: 'Text Result' },
   'p2t.placeholder': { id: 'Hasil ekstraksi akan muncul di sini...', en: 'Extraction result will appear here...' },
+  // --- W6 batch 26 — utils/decision-wheel, utils/stopwatch, media/audio-trimmer, pdf/redact, pdf/rotate ---
+  // utils/decision-wheel
+  'wheel.placeholder': { id: 'Masukkan opsi...', en: 'Enter an option...' },
+  'wheel.enter_option': { id: 'Masukkan opsi!', en: 'Enter an option!' },
+  'wheel.max_10': { id: 'Maksimal 10 opsi!', en: 'Maximum 10 options!' },
+  'wheel.added': { id: 'Opsi ditambahkan!', en: 'Option added!' },
+  'wheel.min_2': { id: 'Minimal 2 opsi!', en: 'At least 2 options!' },
+  // utils/stopwatch (btn.start / btn.stop / header.stopwatch_desc sudah ada)
+  'sw.reset_title': { id: 'Reset (R)', en: 'Reset (R)' },
+  'sw.lap_title': { id: 'Lap (L)', en: 'Lap (L)' },
+  'sw.lap_num': { id: 'Lap #', en: 'Lap #' },
+  'sw.lap_time': { id: 'Waktu Lap', en: 'Lap Time' },
+  'sw.total': { id: 'Total', en: 'Total' },
+  // media/audio-trimmer
+  'trim.not_audio': { id: 'File harus berupa audio', en: 'File must be an audio' },
+  'trim.max_60': { id: 'Ukuran maksimal 60 MB', en: 'Maximum size is 60 MB' },
+  'trim.unsupported': { id: 'Format audio tidak didukung', en: 'Unsupported audio format' },
+  'trim.playing': { id: 'Memutar hasil potongan…', en: 'Playing the trimmed result…' },
+  'trim.done': { id: 'Audio berhasil dipotong!', en: 'Audio trimmed successfully!' },
+  // pdf/redact
+  'redact.drop': { id: 'Drop PDF di sini atau klik untuk upload', en: 'Drop a PDF here or click to upload' },
+  'redact.prev': { id: '← Prev', en: '← Prev' },
+  'redact.next': { id: 'Next →', en: 'Next →' },
+  'redact.instructions': { id: 'Drag untuk memilih area yang ingin di-sensor. Area yang dipilih akan dihitamkan secara permanen.', en: 'Drag to select the area to redact. Selected areas are permanently blacked out.' },
+  'redact.hitamkan': { id: 'Hitamkan Area Terpilih', en: 'Black Out Selected Area' },
+  'redact.loaded': { id: 'PDF dimuat!', en: 'PDF loaded!' },
+  'redact.area_added': { id: 'Area ditambahkan!', en: 'Area added!' },
+  // pdf/rotate
+  'rotate.load_fail': { id: 'Gagal memuat PDF. File mungkin rusak.', en: 'Failed to load the PDF. The file may be corrupted.' },
+  'rotate.saving': { id: 'Menyimpan...', en: 'Saving...' },
+  'rotate.save_fail': { id: 'Gagal menyimpan PDF.', en: 'Failed to save the PDF.' },
 };
 
 export function t(key, fallback) {
