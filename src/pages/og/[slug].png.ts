@@ -51,9 +51,9 @@ const LIST_ICON =
 
 // Non-tool pages (homepage, hubs, informational pages)
 const PAGE_OVERRIDES: Record<string, { title: string; category: string; icon: string }> = {
-  showcase: { title: 'Top 20 Tools Terbaik', category: 'MasAul Tools', icon: STAR_ICON },
-  changelog: { title: 'Changelog', category: 'MasAul Tools', icon: LIST_ICON },
-  '404': { title: 'Halaman Tidak Ditemukan', category: 'MasAul Tools', icon: LOGO_IMAGE },
+  showcase: { title: 'Top 20 Tools Terbaik', category: 'Tools MasAul', icon: STAR_ICON },
+  changelog: { title: 'Changelog', category: 'Tools MasAul', icon: LIST_ICON },
+  '404': { title: 'Halaman Tidak Ditemukan', category: 'Tools MasAul', icon: LOGO_IMAGE },
 };
 
 // href → og key (e.g. '/pdf/merge' → 'pdf-merge', '/pdf' → 'pdf')
@@ -121,7 +121,7 @@ function buildSvg(opts: { title: string; category: string; icon: string }): stri
   <g transform="translate(80 72)">
     <rect width="52" height="52" rx="14" fill="url(#tile)"/>
     <image href="data:image/png;base64,${LOGO_B64}" x="4" y="4" width="44" height="44"/>
-    <text x="66" y="33" font-family="Inter" font-weight="700" font-size="28" fill="#ffffff">MasAul Tools</text>
+    <text x="66" y="33" font-family="Inter" font-weight="700" font-size="28" fill="#ffffff">Tools MasAul</text>
     <text x="66" y="62" font-family="Inter" font-weight="400" font-size="13" fill="#94a3b8" letter-spacing="3">100% DI BROWSER</text>
   </g>
 
@@ -157,7 +157,7 @@ export const GET: APIRoute = async ({ params }) => {
 
   if (slug === 'home') {
     title = `Koleksi ${tools.length}+ Tools Gratis`;
-    category = 'MasAul Tools';
+    category = 'Tools MasAul';
     icon = LOGO_IMAGE;
   } else if (override) {
     title = override.title;
@@ -171,7 +171,7 @@ export const GET: APIRoute = async ({ params }) => {
       icon = tool.icon;
     } else {
       // Unknown slug → branded fallback (dev-mode safety; not emitted at build)
-      title = 'MasAul Tools';
+      title = 'Tools MasAul';
       category = 'Tools Gratis';
       icon = LOGO_IMAGE;
     }

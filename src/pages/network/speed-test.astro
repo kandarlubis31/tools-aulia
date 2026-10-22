@@ -256,7 +256,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       if (!r) return;
       (window as any).umami?.track?.('share', { tool: '/network/speed-test' });
       shareContent(
-        `Speed Test — MasAul Tools\n↓ ${r.dl.toFixed(1)} Mbps\n↑ ${r.ul > 0 ? r.ul.toFixed(1) : '—'} Mbps\nPing ${r.ping} ms · jitter ${r.jitter} ms\n${location.origin}/network/speed-test`,
+        `Speed Test — Tools MasAul\n↓ ${r.dl.toFixed(1)} Mbps\n↑ ${r.ul > 0 ? r.ul.toFixed(1) : '—'} Mbps\nPing ${r.ping} ms · jitter ${r.jitter} ms\n${location.origin}/network/speed-test`,
         'Speed Test', 'Disalin!', 'Gagal membagikan!', location.href,
       );
     });

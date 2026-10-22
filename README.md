@@ -1,4 +1,4 @@
-# MasAul Tools
+# Tools MasAul
 
 <div align="center">
 
@@ -22,9 +22,9 @@
 
 ### Tentang
 
-**MasAul Tools** adalah koleksi 250+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
+**Tools MasAul** adalah koleksi 250+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
 
-### ✨ Kenapa MasAul Tools?
+### ✨ Kenapa Tools MasAul?
 
 - 🔒 **Privasi Utama** — File tidak pernah di-upload ke server. Semua diproses di browser kamu.
 - ⚡ **Cepat & Ringan** — Built dengan Astro 5 + Tailwind CSS. Skor Lighthouse 95+.
@@ -117,9 +117,9 @@ tools-aulia/
 
 ### About
 
-**MasAul Tools** is a collection of 250+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
+**Tools MasAul** is a collection of 250+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
 
-### ✨ Why MasAul Tools?
+### ✨ Why Tools MasAul?
 
 - 🔒 **Privacy First** — Files never leave your browser. Everything is processed locally.
 - ⚡ **Fast & Lightweight** — Built with Astro 5 + Tailwind CSS. Lighthouse score 95+.

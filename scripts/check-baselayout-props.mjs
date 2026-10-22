@@ -5,7 +5,7 @@
  *
  * Latar belakang (Oct 4, 2026): 49 halaman memakai `<BaseLayout title="...">`
  * — padahal interface Props BaseLayout hanya punya `pageTitle`. Akibatnya
- * `pageTitle` undefined → `<title>undefined — Gratis & Offline | MasAul Tools</title>`
+ * `pageTitle` undefined → `<title>undefined — Gratis & Offline | Tools MasAul</title>`
  * (rusak untuk SEO + tab browser), `meta[name="original-title"]` ikut undefined,
  * dan nama BreadcrumbList JSON-LD hilang. Tidak ketangkap build karena Astro
  * hanya mengecek tipe saat `astro check` (dan TS 7 belum mendukungnya).

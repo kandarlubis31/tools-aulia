@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * MasAul Tools — New Tool Scaffold
+ * Tools MasAul — New Tool Scaffold
  *
  * Usage:
  *   node scripts/new-tool.mjs <category> <slug> "<Title>" "<Description>"

@@ -39,7 +39,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'search.close_aria': { id: 'Tutup pencarian', en: 'Close search' },
 
   // --- PWA MODAL ---
-  'pwa.install_title': { id: 'Install MasAul Tools', en: 'Install MasAul Tools' },
+  'pwa.install_title': { id: 'Install Tools MasAul', en: 'Install Tools MasAul' },
   'pwa.install_desc': { id: 'Akses semua tools secara offline, lebih cepat, dan masuk langsung dari layar utama HP kamu.', en: 'Access all tools offline, faster, and launch directly from your home screen.' },
   'pwa.install_now': { id: 'Install Sekarang', en: 'Install Now' },
   'pwa.later': { id: 'Nanti Saja', en: 'Maybe Later' },
@@ -56,7 +56,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'offline.disconnected': { id: 'Koneksi terputus.', en: 'Connection lost.' },
 
   // --- FOOTER ---
-  'footer.about_title': { id: 'Tentang MasAul Tools', en: 'About MasAul Tools' },
+  'footer.about_title': { id: 'Tentang Tools MasAul', en: 'About Tools MasAul' },
   'footer.about_desc': { id: 'Koleksi tools developer sederhana yang berjalan sepenuhnya di browser (Client-Side). Aman, cepat, dan tanpa upload data ke server.', en: 'A collection of simple developer tools that run entirely in your browser (Client-Side). Safe, fast, and with no data uploaded to any server.' },
   'footer.github': { id: 'Github', en: 'Github' },
   'footer.website': { id: 'Website', en: 'Website' },
@@ -80,7 +80,7 @@ export const translations: Record<string, { id: string; en: string }> = {
 
   // --- CHANGELOG (D3) ---
   'changelog.title': { id: 'Changelog', en: 'Changelog' },
-  'changelog.desc': { id: 'Catatan update MasAul Tools: tools baru, fitur, dan perbaikan. Subscribe via RSS biar gak ketinggalan!', en: 'MasAul Tools update log: new tools, features, and fixes. Subscribe via RSS so you never miss a thing!' },
+  'changelog.desc': { id: 'Catatan update Tools MasAul: tools baru, fitur, dan perbaikan. Subscribe via RSS biar gak ketinggalan!', en: 'Tools MasAul update log: new tools, features, and fixes. Subscribe via RSS so you never miss a thing!' },
   'changelog.subscribe': { id: 'Subscribe RSS', en: 'Subscribe RSS' },
   'changelog.latest': { id: 'Terbaru', en: 'Latest' },
   'changelog.tag_feat': { id: 'Fitur', en: 'Feature' },
@@ -95,7 +95,7 @@ export const translations: Record<string, { id: string; en: string }> = {
 
   // --- INDEX / DASHBOARD ---
   'index.badge': { id: '🚀 Productivity Booster', en: '🚀 Productivity Booster' },
-  'index.title': { id: 'My Toolbox', en: 'My Toolbox' },
+  'index.title': { id: 'Tools MasAul', en: 'Tools MasAul' },
   'index.subtitle_start': { id: 'Koleksi', en: 'A collection of' },
   'index.subtitle_end': { id: 'tools ringan untuk kebutuhan harian. Semuanya berjalan di browser,', en: 'lightweight tools for daily needs. All run in your browser,' },
   'index.subtitle_safe': { id: 'tanpa install, data aman.', en: 'no installation needed, your data is safe.' },
@@ -134,7 +134,7 @@ export const translations: Record<string, { id: string; en: string }> = {
 
   // --- SHOWCASE (Top 20) ---
   'showcase.title': { id: 'Top 20 Tools Terbaik', en: 'Top 20 Best Tools' },
-  'showcase.desc': { id: 'Kurasi 20 tools paling populer & bermanfaat di MasAul Tools. Semua 100% di browser — tanpa install, data aman.', en: 'A curated list of the 20 most popular & useful MasAul Tools tools. All 100% in-browser — no install, data safe.' },
+  'showcase.desc': { id: 'Kurasi 20 tools paling populer & bermanfaat di Tools MasAul. Semua 100% di browser — tanpa install, data aman.', en: 'A curated list of the 20 most popular & useful tools on Tools MasAul. All 100% in-browser — no install, data safe.' },
   'showcase.top_used': { id: '🔥 Paling Sering Dipakai', en: '🔥 Most Used' },
   'showcase.top_used_desc': { id: 'Berdasarkan aktivitas kamu di browser ini.', en: 'Based on your activity in this browser.' },
   'showcase.editors_pick': { id: '⭐ Pilihan Editor', en: '⭐ Editor’s Picks' },
@@ -622,7 +622,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'shortener.qr_loading': { id: 'Menyiapkan QR…', en: 'Preparing QR…' },
   'shortener.qr_failed': { id: 'QR tidak tersedia', en: 'QR unavailable' },
   'shortener.privacy_label': { id: 'Catatan privasi:', en: 'Privacy note:' },
-  'shortener.privacy_body': { id: 'Berbeda dari tool lain di MasAul Tools, tool ini memakai layanan pihak ketiga spoo.me untuk membuat short link — URL yang kamu masukkan dikirim keluar dari browser. Jangan pendekkan link yang berisi data rahasia atau token.', en: 'Unlike other MasAul Tools, this tool uses a third-party service (spoo.me) to create short links — the URL you enter is sent out of your browser. Never shorten links that contain secrets or tokens.' },
+  'shortener.privacy_body': { id: 'Berbeda dari tool lain di Tools MasAul, tool ini memakai layanan pihak ketiga spoo.me untuk membuat short link — URL yang kamu masukkan dikirim keluar dari browser. Jangan pendekkan link yang berisi data rahasia atau token.', en: 'Unlike other Tools MasAul, this tool uses a third-party service (spoo.me) to create short links — the URL you enter is sent out of your browser. Never shorten links that contain secrets or tokens.' },
   'shortener.stats': { id: 'Statistik Klik', en: 'Click Stats' },
   'shortener.stats_loading': { id: 'Memuat statistik…', en: 'Loading statistics…' },
   'shortener.total_clicks': { id: 'Total Klik', en: 'Total Clicks' },
@@ -3279,7 +3279,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   // --- FEEDBACK WIDGET (E3) ---
   'feedback.button': { id: '🐛 Lapor Bug', en: '🐛 Report Bug' },
   'feedback.title': { id: 'Lapor Bug', en: 'Report Bug' },
-  'feedback.subtitle': { id: 'Bantu kami memperbaiki MasAul Tools', en: 'Help us improve MasAul Tools' },
+  'feedback.subtitle': { id: 'Bantu kami memperbaiki Tools MasAul', en: 'Help us improve Tools MasAul' },
   'feedback.desc_label': { id: 'Deskripsi Bug', en: 'Bug Description' },
   'feedback.desc_placeholder': { id: 'Jelaskan bug yang kamu temui…', en: 'Describe the bug you found…' },
   'feedback.steps_label': { id: 'Langkah Reproduksi (opsional)', en: 'Steps to Reproduce (optional)' },
