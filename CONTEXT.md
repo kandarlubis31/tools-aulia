@@ -250,6 +250,13 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
   pakai `history.back()`/`location.href` fallback (full-load), true SPA nav belum ke-exercise
   ketat. Harness bersifat sementara (tmp-*.cjs, sudah dihapus — tidak di-commit).
 
+- 🆕 **Push + deploy Vercel (Okt 22, 2026):** ✅ — push **21 commit** (`d468026..abf2db7`) ke
+  `main` → auto-deploy Vercel. **Terverifikasi live**: local `abf2db7` = `origin/main` (ahead 0/
+  behind 0); `https://tools.paklubis.my.id` HOME 200; marker W7 (`header.gpa` ada di HTML
+  `/calc/gpa`) ke-poll sukses di production. Semua kerja W6 (249/249=100%) + W7 (gap title/desc
+  59→0) + smoke test sekarang live. Sisa opsional: W7 placeholder-keys (170 unwired di 66 page,
+  mayoritas contoh numerik — low value, teks instruksional saja yang bernilai).
+
 ## Verifikasi standar selesai kerja
 
 1. `pnpm build` — prebuild (sync angka + 6 guardrail) + build hijau.
