@@ -48,6 +48,7 @@ import DropZone from '../../components/DropZone.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -75,10 +76,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const f = fileInput.files?.[0];
       if (!f) return;
       if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
-        window.showToast?.(window._tToast ? window._tToast('Pilih file PDF') : 'Pilih file PDF', 'error');
+        window.showToast?.(window._tToast ? window._tToast(t('form.pick_pdf', 'Pilih file PDF')) : 'Pilih file PDF', 'error');
         return;
       }
-      if (f.size > 50 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('Ukuran maksimal 50 MB') : 'Ukuran maksimal 50 MB', 'error'); return; }
+      if (f.size > 50 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast(t('form.max_50', 'Ukuran maksimal 50 MB')) : 'Ukuran maksimal 50 MB', 'error'); return; }
 
       docxName = f.name.replace(/\.pdf$/i, '') + '.docx';
       process?.classList.remove('hidden');
@@ -125,18 +126,18 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
           const pct = Math.round((i / pdf.numPages) * 100);
           progressBar!.style.width = pct + '%';
-          statusText!.textContent = `${pct}% — halaman ${i}/${pdf.numPages}`;
+          statusText!.textContent = `${pct}% — ` + t('toword.page_of', 'halaman') + ` ${i}/${pdf.numPages}`;
           // beri kesempatan UI render
           await new Promise(r => setTimeout(r, 0));
         }
 
         docxBlob = buildDocx(paragraphs);
         downloadBtn?.classList.remove('hidden');
-        statusText!.textContent = `✅ ${pdf.numPages} halaman → ${paragraphs.length} paragraf`;
-        window.showToast?.(window._tToast ? window._tToast('Konversi selesai!') : 'Konversi selesai!', 'info');
+        statusText!.textContent = `✅ ${pdf.numPages} ` + t('toword.pages', 'halaman') + ` → ${paragraphs.length} ` + t('toword.paragraphs', 'paragraf');
+        window.showToast?.(window._tToast ? window._tToast(t('toword.done', 'Konversi selesai!')) : 'Konversi selesai!', 'info');
       } catch {
-        statusText!.textContent = '❌ Gagal membaca PDF';
-        window.showToast?.(window._tToast ? window._tToast('Gagal membaca PDF') : 'Gagal membaca PDF', 'error');
+        statusText!.textContent = '❌ ' + t('toword.read_fail', 'Gagal membaca PDF');
+        window.showToast?.(window._tToast ? window._tToast(t('toword.read_fail', 'Gagal membaca PDF')) : 'Gagal membaca PDF', 'error');
       }
     });
 
@@ -150,13 +151,13 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     // ============ DOCX builder (store-only ZIP, tanpa dependency) ============
     const CRC_TABLE = (() => {
-      const t = new Uint32Array(256);
+      const tbl = new Uint32Array(256);
       for (let n = 0; n < 256; n++) {
         let c = n;
         for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-        t[n] = c >>> 0;
+        tbl[n] = c >>> 0;
       }
-      return t;
+      return tbl;
     })();
 
     function crc32(bytes: Uint8Array): number {

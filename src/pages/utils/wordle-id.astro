@@ -44,7 +44,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="L">L</button>
         </div>
         <div class="flex justify-center gap-1">
-          <button class="key-enter w-14 h-10 rounded-lg text-xs font-bold bg-green-500 text-white hover:bg-green-600 transition-all" data-key="ENTER">ENTER</button>
+          <button class="key-enter w-14 h-10 rounded-lg text-xs font-bold bg-green-500 text-white hover:bg-green-600 transition-all" data-key="ENTER" data-i18n="wordle.enter">ENTER</button>
           <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="Z">Z</button>
           <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="X">X</button>
           <button class="key w-8 h-10 rounded-lg text-sm font-bold bg-matte-200 dark:bg-surface-elevated text-matte-700 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-hover transition-all" data-key="C">C</button>
@@ -59,7 +59,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <!-- Status -->
       <div id="game-status" class="text-center hidden">
         <p id="status-text" class="text-lg font-bold mb-4"></p>
-        <button id="new-game-btn" class="px-6 py-3 gradient-brand rounded-xl font-bold text-sm">Main Lagi</button>
+        <button id="new-game-btn" class="px-6 py-3 gradient-brand rounded-xl font-bold text-sm" data-i18n="wordle.play_again">Main Lagi</button>
       </div>
 
       <!-- Hint -->
@@ -68,6 +68,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+    import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -203,7 +204,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
         if (key === 'ENTER') {
           if (currentCol < 5) {
-            window.showToast?.(window._tToast ? window._tToast('Masukkan 5 huruf!') : 'Masukkan 5 huruf!', 'error');
+            window.showToast?.(window._tToast ? window._tToast(t('wordle.enter_5', 'Masukkan 5 huruf!')) : 'Masukkan 5 huruf!', 'error');
             return;
           }
 
@@ -212,13 +213,13 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
           if (won) {
             gameOver = true;
-            document.getElementById('status-text')!.textContent = '🎉 Benar! Kamu menang!';
+            document.getElementById('status-text')!.textContent = '🎉 ' + t('wordle.win', 'Benar! Kamu menang!');
             document.getElementById('status-text')!.className = 'text-lg font-bold mb-4 text-green-600 dark:text-green-400';
             document.getElementById('game-status')?.classList.remove('hidden');
-            window.showToast?.(window._tToast ? window._tToast('Selamat! Kamu benar!') : 'Selamat! Kamu benar!', 'success');
+            window.showToast?.(window._tToast ? window._tToast(t('wordle.congrats', 'Selamat! Kamu benar!')) : 'Selamat! Kamu benar!', 'success');
           } else if (currentRow >= 5) {
             gameOver = true;
-            document.getElementById('status-text')!.textContent = `💀 Game over! Jawaban: ${targetWord}`;
+            document.getElementById('status-text')!.textContent = `💀 ` + t('wordle.game_over', 'Game over! Jawaban:') + ` ${targetWord}`;
             document.getElementById('status-text')!.className = 'text-lg font-bold mb-4 text-red-600 dark:text-red-400';
             document.getElementById('game-status')?.classList.remove('hidden');
           }
@@ -285,6 +286,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         });
         
         document.getElementById('game-status')?.classList.add('hidden');
+        window.showToast?.(window._tToast ? window._tToast(t('wordle.new_game', 'Game baru dimulai!')) : 'Game baru dimulai!', 'info');
       }
 
       // Start game

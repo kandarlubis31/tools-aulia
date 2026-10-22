@@ -60,6 +60,7 @@ import DropZone from '../../components/DropZone.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -89,12 +90,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       let row: string[] = [];
       let field = '';
       let inQuotes = false;
-      const t = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-      for (let i = 0; i < t.length; i++) {
-        const ch = t[i];
+      const txt = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      for (let i = 0; i < txt.length; i++) {
+        const ch = txt[i];
         if (inQuotes) {
           if (ch === '"') {
-            if (t[i + 1] === '"') { field += '"'; i++; }
+            if (txt[i + 1] === '"') { field += '"'; i++; }
             else inQuotes = false;
           } else field += ch;
         } else {
@@ -179,7 +180,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     }
 
     function loadRows(rows: string[][]) {
-      if (!rows.length) { window.showToast?.(window._tToast ? window._tToast('CSV kosong') : 'CSV kosong', 'error'); return; }
+      if (!rows.length) { window.showToast?.(window._tToast ? window._tToast(t('csv.empty', 'CSV kosong')) : 'CSV kosong', 'error'); return; }
       data = rows;
       selectedRow = -1;
       render();
@@ -199,19 +200,19 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     fileInput?.addEventListener('change', async () => {
       const f = fileInput.files?.[0];
       if (!f) return;
-      if (f.size > 10 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast('File maksimal 10 MB') : 'File maksimal 10 MB', 'error'); return; }
+      if (f.size > 10 * 1024 * 1024) { window.showToast?.(window._tToast ? window._tToast(t('csv.max_10', 'File maksimal 10 MB')) : 'File maksimal 10 MB', 'error'); return; }
       const text = await f.text();
       const delim = f.name.endsWith('.tsv') ? '\t' : ',';
       loadRows(parseCsv(text, delim));
-      window.showToast?.(window._tToast ? window._tToast('CSV dimuat!') : 'CSV dimuat!', 'info');
+      window.showToast?.(window._tToast ? window._tToast(t('csv.loaded', 'CSV dimuat!')) : 'CSV dimuat!', 'info');
     });
 
     pasteBtn?.addEventListener('click', async () => {
       try {
         const text = await navigator.clipboard.readText();
-        if (text.trim()) { loadRows(parseCsv(text)); window.showToast?.(window._tToast ? window._tToast('CSV dari clipboard dimuat!') : 'CSV dari clipboard dimuat!', 'info'); }
+        if (text.trim()) { loadRows(parseCsv(text)); window.showToast?.(window._tToast ? window._tToast(t('csv.clip_loaded', 'CSV dari clipboard dimuat!')) : 'CSV dari clipboard dimuat!', 'info'); }
       } catch {
-        window.showToast?.(window._tToast ? window._tToast('Tidak bisa akses clipboard') : 'Tidak bisa akses clipboard', 'error');
+        window.showToast?.(window._tToast ? window._tToast(t('csv.clip_fail', 'Tidak bisa akses clipboard')) : 'Tidak bisa akses clipboard', 'error');
       }
     });
 
@@ -231,7 +232,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       data.splice(selectedRow, 1);
       selectedRow = -1;
       render();
-      window.showToast?.(window._tToast ? window._tToast('Baris dihapus') : 'Baris dihapus', 'info');
+      window.showToast?.(window._tToast ? window._tToast(t('csv.row_deleted', 'Baris dihapus')) : 'Baris dihapus', 'info');
     });
 
     searchInput?.addEventListener('input', render);
@@ -242,7 +243,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
       a.download = 'hasil.csv';
       a.click();
-      window.showToast?.(window._tToast ? window._tToast('CSV berhasil di-export!') : 'CSV berhasil di-export!', 'info');
+      window.showToast?.(window._tToast ? window._tToast(t('csv.exported', 'CSV berhasil di-export!')) : 'CSV berhasil di-export!', 'info');
     });
   });
 </script>

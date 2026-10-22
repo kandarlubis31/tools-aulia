@@ -17,7 +17,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <div class="card-base p-6 animate-fade-in">
       <!-- Add habit form -->
       <div class="flex gap-2 mb-6">
-        <input id="habit-input" type="text" class="flex-1 px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-green-500 transition-colors text-sm" placeholder="Tambah habit baru..." data-i18n-attr="placeholder" autocomplete="off" />
+        <input id="habit-input" type="text" class="flex-1 px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-green-500 transition-colors text-sm" placeholder="Tambah habit baru..." data-i18n-attr="placeholder" data-i18n="habit.placeholder" autocomplete="off" />
         <button id="add-habit-btn" class="px-6 py-3 gradient-brand rounded-xl font-bold text-sm" data-i18n="habit.add">Tambah</button>
       </div>
 
@@ -47,15 +47,15 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <!-- Stats -->
       <div id="habit-stats" class="hidden mt-6 grid grid-cols-3 gap-3">
         <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
-          <p class="text-2xs text-matte-400">Total Habits</p>
+          <p class="text-2xs text-matte-400" data-i18n="habit.total">Total Habits</p>
           <p id="stat-total" class="text-lg font-bold text-green-600 dark:text-green-400">0</p>
         </div>
         <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
-          <p class="text-2xs text-matte-400">Selesai Hari Ini</p>
+          <p class="text-2xs text-matte-400" data-i18n="habit.done_today">Selesai Hari Ini</p>
           <p id="stat-done" class="text-lg font-bold text-green-600 dark:text-green-400">0</p>
         </div>
         <div class="p-3 bg-matte-50 dark:bg-matte-900 rounded-xl border border-matte-200 dark:border-surface-border text-center">
-          <p class="text-2xs text-matte-400">Best Streak</p>
+          <p class="text-2xs text-matte-400" data-i18n="habit.best_streak">Best Streak</p>
           <p id="stat-streak" class="text-lg font-bold text-green-600 dark:text-green-400">0</p>
         </div>
       </div>
@@ -63,6 +63,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+    import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -184,7 +185,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const name = input.value.trim();
         
         if (!name) {
-          window.showToast?.(window._tToast ? window._tToast('Masukkan nama habit!') : 'Masukkan nama habit!', 'error');
+          window.showToast?.(window._tToast ? window._tToast(t('habit.enter_name', 'Masukkan nama habit!')) : 'Masukkan nama habit!', 'error');
           return;
         }
 
@@ -199,7 +200,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         saveHabits();
         input.value = '';
         renderHabits();
-        window.showToast?.(window._tToast ? window._tToast('Habit ditambahkan!') : 'Habit ditambahkan!', 'success');
+        window.showToast?.(window._tToast ? window._tToast(t('habit.added', 'Habit ditambahkan!')) : 'Habit ditambahkan!', 'success');
       });
 
       // Enter key
@@ -236,7 +237,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           habits = habits.filter(h => h.id !== id);
           saveHabits();
           renderHabits();
-          window.showToast?.(window._tToast ? window._tToast('Habit dihapus!') : 'Habit dihapus!', 'success');
+          window.showToast?.(window._tToast ? window._tToast(t('habit.deleted', 'Habit dihapus!')) : 'Habit dihapus!', 'success');
         }
       });
 
