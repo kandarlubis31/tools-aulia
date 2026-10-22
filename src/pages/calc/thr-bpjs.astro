@@ -7,7 +7,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <div class="max-w-4xl mx-auto px-4 min-h-[60vh] py-10">
     <ToolPageHeader
       title="Kalkulator THR & BPJS"
+      titleKey="header.thr_bpjs"
       desc="Hitung THR prorata sesuai Permenaker 6/2016, breakdown iuran BPJS Ketenagakerjaan (JHT, JP, JKK, JKM, JKP) & BPJS Kesehatan — siapa tanggung apa. 100% offline."
+      descKey="header.thr_bpjs_desc"
       icon='<path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>'
       gradient="from-amber-500 to-orange-600"
     />
@@ -37,7 +39,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             <option value="waisak">Waisak</option>
           </select>
         </div>
-        <button id="calc-thr" class="w-full py-3 bg-amber-600 text-white rounded-xl font-bold hover:bg-amber-700 transition-colors">Hitung THR</button>
+        <button id="calc-thr" class="w-full py-3 bg-amber-600 text-white rounded-xl font-bold hover:bg-amber-700 transition-colors" data-i18n="thr.calc_btn">Hitung THR</button>
         <div id="result-thr" class="mt-6 hidden"></div>
       </div>
 
@@ -68,7 +70,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             </label>
           </div>
         </div>
-        <button id="calc-bpjs" class="w-full py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-colors">Hitung Iuran BPJS</button>
+        <button id="calc-bpjs" class="w-full py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-colors" data-i18n="thr.bpjs_btn">Hitung Iuran BPJS</button>
         <div id="result-bpjs" class="mt-6 hidden"></div>
       </div>
 
@@ -99,6 +101,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <script>
   import { useLocalHistory } from '../../composables/useLocalHistory';
+  import { t } from '../../i18n/translations';
 
   const escHtml = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
 
@@ -126,7 +129,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const el = document.getElementById('result-thr')!;
     if (salary <= 0 || months <= 0) {
       el.className = 'mt-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-500';
-      el.textContent = 'Isi upah & masa kerja dengan angka yang valid (masa kerja minimal 1 bulan).';
+      el.textContent = t('thr.invalid_thr', 'Isi upah & masa kerja dengan angka yang valid (masa kerja minimal 1 bulan).');
       el.classList.remove('hidden');
       return;
     }
@@ -157,7 +160,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     const el = document.getElementById('result-bpjs')!;
     if (salary <= 0) {
       el.className = 'mt-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-500';
-      el.textContent = 'Isi upah sebulan dengan angka yang valid.';
+      el.textContent = t('thr.invalid_bpjs', 'Isi upah sebulan dengan angka yang valid.');
       el.classList.remove('hidden');
       return;
     }

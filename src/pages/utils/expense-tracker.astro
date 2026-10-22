@@ -80,6 +80,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   </div>
 
   <script>
+    import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -238,12 +239,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const date = (document.getElementById('expense-date') as HTMLInputElement)?.value;
 
         if (!amount || amount <= 0) {
-          window.showToast?.(window._tToast ? window._tToast('Masukkan nominal yang valid!') : 'Masukkan nominal yang valid!', 'error');
+          window.showToast?.(window._tToast ? window._tToast(t('expense.valid_amount', 'Masukkan nominal yang valid!')) : 'Masukkan nominal yang valid!', 'error');
           return;
         }
 
         if (!date) {
-          window.showToast?.(window._tToast ? window._tToast('Pilih tanggal!') : 'Pilih tanggal!', 'error');
+          window.showToast?.(window._tToast ? window._tToast(t('expense.pick_date', 'Pilih tanggal!')) : 'Pilih tanggal!', 'error');
           return;
         }
 
@@ -262,7 +263,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         
         renderExpenses();
         renderChart();
-        window.showToast?.(window._tToast ? window._tToast('Pengeluaran ditambahkan!') : 'Pengeluaran ditambahkan!', 'success');
+        window.showToast?.(window._tToast ? window._tToast(t('expense.added', 'Pengeluaran ditambahkan!')) : 'Pengeluaran ditambahkan!', 'success');
       });
 
       // Delete expense
@@ -276,7 +277,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           saveExpenses();
           renderExpenses();
           renderChart();
-          window.showToast?.(window._tToast ? window._tToast('Pengeluaran dihapus!') : 'Pengeluaran dihapus!', 'success');
+          window.showToast?.(window._tToast ? window._tToast(t('expense.deleted', 'Pengeluaran dihapus!')) : 'Pengeluaran dihapus!', 'success');
         }
       });
 

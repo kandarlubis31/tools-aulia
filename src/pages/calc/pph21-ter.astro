@@ -121,6 +121,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <script>
   import { useLocalHistory } from '../../composables/useLocalHistory';
+  import { t } from '../../i18n/translations';
 
   const escHtml = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
 
@@ -206,7 +207,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   const fillKredit = document.getElementById('p17-fill-kredit') as HTMLButtonElement;
   fillKredit.onclick = () => {
     const bruto = brEl((document.getElementById('ter-bruto') as HTMLInputElement).value);
-    if (bruto <= 0) { window.showToast?.(window._tToast ? window._tToast('Isi dulu bruto di Card 1 (TER) untuk estimasi.') : 'Fill in the gross income in Card 1 (TER) first for the estimate.', 'error'); return; }
+    if (bruto <= 0) { window.showToast?.(window._tToast ? window._tToast(t('ter.need_bruto', 'Isi dulu bruto di Card 1 (TER) untuk estimasi.')) : 'Fill in the gross income in Card 1 (TER) first for the estimate.', 'error'); return; }
     const st = PTKP_MAP[(document.getElementById('ter-ptkp') as HTMLSelectElement).value];
     const est = Math.round(bruto * terRate(st.cat, bruto) / 100) * 11;
     (document.getElementById('p17-kredit') as HTMLInputElement).value = String(est);
@@ -314,7 +315,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     }).join('');
     list.querySelectorAll<HTMLButtonElement>('[data-load]').forEach(b => b.addEventListener('click', () => {
       const it = terHistory.getAll().find(x => x.id === +(b.dataset.load || 0));
-      if (it) { restore(it.snapshot); window.showToast?.(window._tToast ? window._tToast('Form dimuat dari riwayat.') : 'Form loaded from history.', 'info'); }
+      if (it) { restore(it.snapshot); window.showToast?.(window._tToast ? window._tToast(t('ter.loaded', 'Form dimuat dari riwayat.')) : 'Form loaded from history.', 'info'); }
     }));
     list.querySelectorAll<HTMLButtonElement>('[data-del]').forEach(b => b.addEventListener('click', () => {
       terHistory.remove(x => x.id === +(b.dataset.del || 0));
@@ -336,7 +337,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.getElementById('ter-history-clear')?.addEventListener('click', () => {
     terHistory.clear();
     renderTerHistory();
-    window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus!') : 'History cleared!', 'success');
+    window.showToast?.(window._tToast ? window._tToast(t('ter.cleared', 'Riwayat dihapus!')) : 'History cleared!', 'success');
   });
 
   renderTerHistory();
