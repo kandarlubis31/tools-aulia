@@ -105,6 +105,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <script>
   import { useLocalHistory } from '../../composables/useLocalHistory';
+  import { t } from '../../i18n/translations';
 
   const escHtml = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
 
@@ -320,7 +321,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     }).join('');
     list.querySelectorAll<HTMLButtonElement>('[data-load]').forEach(b => b.addEventListener('click', () => {
       const it = wdHistory.getAll().find(x => x.id === +(b.dataset.load || 0));
-      if (it) { restore(it.snapshot); window.showToast?.(window._tToast ? window._tToast('Form dimuat dari riwayat.') : 'Form loaded from history.', 'info'); }
+      if (it) { restore(it.snapshot); window.showToast?.(window._tToast ? window._tToast(t('ter.loaded', 'Form dimuat dari riwayat.')) : 'Form loaded from history.', 'info'); }
     }));
     list.querySelectorAll<HTMLButtonElement>('[data-del]').forEach(b => b.addEventListener('click', () => {
       wdHistory.remove(x => x.id === +(b.dataset.del || 0));
@@ -342,7 +343,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   document.getElementById('wd-history-clear')?.addEventListener('click', () => {
     wdHistory.clear();
     renderWdHistory();
-    window.showToast?.(window._tToast ? window._tToast('Riwayat dihapus!') : 'History cleared!', 'success');
+    window.showToast?.(window._tToast ? window._tToast(t('ter.cleared', 'Riwayat dihapus!')) : 'History cleared!', 'success');
   });
 
   renderWdHistory();

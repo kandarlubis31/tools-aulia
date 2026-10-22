@@ -4549,6 +4549,34 @@ export const translations: Record<string, { id: string; en: string }> = {
   'h2p.refresh': { id: '↻ Refresh', en: '↻ Refresh' },
   'h2p.empty': { id: 'Editor HTML kosong. Tulis kode dulu.', en: 'HTML editor is empty. Write some code first.' },
   'h2p.done': { id: 'PDF berhasil dibuat!', en: 'PDF created successfully!' },
+  // --- W6 batch 29 — calc/thr-bpjs, utils/expense-tracker, utils/pomodoro, calc/pph21-ter, calc/workdays, dev/cron ---
+  // calc/thr-bpjs
+  'header.thr_bpjs': { id: 'Kalkulator THR & BPJS', en: 'THR & BPJS Calculator' },
+  'header.thr_bpjs_desc': { id: 'Hitung THR prorata sesuai Permenaker 6/2016, breakdown iuran BPJS Ketenagakerjaan (JHT, JP, JKK, JKM, JKP) & BPJS Kesehatan — siapa tanggung apa. 100% offline.', en: 'Calculate pro-rated THR per Manpower Reg 6/2016, breakdown BPJS Employment (JHT, JP, JKK, JKM, JKP) & Health contributions — who pays what. 100% offline.' },
+  'thr.calc_btn': { id: 'Hitung THR', en: 'Calculate THR' },
+  'thr.bpjs_btn': { id: 'Hitung Iuran BPJS', en: 'Calculate BPJS Contribution' },
+  'thr.invalid_thr': { id: 'Isi upah & masa kerja dengan angka yang valid (masa kerja minimal 1 bulan).', en: 'Enter a valid salary & tenure (minimum 1 month).' },
+  'thr.invalid_bpjs': { id: 'Isi upah sebulan dengan angka yang valid.', en: 'Enter a valid monthly salary.' },
+  // utils/expense-tracker
+  'expense.valid_amount': { id: 'Masukkan nominal yang valid!', en: 'Enter a valid amount!' },
+  'expense.pick_date': { id: 'Pilih tanggal!', en: 'Pick a date!' },
+  'expense.added': { id: 'Pengeluaran ditambahkan!', en: 'Expense added!' },
+  'expense.deleted': { id: 'Pengeluaran dihapus!', en: 'Expense deleted!' },
+  // utils/pomodoro
+  'pomo.toggle_title': { id: 'Mulai/Jeda', en: 'Start/Pause' },
+  'pomo.reset_title': { id: 'Reset', en: 'Reset' },
+  'pomo.session_done': { id: 'Sesi Selesai', en: 'Sessions Done' },
+  'pomo.notif_title': { id: 'Notifikasi browser saat sesi selesai', en: 'Browser notification when session ends' },
+  // calc/pph21-ter & calc/workdays (shared riwayat keys)
+  'ter.need_bruto': { id: 'Isi dulu bruto di Card 1 (TER) untuk estimasi.', en: 'Fill in the gross income in Card 1 (TER) first for the estimate.' },
+  'ter.loaded': { id: 'Form dimuat dari riwayat.', en: 'Form loaded from history.' },
+  'ter.cleared': { id: 'Riwayat dihapus!', en: 'History cleared!' },
+  // dev/cron
+  'cron.minute': { id: 'Minute', en: 'Minute' },
+  'cron.hour': { id: 'Hour', en: 'Hour' },
+  'cron.day_month': { id: 'Day (Month)', en: 'Day (Month)' },
+  'cron.month': { id: 'Month', en: 'Month' },
+  'cron.day_week': { id: 'Day (Week)', en: 'Day (Week)' },
 };
 
 export function t(key, fallback) {
