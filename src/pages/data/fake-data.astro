@@ -69,6 +69,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -158,7 +159,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     function generate() {
       const fields = getSelectedFields();
-      if (!fields.length) { window.showToast?.(window._tToast ? window._tToast('Pilih minimal 1 field') : 'Pilih minimal 1 field', 'error'); return; }
+      if (!fields.length) { window.showToast?.(window._tToast ? window._tToast(t('fd.pick_one', 'Pilih minimal 1 field')) : 'Pilih minimal 1 field', 'error'); return; }
       const count = Math.min(500, Math.max(1, parseInt(rowCount.value) || 10));
       const rows: Record<string, any>[] = [];
       for (let i = 0; i < count; i++) {
@@ -172,7 +173,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       }
       lastRows = rows;
       renderTable(fields, rows);
-      rowInfo!.textContent = `${rows.length} rows · ${fields.length} fields`;
+      rowInfo!.textContent = `${rows.length} ` + t('fd.rows', 'baris') + ` · ${fields.length} ` + t('fd.fields_count', 'field');
     }
 
     function renderTable(fields: string[], rows: Record<string, any>[]) {
@@ -188,9 +189,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     rowCount?.addEventListener('keydown', (e) => { if (e.key === 'Enter') generate(); });
 
     copyBtn?.addEventListener('click', () => {
-      if (!lastRows.length) { window.showToast?.(window._tToast ? window._tToast('Generate dulu') : 'Generate dulu', 'error'); return; }
+      if (!lastRows.length) { window.showToast?.(window._tToast ? window._tToast(t('fd.gen_first', 'Generate dulu')) : 'Generate dulu', 'error'); return; }
       navigator.clipboard.writeText(JSON.stringify(lastRows, null, 2));
-      window.showToast?.(window._tToast ? window._tToast('Data disalin sebagai JSON!') : 'Data disalin sebagai JSON!', 'info');
+      window.showToast?.(window._tToast ? window._tToast(t('fd.copied', 'Data disalin sebagai JSON!')) : 'Data disalin sebagai JSON!', 'info');
     });
 
     downloadJson?.addEventListener('click', () => {

@@ -71,6 +71,7 @@ import DropZone from '../../components/DropZone.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -149,7 +150,7 @@ import DropZone from '../../components/DropZone.astro';
       }, mimeType, quality);
     } catch (e) {
       _compressPending = false;
-      window.showToast?.(window._tToast ? window._tToast('Gagal mengompres gambar.') : 'Gagal mengompres gambar.', 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('imgc.compress_fail', 'Gagal mengompres gambar.')) : 'Gagal mengompres gambar.', 'error');
     }
   }
 
@@ -170,11 +171,11 @@ import DropZone from '../../components/DropZone.astro';
     const file = e.dataTransfer?.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      window.showToast?.(window._tToast ? window._tToast('File harus berupa gambar.') : 'File harus berupa gambar.', 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('imgc.must_image', 'File harus berupa gambar.')) : 'File harus berupa gambar.', 'error');
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 5MB.') : 'File terlalu besar! Maksimal 5MB.', 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('imgc.too_big', 'File terlalu besar! Maksimal 5MB.')) : 'File terlalu besar! Maksimal 5MB.', 'error');
       return;
     }
     originalFile = file;
@@ -191,7 +192,7 @@ import DropZone from '../../components/DropZone.astro';
         
         // Validate file size
         if (originalFile.size > MAX_FILE_SIZE) {
-          window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 5MB.') : 'File terlalu besar! Maksimal 5MB.', 'error');
+          window.showToast?.(window._tToast ? window._tToast(t('imgc.too_big', 'File terlalu besar! Maksimal 5MB.')) : 'File terlalu besar! Maksimal 5MB.', 'error');
           fileInput.value = ''; // reset input
           return;
         }
@@ -222,7 +223,7 @@ import DropZone from '../../components/DropZone.astro';
     link.click();
     // Delay revoke — langsung revoke bisa abort download di Firefox
     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-    window.showToast?.(window._tToast ? window._tToast("Gambar berhasil diunduh!") : "Gambar berhasil diunduh!", "success");
+    window.showToast?.(window._tToast ? window._tToast(t('imgc.downloaded', 'Gambar berhasil diunduh!')) : 'Gambar berhasil diunduh!', 'success');
   });
 
   }
