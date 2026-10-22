@@ -32,10 +32,10 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <div id="result-area" class="hidden mt-4">
         <div class="mb-3 flex flex-wrap gap-2 justify-center">
           <button id="download-xlsx" class="gradient-brand px-5 py-2.5 rounded-lg text-sm font-bold">
-            💾 Download .xlsx
+            💾 <span data-i18n="p2x.download_xlsx">Download .xlsx</span>
           </button>
           <button id="download-csv" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-600 dark:text-matte-300 hover:bg-matte-200 transition-all">
-            📄 Download .csv
+            📄 <span data-i18n="p2x.download_csv">Download .csv</span>
           </button>
         </div>
         <div class="max-h-64 overflow-auto rounded-lg border border-matte-200 dark:border-matte-700">
@@ -45,12 +45,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     </div>
 
     <p class="text-center text-xs text-matte-400 mt-6">
-      ⚠️ Ekstraksi tabel berbasis spasi/tab — hasil mungkin perlu rapi manual untuk layout kompleks.
+      ⚠️ <span data-i18n="p2x.note">Ekstraksi tabel berbasis spasi/tab — hasil mungkin perlu rapi manual untuk layout kompleks.</span>
     </p>
   </div>
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', async () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -69,8 +70,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     let tableData: string[][] = [];
     let origName = 'extracted';
 
-    const toast = (m: string, t: 'success' | 'error' = 'success') =>
-      window.showToast?.(window._tToast ? window._tToast(m) : m, t);
+    const toast = (m: string, type: 'success' | 'error' = 'success') =>
+      window.showToast?.(window._tToast ? window._tToast(m) : m, type);
 
     function setProgress(pct: number, msg: string) {
       progressBar.style.width = pct + '%';
@@ -96,7 +97,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
       const pdfjsLib = await loadPdfJs();
       pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdfjs/pdf.worker.min.js';
-      setProgress(15, 'Membaca PDF…');
+      setProgress(15, t('p2x.reading', 'Membaca PDF…'));
 
       const buffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
@@ -136,7 +137,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         if (p < totalPages) allRows.push(['--- Page ' + (p + 1) + ' ---']);
       }
 
-      setProgress(70, 'Memproses data…');
+      setProgress(70, t('p2x.processing', 'Memproses data…'));
       tableData = allRows;
 
       // Preview
@@ -224,11 +225,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
           const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
           downloadBlob(new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), '', 'xlsx');
-          toast('Diunduh!');
+          toast(t('p2x.downloaded', 'Diunduh!'));
         } else {
           // CDN gagal → fallback CSV, kasih tahu user
           downloadBlob(toCsv(), 'text/csv', 'csv');
-          toast('XLSX gagal dimuat, diunduh sebagai CSV.', 'error');
+          toast(t('p2x.xlsx_fallback', 'XLSX gagal dimuat, diunduh sebagai CSV.'), 'error');
         }
       } catch {
         toast('Gagal mengunduh!', 'error');

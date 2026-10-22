@@ -4448,6 +4448,47 @@ export const translations: Record<string, { id: string; en: string }> = {
   'rotate.load_fail': { id: 'Gagal memuat PDF. File mungkin rusak.', en: 'Failed to load the PDF. The file may be corrupted.' },
   'rotate.saving': { id: 'Menyimpan...', en: 'Saving...' },
   'rotate.save_fail': { id: 'Gagal menyimpan PDF.', en: 'Failed to save the PDF.' },
+  // --- W6 batch 27 — data/fake-data, file/pdf-to-md, pdf/form-filler, pdf/excel-to-pdf, pdf/to-excel, image/compressor ---
+  // data/fake-data
+  'fd.pick_one': { id: 'Pilih minimal 1 field', en: 'Pick at least 1 field' },
+  'fd.gen_first': { id: 'Generate dulu', en: 'Generate first' },
+  'fd.copied': { id: 'Data disalin sebagai JSON!', en: 'Data copied as JSON!' },
+  'fd.rows': { id: 'baris', en: 'rows' },
+  'fd.fields_count': { id: 'field', en: 'fields' },
+  // file/pdf-to-md (header.pdf_to_md / header.pdf_to_md_desc / p2t.drop / p2t.privacy sudah ada)
+  'p2md.result_title': { id: 'Hasil Markdown', en: 'Markdown Result' },
+  'p2md.placeholder': { id: 'Hasil konversi akan muncul di sini...', en: 'Conversion result will appear here...' },
+  'p2md.preparing': { id: 'Menyiapkan Worker...', en: 'Preparing Worker...' },
+  // pdf/form-filler
+  'form.pick_pdf': { id: 'Pilih file PDF', en: 'Pick a PDF file' },
+  'form.max_50': { id: 'Ukuran maksimal 50 MB', en: 'Maximum size is 50 MB' },
+  'form.filled': { id: 'PDF berhasil diisi!', en: 'PDF filled successfully!' },
+  // pdf/excel-to-pdf
+  'header.excel_to_pdf': { id: 'Excel to PDF', en: 'Excel to PDF' },
+  'header.excel_to_pdf_desc': { id: 'Konversi spreadsheet Excel (.xlsx/.csv) menjadi PDF dengan tabel rapi. 100% di browser — tanpa upload.', en: 'Convert Excel spreadsheets (.xlsx/.csv) into a clean PDF table. 100% in browser — no upload.' },
+  'x2p.drop': { id: 'Drop file Excel di sini atau klik', en: 'Drop an Excel file here or click' },
+  'x2p.drop_hint': { id: 'Format: .xlsx, .xls, .csv — maksimal ~10 MB. File tidak di-upload ke server.', en: 'Formats: .xlsx, .xls, .csv — up to ~10 MB. No file uploaded to the server.' },
+  'x2p.paper': { id: 'Kertas', en: 'Paper' },
+  'x2p.orientation': { id: 'Orientasi', en: 'Orientation' },
+  'x2p.download': { id: 'Download PDF', en: 'Download PDF' },
+  'x2p.info_title': { id: 'Yang perlu diketahui', en: 'Good to know' },
+  'x2p.info_1': { id: 'Satu sheet = satu PDF. Pilih sheet yang mau dikonversi di dropdown.', en: 'One sheet = one PDF. Pick the sheet to convert from the dropdown.' },
+  'x2p.info_2': { id: 'Tabel lebar lebih rapi pakai orientasi Landscape.', en: 'Wide tables look better in Landscape orientation.' },
+  'x2p.info_3': { id: 'Rumus diekspor sebagai nilai hasilnya. Format sel kompleks mungkin tampil berbeda.', en: 'Formulas are exported as their computed values. Complex cell formats may look different.' },
+  'x2p.info_4': { id: 'File diproses lokal di browser — tidak ada upload, cocok untuk data internal/perusahaan.', en: 'Files are processed locally in the browser — no upload, safe for internal/company data.' },
+  // pdf/to-excel
+  'p2x.download_xlsx': { id: 'Download .xlsx', en: 'Download .xlsx' },
+  'p2x.download_csv': { id: 'Download .csv', en: 'Download .csv' },
+  'p2x.note': { id: 'Ekstraksi tabel berbasis spasi/tab — hasil mungkin perlu rapi manual untuk layout kompleks.', en: 'Space/tab-based table extraction — complex layouts may need manual cleanup.' },
+  'p2x.downloaded': { id: 'Diunduh!', en: 'Downloaded!' },
+  'p2x.xlsx_fallback': { id: 'XLSX gagal dimuat, diunduh sebagai CSV.', en: 'XLSX failed to load, downloaded as CSV instead.' },
+  'p2x.reading': { id: 'Membaca PDF…', en: 'Reading PDF…' },
+  'p2x.processing': { id: 'Memproses data…', en: 'Processing data…' },
+  // image/compressor
+  'imgc.compress_fail': { id: 'Gagal mengompres gambar.', en: 'Failed to compress the image.' },
+  'imgc.must_image': { id: 'File harus berupa gambar.', en: 'File must be an image.' },
+  'imgc.too_big': { id: 'File terlalu besar! Maksimal 5MB.', en: 'File too large! Max 5MB.' },
+  'imgc.downloaded': { id: 'Gambar berhasil diunduh!', en: 'Image downloaded successfully!' },
 };
 
 export function t(key, fallback) {
