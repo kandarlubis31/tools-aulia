@@ -205,6 +205,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -680,7 +681,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   applyTypeBtn?.addEventListener('click', () => {
     const text = typeText?.value.trim();
-    if (!text) { window.showToast?.(_tt('Ketik nama untuk tanda tangan!'), 'error'); return; }
+    if (!text) { window.showToast?.(_tt(t('sign.need_name', 'Ketik nama untuk tanda tangan!')), 'error'); return; }
     void addSignature(renderTypeSignature(text, typeFontStyle, typeColor));
   });
 
@@ -1243,7 +1244,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         await page.render({ canvasContext: context, viewport }).promise;
       } catch (renderErr) {
         console.error('PDF page render failed:', renderErr);
-        window.showToast?.(_tt('Gagal merender halaman PDF.'), 'error');
+        window.showToast?.(_tt(t('sign.render_fail', 'Gagal merender halaman PDF.')), 'error');
       }
 
       // Check if this render was aborted before doing overlays
@@ -1252,7 +1253,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       }
     } catch (err) {
       console.error('PDF page load failed:', err);
-      window.showToast?.(_tt('Gagal memuat halaman PDF.'), 'error');
+      window.showToast?.(_tt(t('sign.load_fail', 'Gagal memuat halaman PDF.')), 'error');
     } finally {
       renderLock = false;
       if (renderLoading) renderLoading.classList.add('hidden');
@@ -1335,7 +1336,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     if (!padCanvas || !padReady) return;
     // S-7: Empty pad guard — no invisible blank signatures from an empty pad
     if (isPadEmpty()) {
-      window.showToast?.(_tt('Gambar tanda tangan dulu!'), 'error');
+      window.showToast?.(_tt(t('sign.no_image', 'Gambar tanda tangan dulu!')), 'error');
       return;
     }
     void addSignature(padCanvas.toDataURL('image/png'));
@@ -1346,7 +1347,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     if (file) {
       // UX #7: File size validation for images too
       if (file.size > 10 * 1024 * 1024) {
-        window.showToast?.(_tt('Ukuran gambar terlalu besar (max 10MB).'), 'error');
+        window.showToast?.(_tt(t('sign.too_big', `Ukuran gambar terlalu besar (max 10MB).`)), 'error');
         return;
       }
       const reader = new FileReader();
@@ -1359,7 +1360,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   savePdfBtn?.addEventListener('click', async () => {
     if (!currentFile) return;
     if (signatures.length === 0) {
-      return window.showToast?.(_tt('Belum ada tanda tangan yang ditempel!'), 'error');
+      return window.showToast?.(_tt(t('sign.no_signature', 'Belum ada tanda tangan yang ditempel!')), 'error');
     }
 
     const restoreBtn = window.showButtonSpinner(savePdfBtn, _tt('Memproses...'));
@@ -1411,7 +1412,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       window.downloadBytes(pdfBytes, `signed-${currentFile.name}`);
       window.showToast?.(_tt(`Berhasil! ${signatures.length} TTD ditambahkan.`), 'success');
     } catch (err) {
-      window.showToast?.(_tt('Gagal menyimpan PDF.'), 'error');
+      window.showToast?.(_tt(t('sign.save_fail', 'Gagal menyimpan PDF.')), 'error');
     } finally {
       restoreBtn();
     }

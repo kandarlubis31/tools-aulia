@@ -20,7 +20,7 @@ import ToolPageHeader from "../../components/ToolPageHeader.astro";
         <div class="card-base p-6">
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-sm font-bold text-matte-700 dark:text-white">
-              📝 Editor
+              <span data-i18n="d2i.editor">📝 Editor</span>
             </h2>
             <div class="flex items-center gap-2">
               <label for="diagram-type" class="sr-only">Diagram Type</label>
@@ -56,7 +56,7 @@ import ToolPageHeader from "../../components/ToolPageHeader.astro";
                 id="load-example-btn"
                 class="text-xs font-semibold px-2.5 py-1.5 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-lg hover:bg-teal-200 dark:hover:bg-teal-900/50 transition-colors"
               >
-                📋 Contoh
+                <span data-i18n="d2i.sample">📋 Contoh</span>
               </button>
             </div>
           </div>
@@ -80,7 +80,7 @@ Alice -> Bob: Hello
         <!-- Controls -->
         <div class="card-base p-6">
           <h3 class="text-sm font-bold text-matte-700 dark:text-white mb-3">
-            ⚙️ Pengaturan
+            <span data-i18n="d2i.settings">⚙️ Pengaturan</span>
           </h3>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
@@ -486,6 +486,7 @@ Alice -> Bob: Hello
 </style>
 
 <script>
+  import { t } from '../../i18n/translations';
 const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
   // NOTE: Astro tidak punya export `onMount` dari paket "astro" — itu bug utama
@@ -1286,7 +1287,7 @@ cloud "CDN" {
         a.click();
         URL.revokeObjectURL(url);
         // @ts-ignore
-        toast("SVG diunduh!", "success");
+        toast(t('d2i.svg_downloaded', 'SVG diunduh!'), 'success');
         return;
       }
 
@@ -1313,7 +1314,7 @@ cloud "CDN" {
         );
       } catch (err: any) {
         // @ts-ignore
-        toast("Gagal render: " + err.message, "error");
+        toast(t('d2i.render_fail', 'Gagal render: ') + err.message, 'error');
       } finally {
         downloadBtn.disabled = false;
         downloadBtn.innerHTML = originalHtml;
@@ -1326,10 +1327,10 @@ cloud "CDN" {
       try {
         await navigator.clipboard.writeText(currentSvgString);
         // @ts-ignore
-        toast("SVG disalin ke clipboard!", "success");
+        toast(t('d2i.copied', 'SVG disalin ke clipboard!'), 'success');
       } catch {
         // @ts-ignore
-        toast("Gagal menyalin.", "error");
+        toast(t('d2i.copy_fail', 'Gagal menyalin.'), 'error');
       }
     });
 
@@ -1358,7 +1359,7 @@ cloud "CDN" {
           new ClipboardItem({ "image/png": blob }),
         ]);
         // @ts-ignore
-        toast("Gambar disalin ke clipboard!", "success");
+        toast(t('d2i.img_copied', 'Gambar disalin ke clipboard!'), 'success');
       } catch (err: any) {
         // @ts-ignore
         toast("Gagal menyalin gambar: " + err.message, "error");

@@ -22,8 +22,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <button data-duration="60" class="mode-btn px-5 py-2 rounded-lg text-sm font-medium text-matte-500 dark:text-matte-400 hover:text-matte-700 dark:hover:text-matte-200 transition-all">60s</button>
       </div>
       <button id="lang-toggle" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all">🇮🇩 ID</button>
-      <button id="sound-toggle" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" title="Suara klik mekanikal">🔇 Suara</button>
-      <button id="restart-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/60 transition-all">🔄 Ulang</button>
+      <button id="sound-toggle" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 dark:text-matte-300 hover:bg-matte-200 dark:hover:bg-surface-hover transition-all" title="Suara klik mekanikal" data-i18n-attr="title" data-i18n="tt.sound_title">🔇 Suara</button>
+      <button id="restart-btn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-900/60 transition-all" data-i18n="tt.restart">🔄 Ulang</button>
     </div>
 
     <!-- Timer + Live stats -->
@@ -37,7 +37,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <div class="flex items-center gap-3">
           <span class="text-3xl font-extrabold font-mono tabular-nums text-matte-800 dark:text-white" id="timer">0s</span>
           <span id="pb-badge" class="hidden px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 animate-bounce-in">🏆 PB!</span>
-          <span class="text-2xs text-matte-400 hidden sm:inline">Ketik untuk mulai</span>
+          <span class="text-2xs text-matte-400 hidden sm:inline" data-i18n="tt.type_to_start">Ketik untuk mulai</span>
         </div>
         <div class="flex gap-2 text-center">
           <div class="stat-pill-default"><span class="font-bold text-lg tabular-nums" id="stat-wpm">0</span> <span class="text-matte-400 text-2xs">WPM</span></div>
@@ -63,7 +63,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       <!-- Result -->
       <div id="result-card" class="hidden mt-5 rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-900/20 p-6 text-center animate-fade-in-up">
         <div class="text-3xl mb-2">🎉</div>
-        <h3 class="text-xl font-extrabold text-matte-800 dark:text-white mb-1">Hasil Tes — <span id="res-duration">30s</span></h3>
+        <h3 class="text-xl font-extrabold text-matte-800 dark:text-white mb-1" data-i18n="tt.result_title">Hasil Tes — <span id="res-duration">30s</span></h3>
         <div class="flex justify-center gap-4 mt-4 flex-wrap">
           <div class="bg-white dark:bg-matte-800 rounded-xl p-4 min-w-[80px]"><p class="text-3xl font-extrabold text-sky-600 dark:text-sky-400 tabular-nums" id="res-wpm">0</p><p class="text-2xs text-matte-400 uppercase font-bold mt-1">WPM</p></div>
           <div class="bg-white dark:bg-matte-800 rounded-xl p-4 min-w-[80px]"><p class="text-3xl font-extrabold text-violet-600 dark:text-violet-400 tabular-nums" id="res-cpm">0</p><p class="text-2xs text-matte-400 uppercase font-bold mt-1">CPM</p></div>
@@ -71,15 +71,16 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <div class="bg-white dark:bg-matte-800 rounded-xl p-4 min-w-[80px]"><p class="text-3xl font-extrabold text-rose-600 dark:text-rose-400 tabular-nums" id="res-err">0</p><p class="text-2xs text-matte-400 uppercase font-bold mt-1">Error</p></div>
         </div>
         <p id="res-rating" class="text-sm font-bold mt-4 text-matte-600 dark:text-matte-300"></p>
-        <button id="try-again" class="mt-4 px-6 py-2.5 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 transition-colors">🔄 Coba Lagi</button>
+        <button id="try-again" class="mt-4 px-6 py-2.5 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 transition-colors" data-i18n="tt.try_again">🔄 Coba Lagi</button>
       </div>
     </div>
 
-    <p class="text-center text-2xs text-matte-400 animate-fade-in">Spasi juga dihitung. Salah ketik tetap lanjut — akurasi dihitung dari karakter benar.</p>
+    <p class="text-center text-2xs text-matte-400 animate-fade-in" data-i18n="tt.space_note">Spasi juga dihitung. Salah ketik tetap lanjut — akurasi dihitung dari karakter benar.</p>
   </div>
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
@@ -409,11 +410,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       (document.getElementById('res-err')!).textContent = String(errors);
 
       const rating = document.getElementById('res-rating')!;
-      if (wpm >= 80) rating.textContent = '🏆 Luar biasa! Kamu typist profesional!';
-      else if (wpm >= 60) rating.textContent = '🚀 Hebat! Di atas rata-rata!';
-      else if (wpm >= 40) rating.textContent = '👍 Bagus! Terus latihan!';
-      else if (wpm >= 20) rating.textContent = '💪 Lumayan, tingkatkan lagi!';
-      else rating.textContent = '🌱 Ayo latihan lebih sering!';
+      if (wpm >= 80) rating.textContent = t('tt.rate_pro', '🏆 Luar biasa! Kamu typist profesional!');
+      else if (wpm >= 60) rating.textContent = t('tt.rate_great', '🚀 Hebat! Di atas rata-rata!');
+      else if (wpm >= 40) rating.textContent = t('tt.rate_good', '👍 Bagus! Terus latihan!');
+      else if (wpm >= 20) rating.textContent = t('tt.rate_ok', '💪 Lumayan, tingkatkan lagi!');
+      else rating.textContent = t('tt.rate_practice', '🌱 Ayo latihan lebih sering!');
 
       // Personal best check
       const prevPB = getPB(duration);
