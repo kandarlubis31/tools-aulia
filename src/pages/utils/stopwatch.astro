@@ -70,6 +70,9 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
+  const toast = (msg: string, type = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
   let startTime = 0;
@@ -155,6 +158,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     lapCounter = 1;
     if (lapBadge) lapBadge.classList.add('opacity-0');
     if (lapBadgeCount) lapBadgeCount.textContent = '0';
+    toast(t('sw.reset_done', 'Stopwatch direset.'), 'info');
   }
 
   function logLap() {

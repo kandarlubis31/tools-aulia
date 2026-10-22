@@ -49,6 +49,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </style>
 
 <script>
+  import { t } from '../../i18n/translations';
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
@@ -152,54 +153,54 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       };
 
       for (let i = 0; i < tokens.length; i++) {
-        const t = tokens[i];
+        const tok = tokens[i];
 
-        if (t.type === 'comment') {
+        if (tok.type === 'comment') {
           if (!atLineStart) newline();
-          push(t.value, `<span class="sql-cmt">${esc(t.value)}</span>`);
+          push(tok.value, `<span class="sql-cmt">${esc(tok.value)}</span>`);
           newline();
           continue;
         }
 
-        if (t.type === 'punct') {
-          if (t.value === '(') {
-            push(t.value, t.value);
+        if (tok.type === 'punct') {
+          if (tok.value === '(') {
+            push(tok.value, tok.value);
             indent++;
-          } else if (t.value === ')') {
+          } else if (tok.value === ')') {
             indent = Math.max(0, indent - 1);
             if (!atLineStart && line.trim()) {
               // jika sudah ada konten di baris, tetap sambung
             }
-            push(t.value, t.value);
-          } else if (t.value === ';') {
+            push(tok.value, tok.value);
+          } else if (tok.value === ';') {
             push(';', ';');
             newline();
-          } else if (t.value === ',') {
+          } else if (tok.value === ',') {
             push(',', ',');
             if (tokens[i + 1] && tokens[i + 1].type === 'ws') i++;
             newline();
-          } else if (t.value === '=' || t.value === '>' || t.value === '<' || t.value === '!') {
-            push(` ${t.value}`, ` ${t.value}`);
+          } else if (tok.value === '=' || tok.value === '>' || tok.value === '<' || tok.value === '!') {
+            push(` ${tok.value}`, ` ${tok.value}`);
           } else {
-            push(t.value, t.value);
+            push(tok.value, tok.value);
           }
           continue;
         }
 
-        if (t.type === 'string') {
-          push(` ${t.value}`, ` <span class="sql-str">${esc(t.value)}</span>`);
+        if (tok.type === 'string') {
+          push(` ${tok.value}`, ` <span class="sql-str">${esc(tok.value)}</span>`);
           continue;
         }
-        if (t.type === 'number') {
-          push(` ${t.value}`, ` <span class="sql-num">${t.value}</span>`);
+        if (tok.type === 'number') {
+          push(` ${tok.value}`, ` <span class="sql-num">${tok.value}</span>`);
           continue;
         }
-        if (t.type === 'ws') continue;
+        if (tok.type === 'ws') continue;
 
         // word
-        const upperWord = t.value.toUpperCase();
+        const upperWord = tok.value.toUpperCase();
         const isKeyword = KEYWORDS.has(upperWord);
-        const disp = upper ? upperWord : t.value;
+        const disp = upper ? upperWord : tok.value;
 
         if (TOP_CLAUSES.includes(upperWord)) {
           if (!atLineStart) newline();
@@ -248,16 +249,16 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       if (!outputArea!.textContent) return;
       try {
         await navigator.clipboard.writeText(outputArea!.textContent);
-        window.showToast?.(window._tToast ? window._tToast('Query tersalin!') : 'Query tersalin!', 'info');
+        window.showToast?.(window._tToast ? window._tToast(t('sql.copied', 'Query tersalin!')) : 'Query tersalin!', 'info');
       } catch {
-        window.showToast?.(window._tToast ? window._tToast('Gagal menyalin') : 'Gagal menyalin', 'error');
+        window.showToast?.(window._tToast ? window._tToast(t('sql.copy_fail', 'Gagal menyalin')) : 'Gagal menyalin', 'error');
       }
     });
 
     sampleBtn?.addEventListener('click', () => {
       inputArea.value = `select u.id,u.name,count(o.id) as total_orders from users u left join orders o on o.user_id=u.id and o.status='paid' where u.created_at>='2025-01-01' and u.city in ('Jakarta','Bandung') group by u.id,u.name having count(o.id)>=3 order by total_orders desc limit 10;`;
       run();
-      window.showToast?.(window._tToast ? window._tToast('Contoh dimuat!') : 'Contoh dimuat!', 'info');
+      window.showToast?.(window._tToast ? window._tToast(t('sql.sample_loaded', 'Contoh dimuat!')) : 'Contoh dimuat!', 'info');
     });
   });
 </script>

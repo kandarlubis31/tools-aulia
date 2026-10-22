@@ -9,6 +9,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     
         <ToolPageHeader
       title="Split PDF"
+      titleKey="header.split"
       desc="Pilih halaman yang ingin Anda ambil, lalu simpan sebagai PDF terpisah."
       descKey="header.split_desc"
       icon='<path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>'
@@ -57,6 +58,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+  import { t } from '../../i18n/translations';
 
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
@@ -143,7 +145,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         pagesGrid.appendChild(wrapper);
       }
     } catch (err) {
-      window.showToast?.(window._tToast ? window._tToast('Gagal memuat PDF.') : 'Gagal memuat PDF.', 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('split.load_fail', 'Gagal memuat PDF.')) : 'Gagal memuat PDF.', 'error');
       loading.classList.add('hidden');
       dropZone.classList.remove('hidden');
     }
@@ -171,7 +173,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
   function updateUI() {
     if(selectedCountSpan) {
-      var countText = selectedPages.size + ' ' + (window._tToast ? window._tToast('Halaman Dipilih') : 'Halaman Dipilih');
+      var countText = selectedPages.size + ' ' + t('split.selected', 'Halaman Dipilih');
       selectedCountSpan.innerText = countText;
     }
     if(splitBtn) splitBtn.disabled = selectedPages.size === 0;
@@ -213,7 +215,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   splitBtn?.addEventListener('click', async () => {
     if (!currentFile || selectedPages.size === 0) return;
 
-    const restoreBtn = window.showButtonSpinner(splitBtn, 'Memproses...');
+    const restoreBtn = window.showButtonSpinner(splitBtn, t('split.processing', 'Memproses...'));
 
     try {
       // Lazy load pdf-lib
@@ -238,7 +240,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
       window.downloadBytes(pdfBytes, `split-${currentFile.name}`, 'application/pdf');
 
     } catch (err) {
-      window.showToast?.(window._tToast ? window._tToast("Gagal memproses PDF.") : "Gagal memproses PDF.", 'error');
+      window.showToast?.(window._tToast ? window._tToast(t('split.process_fail', 'Gagal memproses PDF.')) : 'Gagal memproses PDF.', 'error');
     } finally {
       restoreBtn();
     }

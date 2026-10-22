@@ -4489,6 +4489,66 @@ export const translations: Record<string, { id: string; en: string }> = {
   'imgc.must_image': { id: 'File harus berupa gambar.', en: 'File must be an image.' },
   'imgc.too_big': { id: 'File terlalu besar! Maksimal 5MB.', en: 'File too large! Max 5MB.' },
   'imgc.downloaded': { id: 'Gambar berhasil diunduh!', en: 'Image downloaded successfully!' },
+  // --- W6 batch 28 — utils/stopwatch, file/pdf-to-md, data/csv-editor, utils/word-counter, pdf/split, pdf/to-word, utils/habit-tracker, dev/sql-formatter, utils/wordle-id, calc/currency, pdf/html-to-pdf ---
+  // utils/stopwatch (tambahan; reset konfirmasi)
+  'sw.reset_done': { id: 'Stopwatch direset.', en: 'Stopwatch reset.' },
+  // file/pdf-to-md (tambahan; result info)
+  'p2md.result_info': { id: 'Jumlah kata & karakter akan muncul di sini.', en: 'Word & character count will appear here.' },
+  // data/csv-editor
+  'csv.empty': { id: 'CSV kosong', en: 'CSV is empty' },
+  'csv.max_10': { id: 'File maksimal 10 MB', en: 'Maximum file size is 10 MB' },
+  'csv.loaded': { id: 'CSV dimuat!', en: 'CSV loaded!' },
+  'csv.clip_loaded': { id: 'CSV dari clipboard dimuat!', en: 'CSV from clipboard loaded!' },
+  'csv.clip_fail': { id: 'Tidak bisa akses clipboard', en: 'Cannot access clipboard' },
+  'csv.row_deleted': { id: 'Baris dihapus', en: 'Row deleted' },
+  'csv.exported': { id: 'CSV berhasil di-export!', en: 'CSV exported successfully!' },
+  // utils/word-counter
+  'wc.unique': { id: 'Unik', en: 'Unique' },
+  'wc.read_time': { id: 'Waktu Baca', en: 'Reading Time' },
+  'wc.input_teks': { id: 'Input Teks', en: 'Text Input' },
+  'wc.sample': { id: '📋 Sample', en: '📋 Sample' },
+  'wc.sample_loaded': { id: '📋 Sample teks dimuat!', en: '📋 Sample text loaded!' },
+  // pdf/split
+  'split.selected': { id: 'Halaman Dipilih', en: 'Pages Selected' },
+  'split.load_fail': { id: 'Gagal memuat PDF.', en: 'Failed to load the PDF.' },
+  'split.processing': { id: 'Memproses...', en: 'Processing...' },
+  'split.process_fail': { id: 'Gagal memproses PDF.', en: 'Failed to process the PDF.' },
+  // pdf/to-word
+  'toword.page_of': { id: 'halaman', en: 'page' },
+  'toword.pages': { id: 'halaman', en: 'pages' },
+  'toword.paragraphs': { id: 'paragraf', en: 'paragraphs' },
+  'toword.done': { id: 'Konversi selesai!', en: 'Conversion complete!' },
+  'toword.read_fail': { id: 'Gagal membaca PDF', en: 'Failed to read the PDF' },
+  // utils/habit-tracker
+  'habit.placeholder': { id: 'Tambah habit baru...', en: 'Add a new habit...' },
+  'habit.total': { id: 'Total Habits', en: 'Total Habits' },
+  'habit.done_today': { id: 'Selesai Hari Ini', en: 'Done Today' },
+  'habit.best_streak': { id: 'Best Streak', en: 'Best Streak' },
+  'habit.enter_name': { id: 'Masukkan nama habit!', en: 'Enter a habit name!' },
+  'habit.added': { id: 'Habit ditambahkan!', en: 'Habit added!' },
+  'habit.deleted': { id: 'Habit dihapus!', en: 'Habit deleted!' },
+  // dev/sql-formatter
+  'sql.copied': { id: 'Query tersalin!', en: 'Query copied!' },
+  'sql.copy_fail': { id: 'Gagal menyalin', en: 'Failed to copy' },
+  'sql.sample_loaded': { id: 'Contoh dimuat!', en: 'Sample loaded!' },
+  // utils/wordle-id
+  'wordle.enter': { id: 'ENTER', en: 'ENTER' },
+  'wordle.play_again': { id: 'Main Lagi', en: 'Play Again' },
+  'wordle.enter_5': { id: 'Masukkan 5 huruf!', en: 'Enter 5 letters!' },
+  'wordle.win': { id: 'Benar! Kamu menang!', en: 'Correct! You win!' },
+  'wordle.congrats': { id: 'Selamat! Kamu benar!', en: 'Congratulations! You got it!' },
+  'wordle.game_over': { id: 'Game over! Jawaban:', en: 'Game over! The answer:' },
+  'wordle.new_game': { id: 'Game baru dimulai!', en: 'New game started!' },
+  // calc/currency
+  'cur.plus_hundred': { id: '+ Ratus', en: '+ Hundred' },
+  'cur.plus_thousand': { id: '+ Ribu', en: '+ Thousand' },
+  'cur.plus_million': { id: '+ Juta', en: '+ Million' },
+  'cur.reset': { id: '↺ Reset', en: '↺ Reset' },
+  // pdf/html-to-pdf
+  'h2p.sample': { id: '📄 Sample', en: '📄 Sample' },
+  'h2p.refresh': { id: '↻ Refresh', en: '↻ Refresh' },
+  'h2p.empty': { id: 'Editor HTML kosong. Tulis kode dulu.', en: 'HTML editor is empty. Write some code first.' },
+  'h2p.done': { id: 'PDF berhasil dibuat!', en: 'PDF created successfully!' },
 };
 
 export function t(key, fallback) {
