@@ -234,6 +234,22 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
   `<button>` (tooltip) ke-detek sbg gap — cek manual sebelum wire. (4) `image/qr-art` sudah
   ke-wire dari awal.
 
+- 🆕 **CDP smoke test W6+W7 (Okt 22, 2026):** ✅ — harness Chrome headless manual via Node 25
+  built-in WebSocket (gak perlu puppeteer). Serve build via static server Node kecil (Vercel
+  adapter gak support `astro preview`). **Load test 15/15 PASS** (0 page exception, 0 console
+  error, title+DOM asli tiap page): landing, utils/qr, image/editor, media/beat-maker, pdf/sign,
+  diagram-to-img, pph21-ter, workdays, cron, wol, hash-compare, gpa, stopwatch, charmap, receipt.
+  **SPA round-trip 4/4 PASS** (load → back → forward → load, 0 exception, tool tetap hidup):
+  utils/qr, calc/gpa, text/charmap, network/wol.
+  ⚠️ Pelajaran smoke: (1) **static server wajib handle directory-style** — Astro build output
+  `dist/client/<kategori>/<tool>/index.html` (bukan `<tool>.html`); fallback ke root index tanpa
+  cek `<tool>/index.html` → semua page resolve ke Dashboard (false PASS). Fix: cek directory
+  dulu → serve `<dir>/index.html`. (2) **assertion smoke harus kuat** — cek `title` unik +
+  `bodyLen>200` + `!Dashboard`, bukan cuma `bodyLen>200` (false PASS awal: 15/15 identik
+  `title="Dashboard" body=675`). (3) **anchor klik di landing gak selalu ketemu** → round-trip
+  pakai `history.back()`/`location.href` fallback (full-load), true SPA nav belum ke-exercise
+  ketat. Harness bersifat sementara (tmp-*.cjs, sudah dihapus — tidak di-commit).
+
 ## Verifikasi standar selesai kerja
 
 1. `pnpm build` — prebuild (sync angka + 6 guardrail) + build hijau.
