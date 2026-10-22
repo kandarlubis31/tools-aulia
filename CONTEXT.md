@@ -219,6 +219,21 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
   (cron, html-to-img, editor, currency) & DropZone-props tetap harus tambah literal
   `data-i18n` di markup — gak ada jalan lain.
 
+- 🆕 **W7 header title/desc (Okt 22, 2026) — GAP 59→0:** wire `titleKey`/`descKey` ke 57 page
+  (`ef332f9`) — 36 auto-wire (key sudah terdaftar, tinggal tambah props) + 12 manual-key
+  (+27 key: `gpa`, `pph21_ter`, `workdays`, `merge`, `photo`, `slip_gaji`, `surat_hr`,
+  `to_svg`, `headers_gen`, `totp`, `charmap`, `receipt`, blok `// --- W7 header title/desc gap ---`).
+  Gap title/desc **59→0** (2 false positive di-skip: `image/editor` & `utils/prabowo-countdown`
+  gak pakai `ToolPageHeader` — `title=` mereka di button tooltip). Build+test 62/62 hijau;
+  audit 249/249; dup NONE (4402 keys). Total key 4402.
+  ⚠️ Pelajaran W7: (1) **banyak `ToolPageHeader` multi-line** — `title=`/`desc=` di baris
+  terpisah (bukan satu baris). Script auto-wire harus scan baris berikutnya setelah
+  `<ToolPageHeader`, splice `titleKey=`/`descKey=` sbg baris baru (indentasi 6 spasi).
+  (2) **`desc=` fallback prop = teks Indonesia**; `descKey` override saat i18n aktif.
+  (3) **gap-detection false positive**: page tanpa `ToolPageHeader` tapi punya `title=` di
+  `<button>` (tooltip) ke-detek sbg gap — cek manual sebelum wire. (4) `image/qr-art` sudah
+  ke-wire dari awal.
+
 ## Verifikasi standar selesai kerja
 
 1. `pnpm build` — prebuild (sync angka + 6 guardrail) + build hijau.
