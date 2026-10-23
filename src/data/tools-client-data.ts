@@ -1,4 +1,4 @@
-import { tools } from './tools';
+import { tools, hiddenToolHrefs } from './tools';
 
 /**
  * Client-side tool data for lazy-rendering the homepage grid.
@@ -15,12 +15,20 @@ import { tools } from './tools';
 
 // Subset of tool fields needed for client-side card rendering
 // (keeps the chunk lean — no seoTitle/seoDesc/category metadata).
-export const toolsData = tools.map((t) => ({
-  cat: t.cat,
-  title: t.title,
-  titleKey: t.titleKey,
-  desc: t.desc,
-  descKey: t.descKey,
-  href: t.href,
-  icon: t.icon,
-}));
+// ⚠️ WAJIB sejajar 1:1 dengan publicTools (src/data/tools.ts) — index toolsData
+// dipakai homepage via placeholder `data-tool-index`. Tanpa filter ini, sejak
+// index tersembunyi semua kartu lazy-render off-by-one (judul/kategori vs
+// isi beda) DAN /utils/hrd-dashboard bocor ke grid landing — ke-catch screenshot
+// smoke CDP Okt 23 2026. (publicTools = tools.filter(hiddenToolHrefs) — predikat
+// identik, urutan identik.)
+export const toolsData = tools
+  .filter((t) => hiddenToolHrefs.indexOf(t.href) === -1)
+  .map((t) => ({
+    cat: t.cat,
+    title: t.title,
+    titleKey: t.titleKey,
+    desc: t.desc,
+    descKey: t.descKey,
+    href: t.href,
+    icon: t.icon,
+  }));
