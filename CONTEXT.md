@@ -85,6 +85,26 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 
 ## Status saat ini (Oktober 2026)
 
+- 🆕 **(Oct 23)** Poles design homepage premium anti-AI-slop (scope homepage + navbar/footer) →
+  commits **`d794a02`** feat(ui) + **`84b0049`** fix(data):
+  bento **grid 3-kolom simetris** kartu charcoal hairline + ikon `.icon-mono` netral
+  (colorTile/duotone dihapus), **aksen electric indigo global** `--accent-blue`
+  (light `#4f46e5` / dark `#6366f1`, triplet `79 70 229` sinkron global+critical, teks aktif
+  dark `#818cf8` AA 6.3:1), flat gradient, emoji chrome bersih (flag footer 🇮🇩 ikut; key
+  `index.network`/`index.life`), filter+pagination seluruh titik indigo. Fix homepage dari
+  smoke: chip favorit by pathname (href absolut vs relatif), judul chip Favorit & Baru Digunakan
+  dari judul live DOM (bukan raw key `tool.*`), template recent `${title}`.
+  **Fix I1: blok display critical.css kini `@layer critical-display`** — terbukti via instrumen
+  urutan head: fresh load `[STYLE[crit]][LINK]`, setelah ClientRouter swap `[LINK][STYLE[crit]]`
+  → `.hidden` menang tie-break atas `.md:flex` → baris chip desktop hilang pasca-navigasi SPA
+  ("light only" = kebetulan pre/post-swap, bukan tema). **Fix data HRD (pre-existing sejak
+  b719749):** `tools-client-data` tak filter `hiddenToolHrefs` → kartu lazy-render off-by-one +
+  `/utils/hrd-dashboard` bocor ke grid landing (ketangkap review screenshot; search index,
+  showcase, strip New Tools sudah `publicTools`; assertion A5 anti-bocor ditambah ke harness).
+  Verifikasi final: build hijau (7 guardrail), 62/62 test, audit exit 0 (gap 0/0/0),
+  **smoke CDP 30/30 — 0 exception, 0 consoleErr** + screenshot dark/light/mobile di-review.
+  ⚠️ **Belum push** (nunggu konfirmasi user); harness `scripts/tmp-smoke-poles.mjs` +
+  `scripts/tmp-poles-shots/` untracked — jangan di-commit, dihapus setelah push.
 - 🆕 **(Oct 22)** Rebrand kedua + favicon monogram: nama **"MasAul Tools" → "Tools MasAul"**
   (415 replacements / 36 file tracked — src, config, i18n-phrases key+value, root md; `editor/`
   + `omniclip/` + `public/editor/` sengaja dikecualikan = sub-project terproteksi AGENTS.md #11).
