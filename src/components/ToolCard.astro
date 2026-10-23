@@ -7,10 +7,9 @@ interface Props {
   isSoon?: boolean;
   titleKey?: string;
   descKey?: string;
-  tileClass?: string;
 }
 
-const { title, desc, href, icon, isSoon = false, titleKey, descKey, tileClass = 'from-matte-100 to-matte-200/60 text-matte-500 dark:from-surface-elevated dark:to-matte-800 dark:text-matte-300' } = Astro.props;
+const { title, desc, href, icon, isSoon = false, titleKey, descKey } = Astro.props;
 ---
 
 <!-- P0 a11y fix: wrapper adalah <article> (bukan <a>) — button tidak boleh nested di dalam <a>.
@@ -31,9 +30,10 @@ const { title, desc, href, icon, isSoon = false, titleKey, descKey, tileClass = 
     </button>
   )}
 
-  <!-- Icon tile -->
-  <div class={`icon-mono icon-tile w-10 h-10 mb-3 rounded-xl bg-gradient-to-br ${tileClass} transition-all duration-150 group-hover:scale-110 shrink-0`}>
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: inherit" set:html={icon} />
+  <!-- Icon tile netral (brief premium Oct 2026): box hairline + ikon line-art muted (.icon-mono),
+       hover aksen via CSS. HARUS identik dgn renderCardHTML() di index.astro. -->
+  <div class="icon-mono w-10 h-10 mb-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border transition-all duration-150 shrink-0">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
   </div>
 
   <!-- Title = stretched link: ::after menutupi seluruh kartu (di bawah z-10 star) -->
