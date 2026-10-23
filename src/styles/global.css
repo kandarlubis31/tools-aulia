@@ -18,8 +18,8 @@
   --surface-elevated: #161b22;
   --surface-hover: #1c2128;
   --surface-border: #21262d;
-  --accent-blue: #0284c7; /* sky-600: kontras AA untuk teks & tombol di light mode */
-  --accent-blue-rgb: 2 132 199; /* triplet untuk Tailwind opacity modifier */
+  --accent-blue: #4f46e5; /* indigo-600: kontras AA (6.1:1) untuk teks & tombol di light mode */
+  --accent-blue-rgb: 79 70 229; /* triplet utk Tailwind opacity modifier — HARUS = rgb(#4f46e5) */
   --bg-card: #ffffff;
   --bg-page: #fbfbfd;
   --text-primary: #0f172a;
@@ -27,15 +27,15 @@
 }
 
 .dark {
-  --surface-elevated: #131722;
-  --surface-hover: #1a2030;
-  --surface-border: #242b3b;
-  --bg-card: #131722;
+  --surface-elevated: #1a1a1d;
+  --surface-hover: #212126;
+  --surface-border: #2d3748; /* hairline ultra-tipis per brief design */
+  --bg-card: #121214; /* charcoal seragam per brief design */
   --bg-page: #0b0e14;
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
-  --accent-blue: #38bdf8; /* sky-400: tetap cerah di dark (8:1 vs bg) */
-  --accent-blue-rgb: 56 189 248;
+  --accent-blue: #6366f1; /* electric indigo — satu accent cohesive (brief) */
+  --accent-blue-rgb: 99 102 241;
 }
 
 /* ========== P3-5 AKSESIBILITAS: kontras teks muted di dark mode (WCAG AA ≥4.5:1) ========== */
@@ -100,13 +100,16 @@ h1, h2, h3, h4 {
 
 /* ========== SIGNATURE GRADIENT ========== */
 .gradient-text {
-  background-image: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #a78bfa 100%);
+  background-image: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #a78bfa 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .gradient-brand {
-  background-image: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #8b5cf6 100%);
+  /* Flat indigo (Oct 2026): ganti gradient sky→violet lama — brief premium/anti-AI-slop.
+     #4f46e5 (indigo-600) both mode: teks putih 6.1:1 (AA). #6366f1 (var accent dark)
+     cuma 4.47:1 → gagal AA utk isi tombol, jadi fill pakai shade ini. */
+  background-color: #4f46e5;
   color: #ffffff;
 }
 
@@ -131,7 +134,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 /* ========== SELECTION ========== */
 ::selection {
-  background: rgba(56, 189, 248, 0.2);
+  background: rgb(var(--accent-blue-rgb) / 0.2);
   color: inherit;
 }
 
@@ -280,7 +283,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   transition: all 0.2s ease;
 }
 .dark .card-base {
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.2);
+  /* hairline #2d3748 (bukan rgba putih) — border tipis seragam per brief */
+  box-shadow: 0 0 0 1px #2d3748, 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 .card-base:hover {
   box-shadow: 0 0 0 1px rgba(var(--accent-blue-rgb), 0.35), 0 4px 14px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
@@ -321,9 +325,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   text-transform: uppercase;
   letter-spacing: 0.12em;
   border-radius: 0.375rem;
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  border: 1px solid rgb(var(--accent-blue-rgb) / 0.2);
   color: var(--accent-blue);
-  background-color: rgba(56, 189, 248, 0.05);
+  background-color: rgb(var(--accent-blue-rgb) / 0.05);
 }
 .badge-muted {
   display: inline-flex;
@@ -381,6 +385,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .group:hover .icon-mono svg {
   color: var(--accent-blue);
+}
+
+/* ========== DARK: TEKS & IKON AKSEN (lanjutan P3-5) ========== */
+/* --accent-blue dark = #6366f1 (brief) — pas utk fill/border/ring/dot (≥3:1),
+   tapi cuma 4.2:1 buat teks 12-14px di #0b0e14/#121214 (AA wajib 4.5:1).
+   Teks & ikon hover aksen dark dinaikkan ke indigo-400 #818cf8 (6.3:1).
+   Unlayered → menang atas utility Tailwind tanpa !important (pola P3-5). */
+.dark .text-accent-blue,
+.dark .hover\:text-accent-blue:hover,
+.dark .group:hover .group-hover\:text-accent-blue,
+.dark .focus\:text-accent-blue:focus,
+.dark .badge-accent,
+.dark .nav-item-active,
+.dark .group:hover .icon-mono svg {
+  color: #818cf8;
 }
 
 /* ========== ICON TILE (duotone per kategori — warna ikon ikut tile) ========== */
@@ -530,14 +549,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .new-tools-section {
   border-radius: 0.75rem;
   padding: 1.25rem;
-  border: 1px solid rgba(56, 189, 248, 0.1);
-  background: rgba(56, 189, 248, 0.03);
+  border: 1px solid rgb(var(--accent-blue-rgb) / 0.12);
+  background: rgb(var(--accent-blue-rgb) / 0.03);
   position: relative;
   overflow: hidden;
 }
 .dark .new-tools-section {
-  border-color: rgba(56, 189, 248, 0.08);
-  background: rgba(56, 189, 248, 0.03);
+  border-color: rgb(var(--accent-blue-rgb) / 0.12);
+  background: rgb(var(--accent-blue-rgb) / 0.03);
 }
 
 /* ========== CHECKERBOARD BACKGROUND ========== */
@@ -597,7 +616,7 @@ html.dark .checkerboard {
   overflow: hidden;
 }
 .dark .tool-placeholder {
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 1px #2d3748, 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 .dark .tool-placeholder {
   border-color: var(--surface-border);

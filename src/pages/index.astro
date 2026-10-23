@@ -3,7 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolCard from '../components/ToolCard.astro';
 import { publicTools as tools, categoryIds } from '../data/tools';
 import { newToolHrefs } from '../data/new-tools';
-import { colorTile } from '../data/tools-client-data';
 
 // Newly added tools (sorted by order in new-tools.ts)
 const newTools = tools.filter(t => newToolHrefs.includes(t.href));
@@ -11,29 +10,32 @@ newTools.sort((a, b) => newToolHrefs.indexOf(a.href) - newToolHrefs.indexOf(b.hr
 
 // --- Bento highlight kategori ---
 const bentoCats = [
-  { id: 'pdf', name: 'PDF', icon: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', tile: 'from-blue-600/80 to-blue-700/80', count: tools.filter(t => t.cat === 'pdf').length },
-  { id: 'image', name: 'Image', icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>', tile: 'from-emerald-600/80 to-emerald-700/80', count: tools.filter(t => t.cat === 'image').length },
-  { id: 'dev', name: 'Dev', icon: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>', tile: 'from-slate-600/80 to-slate-700/80', count: tools.filter(t => t.cat === 'dev').length },
-  { id: 'calc', name: 'Calc', icon: '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="12" y2="18"/>', tile: 'from-teal-600/80 to-teal-700/80', count: tools.filter(t => t.cat === 'calc').length },
-  { id: 'security', name: 'Security', icon: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', tile: 'from-slate-600/80 to-slate-700/80', count: tools.filter(t => t.cat === 'security').length },
-  { id: 'utils', name: 'Utils', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>', tile: 'from-blue-600/80 to-blue-700/80', count: tools.filter(t => t.cat === 'utils').length },
+  { id: 'pdf', name: 'PDF', icon: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', count: tools.filter(t => t.cat === 'pdf').length },
+  { id: 'image', name: 'Image', icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>', count: tools.filter(t => t.cat === 'image').length },
+  { id: 'dev', name: 'Dev', icon: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>', count: tools.filter(t => t.cat === 'dev').length },
+  { id: 'calc', name: 'Calc', icon: '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="12" y2="18"/>', count: tools.filter(t => t.cat === 'calc').length },
+  { id: 'security', name: 'Security', icon: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', count: tools.filter(t => t.cat === 'security').length },
+  { id: 'utils', name: 'Utils', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>', count: tools.filter(t => t.cat === 'utils').length },
 ];
 
 // --- DATA KATEGORI ---
+// Nama chip tanpa emoji (brief premium: ikon = line-art SVG, emoji dekoratif dibuang).
+// Catatan: key i18n index.network & index.life sebelumnya TIDAK ADA di translations.ts
+// (audit tak melihat data-i18n={cat.nameKey} dinamis) — keduanya ditambahkan di batch ini.
 const categories = [
-  { id: "all", name: "📚 Semua", nameKey: "index.all" },
-  { id: "pdf", name: "📄 PDF", nameKey: "index.pdf" },
-  { id: "image", name: "🖼️ Image", nameKey: "index.image" },
-  { id: "dev", name: "💻 Dev", nameKey: "index.dev" },
-  { id: "security", name: "🔒 Security", nameKey: "index.security" },
-  { id: "calc", name: "🧮 Calc", nameKey: "index.calc" },
-  { id: "utils", name: "⚡ Utils", nameKey: "index.utils" },
-  { id: "file", name: "📂 File", nameKey: "index.file" },
-  { id: "text", name: "📝 Text", nameKey: "index.text" },
-  { id: "data", name: "🗄️ Data", nameKey: "index.data" },
-  { id: "media", name: "🎵 Media", nameKey: "index.media" },
-  { id: "network", name: "🌐 Network", nameKey: "index.network" },
-  { id: "life", name: "💡 Life", nameKey: "index.life" }
+  { id: "all", name: "Semua", nameKey: "index.all" },
+  { id: "pdf", name: "PDF", nameKey: "index.pdf" },
+  { id: "image", name: "Image", nameKey: "index.image" },
+  { id: "dev", name: "Dev", nameKey: "index.dev" },
+  { id: "security", name: "Security", nameKey: "index.security" },
+  { id: "calc", name: "Calc", nameKey: "index.calc" },
+  { id: "utils", name: "Utils", nameKey: "index.utils" },
+  { id: "file", name: "File", nameKey: "index.file" },
+  { id: "text", name: "Text", nameKey: "index.text" },
+  { id: "data", name: "Data", nameKey: "index.data" },
+  { id: "media", name: "Media", nameKey: "index.media" },
+  { id: "network", name: "Network", nameKey: "index.network" },
+  { id: "life", name: "Life", nameKey: "index.life" }
 ];
 ---
 
@@ -53,7 +55,7 @@ const categories = [
 
   <!-- Background — Subtle grid pattern -->
   <div class="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-    <div class="absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.03)_1px,transparent_1px)] bg-[length:64px_64px]"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.04)_1px,transparent_1px)] bg-[length:64px_64px]"></div>
   </div>
 
   <!-- Hero Section -->
@@ -88,58 +90,44 @@ const categories = [
         href="/showcase"
         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-matte-900 dark:bg-white text-white dark:text-matte-900 text-xs font-bold hover:-translate-y-0.5 hover:shadow-md transition-all shadow-sm"
         data-i18n="index.top20"
-      >⭐ Top 20 Tools</a>
+      >Top 20 Tools</a>
     </div>
   </section>
 
-  <!-- Bento + New Tools (two-column layout) -->
+  <!-- Category Grid (3-kolom simetris) + New Tools strip — brief premium dashboard -->
   <section id="bento-section" class="max-w-7xl mx-auto px-4 mb-6 content-visibility-auto">
-    <div class="flex flex-col lg:flex-row gap-4">
-      
-      <!-- Left: Bento Grid -->
-      <div class="flex-1">
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {bentoCats.map((cat) => (
-            <a href={`/?cat=${cat.id}`} class={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${cat.tile} p-4 flex flex-col gap-2.5 shadow-lg shadow-black/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-200`}>
-              <div class="absolute -top-6 -right-6 w-20 h-20 bg-white/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-300"></div>
-              <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={cat.icon} />
-              </div>
-              <div>
-                <p class="text-sm font-bold text-white leading-tight">{cat.name}</p>
-                <p class="text-2xs text-white/70 font-medium">{cat.count} tools</p>
-              </div>
-              <span class="absolute bottom-3 right-3 text-white/60 group-hover:text-white group-hover:translate-x-0.5 transition-all duration-200">→</span>
-            </a>
-          ))}
-        </div>
-      </div>
-
-      <!-- Right: New Tools Sidebar (vertical) -->
-      <div class="lg:w-64 shrink-0">
-        <div class="card-base p-4 sticky top-20">
-          <div class="flex items-center gap-2 mb-3">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-blue opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-accent-blue"></span>
-            </span>
-            <span class="text-xs font-bold uppercase tracking-wider text-matte-400 dark:text-matte-300" data-i18n="index.new_title">Baru Ditambahkan</span>
-            <span class="badge-accent text-2xs ml-auto">{newTools.length}</span>
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {bentoCats.map((cat) => (
+        <a href={`/?cat=${cat.id}`} class="group card-base relative flex flex-col gap-3 p-4 hover:-translate-y-0.5 transition-all duration-150">
+          <div class="icon-mono w-10 h-10 rounded-xl border border-matte-200 dark:border-surface-border bg-matte-50 dark:bg-surface-elevated">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={cat.icon} />
           </div>
-          <div class="flex flex-col gap-1">
-            {newTools.slice(0, 8).map((tool) => (
-              <a 
-                href={tool.href}
-                class="group flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-all duration-150 -mx-1"
-              >
-                <span class="text-xs font-medium text-matte-600 dark:text-matte-300 truncate group-hover:text-accent-blue transition-colors">{tool.title}</span>
-                <span class="text-2xs text-accent-blue font-bold opacity-0 group-hover:opacity-100 transition-opacity ml-auto shrink-0">→</span>
-              </a>
-            ))}
+          <div>
+            <p class="text-sm font-semibold text-matte-800 dark:text-white group-hover:text-accent-blue transition-colors duration-150 leading-tight">{cat.name}</p>
+            <p class="text-2xs text-matte-400 dark:text-matte-400 font-medium mt-0.5">{cat.count} tools</p>
           </div>
-        </div>
-      </div>
+        </a>
+      ))}
+    </div>
 
+    <!-- New Tools — strip penuh di bawah grid (sidebar lama patahkan simetri 3-kolom) -->
+    <div class="card-base mt-3 p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-2 h-2 rounded-full bg-accent-blue shrink-0"></span>
+        <span class="text-xs font-bold uppercase tracking-wider text-matte-400 dark:text-matte-300" data-i18n="index.new_title">Baru Ditambahkan</span>
+        <span class="badge-accent text-2xs ml-auto">{newTools.length}</span>
+      </div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-0.5">
+        {newTools.slice(0, 8).map((tool) => (
+          <a
+            href={tool.href}
+            class="group flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-all duration-150"
+          >
+            <span class="text-xs font-medium text-matte-600 dark:text-matte-300 truncate group-hover:text-accent-blue transition-colors">{tool.title}</span>
+            <span class="text-2xs text-accent-blue font-bold opacity-0 group-hover:opacity-100 transition-opacity ml-auto shrink-0">→</span>
+          </a>
+        ))}
+      </div>
     </div>
   </section>
 
@@ -166,7 +154,7 @@ const categories = [
                 <button 
                    class={`filter-btn px-3 py-2 text-xs font-medium transition-all duration-150 whitespace-nowrap rounded-lg shrink-0
                    ${index === 0 
-                       ? 'bg-matte-900 text-white dark:bg-white dark:text-matte-900' 
+                       ? 'bg-accent-blue/15 text-accent-blue' 
                        : 'text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white'}`} 
                    data-filter={cat.id}
                    data-i18n={cat.nameKey}
@@ -183,7 +171,7 @@ const categories = [
                 <button
                    class={`filter-btn-mobile px-3 py-2 text-xs font-medium transition-all duration-150 whitespace-nowrap rounded-lg shrink-0
                    ${index === 0
-                       ? 'bg-matte-900 text-white dark:bg-white dark:text-matte-900'
+                       ? 'bg-accent-blue/15 text-accent-blue'
                        : 'text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white'}`}
                    data-filter={cat.id}
                    data-i18n={cat.nameKey}
@@ -231,7 +219,7 @@ const categories = [
       <div class="flex items-center justify-between mb-3">
         <h2 class="section-title flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          ⭐ Favorit
+          Favorit
         </h2>
       </div>
       <div id="favorite-tools" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2"></div>
@@ -294,7 +282,6 @@ const categories = [
                 icon={tool.icon}
                 titleKey={tool.titleKey}
                 descKey={tool.descKey}
-                tileClass={colorTile[tool.color] || colorTile.indigo}
              />
           </div>
        ))}
@@ -379,18 +366,17 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         if (!dataPromise) dataPromise = import('../data/tools-client-data');
         return dataPromise;
       }
-      const DEFAULT_TILE = 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300';
-
-      function renderCardHTML(tool, colorTile) {
-        const tc = (colorTile && colorTile[tool.color]) || DEFAULT_TILE;
+      // Tile netral (brief premium Oct 2026): box hairline + ikon line-art muted via .icon-mono
+      // (bukan gradient duotone per warna). HARUS identik dengan ToolCard.astro.
+      function renderCardHTML(tool) {
         const titleKey = tool.titleKey ? ` data-i18n="${tool.titleKey}"` : '';
         const descKey = tool.descKey ? ` data-i18n="${tool.descKey}"` : '';
         return `<article class="card-base group relative flex flex-col p-4 rounded-xl overflow-hidden hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150" data-tool-href="${tool.href}">
           <button class="fav-star absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 dark:bg-matte-800/80 backdrop-blur-sm text-matte-300 hover:text-amber-400 hover:scale-110 transition-all duration-150 opacity-0 group-hover:opacity-100 focus-visible:opacity-100" data-fav="${tool.href}" title="Add to favorites" aria-label="Add to favorites" type="button">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </button>
-          <div class="icon-mono icon-tile w-10 h-10 mb-3 rounded-xl bg-gradient-to-br ${tc} transition-all duration-150 group-hover:scale-110 shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:inherit">${tool.icon}</svg>
+          <div class="icon-mono w-10 h-10 mb-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border transition-all duration-150 shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${tool.icon}</svg>
           </div>
           <h3 class="text-sm font-semibold text-matte-800 dark:text-white transition-colors duration-150 group-hover:text-accent-blue leading-snug truncate"${titleKey}><a href="${tool.href}" class="after:absolute after:inset-0">${tool.title}</a></h3>
           <p class="text-xs text-matte-400 dark:text-matte-300 leading-relaxed mt-1 line-clamp-2"${descKey}>${tool.desc}</p>
@@ -402,10 +388,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const idx = parseInt(placeholder.getAttribute('data-tool-index') || '');
         if (isNaN(idx) || renderedPlaceholders.has(idx)) return;
         renderedPlaceholders.add(idx);
-        const { toolsData, colorTile } = await getData();
+        const { toolsData } = await getData();
         const tool = toolsData[idx];
         if (!tool) { renderedPlaceholders.delete(idx); return; }
-        placeholder.innerHTML = renderCardHTML(tool, colorTile);
+        placeholder.innerHTML = renderCardHTML(tool);
         placeholder.classList.remove('tool-placeholder');
         // Wire up event handlers for the new card
         const link = placeholder.querySelector('a');
@@ -484,14 +470,20 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         favSection.classList.remove('hidden');
 
         favContainer.innerHTML = favs.map(href => {
+          // Bandingkan PATHNAME, bukan atribut mentah: updateLinkParams menulis href
+          // absolut (url.toString()) sedangkan favTools berisi href relatif → String
+          // === selalu gagal & chip favorit kosong (bug ke-catch smoke CDP Oct 23, 2026).
           const t = Array.from(tools).find(el => {
             const a = el.querySelector('a');
-            return a && (a.getAttribute('href') || '').split('?')[0] === href;
+            if (!a) return false;
+            try { return new URL(a.href, location.origin).pathname === href; } catch { return false; }
           });
           if (!t) return '';
           const color = t.getAttribute('data-color') || 'indigo';
           const icon = t.getAttribute('data-icon') || '';
-          const title = t.getAttribute('data-name') || '';
+          // data-name berisi i18n KEY sejak W7 (titleKey ke-wire semua) — pakai judul
+          // live dari DOM kartu, fallback key lama kalau kartu tak ditemukan.
+          const title = (t.querySelector('a')?.textContent || '').trim() || t.getAttribute('data-name') || '';
           const cat = t.getAttribute('data-cat') || '';
           return `<a href="${href}?from_cat=${cat}" class="group flex flex-col items-center justify-center p-2.5 rounded-lg bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 hover:border-amber-400 transition-all duration-150">
             <div class="icon-mono w-6 h-6 mb-1.5 text-amber-500"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></div>
@@ -534,23 +526,25 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
         recentSection.classList.remove('hidden');
         recentToolsContainer.innerHTML = recent.map(item => {
-            let color = item.color || 'indigo';
-            let icon = item.icon || '';
-            
-            if (!icon) {
-                const toolEl = Array.from(tools).find(t => t.querySelector('a')?.getAttribute('href')?.split('?')[0] === item.href);
-                if(toolEl) {
-                    color = toolEl.getAttribute('data-color') || 'indigo';
-                    icon = toolEl.getAttribute('data-icon') || '';
-                }
-            }
+            // Cari kartu via pathname (href bisa absolut dari updateLinkParams / relatif
+            // dari data-fav) — jarang dipakai utk icon lama, tapi SEKARANG juga utk
+            // judul live: data-name = i18n key sejak W7 → chip sempat tampil "tool.*".
+            const norm = (h) => { try { return new URL(String(h || ''), location.origin).pathname; } catch { return String(h || ''); } };
+            const toolEl = Array.from(tools).find(t => {
+                const a = t.querySelector('a');
+                if (!a) return false;
+                try { return new URL(a.href, location.origin).pathname === norm(item.href); } catch { return false; }
+            });
+            let color = item.color || (toolEl ? toolEl.getAttribute('data-color') : '') || 'indigo';
+            let icon = item.icon || (toolEl ? toolEl.getAttribute('data-icon') : '') || '';
+            const title = (toolEl ? (toolEl.querySelector('a')?.textContent || '').trim() : '') || item.title || '';
 
             return `
             <a href="${item.href}" class="group flex flex-col items-center justify-center p-2.5 rounded-lg bg-matte-100/50 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border hover:border-accent-blue/30 transition-all duration-150">
                 <div class="icon-mono w-6 h-6 mb-1.5">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
                 </div>
-                <span class="text-2xs font-medium text-matte-500 dark:text-matte-300 text-center leading-tight line-clamp-2">${item.title}</span>
+                <span class="text-2xs font-medium text-matte-500 dark:text-matte-300 text-center leading-tight line-clamp-2">${title}</span>
             </a>
             `;
         }).join('');
@@ -705,7 +699,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         if (endP - startP < maxShow - 1) startP = Math.max(1, endP - maxShow + 1);
 
         for (let p = startP; p <= endP; p++) {
-            const active = p === currentPage ? 'bg-matte-900 text-white dark:bg-white dark:text-matte-900' : 'text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white';
+            const active = p === currentPage ? 'bg-accent-blue/15 text-accent-blue' : 'text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white';
             html += `<button data-page="${p}" aria-label="Halaman ${p}" aria-current="${p === currentPage ? 'page' : 'false'}" class="min-w-[34px] px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${active}">${p}</button>`;
         }
         pageNumbers.innerHTML = html;
@@ -741,7 +735,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
         filterBtns.forEach(btn => {
             if(btn.getAttribute('data-filter') === filterId) {
-                btn.className = "filter-btn px-3 py-2 text-xs font-medium rounded-lg bg-matte-900 text-white dark:bg-white dark:text-matte-900 transition-all whitespace-nowrap shrink-0";
+                btn.className = "filter-btn px-3 py-2 text-xs font-medium rounded-lg bg-accent-blue/15 text-accent-blue transition-all whitespace-nowrap shrink-0";
             } else {
                 btn.className = "filter-btn px-3 py-2 text-xs font-medium text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white rounded-lg transition-all whitespace-nowrap shrink-0";
             }
@@ -749,7 +743,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
         mobileFilters.forEach(btn => {
             if(btn.getAttribute('data-filter') === filterId) {
-                btn.className = "filter-btn-mobile px-3 py-2 text-xs font-medium rounded-lg bg-matte-900 text-white dark:bg-white dark:text-matte-900 transition-all whitespace-nowrap shrink-0";
+                btn.className = "filter-btn-mobile px-3 py-2 text-xs font-medium rounded-lg bg-accent-blue/15 text-accent-blue transition-all whitespace-nowrap shrink-0";
             } else {
                 btn.className = "filter-btn-mobile px-3 py-2 text-xs font-medium text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white rounded-lg transition-all whitespace-nowrap shrink-0";
             }
