@@ -111,6 +111,15 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
   roundtrip SPA), screenshot live `scripts/tmp-poles-shots-live/`. Harness
   `scripts/tmp-smoke-poles.mjs` kini dukung env `SMOKE_BASE`/`SMOKE_SHOTS` (mode lokal tetap
   default) — untracked, jangan di-commit (disimpan untuk iterasi desain).
+  **Live extras:** 3-lapis HRD lengkap kebukti — lapis1 filter landing/search (smoke A5),
+  lapis2 `robots.txt` `Disallow: /utils/hrd-dashboard` ✓, lapis3 `sitemap-0.xml` tanpa HRD ✓
+  + halaman HRD `meta robots noindex` ✓; **CI GitHub Actions hijau** (2 run: astro check +
+  vitest + build). **Panel Source Control menampilkan 4 item untracked — BUKAN kode
+  tertinggal:** itu harness/screenshot sementara (`scripts/tmp-smoke-poles.mjs`,
+  `scripts/tmp-debug-poles.mjs`, `scripts/tmp-poles-shots/`, `scripts/tmp-poles-shots-live/`),
+  memang tak pernah di-commit; semua kode proyek sudah ter-commit & `main` = `origin/main`
+  (`d185e25`). **Deferred batch berikutnya:** `showcase.astro` masih tile gradient lokal
+  (di luar scope poles homepage — kandidat batch kecil konsistensi `.icon-mono`).
 - 🆕 **(Oct 22)** Rebrand kedua + favicon monogram: nama **"MasAul Tools" → "Tools MasAul"**
   (415 replacements / 36 file tracked — src, config, i18n-phrases key+value, root md; `editor/`
   + `omniclip/` + `public/editor/` sengaja dikecualikan = sub-project terproteksi AGENTS.md #11).
