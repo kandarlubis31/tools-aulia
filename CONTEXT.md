@@ -103,8 +103,14 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
   showcase, strip New Tools sudah `publicTools`; assertion A5 anti-bocor ditambah ke harness).
   Verifikasi final: build hijau (7 guardrail), 62/62 test, audit exit 0 (gap 0/0/0),
   **smoke CDP 30/30 — 0 exception, 0 consoleErr** + screenshot dark/light/mobile di-review.
-  ⚠️ **Belum push** (nunggu konfirmasi user); harness `scripts/tmp-smoke-poles.mjs` +
-  `scripts/tmp-poles-shots/` untracked — jangan di-commit, dihapus setelah push.
+  **Pushed head `3c5d74e` (`d794a02` feat + `84b0049` fix + `3c5d74e` docs) → live verify:**
+  marker deploy `/_astro/global.QLH9myco.css` 200 (poll ke-1), curl HTML production lolos semua
+  marker (`@layer critical-display`, triplet `79 70 229`, h1 brand, **0 link HRD**, 0 flag),
+  **smoke CDP live 30/30 PASS — 0 exception, 0 consoleErr** (I1 post-swap `[LINK][STYLE[crit]]`
+  tapi `dpDisplay:flex` — fix `@layer` bekerja di prod; A5 anti-HRD; B3/B4/G2 nilai indigo AA;
+  roundtrip SPA), screenshot live `scripts/tmp-poles-shots-live/`. Harness
+  `scripts/tmp-smoke-poles.mjs` kini dukung env `SMOKE_BASE`/`SMOKE_SHOTS` (mode lokal tetap
+  default) — untracked, jangan di-commit (disimpan untuk iterasi desain).
 - 🆕 **(Oct 22)** Rebrand kedua + favicon monogram: nama **"MasAul Tools" → "Tools MasAul"**
   (415 replacements / 36 file tracked — src, config, i18n-phrases key+value, root md; `editor/`
   + `omniclip/` + `public/editor/` sengaja dikecualikan = sub-project terproteksi AGENTS.md #11).
