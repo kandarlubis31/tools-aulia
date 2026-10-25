@@ -99,13 +99,14 @@ img, video { max-width: 100%; height: auto; }
 /* ---- BASE (mirror of global.css) ---- */
 html { font-family: 'Inter', system-ui, sans-serif; }
 a, button, input, select, textarea { touch-action: manipulation; }
-html { overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+/* mirror global.css: clip, bukan hidden — lihat catatan di global.css */
+html { overflow-x: clip; -webkit-overflow-scrolling: touch; }
 body {
   background-color: var(--bg-page);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-tap-highlight-color: transparent;
 }
 h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; }
