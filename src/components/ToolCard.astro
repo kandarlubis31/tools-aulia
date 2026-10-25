@@ -14,9 +14,13 @@ const { title, desc, href, icon, isSoon = false, titleKey, descKey } = Astro.pro
 
 <!-- P0 a11y fix: wrapper adalah <article> (bukan <a>) — button tidak boleh nested di dalam <a>.
      Link utama = judul, dengan ::after fullscreen (stretched-link pattern) supaya
-     seluruh kartu tetap clickable; fav-star jadi sibling dengan z-10 di atasnya. -->
-<article class={`card-base group relative flex flex-col p-4 rounded-xl overflow-hidden
-        ${isSoon ? 'opacity-50' : 'hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150'}`}
+     seluruh kartu tetap clickable; fav-star jadi sibling dengan z-10 di atasnya.
+
+     Clean Oct 2026: tile hairline datar (.tool-tile) — tanpa box-shadow, tanpa lift
+     hover, tanpa kotak ikon bergaris. HARUS identik dengan renderCardHTML() di
+     index.astro (kartu lazy-render). -->
+<article class={`tool-tile group relative flex flex-col p-4
+        ${isSoon ? 'opacity-50' : ''}`}
    data-tool-href={href}>
 
   {isSoon && (
@@ -24,20 +28,19 @@ const { title, desc, href, icon, isSoon = false, titleKey, descKey } = Astro.pro
   )}
 
   {!isSoon && (
-    <button class="fav-star absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 dark:bg-matte-800/80 backdrop-blur-sm text-matte-300 hover:text-amber-400 hover:scale-110 transition-all duration-150 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+    <button class="fav-star absolute top-2.5 right-2.5 z-10 w-6 h-6 flex items-center justify-center rounded-md text-matte-300 hover:text-amber-400 transition-colors opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
       data-fav={href} title="Add to favorites" aria-label="Add to favorites" type="button">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
     </button>
   )}
 
-  <!-- Icon tile netral (brief premium Oct 2026): box hairline + ikon line-art muted (.icon-mono),
-       hover aksen via CSS. HARUS identik dgn renderCardHTML() di index.astro. -->
-  <div class="icon-mono w-10 h-10 mb-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border transition-all duration-150 shrink-0">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
+  <!-- Ikon line-art polos (tanpa kotak/tile). Hover kartu → ikon jadi aksen (.icon-mono). -->
+  <div class="icon-mono w-5 h-5 mb-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
   </div>
 
   <!-- Title = stretched link: ::after menutupi seluruh kartu (di bawah z-10 star) -->
-  <h3 class="text-sm font-semibold text-matte-800 dark:text-white transition-colors duration-150 group-hover:text-accent-blue leading-snug truncate" data-i18n={titleKey || undefined}>
+  <h3 class="text-sm font-semibold text-matte-800 dark:text-white leading-snug truncate" data-i18n={titleKey || undefined}>
     <a href={isSoon ? "#" : href} class={isSoon ? 'cursor-not-allowed' : 'after:absolute after:inset-0'}>
       {title}
     </a>

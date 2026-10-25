@@ -8,18 +8,9 @@ import { newToolHrefs } from '../data/new-tools';
 const newTools = tools.filter(t => newToolHrefs.includes(t.href));
 newTools.sort((a, b) => newToolHrefs.indexOf(a.href) - newToolHrefs.indexOf(b.href));
 
-// --- Bento highlight kategori ---
-const bentoCats = [
-  { id: 'pdf', name: 'PDF', icon: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', count: tools.filter(t => t.cat === 'pdf').length },
-  { id: 'image', name: 'Image', icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>', count: tools.filter(t => t.cat === 'image').length },
-  { id: 'dev', name: 'Dev', icon: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>', count: tools.filter(t => t.cat === 'dev').length },
-  { id: 'calc', name: 'Calc', icon: '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="12" y2="18"/>', count: tools.filter(t => t.cat === 'calc').length },
-  { id: 'security', name: 'Security', icon: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', count: tools.filter(t => t.cat === 'security').length },
-  { id: 'utils', name: 'Utils', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>', count: tools.filter(t => t.cat === 'utils').length },
-];
-
 // --- DATA KATEGORI ---
-// Nama chip tanpa emoji (brief premium: ikon = line-art SVG, emoji dekoratif dibuang).
+// Satu sumber navigasi kategori: chip di filter bar. (Bento 6 kartu dihapus
+// Okt 2026 — duplikat visual dari chip, bikin landing berat sebelum grid.)
 // Catatan: key i18n index.network & index.life sebelumnya TIDAK ADA di translations.ts
 // (audit tak melihat data-i18n={cat.nameKey} dinamis) — keduanya ditambahkan di batch ini.
 const categories = [
@@ -53,196 +44,123 @@ const categories = [
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "IDR" }
   })} />
 
-  <!-- Background — Subtle grid pattern -->
-  <div class="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-    <div class="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.04)_1px,transparent_1px)] bg-[length:64px_64px]"></div>
-  </div>
-
-  <!-- Hero Section -->
-  <section class="text-center pt-8 pb-4 px-4" id="hero-section">
-    <div class="flex items-center justify-center gap-3 mb-3 flex-wrap">
-      <span class="badge-accent">
-        <span class="flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-accent-blue"></span>
-          <span data-i18n="index.badge">Productivity Booster</span>
-        </span>
-      </span>
-      <div class="stat-pill-default">
-        <a href="#tools-grid" class="font-bold text-sm text-matte-800 dark:text-white tabular-nums hover:text-accent-blue transition-colors">{tools.length}</a>
-        <span class="text-matte-400 text-xs" data-i18n="index.tools_count_label">Tools</span>
-      </div>
-      <div class="stat-pill-default">
-        <span class="font-bold text-sm text-matte-800 dark:text-white">100%</span>
-        <span class="text-matte-400 text-xs" data-i18n="index.client_side_label">Client-Side</span>
-      </div>
-    </div>
-    
-    <h1 class="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight leading-tight text-matte-900 dark:text-white">
-      Tools <span class="gradient-text">MasAul</span>
+  <!-- Hero — tipografi saja: tanpa background grid, badge, stat pill, atau gradient text.
+       Hierarki: brand (dua tone) → satu kalimat → satu baris meta (client-side + Top 20). -->
+  <section id="hero-section" class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 md:pt-14 pb-7">
+    <h1 class="text-3xl md:text-[2.75rem] font-extrabold tracking-tight leading-[1.15] text-matte-900 dark:text-white">
+      <span class="font-semibold text-matte-400 dark:text-matte-500">Tools</span> MasAul
     </h1>
-    
-    <p class="text-xs md:text-sm text-matte-400 dark:text-matte-300 max-w-lg mx-auto leading-relaxed">
-      <span data-i18n="index.subtitle_start">Koleksi</span> <strong class="text-matte-700 dark:text-white font-bold">{tools.length}+</strong> <span data-i18n="index.subtitle_end">tools ringan untuk kebutuhan harian — tanpa install, data aman.</span>
+
+    <p class="mt-3 max-w-xl text-sm md:text-[0.9375rem] leading-relaxed text-matte-500 dark:text-matte-300">
+      <span data-i18n="index.subtitle_start">Koleksi</span>
+      <strong class="font-semibold tabular-nums text-matte-800 dark:text-white">{tools.length}+</strong>
+      <span data-i18n="index.subtitle_end">tools ringan untuk kebutuhan harian. Semuanya berjalan di browser,</span>
+      <span data-i18n="index.subtitle_safe">tanpa install, data aman.</span>
     </p>
 
-    <div class="mt-5 flex items-center justify-center gap-2.5 flex-wrap">
-      <a
-        href="/showcase"
-        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-matte-900 dark:bg-white text-white dark:text-matte-900 text-xs font-bold hover:-translate-y-0.5 hover:shadow-md transition-all shadow-sm"
-        data-i18n="index.top20"
-      >Top 20 Tools</a>
-    </div>
-  </section>
-
-  <!-- Category Grid (3-kolom simetris) + New Tools strip — brief premium dashboard -->
-  <section id="bento-section" class="max-w-7xl mx-auto px-4 mb-6 content-visibility-auto">
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-      {bentoCats.map((cat) => (
-        <a href={`/?cat=${cat.id}`} class="group card-base relative flex flex-col gap-3 p-4 hover:-translate-y-0.5 transition-all duration-150">
-          <div class="icon-mono w-10 h-10 rounded-xl border border-matte-200 dark:border-surface-border bg-matte-50 dark:bg-surface-elevated">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={cat.icon} />
-          </div>
-          <div>
-            <p class="text-sm font-semibold text-matte-800 dark:text-white group-hover:text-accent-blue transition-colors duration-150 leading-tight">{cat.name}</p>
-            <p class="text-2xs text-matte-400 dark:text-matte-400 font-medium mt-0.5">{cat.count} tools</p>
-          </div>
-        </a>
-      ))}
+    <div class="mt-5 flex items-center gap-x-3 gap-y-2 flex-wrap text-xs">
+      <span class="text-matte-400 dark:text-matte-400">100% <span data-i18n="index.client_side_label">Client-Side</span></span>
+      <span class="w-1 h-1 rounded-full bg-matte-300 dark:bg-matte-600" aria-hidden="true"></span>
+      <a href="/showcase" class="inline-flex items-center gap-1 font-medium text-matte-600 dark:text-matte-300 hover:text-accent-blue dark:hover:text-accent-blue transition-colors">
+        <span data-i18n="index.top20">Top 20 Tools</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
     </div>
 
-    <!-- New Tools — strip penuh di bawah grid (sidebar lama patahkan simetri 3-kolom) -->
-    <div class="card-base mt-3 p-4">
-      <div class="flex items-center gap-2 mb-3">
-        <span class="w-2 h-2 rounded-full bg-accent-blue shrink-0"></span>
-        <span class="text-xs font-bold uppercase tracking-wider text-matte-400 dark:text-matte-300" data-i18n="index.new_title">Baru Ditambahkan</span>
-        <span class="badge-accent text-2xs ml-auto">{newTools.length}</span>
-      </div>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-0.5">
-        {newTools.slice(0, 8).map((tool) => (
-          <a
-            href={tool.href}
-            class="group flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-all duration-150"
-          >
-            <span class="text-xs font-medium text-matte-600 dark:text-matte-300 truncate group-hover:text-accent-blue transition-colors">{tool.title}</span>
-            <span class="text-2xs text-accent-blue font-bold opacity-0 group-hover:opacity-100 transition-opacity ml-auto shrink-0">→</span>
-          </a>
+    <!-- Baru ditambahkan — satu baris teks, tanpa kartu & tanpa badge hitung -->
+    <div class="mt-7 flex items-baseline gap-x-3 gap-y-1.5 flex-wrap text-xs">
+      <span class="section-title" data-i18n="index.new_title">Baru Ditambahkan</span>
+      <div class="flex flex-wrap items-center">
+        {newTools.slice(0, 8).map((tool, i) => (
+          <span class="inline-flex items-center gap-2.5">
+            {i > 0 && <span class="text-matte-300 dark:text-matte-600" aria-hidden="true">·</span>}
+            <a href={tool.href} class="text-matte-500 dark:text-matte-300 hover:text-matte-900 dark:hover:text-white transition-colors">{tool.title}</a>
+          </span>
         ))}
       </div>
     </div>
   </section>
 
   <script is:inline>
-    // No-FOUC: sembunyikan section intro (hero + bento) segera saat URL ber-query
-    // ?cat=<kategori>. Filter grid sendiri tetap client-side di script utama.
+    // No-FOUC: sembunyikan hero (termasuk baris "Baru Ditambahkan") segera saat
+    // URL ber-query ?cat=<kategori>. Filter grid sendiri tetap client-side.
     (function () {
       var c = new URLSearchParams(window.location.search).get('cat');
       if (!c || c === 'all') return;
       var h = document.getElementById('hero-section');
-      var b = document.getElementById('bento-section');
       if (h) h.classList.add('hidden');
-      if (b) b.classList.add('hidden');
     })();
   </script>
 
-  <!-- Sticky Filter Bar -->
-  <div class="sticky top-16 z-40 w-full backdrop-blur-lg bg-white/80 dark:bg-matte-950/80 border-b border-matte-200 dark:border-surface-border">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row gap-3 items-center justify-between">
-        
-       <div class="hidden md:flex flex-1 min-w-0 w-full relative">
-          <div class="flex gap-1 overflow-x-auto py-1 custom-scrollbar scroll-smooth" id="desktop-filters">
-             {categories.map((cat, index) => (
-                <button 
-                   class={`filter-btn px-3 py-2 text-xs font-medium transition-all duration-150 whitespace-nowrap rounded-lg shrink-0
-                   ${index === 0 
-                       ? 'bg-accent-blue/15 text-accent-blue' 
-                       : 'text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white'}`} 
-                   data-filter={cat.id}
-                   data-i18n={cat.nameKey}
-                >
-                   {cat.name}
-                </button>
-             ))}
+  <!-- Filter bar sticky — satu baris search+sort, satu baris chip kategori.
+       Chip satu set untuk mobile & desktop (sebelumnya dua set duplikat). -->
+  <div class="sticky top-16 z-40 w-full backdrop-blur-lg bg-white/90 dark:bg-matte-950/90 border-b border-matte-200 dark:border-surface-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-col gap-2">
+
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1 min-w-0">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-4 w-4 text-matte-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </div>
-       </div>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Cari tools..." data-i18n-attr="placeholder" data-i18n="search.placeholder"
+            class="w-full h-9 pl-9 pr-16 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 outline-none text-xs transition-colors text-matte-800 dark:text-white placeholder:text-matte-400"
+          />
+          <kbd class="hidden sm:inline-flex absolute right-2 top-1/2 -translate-y-1/2 items-center px-1.5 py-0.5 text-[9px] font-bold rounded bg-matte-100 dark:bg-matte-700 text-matte-400 dark:text-matte-500 pointer-events-none">Ctrl+K</kbd>
+        </div>
 
-       <div class="md:hidden w-full relative">
-          <div id="mobile-filters" class="flex gap-1.5 overflow-x-auto py-1 custom-scrollbar scroll-smooth" role="group" aria-label="Filter Kategori">
-             {categories.map((cat, index) => (
-                <button
-                   class={`filter-btn-mobile px-3 py-2 text-xs font-medium transition-all duration-150 whitespace-nowrap rounded-lg shrink-0
-                   ${index === 0
-                       ? 'bg-accent-blue/15 text-accent-blue'
-                       : 'text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white'}`}
-                   data-filter={cat.id}
-                   data-i18n={cat.nameKey}
-                >
-                   {cat.name}
-                </button>
-             ))}
+        <div class="relative shrink-0">
+          <label for="sort-select" class="sr-only">Sortir Tools</label>
+          <select id="sort-select" class="appearance-none h-9 pl-3 pr-8 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border text-xs font-medium text-matte-600 dark:text-matte-300 outline-none focus:border-accent-blue cursor-pointer transition-colors">
+            <option value="name" data-i18n="index.sort_az">A-Z</option>
+            <option value="recent" data-i18n="index.sort_recent">Terbaru</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-matte-400">
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
           </div>
-       </div>
+        </div>
+      </div>
 
-       <div class="flex gap-2 w-full md:w-auto shrink-0">
-           <div class="relative shrink-0">
-               <label for="sort-select" class="sr-only">Sortir Tools</label>
-               <select id="sort-select" class="appearance-none h-full pl-2.5 pr-7 py-2 rounded-lg bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border text-xs font-medium text-matte-600 dark:text-matte-300 outline-none focus:border-accent-blue cursor-pointer transition-all">
-                   <option value="name" data-i18n="index.sort_az">A-Z</option>
-                   <option value="recent" data-i18n="index.sort_recent">Terbaru</option>
-               </select>
-               <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-matte-400">
-                   <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-               </div>
-           </div>
-
-           <div class="relative w-full md:w-56">
-              <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                <svg class="h-3.5 w-3.5 text-matte-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              </div>
-              <input 
-                type="text" 
-                id="search-input" 
-                placeholder="Cari tools..." data-i18n-attr="placeholder" data-i18n="search.placeholder"
-                class="w-full pl-8 pr-12 py-2 rounded-lg bg-matte-100 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 outline-none text-xs transition-all text-matte-800 dark:text-white placeholder:text-matte-400" 
-              />
-              <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                <kbd class="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold rounded bg-matte-200 dark:bg-matte-700 text-matte-400 dark:text-matte-500">Ctrl+K</kbd>
-              </div>
-           </div>
-       </div>
+      <div id="tool-filters" class="flex gap-1 overflow-x-auto py-0.5 custom-scrollbar scroll-smooth" role="group" aria-label="Filter Kategori">
+        {categories.map((cat, index) => (
+          <button
+            class={`filter-btn px-3 py-1.5 text-xs rounded-lg whitespace-nowrap shrink-0 transition-colors
+            ${index === 0
+                ? 'font-semibold bg-matte-900 text-white dark:bg-white dark:text-matte-900'
+                : 'font-medium text-matte-500 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-900 dark:hover:text-white'}`}
+            data-filter={cat.id}
+            data-i18n={cat.nameKey}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
 
     </div>
   </div>
 
-  <!-- Favorites Section -->
-  <section id="favorites-section" class="max-w-7xl mx-auto px-4 mb-6 hidden">
-    <div class="card-base p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="section-title flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Favorit
-        </h2>
-      </div>
-      <div id="favorite-tools" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2"></div>
+  <!-- Favorit — baris chip datar (tanpa kartu pembungkus) -->
+  <section id="favorites-section" class="max-w-7xl mx-auto px-4 sm:px-6 mt-6 mb-5 hidden">
+    <div class="flex items-center gap-1.5 mb-2">
+      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <h2 class="section-title" data-i18n="index.popular">Favorit</h2>
     </div>
+    <div id="favorite-tools" class="flex flex-wrap gap-1.5"></div>
   </section>
 
-  <!-- Recently Used -->
-  <section id="recent-section" class="max-w-7xl mx-auto px-4 mb-6 hidden">
-    <div class="card-base p-4">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="section-title flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span data-i18n="index.recent_title">Baru Digunakan</span>
-        </h2>
-        <button id="clear-recent" class="text-2xs font-medium text-matte-400 hover:text-matte-600 dark:hover:text-matte-300 transition-colors" data-i18n="index.clear_recent">Hapus Riwayat</button>
-      </div>
-      <div id="recent-tools" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-      </div>
+  <!-- Baru Digunakan — baris chip datar -->
+  <section id="recent-section" class="max-w-7xl mx-auto px-4 sm:px-6 mb-5 hidden">
+    <div class="flex items-center justify-between gap-3 mb-2">
+      <h2 class="section-title" data-i18n="index.recent_title">Baru Digunakan</h2>
+      <button id="clear-recent" class="text-2xs font-medium text-matte-400 hover:text-matte-700 dark:hover:text-matte-300 transition-colors" data-i18n="index.clear_recent">Hapus Riwayat</button>
     </div>
+    <div id="recent-tools" class="flex flex-wrap gap-1.5"></div>
   </section>
 
   <!-- Breadcrumb kategori (tampil saat filter kategori aktif) -->
-  <div id="category-breadcrumb" class="hidden max-w-7xl mx-auto px-4 pt-4">
+  <div id="category-breadcrumb" class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-4">
     <div class="flex items-center justify-between gap-3 flex-wrap">
       <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-xs font-medium text-matte-400 dark:text-matte-300 min-w-0">
         <a href="/" class="hover:text-accent-blue transition-colors whitespace-nowrap" data-i18n="nav.home">Home</a>
@@ -257,7 +175,7 @@ const categories = [
   </div>
 
   <!-- Tools Grid -->
-  <div class="max-w-7xl mx-auto px-4 pt-4 pb-28 min-h-[50vh]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-28 min-h-[50vh]">
     <div class="flex items-center justify-between mb-3">
         <h2 id="results-count" class="section-title" data-i18n="index.all">Semua Tools</h2>
     </div>
@@ -265,9 +183,9 @@ const categories = [
     <div id="tools-grid" class="card-grid">
        <!-- Page 1 (SSR): 36 cards rendered server-side for fast initial paint + SEO -->
        {tools.slice(0, 36).map((tool) => (
-          <div 
-            class="tool-item" 
-            data-cat={tool.cat} 
+          <div
+            class="tool-item"
+            data-cat={tool.cat}
             data-href={tool.href}
             data-title={tool.title.toLowerCase()}
             data-name={tool.titleKey || tool.title}
@@ -275,7 +193,7 @@ const categories = [
             data-icon={tool.icon}
             data-tool-index={tools.indexOf(tool)}
           >
-             <ToolCard 
+             <ToolCard
                 title={tool.title}
                 desc={tool.desc}
                 href={tool.href}
@@ -287,7 +205,7 @@ const categories = [
        ))}
        <!-- Placeholders: lightweight skeletons for tools 37-227, lazy-rendered via IntersectionObserver -->
        {tools.slice(36).map((tool, i) => (
-          <div 
+          <div
             class="tool-placeholder tool-item"
             data-tool-index={36 + i}
             data-cat={tool.cat}
@@ -329,7 +247,6 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
   document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
 
       const filterBtns = document.querySelectorAll('.filter-btn');
-      const mobileFilters = document.querySelectorAll('.filter-btn-mobile');
       const searchInput = document.getElementById('search-input');
       const sortSelect = document.getElementById('sort-select');
       const tools = document.querySelectorAll('.tool-item');
@@ -347,17 +264,22 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const favSection = document.getElementById('favorites-section');
       const favContainer = document.getElementById('favorite-tools');
       const heroSection = document.getElementById('hero-section');
-      const bentoSection = document.getElementById('bento-section');
       const categoryBreadcrumb = document.getElementById('category-breadcrumb');
       const categoryBreadcrumbName = document.getElementById('category-breadcrumb-name');
       const clearCategoryBtn = document.getElementById('clear-category-btn');
 
       const urlParams = new URLSearchParams(window.location.search);
-      let currentFilter = urlParams.get('cat') || 'all'; 
+      let currentFilter = urlParams.get('cat') || 'all';
       let currentSearch = '';
       let currentSort = 'name';
       let currentPage = 1;
       const PER_PAGE = 36;
+
+      // Kelas chip filter — harus IDENTIK dengan markup chip di frontmatter (SSR).
+      // setActiveFilter menimpa className penuh, jadi string ini sumber kebenaran saat runtime.
+      const CHIP_BASE = 'filter-btn px-3 py-1.5 text-xs rounded-lg whitespace-nowrap shrink-0 transition-colors';
+      const CHIP_ACTIVE = `${CHIP_BASE} font-semibold bg-matte-900 text-white dark:bg-white dark:text-matte-900`;
+      const CHIP_IDLE = `${CHIP_BASE} font-medium text-matte-500 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-900 dark:hover:text-white`;
 
       // --- E5: Lazy-render via IntersectionObserver ---
       // Data tool dimuat async via dynamic import (non-blocking) — chunk kecil di-precache SW.
@@ -366,19 +288,19 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         if (!dataPromise) dataPromise = import('../data/tools-client-data');
         return dataPromise;
       }
-      // Tile netral (brief premium Oct 2026): box hairline + ikon line-art muted via .icon-mono
-      // (bukan gradient duotone per warna). HARUS identik dengan ToolCard.astro.
+      // Kartu datar (clean Oct 2026): hairline .tool-tile, ikon line-art tanpa box,
+      // tanpa shadow/lift. HARUS identik dengan ToolCard.astro.
       function renderCardHTML(tool) {
         const titleKey = tool.titleKey ? ` data-i18n="${tool.titleKey}"` : '';
         const descKey = tool.descKey ? ` data-i18n="${tool.descKey}"` : '';
-        return `<article class="card-base group relative flex flex-col p-4 rounded-xl overflow-hidden hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150" data-tool-href="${tool.href}">
-          <button class="fav-star absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 dark:bg-matte-800/80 backdrop-blur-sm text-matte-300 hover:text-amber-400 hover:scale-110 transition-all duration-150 opacity-0 group-hover:opacity-100 focus-visible:opacity-100" data-fav="${tool.href}" title="Add to favorites" aria-label="Add to favorites" type="button">
+        return `<article class="tool-tile group relative flex flex-col p-4" data-tool-href="${tool.href}">
+          <button class="fav-star absolute top-2.5 right-2.5 z-10 w-6 h-6 flex items-center justify-center rounded-md text-matte-300 hover:text-amber-400 transition-colors opacity-0 group-hover:opacity-100 focus-visible:opacity-100" data-fav="${tool.href}" title="Add to favorites" aria-label="Add to favorites" type="button">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </button>
-          <div class="icon-mono w-10 h-10 mb-3 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border transition-all duration-150 shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${tool.icon}</svg>
+          <div class="icon-mono w-5 h-5 mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${tool.icon}</svg>
           </div>
-          <h3 class="text-sm font-semibold text-matte-800 dark:text-white transition-colors duration-150 group-hover:text-accent-blue leading-snug truncate"${titleKey}><a href="${tool.href}" class="after:absolute after:inset-0">${tool.title}</a></h3>
+          <h3 class="text-sm font-semibold text-matte-800 dark:text-white leading-snug truncate"${titleKey}><a href="${tool.href}" class="after:absolute after:inset-0">${tool.title}</a></h3>
           <p class="text-xs text-matte-400 dark:text-matte-300 leading-relaxed mt-1 line-clamp-2"${descKey}>${tool.desc}</p>
         </article>`;
       }
@@ -463,6 +385,13 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         updateFavDisplay();
       }
 
+      // Chip datar untuk Favorit & Baru Digunakan (bukan kartu grid 6 kolom)
+      function chipHTML(href, icon, title) {
+        return `<a href="${href}" class="inline-flex items-center gap-1.5 h-7 pl-2 pr-2.5 rounded-full border border-matte-200 dark:border-surface-border text-2xs font-medium text-matte-600 dark:text-matte-300 hover:border-matte-400 dark:hover:border-matte-500 hover:text-matte-900 dark:hover:text-white transition-colors">
+            <span class="icon-mono w-3 h-3"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></span>
+            <span class="truncate max-w-[8rem]">${title}</span></a>`;
+      }
+
       function updateFavDisplay() {
         const favs = getFavorites();
         if (!favSection || !favContainer) return;
@@ -479,15 +408,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
             try { return new URL(a.href, location.origin).pathname === href; } catch { return false; }
           });
           if (!t) return '';
-          const color = t.getAttribute('data-color') || 'indigo';
           const icon = t.getAttribute('data-icon') || '';
           // data-name berisi i18n KEY sejak W7 (titleKey ke-wire semua) — pakai judul
           // live dari DOM kartu, fallback key lama kalau kartu tak ditemukan.
           const title = (t.querySelector('a')?.textContent || '').trim() || t.getAttribute('data-name') || '';
           const cat = t.getAttribute('data-cat') || '';
-          return `<a href="${href}?from_cat=${cat}" class="group flex flex-col items-center justify-center p-2.5 rounded-lg bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 hover:border-amber-400 transition-all duration-150">
-            <div class="icon-mono w-6 h-6 mb-1.5 text-amber-500"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></div>
-            <span class="text-2xs font-medium text-matte-600 dark:text-matte-300 text-center leading-tight line-clamp-2">${title}</span></a>`;
+          return chipHTML(`${href}?from_cat=${cat}`, icon, title);
         }).join('');
 
         // Also update star buttons
@@ -535,18 +461,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
                 if (!a) return false;
                 try { return new URL(a.href, location.origin).pathname === norm(item.href); } catch { return false; }
             });
-            let color = item.color || (toolEl ? toolEl.getAttribute('data-color') : '') || 'indigo';
-            let icon = item.icon || (toolEl ? toolEl.getAttribute('data-icon') : '') || '';
+            const icon = item.icon || (toolEl ? toolEl.getAttribute('data-icon') : '') || '';
             const title = (toolEl ? (toolEl.querySelector('a')?.textContent || '').trim() : '') || item.title || '';
-
-            return `
-            <a href="${item.href}" class="group flex flex-col items-center justify-center p-2.5 rounded-lg bg-matte-100/50 dark:bg-surface-elevated border border-matte-200 dark:border-surface-border hover:border-accent-blue/30 transition-all duration-150">
-                <div class="icon-mono w-6 h-6 mb-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
-                </div>
-                <span class="text-2xs font-medium text-matte-500 dark:text-matte-300 text-center leading-tight line-clamp-2">${title}</span>
-            </a>
-            `;
+            return chipHTML(item.href, icon, title);
         }).join('');
       }
 
@@ -563,7 +480,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
          const link = tool.querySelector('a');
          if(link) {
             link.addEventListener('click', () => {
-                const href = link.getAttribute('href')?.split('?')[0]; 
+                const href = link.getAttribute('href')?.split('?')[0];
                 const title = tool.getAttribute('data-name');
                 const color = tool.getAttribute('data-color');
                 const icon = tool.getAttribute('data-icon');
@@ -699,7 +616,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         if (endP - startP < maxShow - 1) startP = Math.max(1, endP - maxShow + 1);
 
         for (let p = startP; p <= endP; p++) {
-            const active = p === currentPage ? 'bg-accent-blue/15 text-accent-blue' : 'text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white';
+            const active = p === currentPage ? 'bg-matte-900 text-white dark:bg-white dark:text-matte-900' : 'text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white';
             html += `<button data-page="${p}" aria-label="Halaman ${p}" aria-current="${p === currentPage ? 'page' : 'false'}" class="min-w-[34px] px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${active}">${p}</button>`;
         }
         pageNumbers.innerHTML = html;
@@ -712,7 +629,6 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       function updateIntroVisibility(filterId) {
         const isCategory = filterId !== 'all';
         if (heroSection) heroSection.classList.toggle('hidden', isCategory);
-        if (bentoSection) bentoSection.classList.toggle('hidden', isCategory);
         if (categoryBreadcrumb) {
           categoryBreadcrumb.classList.toggle('hidden', !isCategory);
           if (isCategory && categoryBreadcrumbName) {
@@ -734,32 +650,13 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         window.history.replaceState((window.history.state || {}), '', newUrl);
 
         filterBtns.forEach(btn => {
-            if(btn.getAttribute('data-filter') === filterId) {
-                btn.className = "filter-btn px-3 py-2 text-xs font-medium rounded-lg bg-accent-blue/15 text-accent-blue transition-all whitespace-nowrap shrink-0";
-            } else {
-                btn.className = "filter-btn px-3 py-2 text-xs font-medium text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white rounded-lg transition-all whitespace-nowrap shrink-0";
-            }
-        });
-
-        mobileFilters.forEach(btn => {
-            if(btn.getAttribute('data-filter') === filterId) {
-                btn.className = "filter-btn-mobile px-3 py-2 text-xs font-medium rounded-lg bg-accent-blue/15 text-accent-blue transition-all whitespace-nowrap shrink-0";
-            } else {
-                btn.className = "filter-btn-mobile px-3 py-2 text-xs font-medium text-matte-400 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-elevated hover:text-matte-700 dark:hover:text-white rounded-lg transition-all whitespace-nowrap shrink-0";
-            }
+            btn.className = btn.getAttribute('data-filter') === filterId ? CHIP_ACTIVE : CHIP_IDLE;
         });
         renderTools();
         updateLinkParams(filterId);
       }
 
       filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-filter');
-            if(id) setActiveFilter(id);
-        });
-      });
-
-      mobileFilters.forEach(btn => {
         btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-filter');
             if(id) setActiveFilter(id);

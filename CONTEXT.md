@@ -85,6 +85,38 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 
 ## Status saat ini (Oktober 2026)
 
+- 🆕 **(Oct 25)** Rombak landing **"clean"** — scope sengaja **landing saja** (permintaan user: UI
+  terasa terlalu ramai/"lebay", mau lebih clean). Belum di-commit.
+  - **Hero**: background grid fix dihapus, badge "Productivity Booster" + 2 stat pill dihapus,
+    gradient-text dibuang (H1 dua tone: `Tools` muted + `MasAul` tebal), satu baris meta
+    (`100% Client-Side · Top 20 Tools`). Subtitle pakai `index.subtitle_safe` lagi supaya
+    kalimat tidak menggantung koma saat i18n aktif.
+  - **Bento 6 kartu kategori DIHAPUS** — duplikat visual dari chip filter (`#bento-section` hilang,
+    referensi di inline script + `updateIntroVisibility()` dibersihkan). "Baru Ditambahkan" jadi
+    satu baris link tanpa kartu; badge hitung `{newTools.length}` (169) yang menyesatkan ikut hilang.
+  - **Filter bar**: satu set chip (13) untuk mobile+desktop — `#mobile-filters`,
+    `.filter-btn-mobile` + loop binding-nya dihapus; search+sort satu baris di atas chip.
+    Chip aktif & halaman pagination aktif kini **netral** (`bg-matte-900` / `dark:bg-white`),
+    bukan indigo — aksen indigo tinggal di focus ring & hover link.
+  - **Favorit & Baru Digunakan**: baris chip datar (border pill) tanpa `card-base`/grid 6 kolom;
+    judul Favorit kini pakai key `index.popular` (sebelumnya hardcoded).
+  - **Kartu tool**: class baru `.tool-tile` (global.css) — hairline `border`, radius 0.75rem,
+    **tanpa box-shadow & tanpa lift hover**; ikon line-art 18px tanpa kotak tile. Dipakai
+    `ToolCard.astro` DAN `renderCardHTML()` di `index.astro` (wajib identik); `.tool-placeholder`
+    disamakan (border, bukan ring shadow).
+  - **Verifikasi**: `pnpm build` hijau (7 guardrail, public=250), `pnpm test` 62/62, audit i18n
+    exit 0 (249/249), **smoke CDP 39/39 PASS** (0 page exception, 0 console error) — cakup filter
+    kategori + URL + breadcrumb, search, favorit chip, clear riwayat, grid mobile 2 kolom,
+    round-trip SPA (kartu → tool → back → filter masih hidup), dan placeholder lazy-render terisi
+    saat discroll. Harness `scripts/tmp-smoke-landing.mjs` sudah dihapus (tidak di-commit).
+  - ⚠️ **Bukan regresi**: kartu kosong di bawah lipatan = placeholder lazy-render by design
+    (terisi saat masuk viewport + `rootMargin: 400px`); sudah diverifikasi 0 kosong di viewport
+    setelah scroll.
+  - **Deferred** (di luar scope): 249 halaman tool masih pakai `ToolPageHeader` gradient
+    (199 halaman kirim `gradient="from-…"`, 18 palet) + emoji dekoratif di 176 halaman → sumber
+    kesan "dua website berbeda" setelah landing dibersihkan. `showcase.astro` juga masih punya
+    `colorTile` + heading emoji.
+
 - 🆕 **(Oct 23)** Poles design homepage premium anti-AI-slop (scope homepage + navbar/footer) →
   commits **`d794a02`** feat(ui) + **`84b0049`** fix(data):
   bento **grid 3-kolom simetris** kartu charcoal hairline + ikon `.icon-mono` netral
