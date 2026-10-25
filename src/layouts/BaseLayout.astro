@@ -266,6 +266,16 @@ if (isPdfRoot) {
       var m = document.getElementById('search-modal');
       if (m) m.classList.add('hidden');
       window.__searchModalOpen = false;
+      // Menu nav (dropdown Tools / menu mobile) jangan nyangkut terbuka setelah
+      // navigasi SPA — overlay-nya menutupi konten halaman baru.
+      var tw = document.getElementById('tools-menu-wrap');
+      var tb = document.getElementById('tools-menu-btn');
+      if (tw) tw.setAttribute('data-open', 'false');
+      if (tb) tb.setAttribute('aria-expanded', 'false');
+      var mb = document.getElementById('mobile-menu');
+      var mbtn = document.getElementById('mobile-menu-btn');
+      if (mb) { mb.classList.add('hidden'); mb.classList.remove('flex'); }
+      if (mbtn) mbtn.setAttribute('aria-expanded', 'false');
     });
   </script>
   
@@ -469,12 +479,16 @@ if (isPdfRoot) {
         <a href="/" class={`nav-item ${isHome ? 'nav-item-active' : 'nav-item-inactive'}`} data-i18n="nav.home">Home</a>
         
         <!-- Tools Dropdown -->
-        <div class="relative group">
-          <button class="nav-item nav-item-inactive cursor-pointer flex items-center gap-1" aria-haspopup="true" aria-expanded="false">
+        <div class="relative group" id="tools-menu-wrap" data-open="false">
+          <button id="tools-menu-btn" type="button" class="nav-item nav-item-inactive cursor-pointer flex items-center gap-1" aria-haspopup="true" aria-expanded="false" aria-controls="tools-menu-panel">
             <span data-i18n="nav.tools">Tools</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-150 group-hover:rotate-180"><path d="M6 9l6 6 6-6"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-150 group-data-[open=true]:rotate-180"><path d="M6 9l6 6 6-6"/></svg>
           </button>
-          <div class="absolute top-full left-0 mt-1 w-52 bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible focus-within:opacity-100 focus-within:visible transition-all duration-150 z-50 py-1.5 origin-top-left">
+          <!-- Dibuka via KLIK (bukan hover-only): hover-only membuat menu ini tak
+               bisa diakses di perangkat sentuh ≥768px (iPad/touch laptop) dan
+               aria-expanded tidak pernah berubah. max-h + scroll: 12 kategori
+               bisa melebihi viewport pendek. -->
+          <div id="tools-menu-panel" class="absolute top-full left-0 mt-1 w-52 max-h-[min(70vh,26rem)] overflow-y-auto overscroll-contain bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border rounded-xl shadow-lg opacity-0 invisible group-data-[open=true]:opacity-100 group-data-[open=true]:visible transition-all duration-150 z-50 py-1.5 origin-top-left">
             <a href="/pdf" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium text-matte-700 dark:text-white hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
               <span data-i18n="nav.pdf_tools">PDF Tools</span>
@@ -519,6 +533,10 @@ if (isPdfRoot) {
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg>
               <span data-i18n="nav.category_network">Network</span>
             </a>
+            <a href="/?cat=life" class="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium text-matte-700 dark:text-white hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-matte-400 shrink-0"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span data-i18n="nav.category_life">Life</span>
+            </a>
           </div>
         </div>
         
@@ -549,7 +567,7 @@ if (isPdfRoot) {
       </button>
     </div>
 
-    <div id="mobile-menu" class="hidden absolute top-16 left-0 w-full bg-white dark:bg-surface-elevated border-b border-matte-200 dark:border-surface-border shadow-xl md:hidden flex-col transition-all z-40 origin-top animate-fade-in-down" role="navigation" aria-label="Mobile navigation">
+    <div id="mobile-menu" class="hidden absolute top-16 left-0 w-full max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain bg-white dark:bg-surface-elevated border-b border-matte-200 dark:border-surface-border shadow-xl md:hidden flex-col transition-all z-40 origin-top animate-fade-in-down" role="navigation" aria-label="Mobile navigation">
       <!-- Search (tap → opens the shared search modal) -->
       <div class="p-3 border-b border-matte-100 dark:border-surface-border">
         <div class="relative">
@@ -585,6 +603,7 @@ if (isPdfRoot) {
           <a href="/?cat=data" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link"><span data-i18n="nav.category_data">Data</span></a>
           <a href="/?cat=media" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link"><span data-i18n="nav.category_media">Media</span></a>
           <a href="/?cat=network" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link"><span data-i18n="nav.category_network">Network</span></a>
+          <a href="/?cat=life" class="flex items-center gap-2 px-3 py-2 rounded-lg text-matte-600 dark:text-matte-300 text-xs font-medium hover:bg-matte-100 dark:hover:bg-surface-hover hover:text-matte-800 dark:hover:text-white transition-all duration-150 mobile-link"><span data-i18n="nav.category_life">Life</span></a>
         </div>
       </div>
       
@@ -1034,6 +1053,55 @@ if (isPdfRoot) {
           }
         });
       }
+
+      // Tools dropdown (desktop): klik untuk buka/tutup + Esc + klik di luar.
+      // Sebelumnya dibuka murni lewat CSS :hover — di perangkat sentuh lebar
+      // (iPad, touch laptop) menu ini sama sekali tidak bisa dibuka, dan
+      // aria-expanded selalu "false" (menyesatkan screen reader).
+      const toolsMenuBtn = document.getElementById('tools-menu-btn');
+      if (toolsMenuBtn && !toolsMenuBtn.dataset.hasListener) {
+        toolsMenuBtn.dataset.hasListener = 'true';
+        toolsMenuBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var wrap = document.getElementById('tools-menu-wrap');
+          if (!wrap) return;
+          var open = wrap.getAttribute('data-open') !== 'true';
+          wrap.setAttribute('data-open', open ? 'true' : 'false');
+          toolsMenuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      }
+      // Handler dokumen cukup dipasang sekali (header persist antar SPA nav) dan
+      // selalu query ulang elemen — bukan capture node lama.
+      if (!window._navMenusBound) {
+        window._navMenusBound = true;
+        document.addEventListener('click', function (e) {
+          var wrap = document.getElementById('tools-menu-wrap');
+          var btn = document.getElementById('tools-menu-btn');
+          if (!wrap || !btn) return;
+          var clickedLink = e.target && e.target.closest && e.target.closest('#tools-menu-panel a');
+          if (!wrap.contains(e.target) || clickedLink) {
+            wrap.setAttribute('data-open', 'false');
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key !== 'Escape') return;
+          var wrap = document.getElementById('tools-menu-wrap');
+          var btn = document.getElementById('tools-menu-btn');
+          if (wrap && wrap.getAttribute('data-open') === 'true') {
+            wrap.setAttribute('data-open', 'false');
+            if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.focus(); }
+          }
+          // Esc juga menutup menu mobile (sebelumnya hanya search modal).
+          var mb = document.getElementById('mobile-menu');
+          var mbtn = document.getElementById('mobile-menu-btn');
+          if (mb && mb.classList.contains('flex')) {
+            mb.classList.add('hidden');
+            mb.classList.remove('flex');
+            if (mbtn) { mbtn.setAttribute('aria-expanded', 'false'); mbtn.setAttribute('aria-label', 'Toggle menu'); mbtn.focus(); }
+          }
+        });
+      }
       
       const handleThemeToggle = () => {
         const isDark = document.documentElement.classList.toggle("dark");
@@ -1261,6 +1329,14 @@ if (isPdfRoot) {
 
           var searchDebounceTimer;
 
+        // Query diketik user disisipkan ke innerHTML pada state "tidak ada hasil"
+        // — tanpa escape, `<img onerror=...>` di kolom cari tereksekusi (self-XSS).
+        var escHtml = function (s) {
+          return String(s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+          });
+        };
+
         // --- Command palette: keyboard navigation ---
         var palIndex = -1;
         var palItems = [];
@@ -1363,7 +1439,7 @@ if (isPdfRoot) {
             });
 
             if (filtered.length === 0) {
-              searchResultsEl.innerHTML = '<div class="text-center py-8 text-matte-500 dark:text-matte-400"><p data-i18n="search.no_results">Tidak ada hasil untuk</p><p class="font-bold mt-1">"' + query + '"</p></div>';
+              searchResultsEl.innerHTML = '<div class="text-center py-8 text-matte-500 dark:text-matte-400"><p data-i18n="search.no_results">Tidak ada hasil untuk</p><p class="font-bold mt-1">"' + escHtml(query) + '"</p></div>';
               if (window.i18n && window.i18n.translateNode) window.i18n.translateNode(searchResultsEl);
               palItems = []; palIndex = -1;
               return;

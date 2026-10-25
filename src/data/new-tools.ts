@@ -2,7 +2,8 @@
  * New Tools — Daftar tools yang baru ditambahkan ke Tools MasAul.
  * 
  * Cara pakai: tinggal tambah href tool baru di URUTAN PALING ATAS.
- * Index page otomatis nampilin 8 tools terbaru.
+ * Index page menampilkan 4 tools teratas sebagai band "Baru Ditambahkan"
+ * (slice(0, 4) di index.astro) — sisanya tetap muncul di grid utama.
  * 
  * Tools diurutkan dari yang paling baru (index 0 = newest).
  */

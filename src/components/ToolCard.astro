@@ -16,9 +16,9 @@ const { title, desc, href, icon, isSoon = false, titleKey, descKey } = Astro.pro
      Link utama = judul, dengan ::after fullscreen (stretched-link pattern) supaya
      seluruh kartu tetap clickable; fav-star jadi sibling dengan z-10 di atasnya.
 
-     Clean Oct 2026: tile hairline datar (.tool-tile) — tanpa box-shadow, tanpa lift
-     hover, tanpa kotak ikon bergaris. HARUS identik dengan renderCardHTML() di
-     index.astro (kartu lazy-render). -->
+     Clean Oct 2026 v2: tile hairline datar + elevasi 1px (.tool-tile). Ikon pindah ke
+     tile hairline 32px (senada ToolPageHeader) supaya kartu punya jangkar visual.
+     HARUS identik dengan renderCardHTML() di index.astro (kartu lazy-render). -->
 <article class={`tool-tile group relative flex flex-col p-4
         ${isSoon ? 'opacity-50' : ''}`}
    data-tool-href={href}>
@@ -34,20 +34,22 @@ const { title, desc, href, icon, isSoon = false, titleKey, descKey } = Astro.pro
     </button>
   )}
 
-  <!-- Ikon line-art polos (tanpa kotak/tile). Hover kartu → ikon jadi aksen (.icon-mono). -->
-  <div class="icon-mono w-5 h-5 mb-3">
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
+  <!-- Ikon line-art dalam tile hairline. Hover kartu → border tile menguat + ikon jadi aksen. -->
+  <div class="icon-mono w-8 h-8 mb-3 rounded-lg border border-matte-200 dark:border-surface-border group-hover:border-matte-300 dark:group-hover:border-matte-500">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
   </div>
 
-  <!-- Title = stretched link: ::after menutupi seluruh kartu (di bawah z-10 star) -->
-  <h3 class="text-sm font-semibold text-matte-800 dark:text-white leading-snug truncate" data-i18n={titleKey || undefined}>
-    <a href={isSoon ? "#" : href} class={isSoon ? 'cursor-not-allowed' : 'after:absolute after:inset-0'}>
+  <!-- Title = stretched link: ::after menutupi seluruh kartu (di bawah z-10 star).
+       data-i18n HARUS di <a>, bukan di <h3>: processI18n menulis textContent, jadi
+       kalau dipasang di h3 elemen <a> ikut terhapus saat pindah ke EN → kartu mati. -->
+  <h3 class="text-sm font-semibold text-matte-800 dark:text-white leading-snug truncate transition-colors group-hover:text-accent-blue">
+    <a href={isSoon ? "#" : href} class={isSoon ? 'cursor-not-allowed' : 'after:absolute after:inset-0'} data-i18n={titleKey || undefined}>
       {title}
     </a>
   </h3>
 
   <!-- Description -->
-  <p class="text-xs text-matte-400 dark:text-matte-300 leading-relaxed mt-1 line-clamp-2" data-i18n={descKey || undefined}>
+  <p class="text-xs text-matte-500 dark:text-matte-300 leading-relaxed mt-1 line-clamp-2" data-i18n={descKey || undefined}>
     {desc}
   </p>
 </article>

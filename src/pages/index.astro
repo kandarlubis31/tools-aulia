@@ -3,10 +3,37 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolCard from '../components/ToolCard.astro';
 import { publicTools as tools, categoryIds } from '../data/tools';
 import { newToolHrefs } from '../data/new-tools';
+import { translations } from '../i18n/translations';
 
 // Newly added tools (sorted by order in new-tools.ts)
 const newTools = tools.filter(t => newToolHrefs.includes(t.href));
 newTools.sort((a, b) => newToolHrefs.indexOf(a.href) - newToolHrefs.indexOf(b.href));
+
+// --- INDEKS PENCARIAN KARTU (client-side) ---
+// Sebelumnya filter hanya mencocokkan JUDUL versi Indonesia (data-title), jadi
+// kata kunci wajar seperti "pdf", "kalkulator", "calculator", atau "kompres"
+// tidak menemukan apa pun. Sekarang: judul + kategori (id & label) + deskripsi,
+// untuk bahasa ID DAN EN, dalam satu atribut data-search (dihitung saat build —
+// nol biaya runtime, nol tambahan request).
+const i18nEn = (key?: string) => (key && translations[key] ? translations[key].en : '');
+const searchText = (tool: (typeof tools)[number]) => {
+  const parts: string[] = [];
+  const push = (v?: string) => {
+    const s = (v || '').trim();
+    if (!s) return;
+    if (parts.some((p) => p.toLowerCase() === s.toLowerCase())) return;
+    parts.push(s);
+  };
+  // ID (judul/kategori/deskripsi) + judul & deskripsi EN. Nilai ID dari
+  // translations sengaja tidak diulang — isinya sudah sama dengan tool.title/desc.
+  push(tool.title);
+  push(tool.cat);
+  push(tool.category);
+  push(tool.desc);
+  push(i18nEn(tool.titleKey));
+  push(i18nEn(tool.descKey));
+  return parts.join(' ').replace(/\s+/g, ' ').toLowerCase();
+};
 
 // --- DATA KATEGORI ---
 // Satu sumber navigasi kategori: chip di filter bar. (Bento 6 kartu dihapus
@@ -67,18 +94,36 @@ const categories = [
       </a>
     </div>
 
-    <!-- Baru ditambahkan — satu baris teks, tanpa kartu & tanpa badge hitung -->
-    <div class="mt-7 flex items-baseline gap-x-3 gap-y-1.5 flex-wrap text-xs">
-      <span class="section-title" data-i18n="index.new_title">Baru Ditambahkan</span>
-      <div class="flex flex-wrap items-center">
-        {newTools.slice(0, 8).map((tool, i) => (
-          <span class="inline-flex items-center gap-2.5">
-            {i > 0 && <span class="text-matte-300 dark:text-matte-600" aria-hidden="true">·</span>}
-            <a href={tool.href} class="text-matte-500 dark:text-matte-300 hover:text-matte-900 dark:hover:text-white transition-colors">{tool.title}</a>
-          </span>
+    <!-- Baru Ditambahkan — band berpanel: 4 tool terbaru sebagai kartu ringkas.
+         Sebelumnya cuma baris teks ber-pemisah titik → tenggelam di bawah hero. -->
+    <section id="new-tools" class="mt-8 rounded-xl border border-matte-200 dark:border-surface-border bg-matte-50/70 dark:bg-surface-elevated/60 p-3 sm:p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-flex items-center gap-1.5 h-5 px-2 rounded-full bg-accent-blue/10 dark:bg-accent-blue/15 text-accent-blue text-2xs font-bold uppercase tracking-wide-3 shrink-0">
+          <span class="w-1 h-1 rounded-full bg-accent-blue" aria-hidden="true"></span>
+          <span data-i18n="index.new_badge">Baru</span>
+        </span>
+        <h2 class="section-title truncate" data-i18n="index.new_title">Baru Ditambahkan</h2>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+        {newTools.slice(0, 4).map((tool) => (
+          <a
+            href={tool.href}
+            class="tool-tile group flex items-center gap-2.5 p-2.5 min-w-0"
+          >
+            <span class="icon-mono w-7 h-7 rounded-md border border-matte-200 dark:border-surface-border group-hover:border-matte-300 dark:group-hover:border-matte-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
+            </span>
+            <span class="min-w-0">
+              <span class="block text-xs font-semibold text-matte-800 dark:text-white truncate transition-colors group-hover:text-accent-blue" data-i18n={tool.titleKey || undefined}>{tool.title}</span>
+              <span class="block text-2xs text-matte-400 dark:text-matte-400 truncate" data-i18n={`index.${tool.cat}`}>
+                {categories.find((c) => c.id === tool.cat)?.name || tool.cat}
+              </span>
+            </span>
+          </a>
         ))}
       </div>
-    </div>
+    </section>
   </section>
 
   <script is:inline>
@@ -108,7 +153,11 @@ const categories = [
             placeholder="Cari tools..." data-i18n-attr="placeholder" data-i18n="search.placeholder"
             class="w-full h-9 pl-9 pr-16 rounded-lg bg-white dark:bg-surface-elevated border border-matte-200 dark:border-surface-border focus:border-accent-blue focus:ring-1 focus:ring-accent-blue/20 outline-none text-xs transition-colors text-matte-800 dark:text-white placeholder:text-matte-400"
           />
-          <kbd class="hidden sm:inline-flex absolute right-2 top-1/2 -translate-y-1/2 items-center px-1.5 py-0.5 text-[9px] font-bold rounded bg-matte-100 dark:bg-matte-700 text-matte-400 dark:text-matte-500 pointer-events-none">Ctrl+K</kbd>
+          <button id="search-clear" type="button" aria-label="Hapus pencarian" data-i18n-attr="aria-label" data-i18n="search.clear"
+            class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 items-center justify-center rounded-full bg-matte-200 dark:bg-surface-hover text-matte-500 dark:text-matte-300 hover:bg-matte-300 dark:hover:bg-surface-border transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <kbd id="search-kbd" class="hidden sm:inline-flex absolute right-2 top-1/2 -translate-y-1/2 items-center px-1.5 py-0.5 text-[9px] font-bold rounded bg-matte-100 dark:bg-matte-700 text-matte-400 dark:text-matte-500 pointer-events-none">Ctrl+K</kbd>
         </div>
 
         <div class="relative shrink-0">
@@ -177,7 +226,7 @@ const categories = [
   <!-- Tools Grid -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-28 min-h-[50vh]">
     <div class="flex items-center justify-between mb-3">
-        <h2 id="results-count" class="section-title" data-i18n="index.all">Semua Tools</h2>
+        <h2 id="results-count" class="section-title" data-i18n="index.all" role="status" aria-live="polite">Semua Tools</h2>
     </div>
 
     <div id="tools-grid" class="card-grid">
@@ -188,6 +237,7 @@ const categories = [
             data-cat={tool.cat}
             data-href={tool.href}
             data-title={tool.title.toLowerCase()}
+            data-search={searchText(tool)}
             data-name={tool.titleKey || tool.title}
             data-color={tool.color}
             data-icon={tool.icon}
@@ -211,6 +261,7 @@ const categories = [
             data-cat={tool.cat}
             data-href={tool.href}
             data-title={tool.title.toLowerCase()}
+            data-search={searchText(tool)}
             data-name={tool.titleKey || tool.title}
             data-color={tool.color}
             data-icon={tool.icon}
@@ -263,6 +314,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const pageNumbers = document.getElementById('page-numbers');
       const favSection = document.getElementById('favorites-section');
       const favContainer = document.getElementById('favorite-tools');
+      const searchClearBtn = document.getElementById('search-clear');
+      const searchKbd = document.getElementById('search-kbd');
       const heroSection = document.getElementById('hero-section');
       const categoryBreadcrumb = document.getElementById('category-breadcrumb');
       const categoryBreadcrumbName = document.getElementById('category-breadcrumb-name');
@@ -288,8 +341,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         if (!dataPromise) dataPromise = import('../data/tools-client-data');
         return dataPromise;
       }
-      // Kartu datar (clean Oct 2026): hairline .tool-tile, ikon line-art tanpa box,
-      // tanpa shadow/lift. HARUS identik dengan ToolCard.astro.
+      // Kartu datar + elevasi 1px (.tool-tile), ikon dalam tile hairline 32px.
+      // HARUS identik dengan ToolCard.astro (kartu SSR vs lazy tidak boleh beda).
+      // data-i18n ada di <a> judul, BUKAN di <h3> — processI18n pakai textContent.
       function renderCardHTML(tool) {
         const titleKey = tool.titleKey ? ` data-i18n="${tool.titleKey}"` : '';
         const descKey = tool.descKey ? ` data-i18n="${tool.descKey}"` : '';
@@ -297,11 +351,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           <button class="fav-star absolute top-2.5 right-2.5 z-10 w-6 h-6 flex items-center justify-center rounded-md text-matte-300 hover:text-amber-400 transition-colors opacity-0 group-hover:opacity-100 focus-visible:opacity-100" data-fav="${tool.href}" title="Add to favorites" aria-label="Add to favorites" type="button">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </button>
-          <div class="icon-mono w-5 h-5 mb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${tool.icon}</svg>
+          <div class="icon-mono w-8 h-8 mb-3 rounded-lg border border-matte-200 dark:border-surface-border group-hover:border-matte-300 dark:group-hover:border-matte-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${tool.icon}</svg>
           </div>
-          <h3 class="text-sm font-semibold text-matte-800 dark:text-white leading-snug truncate"${titleKey}><a href="${tool.href}" class="after:absolute after:inset-0">${tool.title}</a></h3>
-          <p class="text-xs text-matte-400 dark:text-matte-300 leading-relaxed mt-1 line-clamp-2"${descKey}>${tool.desc}</p>
+          <h3 class="text-sm font-semibold text-matte-800 dark:text-white leading-snug truncate transition-colors group-hover:text-accent-blue"><a href="${tool.href}" class="after:absolute after:inset-0"${titleKey}>${tool.title}</a></h3>
+          <p class="text-xs text-matte-500 dark:text-matte-300 leading-relaxed mt-1 line-clamp-2"${descKey}>${tool.desc}</p>
         </article>`;
       }
 
@@ -320,7 +374,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         if (link) {
           link.addEventListener('click', () => {
             const href = link.getAttribute('href')?.split('?')[0];
-            const title = placeholder.getAttribute('data-name');
+            // data-name berisi i18n KEY — pakai judul asli biar chip "Baru
+            // Digunakan" tidak pernah menampilkan "tool.merge_pdf".
+            const title = placeholder.getAttribute('data-title') || placeholder.getAttribute('data-name');
             const color = placeholder.getAttribute('data-color');
             const icon = placeholder.getAttribute('data-icon');
             if (href) { saveToRecent(href, title, color, icon); incrementUsage(href); }
@@ -481,7 +537,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
          if(link) {
             link.addEventListener('click', () => {
                 const href = link.getAttribute('href')?.split('?')[0];
-                const title = tool.getAttribute('data-name');
+                const title = tool.getAttribute('data-title') || tool.getAttribute('data-name');
                 const color = tool.getAttribute('data-color');
                 const icon = tool.getAttribute('data-icon');
                 if(href) { saveToRecent(href, title, color, icon); incrementUsage(href); }
@@ -524,9 +580,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
         const hrefOf = (el) => el.getAttribute('data-href') || '';
         if(currentSort === 'name') {
+            // Urutkan pakai data-title (judul asli), BUKAN data-name: sejak W7 data-name
+            // berisi i18n KEY ('tool.merge_pdf') → urutan A-Z tampak acak bagi user.
+            // data-title selalu ada di kartu SSR maupun placeholder.
             toolsArray.sort((a, b) => {
-                const nameA = a.getAttribute('data-name') || '';
-                const nameB = b.getAttribute('data-name') || '';
+                const nameA = a.getAttribute('data-title') || '';
+                const nameB = b.getAttribute('data-title') || '';
                 return nameA.localeCompare(nameB);
             });
         } else if(currentSort === 'recent') {
@@ -545,9 +604,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         // First pass: find all matching + sort
         toolsArray.forEach(tool => {
             const cat = tool.getAttribute('data-cat');
-            const title = tool.getAttribute('data-title') || '';
+            // data-search = judul + kategori + deskripsi (ID & EN). Fallback ke
+            // data-title kalau atribut belum ada (mis. HTML lama dari cache SW).
+            const hay = tool.getAttribute('data-search') || tool.getAttribute('data-title') || '';
             let matchFilter = currentFilter === 'all' || cat === currentFilter;
-            let matchSearch = title.includes(currentSearch);
+            let matchSearch = hay.includes(currentSearch);
             if (matchFilter && matchSearch) matched.push(tool);
         });
 
@@ -673,7 +734,30 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       resetSearchBtn?.addEventListener('click', () => {
         if(searchInput) searchInput.value = '';
         currentSearch = '';
+        syncSearchClear();
         setActiveFilter('all');
+      });
+
+      // Tombol × di kolom cari: sebelumnya satu-satunya cara menghapus kata kunci
+      // adalah select-all/backspace atau Esc — keduanya tidak terlihat.
+      function syncSearchClear() {
+        const has = !!searchInput?.value.trim();
+        if (searchClearBtn) {
+          searchClearBtn.classList.toggle('hidden', !has);
+          searchClearBtn.classList.toggle('flex', has);
+        }
+        // Inline style (bukan class) supaya hint Ctrl+K tidak bentrok dengan
+        // `sm:inline-flex` miliknya sendiri dan tetap tersembunyi di mobile.
+        if (searchKbd) searchKbd.style.display = has ? 'none' : '';
+      }
+      searchClearBtn?.addEventListener('click', () => {
+        if (!searchInput) return;
+        searchInput.value = '';
+        currentSearch = '';
+        currentPage = 1;
+        syncSearchClear();
+        renderTools();
+        searchInput.focus();
       });
 
       const _idxKeydown = (e) => {
@@ -684,6 +768,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         if (e.key === 'Escape' && currentSearch) {
              if(searchInput) searchInput.value = '';
              currentSearch = '';
+             syncSearchClear();
              renderTools();
         }
       };
@@ -698,7 +783,8 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       // Reset page on filter/search change
       const origSetActiveFilter = setActiveFilter;
       setActiveFilter = function(id) { currentPage = 1; origSetActiveFilter(id); };
-      searchInput?.addEventListener('input', (e) => { currentPage = 1; currentSearch = e.target.value.toLowerCase(); renderTools(); });
+      searchInput?.addEventListener('input', (e) => { currentPage = 1; currentSearch = e.target.value.toLowerCase(); syncSearchClear(); renderTools(); });
+      syncSearchClear();
 
       updateRecentDisplay();
       setActiveFilter(currentFilter);
