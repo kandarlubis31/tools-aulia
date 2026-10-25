@@ -10,8 +10,8 @@ export const translations: Record<string, { id: string; en: string }> = {
   'nav.menu_aria': { id: 'Buka menu', en: 'Open menu' },
   'nav.mobile_dashboard': { id: 'Dashboard', en: 'Dashboard' },
   'nav.mobile_pdf': { id: 'PDF Tools', en: 'PDF Tools' },
-  'nav.mobile_theme_dark': { id: 'Gelap 🌙', en: 'Dark 🌙' },
-  'nav.mobile_theme_light': { id: 'Terang ☀️', en: 'Light ☀️' },
+  'nav.mobile_theme_dark': { id: 'Gelap', en: 'Dark' },
+  'nav.mobile_theme_light': { id: 'Terang', en: 'Light' },
   'nav.mobile_install': { id: 'Install App', en: 'Install App' },
   'nav.clear_cache': { id: 'Bersihkan Cache', en: 'Clear Cache' },
   'nav.tools': { id: 'Tools', en: 'Tools' },
@@ -25,11 +25,12 @@ export const translations: Record<string, { id: string; en: string }> = {
   'nav.category_data': { id: 'Data', en: 'Data' },
   'nav.category_media': { id: 'Media', en: 'Media' },
   'nav.category_network': { id: 'Network', en: 'Network' },
+  'nav.category_life': { id: 'Life', en: 'Life' },
 
   // --- BACK BUTTONS ---
   'back.dashboard': { id: 'Kembali ke Dashboard', en: 'Back to Dashboard' },
   'back.pdf_tools': { id: 'Kembali ke PDF Tools', en: 'Back to PDF Tools' },
-  'badge.popular': { id: '🔥 Populer', en: '🔥 Popular' },
+  'badge.popular': { id: 'Populer', en: 'Popular' },
 
   // --- SEARCH ---
   'search.placeholder': { id: 'Cari tools...', en: 'Search tools...' },
@@ -37,6 +38,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'search.empty': { id: 'Ketik untuk mencari tools', en: 'Type to search tools' },
   'search.no_results': { id: 'Tidak ada hasil untuk', en: 'No results for' },
   'search.close_aria': { id: 'Tutup pencarian', en: 'Close search' },
+  'search.clear': { id: 'Hapus pencarian', en: 'Clear search' },
 
   // --- PWA MODAL ---
   'pwa.install_title': { id: 'Install Tools MasAul', en: 'Install Tools MasAul' },
@@ -102,6 +104,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'index.explore': { id: 'Jelajahi Tools', en: 'Explore Tools' },
   'index.random': { id: 'Random Tool', en: 'Random Tool' },
   'index.new_title': { id: 'Baru Ditambahkan', en: 'Newly Added' },
+  'index.new_badge': { id: 'Baru', en: 'New' },
   'index.tools_count_label': { id: 'Tools', en: 'Tools' },
   'index.categories_count_label': { id: 'Kategori', en: 'Categories' },
   'index.client_side_label': { id: 'Client-Side', en: 'Client-Side' },

@@ -131,6 +131,80 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
     (1203 kemunculan di 176 halaman: 📋 ✅ ⚠ 💾 🔄 …) **belum disentuh** — itu sweep terpisah dan
     butuh klasifikasi mana emoji fungsional (status/ikon tombol) vs dekoratif.
 
+- 🆕 **(Oct 25, lanjutan 2)** Audit navigasi + pencarian (permintaan user: "audit yang lain lagi").
+  - **Dropdown "Tools" (navbar, semua 255 halaman)**: sebelumnya dibuka **murni CSS `:hover`** → di
+    perangkat sentuh ≥768px (iPad, touch laptop) menu ini tidak bisa dibuka sama sekali dan
+    `aria-expanded` selalu `false` (menyesatkan screen reader). Sekarang `data-open` di
+    `#tools-menu-wrap` + klik toggle, tutup saat klik di luar / Esc / klik link, reset di
+    `astro:after-swap`. Chevron pakai `group-data-[open=true]:rotate-180`. Panel diberi
+    `max-h-[min(70vh,26rem)] overflow-y-auto` (12 kategori bisa melebihi viewport pendek).
+  - **Kategori `Life` (8 tool) tidak ada di navbar** — desktop dropdown & menu mobile hanya memuat 11
+    dari 12 kategori, jadi satu-satunya jalan masuk adalah chip di landing. Ditambahkan
+    (`nav.category_life`).
+  - **Menu mobile tidak bisa discroll**: `absolute` tanpa `max-height` → di layar pendek (landscape
+    390×480) tombol Install/Bersihkan Cache terpotong di luar layar. Ditambah
+    `max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain` + Esc menutup menu.
+  - **Pencarian landing**: filter lama hanya mencocokkan `data-title` (judul versi ID) → "pdf",
+    "kalkulator", "calculator", "kompres" tidak menemukan apa pun. Sekarang tiap `.tool-item`
+    (SSR **dan** placeholder) punya `data-search` = judul + kategori (id & label) + deskripsi +
+    judul/deskripsi EN, dihitung saat build (`searchText()` di frontmatter). Konsekuensi payload:
+    +26 KB raw / **+8,6 KB gzip** di `index.html` (250 kartu) — nol request tambahan.
+  - **Kolom cari punya tombol ×** (muncul saat ada teks, fokus balik ke input, hint `Ctrl+K`
+    disembunyikan via inline style supaya tidak muncul di mobile). Sebelumnya satu-satunya cara
+    menghapus kata kunci = select-all/backspace atau Esc (tak terlihat).
+  - **A11y**: `#results-count` dapat `role="status" aria-live="polite"` (perubahan jumlah hasil
+    dibacakan screen reader).
+  - 🐛 **Fix**: state "tidak ada hasil" di search modal menyisipkan query mentah ke `innerHTML`
+    (`<img onerror=…>` di kolom cari tereksekusi — self-XSS). Sekarang di-escape (`escHtml`).
+  - 🐛 **Fix**: `saveToRecent()` menyimpan `data-name` (i18n KEY) — fallback chip "Baru Digunakan"
+    bisa tampil `tool.merge_pdf`. Sekarang pakai `data-title`.
+  - **Emoji sisa**: `badge.popular` "🔥 Populer" → "Populer" (ID & EN) + markup `/pdf`.
+    `nav.mobile_theme_dark/light` 🌙/☀️ dihapus.
+  - **Verifikasi**: `pnpm build` hijau (7 guardrail, public=250), `pnpm test` 62/62, `audit-i18n`
+    exit 0 (249/249), **smoke CDP 20/20 PASS** (0 page exception, 0 console error): dropdown
+    buka/tutup via klik, Esc, klik luar; 12 kategori + Life; menu mobile scrollable di 390×480 dan
+    tombol terakhir terjangkau; cari "kalkulator"/"pdf"/"calculator" dapat hasil relevan; tombol ×
+    reset ke 36 kartu + fokus balik; `?cat=life` menampilkan 8 tool. Harness dihapus.
+  - **Audit tertunda (belum diubah)**: (1) sort "Terbaru" masih = riwayat pemakaian pribadi;
+    (2) 20 halaman (termasuk hub `/pdf`) masih pakai tile ikon gradient + glow rose +
+    `group-hover:scale-110` — bahasa desain lama, jadi terasa beda dari landing/header;
+    (3) hero + band tetap tersembunyi saat `?cat=` aktif; (4) `/pdf` punya filter sendiri yang
+    tetap hanya cocok judul.
+
+- 🆕 **(Oct 25, lanjutan)** Landing v2 — kartu dinaikkan bobotnya + "Baru Ditambahkan" jadi band
+  berpanel (permintaan user: Newly Added kurang menonjol, kartu kurang "pop"). Belum di-commit.
+  - **`.tool-tile`**: hairline 7% → 9% + `box-shadow 0 1px 2px`; hover = shadow 4px/12px +
+    `translateY(-1px)` + border menguat. `.tool-placeholder` ikut diberi shadow identik supaya
+    skeleton→kartu tidak "lompat". Dark: border `--surface-border`, shadow 0.3.
+  - **Ikon kartu** kembali punya jangkar: tile hairline 32px (ikon 16px, stroke 1.6) — senada tile
+    `ToolPageHeader`; hover border tile menguat + ikon/judul jadi aksen. HARUS identik antara
+    `ToolCard.astro` ~ `renderCardHTML()` index.
+  - **Kontras**: deskripsi kartu `matte-400` → `matte-500` (light) supaya lolos AA di 12px.
+  - **"Baru Ditambahkan"**: baris link ber-pemisah titik → panel `#new-tools`
+    (`bg-matte-50/70`, dark `surface-elevated/60`) + pill "Baru" (key baru `index.new_badge`) +
+    4 kartu ringkas (2 kolom mobile / 4 desktop) berisi ikon 28px, judul, dan label kategori
+    (`index.<cat>`). Test "169 badge" tidak kembali — tidak ada angka hitung.
+  - 🐛 **Fix**: `data-i18n` dipindah dari `<h3>` ke `<a>` judul. `processI18n()` menulis
+    `textContent`, jadi versi lama **menghapus elemen `<a>`** setiap ganti ke EN → stretched-link
+    mati, kartu tidak bisa diklik sampai reload. Terverifikasi: EN judul tetap `"Age Calculator"`,
+    anchor utuh.
+  - 🐛 **Fix**: sortir A-Z pakai `data-title`, bukan `data-name` (sejak W7 isinya i18n key
+    `tool.merge_pdf` → urutan tampak acak padahal labelnya "A-Z").
+  - **A11y**: `.fav-star` (`opacity-0` + group-hover) dipaksa `opacity: 1` di `@media (pointer: coarse)`
+    — di layar sentuh tidak ada hover, jadi fitur favorit tak pernah terjangkau.
+  - **Verifikasi**: `pnpm build` hijau (7 guardrail, public=250), `pnpm test` 62/62, audit i18n exit 0,
+    **smoke CDP 44/44 PASS** (0 page exception, 0 console error) — band 4 kartu + pill + label
+    kategori, shadow/radius/border kartu, hover (shadow naik, lift -1px, judul aksen) via
+    `Input.dispatchMouseEvent`, dark mode lewat `localStorage theme`, EN (pill/heading/kategori/anchor),
+    mobile 390px (2 kolom, 0 overflow), halaman 2 lazy-render 36/36 pakai gaya baru, A-Z sesuai judul,
+    filter+breadcrumb+favorit. Harness `scripts/tmp-smoke-cards.mjs` dihapus.
+  - **Audit tertunda (belum diubah, perlu keputusan)**: (1) opsi sort "Terbaru" sebenarnya
+    mengurutkan **riwayat pemakaian pribadi**, bukan tool terbaru — label menyesatkan;
+    (2) ~~pencarian hanya cocok dengan `data-title` (judul ID)~~ **sudah diperbaiki** (lihat entri
+    "lanjutan 2": `data-search` judul+kategori+deskripsi, ID & EN);
+    (3) hero + band ikut tersembunyi saat filter kategori aktif (by design lama, tapi berarti
+    "Baru Ditambahkan" tak pernah terlihat oleh user yang masuk lewat `?cat=`).
+
 - 🆕 **(Oct 25)** Rombak landing **"clean"** (commit `900a79e`) — scope sengaja **landing saja** (permintaan user: UI
   terasa terlalu ramai/"lebay", mau lebih clean). Belum di-commit.
   - **Hero**: background grid fix dihapus, badge "Productivity Booster" + 2 stat pill dihapus,
