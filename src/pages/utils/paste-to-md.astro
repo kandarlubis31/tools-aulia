@@ -38,12 +38,12 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     </div>
 
     <!-- File Upload Drop Zone -->
-    <div id="file-upload-zone" class="relative mb-4 animate-fade-in bg-white/80 dark:bg-matte-800/80 backdrop-blur-sm rounded-xl border-2 border-dashed border-matte-300 dark:border-matte-600 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer group">
+    <div id="file-upload-zone" class="relative mb-4 animate-fade-in bg-white/80 dark:bg-matte-800/80 backdrop-blur-sm rounded-xl border border-dashed border-matte-300 dark:border-surface-border hover:border-matte-400 dark:hover:border-matte-500 transition-colors cursor-pointer group">
       <input type="file" id="file-input" accept=".txt,.md,.html,.htm,.csv,.json,.xml,.docx,.rtf,.pdf" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
       <div id="file-upload-content" class="p-5 text-center pointer-events-none">
         <div id="file-upload-default" class="flex flex-col items-center gap-2">
-          <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/></svg>
+          <div class="icon-mono w-9 h-9 rounded-xl border border-matte-200 dark:border-surface-border bg-matte-50 dark:bg-surface-elevated">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/></svg>
           </div>
           <div>
             <p class="text-sm font-bold text-matte-600 dark:text-matte-300" data-i18n="paste.upload_title">Upload Files → Markdown</p>
@@ -63,8 +63,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
         <div id="file-upload-info" class="hidden items-center justify-between">
           <div class="flex items-center gap-3">
-            <div id="file-icon" class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div id="file-icon" class="icon-mono w-9 h-9 rounded-xl border border-matte-200 dark:border-surface-border bg-matte-50 dark:bg-surface-elevated">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             </div>
             <div class="text-left">
               <p id="file-name" class="text-sm font-bold text-matte-700 dark:text-matte-200 truncate max-w-[200px]"></p>
