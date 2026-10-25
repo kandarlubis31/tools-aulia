@@ -10,14 +10,16 @@ interface Props {
   subLabelKey?: string;   // i18n key for subLabel
   hint?: string;          // small muted line under subLabel
   icon?: string;          // SVG path data
-  gradient?: string;      // icon tile gradient stops, e.g. 'from-emerald-500 to-teal-600'
-  hoverClass?: string;    // hover border/bg, e.g. 'hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-matte-800/50'
   overlay?: boolean;      // input = absolute overlay full-area (click tanpa JS wiring)
   extraInputId?: string;  // second hidden input (e.g. remove-bg background image)
   extraInputAccept?: string;
   className?: string;     // extra layout classes (max-w, mx-auto, animate-on-scroll, ...)
 }
 
+// Clean Oct 2026: prop `gradient` + `hoverClass` dihapus. Dulu tiap halaman kirim
+// palet warna sendiri (emerald/teal/sky/…) → dropzone jadi blok warna paling menonjol
+// di halaman, padahal cuma area upload. Sekarang netral: hairline dashed + tile ikon
+// hairline; aksen indigo hanya muncul saat fokus keyboard.
 const {
   id = 'drop-zone',
   inputId = 'file-input',
@@ -29,8 +31,6 @@ const {
   subLabelKey,
   hint,
   icon = '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
-  gradient = 'from-sky-500 to-blue-600',
-  hoverClass = 'hover:border-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/20',
   overlay = false,
   extraInputId,
   extraInputAccept = accept,
@@ -44,15 +44,15 @@ const {
   role="button"
   tabindex={overlay ? undefined : 0}
   aria-label={label}
-  class={`group relative cursor-pointer border-2 border-dashed border-matte-300 dark:border-matte-600 rounded-2xl p-10 sm:p-12 text-center transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue focus-visible:ring-offset-2 ${hoverClass} ${className}`}
+  class={`group relative cursor-pointer border border-dashed border-matte-300 dark:border-matte-600 rounded-xl p-10 sm:p-12 text-center transition-colors duration-150 hover:border-matte-400 dark:hover:border-matte-500 hover:bg-matte-50/60 dark:hover:bg-surface-hover/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue focus-visible:ring-offset-2 ${className}`}
 >
   <div class={overlay ? 'pointer-events-none' : undefined}>
     {icon && (
-      <div class={`icon-tile mx-auto mb-5 w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center shadow-sm transition-transform duration-200 group-hover:scale-110`}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
+      <div class="icon-mono mx-auto mb-4 w-12 h-12 rounded-xl border border-matte-200 dark:border-surface-border bg-matte-50 dark:bg-surface-elevated">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
       </div>
     )}
-    <h3 class="text-lg font-bold text-matte-800 dark:text-matte-200 mb-1" data-i18n={labelKey || undefined}>{label}</h3>
+    <h3 class="text-base font-semibold text-matte-800 dark:text-matte-200 mb-1" data-i18n={labelKey || undefined}>{label}</h3>
     {subLabel && (
       <p class="text-sm text-matte-500 dark:text-matte-400" data-i18n={subLabelKey || undefined}>{subLabel}</p>
     )}
