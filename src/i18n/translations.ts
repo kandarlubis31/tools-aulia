@@ -137,9 +137,9 @@ export const translations: Record<string, { id: string; en: string }> = {
   // --- SHOWCASE (Top 20) ---
   'showcase.title': { id: 'Top 20 Tools Terbaik', en: 'Top 20 Best Tools' },
   'showcase.desc': { id: 'Kurasi 20 tools paling populer & bermanfaat di Tools MasAul. Semua 100% di browser — tanpa install, data aman.', en: 'A curated list of the 20 most popular & useful tools on Tools MasAul. All 100% in-browser — no install, data safe.' },
-  'showcase.top_used': { id: '🔥 Paling Sering Dipakai', en: '🔥 Most Used' },
+  'showcase.top_used': { id: 'Paling Sering Dipakai', en: 'Most Used' },
   'showcase.top_used_desc': { id: 'Berdasarkan aktivitas kamu di browser ini.', en: 'Based on your activity in this browser.' },
-  'showcase.editors_pick': { id: '⭐ Pilihan Editor', en: '⭐ Editor’s Picks' },
+  'showcase.editors_pick': { id: 'Pilihan Editor', en: 'Editor’s Picks' },
   'showcase.editors_pick_desc': { id: 'Tools yang paling sering dipakai dan paling bermanfaat.', en: 'The most used and most useful tools.' },
   'showcase.see_all': { id: 'Lihat Semua Tools', en: 'See All Tools' },
   'showcase.open': { id: 'Buka Tools', en: 'Open Tool' },

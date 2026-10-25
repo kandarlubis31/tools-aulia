@@ -3,27 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolPageHeader from '../components/ToolPageHeader.astro';
 import { publicTools as tools } from '../data/tools';
 
-// --- Icon tile duotone per kategori (same palette as index) ---
-const colorTile: Record<string, string> = {
-  rose: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  orange: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  blue: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  indigo: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  sky: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  cyan: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-  emerald: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-  teal: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-  green: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-  lime: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-  amber: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  yellow: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  violet: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  purple: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  pink: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  slate: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-  gray: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-};
-
 // --- Curated editor picks (order = rank) ---
 const curatedHrefs = [
   '/pdf/merge',
@@ -56,7 +35,6 @@ const toolsForJs = tools.map((t) => ({
   href: t.href,
   title: t.title,
   desc: t.desc,
-  color: t.color,
   category: t.category,
   icon: t.icon,
 }));
@@ -70,7 +48,6 @@ const toolsForJs = tools.map((t) => ({
     title="Top 20 Tools Terbaik"
     desc="Kurasi 20 tools paling populer & bermanfaat di Tools MasAul. Semua 100% di browser — tanpa install, data aman."
     icon='<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'
-    gradient="from-amber-500 to-orange-500"
     titleKey="showcase.title"
     descKey="showcase.desc"
   />
@@ -78,16 +55,11 @@ const toolsForJs = tools.map((t) => ({
   <!-- Tool data for client-side ranking -->
   <script is:inline type="application/json" id="showcase-tools-data" set:html={JSON.stringify(toolsForJs)}></script>
 
-  <!-- Background grid (subtle, same as index) -->
-  <div class="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-    <div class="absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.03)_1px,transparent_1px)] bg-[length:64px_64px]"></div>
-  </div>
-
   <!-- ===== Section 1: Most Used (per-user, client-rendered) ===== -->
   <section id="top-used-section" class="max-w-7xl mx-auto px-4 mb-8 hidden">
     <div class="flex items-center justify-between mb-3">
       <div>
-        <h2 class="section-title flex items-center gap-2" data-i18n="showcase.top_used">🔥 Paling Sering Dipakai</h2>
+        <h2 class="section-title" data-i18n="showcase.top_used">Paling Sering Dipakai</h2>
         <p class="text-xs text-matte-400 dark:text-matte-300 mt-0.5" data-i18n="showcase.top_used_desc">Berdasarkan aktivitas kamu di browser ini.</p>
       </div>
       <a href="/" class="text-2xs font-semibold text-accent-blue hover:underline shrink-0" data-i18n="showcase.see_all">Lihat Semua Tools</a>
@@ -99,7 +71,7 @@ const toolsForJs = tools.map((t) => ({
   <section class="max-w-7xl mx-auto px-4 pb-24">
     <div class="flex items-center justify-between mb-3">
       <div>
-        <h2 class="section-title flex items-center gap-2" data-i18n="showcase.editors_pick">⭐ Pilihan Editor</h2>
+        <h2 class="section-title" data-i18n="showcase.editors_pick">Pilihan Editor</h2>
         <p class="text-xs text-matte-400 dark:text-matte-300 mt-0.5" data-i18n="showcase.editors_pick_desc">Tools yang paling sering dipakai dan paling bermanfaat.</p>
       </div>
       <a href="/" class="text-2xs font-semibold text-accent-blue hover:underline shrink-0" data-i18n="showcase.see_all">Lihat Semua Tools</a>
@@ -109,16 +81,16 @@ const toolsForJs = tools.map((t) => ({
       {curated.map((tool, i) => (
         <a
           href={tool.href}
-          class="group card-base relative flex flex-col p-5 rounded-xl overflow-hidden hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150"
+          class="tool-tile group relative flex flex-col p-5"
         >
-          <span class="absolute top-2 right-3 text-3xl font-black text-matte-100 dark:text-matte-800 select-none group-hover:text-accent-blue/20 transition-colors">{String(i + 1).padStart(2, '0')}</span>
+          <span class="absolute top-2.5 right-3 text-xl font-bold tabular-nums text-matte-200 dark:text-matte-700 select-none">{String(i + 1).padStart(2, '0')}</span>
 
           <div class="flex items-start gap-3 pr-8">
-            <div class={`icon-mono icon-tile w-11 h-11 rounded-xl bg-gradient-to-br ${colorTile[tool.color] || colorTile.indigo} flex items-center justify-center shrink-0 transition-transform duration-150 group-hover:scale-110`}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: inherit" set:html={tool.icon} />
+            <div class="icon-mono w-10 h-10 shrink-0 rounded-xl border border-matte-200 dark:border-surface-border bg-matte-50 dark:bg-surface-elevated">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={tool.icon} />
             </div>
             <div class="min-w-0">
-              <h3 class="text-sm font-bold text-matte-800 dark:text-white truncate group-hover:text-accent-blue transition-colors" data-i18n={tool.titleKey || undefined}>{tool.title}</h3>
+              <h3 class="text-sm font-semibold text-matte-800 dark:text-white truncate" data-i18n={tool.titleKey || undefined}>{tool.title}</h3>
               <p class="text-xs text-matte-400 dark:text-matte-300 leading-relaxed mt-0.5 line-clamp-2" data-i18n={tool.descKey || undefined}>{tool.desc}</p>
             </div>
           </div>
@@ -133,7 +105,7 @@ const toolsForJs = tools.map((t) => ({
 
     <!-- CTA -->
     <div class="text-center mt-10">
-      <a href="/" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-matte-900 dark:bg-white text-white dark:text-matte-900 text-sm font-bold hover:scale-105 transition-transform shadow-sm">
+      <a href="/" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-matte-900 dark:bg-white text-white dark:text-matte-900 text-sm font-semibold hover:opacity-90 transition-opacity">
         <span data-i18n="showcase.see_all">Lihat Semua Tools</span>
         <span>{tools.length}+</span>
       </a>
@@ -151,50 +123,28 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     const dataEl = document.getElementById('showcase-tools-data');
     if (!section || !grid || !dataEl) return;
 
-    let toolsData: { href: string; title: string; desc: string; color: string; category: string; icon: string }[] = [];
+    let toolsData: { href: string; title: string; desc: string; category: string; icon: string }[] = [];
     try {
       toolsData = JSON.parse(dataEl.textContent || '[]');
     } catch {
       /* ignore */
     }
 
-    // Same palette as the server-side colorTile (keep in sync)
-    const colorTileMap: Record<string, string> = {
-      rose: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-      orange: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-      blue: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-      indigo: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-      sky: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-      cyan: 'from-matte-200 to-matte-100 text-slate-600 dark:from-blue-500/15 dark:to-blue-500/5 dark:text-blue-300',
-      emerald: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-      teal: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-      green: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-      lime: 'from-matte-200 to-matte-100 text-slate-600 dark:from-emerald-500/15 dark:to-emerald-500/5 dark:text-emerald-300',
-      amber: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-      yellow: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-      violet: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-      purple: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-      pink: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-      slate: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-      gray: 'from-matte-200 to-matte-100 text-slate-600 dark:from-slate-500/15 dark:to-slate-500/5 dark:text-slate-300',
-    };
-    const tileFor = (color: string) => colorTileMap[color] || colorTileMap.indigo;
-
     const cardHTML = (t: (typeof toolsData)[number], rank: number, count?: number) => `
-      <a href="${t.href}" class="group card-base relative flex flex-col p-5 rounded-xl overflow-hidden hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all duration-150">
-        <span class="absolute top-2 right-3 text-3xl font-black text-matte-100 dark:text-matte-800 select-none group-hover:text-accent-blue/20 transition-colors">${String(rank).padStart(2, '0')}</span>
+      <a href="${t.href}" class="tool-tile group relative flex flex-col p-5">
+        <span class="absolute top-2.5 right-3 text-xl font-bold tabular-nums text-matte-200 dark:text-matte-700 select-none">${String(rank).padStart(2, '0')}</span>
         <div class="flex items-start gap-3 pr-8">
-          <div class="icon-mono icon-tile w-11 h-11 rounded-xl bg-gradient-to-br ${tileFor(t.color)} flex items-center justify-center shrink-0 transition-transform duration-150 group-hover:scale-110">
+          <div class="icon-mono w-10 h-10 shrink-0 rounded-xl border border-matte-200 dark:border-surface-border bg-matte-50 dark:bg-surface-elevated">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg>
           </div>
           <div class="min-w-0">
-            <h3 class="text-sm font-bold text-matte-800 dark:text-white truncate group-hover:text-accent-blue transition-colors">${t.title}</h3>
+            <h3 class="text-sm font-semibold text-matte-800 dark:text-white truncate">${t.title}</h3>
             <p class="text-xs text-matte-400 dark:text-matte-300 leading-relaxed mt-0.5 line-clamp-2">${t.desc}</p>
           </div>
         </div>
         <div class="mt-3 flex items-center gap-2">
           <span class="badge-muted text-2xs px-2 py-0.5">${t.category}</span>
-          ${count ? `<span class="text-2xs font-semibold text-amber-500">${count}×</span>` : ''}
+          ${count ? `<span class="text-2xs font-semibold text-matte-400">${count}×</span>` : ''}
           <span class="text-2xs font-semibold text-accent-blue ml-auto opacity-0 group-hover:opacity-100 transition-opacity">Buka Tools →</span>
         </div>
       </a>`;

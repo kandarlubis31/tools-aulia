@@ -23,7 +23,9 @@ const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const SRC = join(root, 'src', 'pages');
 
 // interface Props ToolPageHeader (src/components/ToolPageHeader.astro)
-const ALLOWED = new Set(['title', 'desc', 'icon', 'gradient', 'titleKey', 'descKey']);
+// `gradient` sudah DIHAPUS dari Props (Okt 2026 — header tool diseragamkan netral).
+// Prop itu tidak boleh muncul lagi; pakai `icon` + styling bawaan komponen.
+const ALLOWED = new Set(['title', 'desc', 'icon', 'titleKey', 'descKey']);
 
 const files = [];
 (function walk(dir) {
@@ -74,7 +76,7 @@ for (const file of files) {
 
 if (issues > 0) {
   console.error(`\n${issues} masalah prop ToolPageHeader ditemukan.`);
-  console.error('ToolPageHeader hanya menerima: title, desc, icon, gradient, titleKey, descKey.');
+  console.error('ToolPageHeader hanya menerima: title, desc, icon, titleKey, descKey.');
   process.exit(1);
 }
 

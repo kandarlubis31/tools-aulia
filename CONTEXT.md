@@ -85,7 +85,30 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 
 ## Status saat ini (Oktober 2026)
 
-- 🆕 **(Oct 25)** Rombak landing **"clean"** — scope sengaja **landing saja** (permintaan user: UI
+- 🆕 **(Oct 25)** **Header halaman tool + showcase diseragamkan (clean)** — belum di-commit.
+  - `ToolPageHeader.astro`: prop **`gradient` DIHAPUS** (199 halaman mengirim salah satu dari
+    18 palet warna → tiap halaman terasa beda tema dari landing). Tile ikon gradient + `shadow-lg`
+    diganti tile hairline netral (`.icon-mono`, border 1px, radius 12px, tanpa shadow), tipografi
+    rata kiri (`text-left` eksplisit supaya tidak ikut center dari parent), judul 2xl/3xl satu tone,
+    share button jadi ghost link (bukan pill berbingkai).
+  - Migrasi: 199 prop `gradient=` dihapus dari tag `<ToolPageHeader>` saja (21 sisa `gradient=`
+    = prop `DropZone`, bukan header). `ToolShell.astro` disamakan; guardrail
+    `check-toolpageheader-props.mjs` kini ALLOWED tanpa `gradient`.
+  - `showcase.astro`: map `colorTile` 16 key + `colorTileMap` client dihapus, kartu
+    `card-base` + lift/shadow → `.tool-tile` datar, tile ikon hairline, nomor peringkat ditenangkan
+    (text-xl, netral), heading emoji 🔥/⭐⭐ dihapus dari markup DAN dari nilai i18n
+    `showcase.top_used` / `showcase.editors_pick`, background grid sky dihapus, CTA tanpa
+    scale/shadow, field `color` dibuang dari JSON `#showcase-tools-data`.
+  - Verifikasi: build hijau (7 guardrail), 62/62 test, audit i18n exit 0 (249/249), **smoke CDP
+    20/20 PASS** (header netral: 0 `bg-gradient`, border 1px, radius 12px, shadow none, rata kiri,
+    1 tombol share, dark mode, mobile 390px tanpa overflow; `/pdf/merge`; `/utils/hrd-dashboard`
+    tanpa ikon tetap render; showcase 20 kartu `.tool-tile` tanpa gradient/emoji; round-trip SPA)
+    — 0 page exception, 0 console error.
+  - ⚠️ **Emoji di header = 0** (memang tidak pernah ada). Emoji dekoratif di **body** halaman tool
+    (1203 kemunculan di 176 halaman: 📋 ✅ ⚠ 💾 🔄 …) **belum disentuh** — itu sweep terpisah dan
+    butuh klasifikasi mana emoji fungsional (status/ikon tombol) vs dekoratif.
+
+- 🆕 **(Oct 25)** Rombak landing **"clean"** (commit `900a79e`) — scope sengaja **landing saja** (permintaan user: UI
   terasa terlalu ramai/"lebay", mau lebih clean). Belum di-commit.
   - **Hero**: background grid fix dihapus, badge "Productivity Booster" + 2 stat pill dihapus,
     gradient-text dibuang (H1 dua tone: `Tools` muted + `MasAul` tebal), satu baris meta
@@ -115,7 +138,8 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
   - **Deferred** (di luar scope): 249 halaman tool masih pakai `ToolPageHeader` gradient
     (199 halaman kirim `gradient="from-…"`, 18 palet) + emoji dekoratif di 176 halaman → sumber
     kesan "dua website berbeda" setelah landing dibersihkan. `showcase.astro` juga masih punya
-    `colorTile` + heading emoji.
+    `colorTile` + heading emoji. → **Sudah dikerjakan di entri Oct 25 di atas** (header tool +
+    showcase); emoji body halaman tool masih tersisa.
 
 - 🆕 **(Oct 23)** Poles design homepage premium anti-AI-slop (scope homepage + navbar/footer) →
   commits **`d794a02`** feat(ui) + **`84b0049`** fix(data):
