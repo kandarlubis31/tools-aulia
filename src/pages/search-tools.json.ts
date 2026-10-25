@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { publicTools as tools } from '../data/tools';
+import { translations } from '../i18n/translations';
 
 /**
  * GET /search-tools.json
@@ -13,12 +14,21 @@ import { publicTools as tools } from '../data/tools';
  * on first interaction, and precached by the service worker for offline use.
  */
 export const GET: APIRoute = () => {
+  // `icon` ikut dikirim: hasil pencarian dulu memakai SATU ikon panah generik
+  // untuk semua tool, jadi 250 hasil tidak bisa dibedakan secara visual. Path
+  // SVG-nya kecil (~250 byte/tool) dan file ini cuma di-fetch sekali per sesi
+  // (lazy saat modal search pertama dibuka, lalu di-precache SW).
   const searchTools = tools.map(t => ({
     name: t.title,
+    // Judul versi Inggris: sebagian tool punya nama ID yang sangat berbeda
+    // ("Kalkulator Pesangon PHK" vs "PHK Severance Calculator"), jadi user yang
+    // mengetik istilah Inggris tidak menemukan apa pun sebelumnya.
+    nameEn: t.titleKey && translations[t.titleKey] ? translations[t.titleKey].en : '',
     url: t.href,
     category: t.category,
     descKey: t.descKey,
     descFallback: t.descFallback,
+    icon: t.icon,
   }));
 
   return new Response(JSON.stringify(searchTools), {
