@@ -35,9 +35,9 @@ import DropZone from '../../components/DropZone.astro';
       />
       <div class="card-base p-6 mt-6 max-w-lg mx-auto">
         <label class="section-title mb-2 block" for="enc-password" data-i18n="fe.password">Password</label>
-        <input id="enc-password" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" placeholder="Password enkripsi..." autocomplete="new-password" />
+        <input id="enc-password" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" data-i18n-attr="placeholder" data-i18n="fenc.ph_pass" placeholder="Password enkripsi..." autocomplete="new-password" />
         <label class="section-title mb-2 mt-4 block" for="enc-confirm" data-i18n="fe.confirm">Konfirmasi Password</label>
-        <input id="enc-confirm" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" placeholder="Ulangi password..." autocomplete="new-password" />
+        <input id="enc-confirm" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" data-i18n-attr="placeholder" data-i18n="fenc.ph_pass_repeat" placeholder="Ulangi password..." autocomplete="new-password" />
         <button id="encrypt-btn" class="mt-5 w-full gradient-brand py-3 rounded-xl font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed" data-i18n="fe.encrypt_btn">🔒 Enkripsi & Download</button>
         <p class="text-2xs text-matte-400 mt-3 text-center" data-i18n="fe.encrypt_hint">Output: file <code class="font-mono">.taenc</code>. Simpan password — tidak bisa dipulihkan!</p>
       </div>
@@ -59,7 +59,7 @@ import DropZone from '../../components/DropZone.astro';
       />
       <div class="card-base p-6 mt-6 max-w-lg mx-auto">
         <label class="section-title mb-2 block" for="dec-password" data-i18n="fe.password">Password</label>
-        <input id="dec-password" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm" placeholder="Password enkripsi..." autocomplete="current-password" />
+        <input id="dec-password" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm" data-i18n-attr="placeholder" data-i18n="fenc.ph_pass" placeholder="Password enkripsi..." autocomplete="current-password" />
         <button id="decrypt-btn" class="mt-5 w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors" data-i18n="fe.decrypt_btn">🔓 Dekripsi & Download</button>
         <p class="text-2xs text-matte-400 mt-3 text-center" data-i18n="fe.decrypt_hint">Nama file asli akan dipulihkan otomatis.</p>
       </div>
