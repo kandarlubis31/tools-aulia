@@ -5,7 +5,6 @@ interface Props {
   title: string;
   desc?: string;
   icon?: string;
-  gradient?: string;
   titleKey?: string;
   descKey?: string;
   maxWidth?: '2xl' | '3xl' | '4xl' | '5xl' | '6xl';
@@ -15,7 +14,6 @@ const {
   title,
   desc = '',
   icon = '',
-  gradient = 'from-sky-500 to-indigo-500',
   titleKey,
   descKey,
   maxWidth = '5xl',
@@ -36,7 +34,6 @@ const widthClass = widthMap[maxWidth] || widthMap['5xl'];
     title={title}
     desc={desc}
     icon={icon}
-    gradient={gradient}
     titleKey={titleKey}
     descKey={descKey}
   />
