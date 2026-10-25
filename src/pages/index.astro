@@ -126,17 +126,6 @@ const categories = [
     </section>
   </section>
 
-  <script is:inline>
-    // No-FOUC: sembunyikan hero (termasuk baris "Baru Ditambahkan") segera saat
-    // URL ber-query ?cat=<kategori>. Filter grid sendiri tetap client-side.
-    (function () {
-      var c = new URLSearchParams(window.location.search).get('cat');
-      if (!c || c === 'all') return;
-      var h = document.getElementById('hero-section');
-      if (h) h.classList.add('hidden');
-    })();
-  </script>
-
   <!-- Filter bar sticky — satu baris search+sort, satu baris chip kategori.
        Chip satu set untuk mobile & desktop (sebelumnya dua set duplikat). -->
   <div class="sticky top-16 z-40 w-full backdrop-blur-lg bg-white/90 dark:bg-matte-950/90 border-b border-matte-200 dark:border-surface-border">
@@ -238,6 +227,7 @@ const categories = [
             data-href={tool.href}
             data-title={tool.title.toLowerCase()}
             data-search={searchText(tool)}
+            data-new-rank={newToolHrefs.indexOf(tool.href)}
             data-name={tool.titleKey || tool.title}
             data-color={tool.color}
             data-icon={tool.icon}
@@ -262,6 +252,7 @@ const categories = [
             data-href={tool.href}
             data-title={tool.title.toLowerCase()}
             data-search={searchText(tool)}
+            data-new-rank={newToolHrefs.indexOf(tool.href)}
             data-name={tool.titleKey || tool.title}
             data-color={tool.color}
             data-icon={tool.icon}
@@ -316,7 +307,6 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const favContainer = document.getElementById('favorite-tools');
       const searchClearBtn = document.getElementById('search-clear');
       const searchKbd = document.getElementById('search-kbd');
-      const heroSection = document.getElementById('hero-section');
       const categoryBreadcrumb = document.getElementById('category-breadcrumb');
       const categoryBreadcrumbName = document.getElementById('category-breadcrumb-name');
       const clearCategoryBtn = document.getElementById('clear-category-btn');
@@ -578,7 +568,6 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const toolsArray = Array.from(tools);
         const matched = [];
 
-        const hrefOf = (el) => el.getAttribute('data-href') || '';
         if(currentSort === 'name') {
             // Urutkan pakai data-title (judul asli), BUKAN data-name: sejak W7 data-name
             // berisi i18n KEY ('tool.merge_pdf') → urutan A-Z tampak acak bagi user.
@@ -589,15 +578,21 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
                 return nameA.localeCompare(nameB);
             });
         } else if(currentSort === 'recent') {
-            // Urutkan berdasarkan riwayat pemakaian (recentTools). Tool yang belum
-            // pernah dipakai jatuh ke belakang dengan urutan stabil (registry order).
-            const order = getRecentTools().map(t => t.href);
-            const rank = new Map(order.map((h, i) => [h, i]));
-            const UNRANKED = order.length;
+            // "Terbaru" = URUTAN RILIS, bukan riwayat pemakaian pribadi (label lama
+            // menyesatkan: tool yang paling sering kamu buka naik ke atas).
+            // Sumber kebenaran recency = new-tools.ts (index 0 = paling baru),
+            // sisanya mengikuti urutan registry (data-tool-index).
+            const newRankOf = (el) => {
+                const n = parseInt(el.getAttribute('data-new-rank') || '-1');
+                return isNaN(n) ? -1 : n;
+            };
             toolsArray.sort((a, b) => {
-                const ra = rank.get(hrefOf(a)) ?? UNRANKED;
-                const rb = rank.get(hrefOf(b)) ?? UNRANKED;
-                return ra - rb;
+                const ra = newRankOf(a);
+                const rb = newRankOf(b);
+                if (ra >= 0 && rb >= 0) return ra - rb;
+                if (ra >= 0) return -1;
+                if (rb >= 0) return 1;
+                return (parseInt(a.getAttribute('data-tool-index') || '0') || 0) - (parseInt(b.getAttribute('data-tool-index') || '0') || 0);
             });
         }
 
@@ -687,9 +682,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         });
       }
 
+      // Hero TIDAK lagi disembunyikan saat filter kategori aktif: user yang datang
+      // lewat ?cat=pdf tidak pernah melihat brand, band "Baru Ditambahkan", maupun
+      // konteks situs. Breadcrumb kategori tetap muncul sebagai penanda lokasi.
       function updateIntroVisibility(filterId) {
         const isCategory = filterId !== 'all';
-        if (heroSection) heroSection.classList.toggle('hidden', isCategory);
         if (categoryBreadcrumb) {
           categoryBreadcrumb.classList.toggle('hidden', !isCategory);
           if (isCategory && categoryBreadcrumbName) {
