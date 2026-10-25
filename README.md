@@ -110,6 +110,8 @@ tools-aulia/
 
 [MIT License](LICENSE) © Aulia Iskandar Lubis
 
+Kode di repo ini boleh diindeks oleh corpus publik — termasuk [XERJ Corpus Hub](https://github.com/xerj-org/xerj) — selama lisensi MIT dan atribusi ke Aulia Iskandar Lubis + `kandarlubis31/tools-aulia` tetap dipertahankan.
+
 ---
 
 <a name="english"></a>
@@ -204,6 +206,8 @@ tools-aulia/
 ### 📄 License
 
 [MIT License](LICENSE) © Aulia Iskandar Lubis
+
+Code in this repo may be indexed by public code corpora — including the [XERJ Corpus Hub](https://github.com/xerj-org/xerj) — as long as the MIT licence and attribution to Aulia Iskandar Lubis + `kandarlubis31/tools-aulia` are preserved.
 
 ---
 
