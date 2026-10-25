@@ -16,8 +16,8 @@ import DropZone from '../../components/DropZone.astro';
 
     <!-- Tabs -->
     <div class="flex justify-center gap-3 mb-8 animate-fade-in">
-      <button id="tab-encrypt" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-violet-500 text-white shadow-md transition-all" data-i18n="fe.encrypt_tab">🔒 Enkripsi File</button>
-      <button id="tab-decrypt" class="px-6 py-2.5 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-i18n="fe.decrypt_tab">🔓 Dekripsi File</button>
+      <button id="tab-encrypt" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-violet-500 text-white shadow-md transition-all" data-i18n="fe.encrypt_tab">Enkripsi File</button>
+      <button id="tab-decrypt" class="px-6 py-2.5 rounded-xl text-sm font-medium text-matte-500 hover:text-matte-700 dark:text-matte-400 hover:bg-matte-100 dark:hover:bg-surface-elevated transition-all" data-i18n="fe.decrypt_tab">Dekripsi File</button>
     </div>
 
     <!-- Encrypt -->
@@ -28,8 +28,6 @@ import DropZone from '../../components/DropZone.astro';
         labelKey="fe.drop_encrypt"
         subLabelKey="upload.or_click"
         label="Pilih file untuk dienkripsi"
-        gradient="from-violet-500 to-purple-600"
-        hoverClass="hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/20"
         className="max-w-lg mx-auto"
       />
       <div class="card-base p-6 mt-6 max-w-lg mx-auto">
@@ -37,7 +35,7 @@ import DropZone from '../../components/DropZone.astro';
         <input id="enc-password" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" data-i18n-attr="placeholder" data-i18n="fenc.ph_pass" placeholder="Password enkripsi..." autocomplete="new-password" />
         <label class="section-title mb-2 mt-4 block" for="enc-confirm" data-i18n="fe.confirm">Konfirmasi Password</label>
         <input id="enc-confirm" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-violet-500 transition-colors text-sm" data-i18n-attr="placeholder" data-i18n="fenc.ph_pass_repeat" placeholder="Ulangi password..." autocomplete="new-password" />
-        <button id="encrypt-btn" class="mt-5 w-full gradient-brand py-3 rounded-xl font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed" data-i18n="fe.encrypt_btn">🔒 Enkripsi & Download</button>
+        <button id="encrypt-btn" class="mt-5 w-full gradient-brand py-3 rounded-xl font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed" data-i18n="fe.encrypt_btn">Enkripsi & Download</button>
         <p class="text-2xs text-matte-400 mt-3 text-center" data-i18n="fe.encrypt_hint">Output: file <code class="font-mono">.taenc</code>. Simpan password — tidak bisa dipulihkan!</p>
       </div>
     </div>
@@ -51,15 +49,13 @@ import DropZone from '../../components/DropZone.astro';
         labelKey="fe.drop_decrypt"
         subLabelKey="upload.or_click"
         label="Pilih file .taenc untuk didekripsi"
-        gradient="from-emerald-500 to-teal-600"
-        hoverClass="hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
         className="max-w-lg mx-auto"
         data-hover="emerald"
       />
       <div class="card-base p-6 mt-6 max-w-lg mx-auto">
         <label class="section-title mb-2 block" for="dec-password" data-i18n="fe.password">Password</label>
         <input id="dec-password" type="password" class="w-full px-4 py-3 bg-matte-100 dark:bg-surface-hover border border-matte-200 dark:border-surface-border rounded-xl outline-none focus:border-emerald-500 transition-colors text-sm" data-i18n-attr="placeholder" data-i18n="fenc.ph_pass" placeholder="Password enkripsi..." autocomplete="current-password" />
-        <button id="decrypt-btn" class="mt-5 w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors" data-i18n="fe.decrypt_btn">🔓 Dekripsi & Download</button>
+        <button id="decrypt-btn" class="mt-5 w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors" data-i18n="fe.decrypt_btn">Dekripsi & Download</button>
         <p class="text-2xs text-matte-400 mt-3 text-center" data-i18n="fe.decrypt_hint">Nama file asli akan dipulihkan otomatis.</p>
       </div>
     </div>

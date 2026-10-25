@@ -85,7 +85,30 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 
 ## Status saat ini (Oktober 2026)
 
-- 🆕 **(Oct 25)** **Header halaman tool + showcase diseragamkan (clean)** — belum di-commit.
+- 🆕 **(Oct 25)** **DropZone netral + sapu emoji dekoratif batch 1 (label/judul)** — belum di-commit.
+  - `DropZone.astro`: prop **`gradient` + `hoverClass` dihapus** (20 halaman mengirim palet warna
+    sendiri → dropzone jadi blok warna paling menonjol). Border dashed 2px berwarna → **1px hairline**,
+    hover lift + ikon `scale-110` dihapus, tile ikon gradient 16×16 → tile hairline 12×12 netral.
+    41 prop dicabut dari 20 halaman. Class sisa duotone `.icon-tile` dihapus dari `global.css` +
+    `critical.css`.
+  - **Sapu emoji batch 1 (aman)**: hanya elemen judul/label aksi — `h1`–`h6`, `label`, `legend`,
+    `summary`, `button`, `a`, `.section-title`. Emoji yang jadi SATU-SATUNYA isi elemen (ikon)
+    tidak disentuh; elemen status generik (`<p>`/`<div>` ber-`data-i18n` dengan ✅/⚠️) juga tidak,
+    dan bendera negara (🇮🇩🇺🇸) dikecualikan. **202 prefix dihapus di 115 file** (utils 37, pdf 27,
+    calc 24, dev 23, image 23, text 20, data 18, security 12, file 8, media 5, network 2, life 1,
+    changelog 1); **99 key / 68 baris `translations.ts`** dibersihkan juga supaya emoji tidak balik
+    saat ID/EN (processI18n menimpa textContent).
+  - Verifikasi: validator struktur (jumlah `<`/`>`/tag per file) **115 file identik** sebelum vs
+    sesudah; build hijau (7 guardrail), 62/62 test, audit i18n exit 0 + 0 key duplikat (4466 key);
+    HTML build dicek langsung (`Copy IPK` tanpa 📋, `Tambah Password` tanpa 🔒); **smoke CDP 14/14
+    PASS** (DropZone dashed 1px/radius 12px/tanpa gradient, tile hairline tanpa shadow, label ID
+    `Bagikan` & EN `Share` tanpa emoji, verdict tool JWT tetap utuh, landing 36 kartu + filter,
+    showcase 20 kartu) — 0 page exception, 0 console error.
+  - ⚠️ **Sisa 826 emoji di 138 file** = kebanyakan penanda status yang memang punya makna
+    (✅ 55, ⚠ 43, ❌ 25, ✕ 24, ✓ 21) + emoji di dalam string JS/template kartu hasil (📋 23, 🎉 18,
+    🔥 17, ✨ 16). Menyapu ini butuh klasifikasi manual per halaman (batch 2), bukan regex.
+
+- 🆕 **(Oct 25)** **Header halaman tool + showcase diseragamkan (clean)** — commit `91024ef`.
   - `ToolPageHeader.astro`: prop **`gradient` DIHAPUS** (199 halaman mengirim salah satu dari
     18 palet warna → tiap halaman terasa beda tema dari landing). Tile ikon gradient + `shadow-lg`
     diganti tile hairline netral (`.icon-mono`, border 1px, radius 12px, tanpa shadow), tipografi
