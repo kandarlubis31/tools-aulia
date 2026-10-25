@@ -1365,9 +1365,11 @@ if (isPdfRoot) {
 
         var renderResultItem = function(t) {
           var descText = (window.i18n && window.i18n.t) ? window.i18n.t(t.descKey, t.descFallback) : t.descFallback;
+          // Ikon tool asli (bukan satu ikon panah generik untuk semua hasil) +
+          // tile hairline, senada kartu landing/header.
           return `<a href="${t.url}" class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors duration-150 group">
-            <div class="w-9 h-9 rounded-lg bg-matte-100 dark:bg-surface-hover flex items-center justify-center text-matte-400 group-hover:text-accent-blue transition-colors duration-150 shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l7.81-9.24a1 1 0 0 1 1.54 0l7.81 9.24A1 1 0 0 1 20 14h-7v7h-2v-7z"/></svg>
+            <div class="icon-mono w-9 h-9 rounded-lg border border-matte-200 dark:border-surface-border bg-matte-50 dark:bg-surface-elevated shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${t.icon || ''}</svg>
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-xs font-semibold text-matte-800 dark:text-white group-hover:text-accent-blue transition-colors duration-150 truncate">${t.name}</p>
@@ -1432,7 +1434,10 @@ if (isPdfRoot) {
 
             const filtered = toolsList.filter(t => {
               const enDesc = (window.i18n && window.i18n.t) ? window.i18n.t(t.descKey, '') : '';
+              // nameEn = judul versi Inggris dari translations (fallback '' kalau
+              // index lama masih tersaji dari cache SW yang belum punya field ini).
               return t.name.toLowerCase().includes(query) ||
+                     (t.nameEn || '').toLowerCase().includes(query) ||
                      t.descFallback.toLowerCase().includes(query) ||
                      t.category.toLowerCase().includes(query) ||
                      enDesc.toLowerCase().includes(query);

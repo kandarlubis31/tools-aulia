@@ -131,6 +131,28 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
     (1203 kemunculan di 176 halaman: 📋 ✅ ⚠ 💾 🔄 …) **belum disentuh** — itu sweep terpisah dan
     butuh klasifikasi mana emoji fungsional (status/ikon tombol) vs dekoratif.
 
+- 🆕 **(Oct 25, lanjutan 4)** Pencarian lebih pintar (belum di-commit).
+  - **Filter hub `/pdf`**: hanya mencocokkan judul ID → sekarang `data-search` = judul + deskripsi (ID)
+    + judul & deskripsi EN dari `translations` (dipetakan lewat `publicTools` by href, dihitung saat
+    build). Terbukti: "gabungin" / "multiple pdf files" → Merge PDF, "putar" → Rotate PDF,
+    "reduce pdf file size" → Compress PDF.
+  - **Search modal**: tiap hasil memakai **ikon tool asli** (dulu satu ikon panah generik untuk 250
+    hasil) + tile hairline. `search-tools.json` menambah field `icon`: 36,8 KB → **71,6 KB raw /
+    14,7 KB gzip**, tetap lazy-fetch sekali per sesi + precache SW.
+  - **Search modal juga mencocokkan judul EN** (`nameEn` dari `translations`): 7 tool punya nama ID
+    yang sangat berbeda dari EN ("Kalkulator Pesangon PHK" vs "PHK Severance Calculator"). Terbukti:
+    "Severance" → `/calc/pesangon`, "Workdays" → `/calc/workdays`, "Indonesian Name" →
+    `/utils/nama-generator`, kata kunci ID lama tetap jalan.
+  - **Cek mobile 390px + mode terang** (screenshot + computed style): kartu hairline 9% / radius 12 /
+    shadow 1px, judul `matte-800`, deskripsi `matte-500`, tile ikon 32px `bg-matte-50`, drop zone
+    dashed 1px `matte-300` radius 12, tombol/teks tidak overflow (scrollWidth = clientWidth). Temuan
+    yang diperbaiki: tile ikon kartu & hasil pencarian **transparan** di mode terang (tidak punya bg)
+    → disamakan jadi `bg-matte-50 dark:bg-surface-elevated`; tiga blob blur rose/orange di latar hub
+    `/pdf` dihapus (setelah kartu netral, glow itu jadi noda pink/orange).
+  - **Verifikasi**: `pnpm build` hijau, `pnpm test` 62/62, smoke CDP **12/12 PASS** (0 exception) —
+    5 kata kunci (ID & EN) di /pdf, 42 hasil "pdf" di modal dengan 39 ikon berbeda, 0 ikon generik,
+    plus 8 assertion visual mobile/mode terang.
+
 - 🆕 **(Oct 25, lanjutan 3)** Netralkan kartu 19 halaman + sortir rilis + hero permanen.
   - **Hub `/pdf`**: `glowColors` (14 palet) + `getColorClass` dihapus. Kartu grid & kartu
     "Sering Dipakai" pindah ke `.tool-tile` (border/radius/shadow/hover lift standar), tile ikon jadi
