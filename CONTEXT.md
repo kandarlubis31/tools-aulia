@@ -131,6 +131,41 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
     (1203 kemunculan di 176 halaman: 📋 ✅ ⚠ 💾 🔄 …) **belum disentuh** — itu sweep terpisah dan
     butuh klasifikasi mana emoji fungsional (status/ikon tombol) vs dekoratif.
 
+- 🆕 **(Oct 25, lanjutan 3)** Netralkan kartu 19 halaman + sortir rilis + hero permanen.
+  - **Hub `/pdf`**: `glowColors` (14 palet) + `getColorClass` dihapus. Kartu grid & kartu
+    "Sering Dipakai" pindah ke `.tool-tile` (border/radius/shadow/hover lift standar), tile ikon jadi
+    hairline 32px (`icon-mono` + border), hover judul ke aksen (bukan rose). Panel "Sering Dipakai"
+    (dulu gradient rose + radial glow + count badge rose) → `card-base` + badge netral.
+  - **13 halaman tool PDF** (`compress, delete, extract, grayscale, metadata, page-numbers, photo,
+    reorder, rotate, sign, split, to-ppt, watermark`): drop zone 1) **`border-3` tidak pernah ada di
+    Tailwind** → border dashed-nya *tak terlihat* selama ini; sekarang `border` 1px + radius 12px.
+    2) hover berwarna (emerald/red/…) → netral, identik `DropZone.astro`. 3) tile ikon 80px berwarna
+    + `group-hover:scale-110` → tile hairline 56px, ikon 28px stroke 1.5.
+  - **`jpg-to-pdf`, `paste-to-md`, `dev/my-ip`, `calc/age`, `utils/word-counter`**: tile ikon kartu
+    jadi hairline, `group-hover:scale-110` di tile dihapus, blob sudut berwarna di `calc/age` dihapus,
+    angka statistik `word-counter`/`age` jadi satu tone (bukan pink/rose/violet/fuchsia/orange).
+  - **Sengaja TIDAK disentuh**: `utils/jokes` (watermark emoji dekoratif) dan
+    `utils/prabowo-countdown` (maskot + gradient merah) — itu ilustrasi khas halaman, bukan kartu tool.
+    Overlay tombol rotate di thumbnail `pdf/rotate` juga tetap (itu kontrol, bukan kartu).
+  - 🐛 **Fix global**: `html`/`body` `overflow-x: hidden` → **`overflow-x: clip`**. `hidden` membuat
+    html/body jadi scroll container sehingga **semua `position: sticky` rusak** — bar filter landing
+    (−406px saat scroll 900) dan hub `/pdf` tidak menempel sama sekali. Setelah `clip`: keduanya
+    menempel di `top: 64px` (di bawah navbar). Diubah di `global.css` **dan** `critical.css` (mirror).
+  - **`/pdf` filter bar** `top-0` → `top-16` supaya tidak tertutup navbar sticky 64px.
+  - **Sortir "Terbaru"** sekarang benar-benar **urutan rilis**: `data-new-rank` (index di
+    `new-tools.ts`, 0 = terbaru) ditaruh di kartu SSR + placeholder saat build; tool yang tidak
+    terdaftar menyusul mengikuti `data-tool-index`. Sebelumnya opsi ini mengurutkan riwayat pemakaian
+    pribadi (`recentTools`) — labelnya menyesatkan.
+  - **Hero tidak lagi disembunyikan saat `?cat=`**: inline no-FOUC script + `heroSection` toggle
+    dihapus, breadcrumb kategori tetap muncul. User deep-link sekarang tetap melihat brand + band
+    "Baru Ditambahkan".
+  - **Verifikasi**: `pnpm build` hijau (7 guardrail), `pnpm test` 62/62, `audit-i18n` exit 0.
+    **Smoke CDP 28/28 PASS** (0 exception/console error): hub 21 kartu `.tool-tile` tanpa
+    `--glow-color`/tile berwarna, tile 1px/8px, panel + badge netral, bar filter menempel 64px,
+    5 halaman PDF drop-zone 1px dashed + tile hairline, age/word-counter/my-ip/paste-to-md netral,
+    `?cat=pdf` hero 381px tinggi + breadcrumb, sort "Terbaru" mulai `/pdf/ppt-to-pdf` →
+    `/data/chart-maker` → `/calc/pesangon`. Harness dihapus.
+
 - 🆕 **(Oct 25, lanjutan 2)** Audit navigasi + pencarian (permintaan user: "audit yang lain lagi").
   - **Dropdown "Tools" (navbar, semua 255 halaman)**: sebelumnya dibuka **murni CSS `:hover`** → di
     perangkat sentuh ≥768px (iPad, touch laptop) menu ini tidak bisa dibuka sama sekali dan
@@ -165,11 +200,10 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
     buka/tutup via klik, Esc, klik luar; 12 kategori + Life; menu mobile scrollable di 390×480 dan
     tombol terakhir terjangkau; cari "kalkulator"/"pdf"/"calculator" dapat hasil relevan; tombol ×
     reset ke 36 kartu + fokus balik; `?cat=life` menampilkan 8 tool. Harness dihapus.
-  - **Audit tertunda (belum diubah)**: (1) sort "Terbaru" masih = riwayat pemakaian pribadi;
-    (2) 20 halaman (termasuk hub `/pdf`) masih pakai tile ikon gradient + glow rose +
-    `group-hover:scale-110` — bahasa desain lama, jadi terasa beda dari landing/header;
-    (3) hero + band tetap tersembunyi saat `?cat=` aktif; (4) `/pdf` punya filter sendiri yang
-    tetap hanya cocok judul.
+  - **Audit tertunda**: (1) ~~sort "Terbaru" = riwayat pemakaian pribadi~~ **selesai** (lanjutan 3);
+    (2) ~~20 halaman masih pakai tile gradient + glow rose~~ **selesai** (lanjutan 3);
+    (3) ~~hero + band tersembunyi saat `?cat=`~~ **selesai** (lanjutan 3);
+    (4) `/pdf` punya filter sendiri yang tetap hanya cocok judul (belum diubah).
 
 - 🆕 **(Oct 25, lanjutan)** Landing v2 — kartu dinaikkan bobotnya + "Baru Ditambahkan" jadi band
   berpanel (permintaan user: Newly Added kurang menonjol, kartu kurang "pop"). Belum di-commit.
