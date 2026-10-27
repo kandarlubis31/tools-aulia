@@ -88,13 +88,12 @@ tools-aulia/
 │   ├── data/           # tools.ts (251 entries metadata), indonesian-names.ts
 │   ├── i18n/           # translations.ts
 │   └── styles/         # global.css + critical.css (inline above-the-fold)
-├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json, vendor/, editor/
+├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json, vendor/
 ├── docs/
 │   ├── CONTEXT.md      # Project context & decision log
 │   ├── adr/            # Architecture Decision Records
 │   ├── agents/         # Agent config references
 │   └── archive/        # Old plans & audits
-├── editor/             # OmniClip vendor build pipeline (build-dist.mjs)
 └── package.json
 ```
 
@@ -185,13 +184,12 @@ tools-aulia/
 │   ├── data/           # tools.ts (251 entries metadata), indonesian-names.ts
 │   ├── i18n/           # translations.ts
 │   └── styles/         # global.css + critical.css (inline above-the-fold)
-├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json, vendor/, editor/
+├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json, vendor/
 ├── docs/
 │   ├── CONTEXT.md      # Project context & decision log
 │   ├── adr/            # Architecture Decision Records
 │   ├── agents/         # Agent config references
 │   └── archive/        # Old plans & audits
-├── editor/             # OmniClip vendor build pipeline (build-dist.mjs)
 └── package.json
 ```
 

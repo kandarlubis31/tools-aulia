@@ -85,6 +85,26 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 
 ## Status saat ini (Oktober 2026)
 
+- 🆕 **(Oct 28)** **Music Studio (mini DAW) rilis + Video Studio/OmniClip dihapus total** —
+  commit `bb0e898`.
+  - **Hapus total**: route `/editor`, `public/editor` (28.3 MB / 374 file tracked), source
+    `omniclip` (117 MB / 472 file tracked), `editor/build-dist.mjs`, entri `tools.ts` +
+    `new-tools.ts`, 4 key i18n, header COOP/COEP + redirect di `vercel.json`, exclusion SW di
+    `astro.config.mjs`, `.gitignore`, aturan #11 AGENTS. **History git tetap** (tanpa rewrite) —
+    changelog lama yang menyebut Video Studio sengaja dipertahankan.
+  - **Tool baru `/media/music-studio`**: 4 drum track × 16 step, 2 synth piano roll 13 nada,
+    2 track audio/stem import (WAV/MP3, maks 40 MB / 12 menit), mixer 8 channel (vol/pan/mute/solo),
+    pattern A–D, song chain maks 16 bar, export WAV via `OfflineAudioContext` (mode Pattern = 1 bar,
+    mode Song = susunan + tail audio), demo seed, shortcut Spasi, guard SPA + cleanup AudioContext.
+    Tanpa persistence di v1. **Beat Maker lama tetap ada** sebagai tool terpisah.
+  - **Verifikasi**: build ✅ (7 guardrail, 507 precache), 62/62 test, audit i18n exit 0
+    (250/250 FULL), smoke CDP statis **21/21** (grid 4×16, piano 13×16, play/stop, song mode,
+    mixer solo, export WAV 1.58 MB, SPA round-trip, 0 exception) + import stem **7/7**
+    (WAV 6 detik → export 12.8 detik).
+  - ⚠️ **Jangan jalankan `pnpm build` bareng `pnpm dev`** di laptop ini — watcher + build + Chrome
+    bikin Node `EMFILE` (dev server mati; halaman nyangkut `readyState=loading`). Untuk smoke:
+    build dulu, lalu serve `dist/client` pakai static server kecil.
+
 - 🆕 **(Oct 27)** **Audit "Bersihkan Cache" + fix layout "Baru Digunakan" + catch-up changelog** —
   commit `699e324` (layout), `be3801a` (cache), `123c990` (changelog), `1960ec8` (title SEO).
   - **Layout**: `#recent-section` landing dikasih `mt-6` senada section Favorit
