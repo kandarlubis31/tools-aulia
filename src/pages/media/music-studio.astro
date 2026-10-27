@@ -1,0 +1,1164 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolPageHeader from '../../components/ToolPageHeader.astro';
+---
+
+<BaseLayout pageTitle="Music Studio — Mini DAW di Browser (Drum, Piano Roll, Export WAV)">
+  <div id="ms-root" class="max-w-5xl mx-auto px-4 min-h-[85vh] pb-20">
+    <ToolPageHeader
+      title="Music Studio"
+      titleKey="header.music_studio"
+      desc="Mini DAW 100% di browser: 4 drum track + 2 synth piano roll, import audio/stems, mixer, song mode, export WAV. Tanpa upload."
+      descKey="header.music_studio_desc"
+      icon='<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M12 4v16M17 4v16"/><path d="M5 4v8M9.5 4v8M14.5 4v8M19 4v8"/>'
+    />
+
+    <div class="animate-fade-in space-y-3">
+      <!-- Transport -->
+      <div class="card-base p-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <button id="ms-play" class="gradient-brand px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 active:scale-95 transition-transform">
+            <span id="ms-play-icon">&#9654;</span>
+            <span data-i18n="ms.play">Main</span>
+          </button>
+
+          <div class="flex items-center gap-1.5">
+            <span class="text-2xs text-matte-400 font-bold" data-i18n="ms.bpm">BPM</span>
+            <input id="ms-bpm" type="number" value="112" min="40" max="240" class="w-14 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono font-bold outline-none focus:ring-2 focus:ring-rose-500/40 text-center" />
+            <input id="ms-bpm-slider" type="range" min="40" max="240" value="112" class="w-20 h-1 accent-rose-500" />
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <span class="text-2xs text-matte-400 font-bold" data-i18n="ms.master">Master</span>
+            <input id="ms-master" type="range" min="0" max="100" value="80" class="w-20 h-1 accent-violet-500" />
+          </div>
+
+          <div class="flex items-center gap-1">
+            <span class="text-2xs text-matte-400 font-bold" data-i18n="ms.mode">Mode</span>
+            <div class="flex gap-0.5">
+              <button id="ms-mode-pattern" class="px-2.5 py-1.5 rounded-lg text-2xs font-bold transition-colors" data-i18n="ms.mode_pattern">Pattern</button>
+              <button id="ms-mode-song" class="px-2.5 py-1.5 rounded-lg text-2xs font-bold transition-colors" data-i18n="ms.mode_song">Song</button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <span class="text-2xs text-matte-400 font-bold">PTN</span>
+            <div id="ms-patterns" class="flex gap-0.5"></div>
+          </div>
+
+          <div class="flex items-center gap-1 ml-auto">
+            <button id="ms-demo" class="px-3 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:text-rose-500 transition-colors" data-i18n="ms.demo">Demo</button>
+            <button id="ms-export" class="px-3 py-1.5 rounded-lg bg-rose-500 text-white text-2xs font-bold hover:bg-rose-600 transition-colors" data-i18n="ms.export">Export WAV</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-[minmax(0,1fr)_280px] gap-3 items-start">
+        <div class="space-y-3">
+          <!-- Drum sequencer -->
+          <div class="card-base p-4 overflow-x-auto">
+            <div class="flex items-center justify-between mb-2 gap-2">
+              <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200" data-i18n="ms.drums">Drum Sequencer</h2>
+              <span class="text-2xs text-matte-400" data-i18n="ms.steps">1 bar = 16 step</span>
+            </div>
+            <div class="min-w-[540px]">
+              <div class="flex items-center mb-1">
+                <div class="w-24 shrink-0"></div>
+                <div id="ms-drum-numbers" class="flex flex-1 gap-0.5"></div>
+              </div>
+              <div id="ms-drums" class="space-y-1"></div>
+            </div>
+          </div>
+
+          <!-- Piano roll -->
+          <div class="card-base p-4">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200" data-i18n="ms.piano">Piano Roll</h2>
+              <div id="ms-synth-tabs" class="flex gap-0.5"></div>
+              <label class="ml-auto flex items-center gap-1.5">
+                <span class="text-2xs text-matte-400 font-bold" data-i18n="ms.wave">Gelombang</span>
+                <select id="ms-wave" class="px-2 py-1 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-2xs font-bold outline-none focus:ring-2 focus:ring-violet-500/40">
+                  <option value="sawtooth">Saw</option>
+                  <option value="square">Square</option>
+                  <option value="triangle">Triangle</option>
+                </select>
+              </label>
+            </div>
+            <div class="overflow-x-auto">
+              <div id="ms-piano" class="min-w-[540px]"></div>
+            </div>
+          </div>
+
+          <!-- Audio import -->
+          <div class="card-base p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200" data-i18n="ms.audio">Audio / Stems</h2>
+              <span class="text-2xs text-matte-400" data-i18n="ms.audio_hint">Diputar di Song mode, mulai dari bar yang dipilih.</span>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div class="rounded-xl border border-matte-200 dark:border-matte-700 p-3 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-2xs font-bold text-matte-600 dark:text-matte-300">Audio 1</span>
+                  <button id="ms-audio-clear-0" class="hidden text-2xs text-matte-400 hover:text-red-500 transition-colors" title="Hapus">&#10005;</button>
+                </div>
+                <label class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border-2 border-dashed border-matte-300 dark:border-matte-600 cursor-pointer hover:border-rose-400 transition-colors">
+                  <input id="ms-audio-file-0" type="file" accept="audio/*" class="hidden" />
+                  <span class="text-2xs font-bold text-matte-500 dark:text-matte-300" data-i18n="ms.import">Import audio</span>
+                </label>
+                <p id="ms-audio-name-0" class="text-2xs text-matte-400 italic truncate" data-i18n="ms.no_audio">Belum ada audio. Import stem dari Suno atau file WAV/MP3.</p>
+                <label class="flex items-center gap-1.5">
+                  <span class="text-2xs text-matte-400" data-i18n="ms.start_bar">Mulai bar</span>
+                  <input id="ms-audio-start-0" type="number" min="1" max="16" value="1" class="w-14 px-2 py-1 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-2xs font-mono outline-none focus:ring-2 focus:ring-rose-500/40 text-center" />
+                </label>
+              </div>
+
+              <div class="rounded-xl border border-matte-200 dark:border-matte-700 p-3 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-2xs font-bold text-matte-600 dark:text-matte-300">Audio 2</span>
+                  <button id="ms-audio-clear-1" class="hidden text-2xs text-matte-400 hover:text-red-500 transition-colors" title="Hapus">&#10005;</button>
+                </div>
+                <label class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border-2 border-dashed border-matte-300 dark:border-matte-600 cursor-pointer hover:border-rose-400 transition-colors">
+                  <input id="ms-audio-file-1" type="file" accept="audio/*" class="hidden" />
+                  <span class="text-2xs font-bold text-matte-500 dark:text-matte-300" data-i18n="ms.import">Import audio</span>
+                </label>
+                <p id="ms-audio-name-1" class="text-2xs text-matte-400 italic truncate" data-i18n="ms.no_audio">Belum ada audio. Import stem dari Suno atau file WAV/MP3.</p>
+                <label class="flex items-center gap-1.5">
+                  <span class="text-2xs text-matte-400" data-i18n="ms.start_bar">Mulai bar</span>
+                  <input id="ms-audio-start-1" type="number" min="1" max="16" value="1" class="w-14 px-2 py-1 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-2xs font-mono outline-none focus:ring-2 focus:ring-rose-500/40 text-center" />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Song mode -->
+          <div class="card-base p-4">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200" data-i18n="ms.song_title">Susunan Lagu</h2>
+              <span id="ms-song-count" class="text-2xs text-matte-400 font-mono"></span>
+              <button id="ms-song-clear" class="ml-auto text-2xs text-matte-400 hover:text-red-500 transition-colors" data-i18n="ms.clear">Kosongkan</button>
+            </div>
+            <div id="ms-song" class="flex flex-wrap gap-1.5 mb-2 min-h-[30px]"></div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-2xs text-matte-400" data-i18n="ms.add_bar">Tambah bar</span>
+              <div id="ms-song-add" class="flex gap-0.5"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mixer -->
+        <div class="card-base p-4">
+          <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200" data-i18n="ms.mixer">Mixer</h2>
+          <div id="ms-mixer" class="space-y-2.5 mt-2"></div>
+          <p class="text-2xs text-matte-400 mt-3 leading-relaxed" data-i18n="ms.privacy">Semua audio diproses di browser — file tidak pernah di-upload.</p>
+        </div>
+      </div>
+
+      <p class="text-center text-2xs text-matte-400" data-i18n="ms.keys">Spasi = Play/Stop. Klik sel drum/piano untuk mengisi.</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+const __page = '/media/music-studio';
+
+const STEPS = 16;
+const PATTERNS = 4;
+const NOTES = 13;
+const MAX_BARS = 16;
+const PATTERN_LETTERS = ['A', 'B', 'C', 'D'];
+const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+const DRUMS = [
+  { id: 'kick', name: 'Kick' },
+  { id: 'snare', name: 'Snare' },
+  { id: 'hat', name: 'Hat' },
+  { id: 'clap', name: 'Clap' },
+] as const;
+
+const SYNTHS = [
+  { name: 'Bass', base: 36 },
+  { name: 'Lead', base: 60 },
+] as const;
+
+const MIXER_NAMES = ['Kick', 'Snare', 'Hat', 'Clap', 'Bass', 'Lead', 'Audio 1', 'Audio 2'];
+
+interface PatternState {
+  drums: boolean[][];
+  notes: boolean[][][];
+}
+
+interface MixerState {
+  vol: number;
+  pan: number;
+  mute: boolean;
+  solo: boolean;
+}
+
+interface AudioState {
+  buffer: AudioBuffer | null;
+  name: string;
+  startBar: number;
+}
+
+function emptyPattern(): PatternState {
+  return {
+    drums: DRUMS.map(() => new Array<boolean>(STEPS).fill(false)),
+    notes: SYNTHS.map(() => Array.from({ length: NOTES }, () => new Array<boolean>(STEPS).fill(false))),
+  };
+}
+
+function noteName(midi: number): string {
+  return NOTE_NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
+}
+
+function midiToFreq(midi: number): number {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+function init(): () => void {
+  const root = document.getElementById('ms-root');
+  if (!root || root.dataset.bound === '1') return () => {};
+  root.dataset.bound = '1';
+
+  const toast = (msg: string, type = 'success') =>
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+
+  // ── State ──────────────────────────────────────────────────
+  const patterns: PatternState[] = Array.from({ length: PATTERNS }, emptyPattern);
+  const mixer: MixerState[] = MIXER_NAMES.map(() => ({ vol: 0.8, pan: 0, mute: false, solo: false }));
+  const audioTracks: AudioState[] = [
+    { buffer: null, name: '', startBar: 1 },
+    { buffer: null, name: '', startBar: 1 },
+  ];
+  const waves: string[] = ['sawtooth', 'square'];
+  let song: number[] = [0, 0, 1, 0];
+  let currentPattern = 0;
+  let currentSynth = 0;
+  let mode: 'pattern' | 'song' = 'pattern';
+  let bpm = 112;
+  let masterVol = 0.8;
+
+  // ── Demo content ───────────────────────────────────────────
+  function seedDemo(): void {
+    const a = patterns[0];
+    [0, 4, 8, 12].forEach((s) => { a.drums[0][s] = true; });
+    [4, 12].forEach((s) => { a.drums[1][s] = true; });
+    [0, 2, 4, 6, 8, 10, 12, 14].forEach((s) => { a.drums[2][s] = true; });
+    [12].forEach((s) => { a.drums[3][s] = true; });
+    const bassA: [number, number][] = [[0, 0], [3, 0], [6, 7], [8, 3], [12, 10], [14, 7]];
+    bassA.forEach(([s, r]) => { a.notes[0][r][s] = true; });
+
+    const b = patterns[1];
+    [0, 4, 7, 8, 12].forEach((s) => { b.drums[0][s] = true; });
+    [4, 12].forEach((s) => { b.drums[1][s] = true; });
+    [2, 6, 10, 14].forEach((s) => { b.drums[2][s] = true; });
+    [4, 12].forEach((s) => { b.drums[3][s] = true; });
+    const bassB: [number, number][] = [[0, 7], [4, 3], [8, 0], [10, 10], [12, 7], [15, 3]];
+    bassB.forEach(([s, r]) => { b.notes[0][r][s] = true; });
+    const leadB: [number, number][] = [[0, 7], [2, 7], [4, 9], [6, 7], [8, 4], [10, 2], [12, 0], [14, 2]];
+    leadB.forEach(([s, r]) => { b.notes[1][r][s] = true; });
+  }
+  seedDemo();
+
+  // ── DOM refs ───────────────────────────────────────────────
+  const playBtn = document.getElementById('ms-play') as HTMLButtonElement;
+  const playIcon = document.getElementById('ms-play-icon')!;
+  const bpmInput = document.getElementById('ms-bpm') as HTMLInputElement;
+  const bpmSlider = document.getElementById('ms-bpm-slider') as HTMLInputElement;
+  const masterSlider = document.getElementById('ms-master') as HTMLInputElement;
+  const modePatternBtn = document.getElementById('ms-mode-pattern') as HTMLButtonElement;
+  const modeSongBtn = document.getElementById('ms-mode-song') as HTMLButtonElement;
+  const patternBtns = document.getElementById('ms-patterns')!;
+  const demoBtn = document.getElementById('ms-demo') as HTMLButtonElement;
+  const exportBtn = document.getElementById('ms-export') as HTMLButtonElement;
+  const drumNumbers = document.getElementById('ms-drum-numbers')!;
+  const drumsEl = document.getElementById('ms-drums')!;
+  const pianoEl = document.getElementById('ms-piano')!;
+  const synthTabs = document.getElementById('ms-synth-tabs')!;
+  const waveSelect = document.getElementById('ms-wave') as HTMLSelectElement;
+  const mixerEl = document.getElementById('ms-mixer')!;
+  const songEl = document.getElementById('ms-song')!;
+  const songCount = document.getElementById('ms-song-count')!;
+  const songClearBtn = document.getElementById('ms-song-clear') as HTMLButtonElement;
+  const songAddEl = document.getElementById('ms-song-add')!;
+
+  // ── Audio engine ───────────────────────────────────────────
+  let audioCtx: AudioContext | null = null;
+  let masterNode: GainNode | null = null;
+
+  function getCtx(): AudioContext {
+    if (!audioCtx) {
+      audioCtx = new AudioContext();
+      masterNode = audioCtx.createGain();
+      masterNode.gain.value = masterVol;
+      masterNode.connect(audioCtx.destination);
+    }
+    return audioCtx;
+  }
+
+  function makeOut(ctx: BaseAudioContext, dest: AudioNode, vol: number, pan: number): GainNode {
+    const gain = ctx.createGain();
+    gain.gain.value = Math.max(0, vol);
+    const panner = ctx.createStereoPanner();
+    panner.pan.value = pan;
+    gain.connect(panner);
+    panner.connect(dest);
+    return gain;
+  }
+
+  function noiseBuffer(ctx: BaseAudioContext, seconds: number): AudioBuffer {
+    const len = Math.max(1, Math.floor(ctx.sampleRate * seconds));
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+
+  function scheduleDrum(ctx: BaseAudioContext, dest: AudioNode, id: string, when: number, vol: number, pan: number): void {
+    const out = makeOut(ctx, dest, vol, pan);
+
+    if (id === 'kick') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(155, when);
+      osc.frequency.exponentialRampToValueAtTime(42, when + 0.13);
+      gain.gain.setValueAtTime(1, when);
+      gain.gain.exponentialRampToValueAtTime(0.001, when + 0.4);
+      osc.connect(gain);
+      gain.connect(out);
+      osc.start(when);
+      osc.stop(when + 0.42);
+      return;
+    }
+
+    if (id === 'snare') {
+      const osc = ctx.createOscillator();
+      const tone = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(190, when);
+      tone.gain.setValueAtTime(0.5, when);
+      tone.gain.exponentialRampToValueAtTime(0.001, when + 0.12);
+      osc.connect(tone);
+      tone.connect(out);
+      osc.start(when);
+      osc.stop(when + 0.14);
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = noiseBuffer(ctx, 0.16);
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 1400;
+      const ng = ctx.createGain();
+      ng.gain.setValueAtTime(0.6, when);
+      ng.gain.exponentialRampToValueAtTime(0.001, when + 0.15);
+      noise.connect(hp);
+      hp.connect(ng);
+      ng.connect(out);
+      noise.start(when);
+      return;
+    }
+
+    if (id === 'hat') {
+      const noise = ctx.createBufferSource();
+      noise.buffer = noiseBuffer(ctx, 0.06);
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 8000;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.45, when);
+      gain.gain.exponentialRampToValueAtTime(0.001, when + 0.05);
+      noise.connect(hp);
+      hp.connect(gain);
+      gain.connect(out);
+      noise.start(when);
+      return;
+    }
+
+    // clap
+    for (let i = 0; i < 3; i++) {
+      const noise = ctx.createBufferSource();
+      noise.buffer = noiseBuffer(ctx, 0.02);
+      const hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 1100;
+      const gain = ctx.createGain();
+      const at = when + i * 0.011;
+      gain.gain.setValueAtTime(0.5, at);
+      gain.gain.exponentialRampToValueAtTime(0.001, at + 0.02);
+      noise.connect(hp);
+      hp.connect(gain);
+      gain.connect(out);
+      noise.start(at);
+    }
+  }
+
+  function scheduleNote(
+    ctx: BaseAudioContext,
+    dest: AudioNode,
+    midi: number,
+    wave: string,
+    when: number,
+    dur: number,
+    vol: number,
+    pan: number,
+  ): void {
+    const out = makeOut(ctx, dest, vol, pan);
+    const osc = ctx.createOscillator();
+    osc.type = wave as OscillatorType;
+    osc.frequency.value = midiToFreq(midi);
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 2200;
+    filter.Q.value = 0.8;
+
+    const env = ctx.createGain();
+    const peak = 0.75;
+    const sustain = 0.5;
+    env.gain.setValueAtTime(0.0001, when);
+    env.gain.exponentialRampToValueAtTime(peak, when + 0.008);
+    env.gain.exponentialRampToValueAtTime(sustain, when + 0.09);
+    env.gain.setValueAtTime(sustain, when + Math.max(0.1, dur * 0.65));
+    env.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+
+    osc.connect(filter);
+    filter.connect(env);
+    env.connect(out);
+    osc.start(when);
+    osc.stop(when + dur + 0.03);
+  }
+
+  function hasSolo(): boolean {
+    return mixer.some((m) => m.solo);
+  }
+
+  function audible(index: number, solo: boolean): boolean {
+    const m = mixer[index];
+    if (m.mute) return false;
+    return !solo || m.solo;
+  }
+
+  // ── Playback ───────────────────────────────────────────────
+  let playing = false;
+  let timerId = 0;
+  let rafId = 0;
+  let startAt = 0;
+  let nextStep = 0;
+  let chain: number[] = [];
+  let audioSources: AudioBufferSourceNode[] = [];
+  let currentStepShown = -1;
+  let playbackEndAt = 0;
+
+  const barDur = () => (60 / bpm) * 4;
+  const stepDur = () => barDur() / STEPS;
+  const arrangement = () => (mode === 'song' ? song : [currentPattern]);
+
+  function scheduleStepAt(
+    ctx: BaseAudioContext,
+    dest: AudioNode,
+    pat: PatternState,
+    step: number,
+    when: number,
+    durPerStep: number,
+  ): void {
+    const solo = hasSolo();
+
+    DRUMS.forEach((def, i) => {
+      if (!pat.drums[i][step] || !audible(i, solo)) return;
+      scheduleDrum(ctx, dest, def.id, when, mixer[i].vol, mixer[i].pan);
+    });
+
+    SYNTHS.forEach((syn, i) => {
+      const trackIdx = 4 + i;
+      if (!audible(trackIdx, solo)) return;
+      for (let row = 0; row < NOTES; row++) {
+        if (!pat.notes[i][row][step]) continue;
+        scheduleNote(ctx, dest, syn.base + row, waves[i], when, durPerStep * 0.9, mixer[trackIdx].vol * 0.75, mixer[trackIdx].pan);
+      }
+    });
+  }
+
+  function scheduleAudioTracks(ctx: BaseAudioContext, dest: AudioNode, t0: number, bars: number[]): void {
+    const solo = hasSolo();
+    const barSeconds = barDur();
+    audioTracks.forEach((at, i) => {
+      if (!at.buffer) return;
+      if (at.startBar > bars.length) return;
+      const trackIdx = 6 + i;
+      if (!audible(trackIdx, solo)) return;
+      const src = ctx.createBufferSource();
+      src.buffer = at.buffer;
+      const out = makeOut(ctx, dest, mixer[trackIdx].vol, mixer[trackIdx].pan);
+      src.connect(out);
+      src.start(t0 + (at.startBar - 1) * barSeconds);
+      audioSources.push(src);
+    });
+  }
+
+  function scheduleAhead(): void {
+    if (!playing || !audioCtx || !masterNode) return;
+    const ctx = audioCtx;
+    const ahead = ctx.currentTime + 0.15;
+    const dur = stepDur();
+
+    while (startAt + nextStep * dur < ctx.currentTime - 0.05) nextStep++;
+
+    if (mode === 'pattern') {
+      while (startAt + nextStep * dur < ahead) {
+        scheduleStepAt(ctx, masterNode, patterns[currentPattern], nextStep % STEPS, startAt + nextStep * dur, dur);
+        nextStep++;
+      }
+      return;
+    }
+
+    const total = chain.length * STEPS;
+    while (nextStep < total && startAt + nextStep * dur < ahead) {
+      const bar = Math.floor(nextStep / STEPS);
+      scheduleStepAt(ctx, masterNode, patterns[chain[bar]], nextStep % STEPS, startAt + nextStep * dur, dur);
+      nextStep++;
+    }
+  }
+
+  function tickUI(): void {
+    if (!playing || !audioCtx) return;
+    const elapsed = audioCtx.currentTime - startAt;
+    const pos = Math.max(0, elapsed) / stepDur();
+    const step = Math.floor(pos) % STEPS;
+    currentStepShown = step;
+    applyStepHighlight(step);
+
+    if (mode === 'song') {
+      const bar = Math.min(chain.length - 1, Math.max(0, Math.floor(pos / STEPS)));
+      highlightPlayingPattern(chain[bar]);
+      if (audioCtx.currentTime >= playbackEndAt) {
+        stopPlayback();
+        return;
+      }
+    } else {
+      highlightPlayingPattern(currentPattern);
+    }
+
+    rafId = requestAnimationFrame(tickUI);
+  }
+
+  function startPlayback(): void {
+    if (playing) {
+      stopPlayback();
+      return;
+    }
+    if (mode === 'song' && song.length === 0) {
+      toast('Susunan lagu kosong.', 'error');
+      return;
+    }
+
+    const ctx = getCtx();
+    ctx.resume().catch(() => {});
+    chain = arrangement();
+    audioSources = [];
+    startAt = ctx.currentTime + 0.12;
+    nextStep = 0;
+    playing = true;
+
+    const barSeconds = barDur();
+    let songEnd = chain.length * barSeconds;
+    audioTracks.forEach((at) => {
+      if (!at.buffer || at.startBar > chain.length) return;
+      songEnd = Math.max(songEnd, (at.startBar - 1) * barSeconds + at.buffer.duration);
+    });
+    playbackEndAt = startAt + songEnd;
+
+    if (mode === 'song' && masterNode) scheduleAudioTracks(ctx, masterNode, startAt, chain);
+
+    timerId = window.setInterval(scheduleAhead, 25);
+    scheduleAhead();
+    rafId = requestAnimationFrame(tickUI);
+    updatePlayUI();
+  }
+
+  function stopPlayback(): void {
+    playing = false;
+    if (timerId) { clearInterval(timerId); timerId = 0; }
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+    audioSources.forEach((src) => { try { src.stop(); } catch { /* already stopped */ } });
+    audioSources = [];
+    currentStepShown = -1;
+    applyStepHighlight(-1);
+    highlightPlayingPattern(-1);
+    updatePlayUI();
+  }
+
+  function updatePlayUI(): void {
+    playIcon.textContent = playing ? '\u275A\u275A' : '\u25B6';
+    playBtn.classList.toggle('ring-2', playing);
+    playBtn.classList.toggle('ring-rose-300', playing);
+  }
+
+  function applyStepHighlight(step: number): void {
+    document.querySelectorAll<HTMLElement>('[data-ms-step]').forEach((el) => {
+      const match = step >= 0 && el.dataset.msStep === String(step);
+      el.classList.toggle('ring-2', match);
+      el.classList.toggle('ring-rose-400', match);
+      el.classList.toggle('dark:ring-rose-500', match);
+    });
+  }
+
+  function highlightPlayingPattern(patIdx: number): void {
+    document.querySelectorAll<HTMLElement>('[data-ms-pat]').forEach((el) => {
+      const match = patIdx >= 0 && el.dataset.msPat === String(patIdx);
+      el.classList.toggle('ring-2', match);
+      el.classList.toggle('ring-white', match);
+    });
+  }
+
+  // ── Rendering ──────────────────────────────────────────────
+  function renderStepNumbers(): void {
+    drumNumbers.innerHTML = '';
+    for (let i = 0; i < STEPS; i++) {
+      const el = document.createElement('div');
+      el.className = `flex-1 text-center text-2xs font-mono font-bold ${i % 4 === 0 ? 'text-rose-500' : 'text-matte-400'}`;
+      el.textContent = String(i + 1);
+      drumNumbers.appendChild(el);
+    }
+  }
+
+  function renderDrums(): void {
+    drumsEl.innerHTML = '';
+    const pat = patterns[currentPattern];
+    DRUMS.forEach((def, i) => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-1';
+
+      const label = document.createElement('div');
+      label.className = 'w-24 shrink-0 text-2xs font-bold text-matte-500 truncate pr-2';
+      label.textContent = def.name;
+      row.appendChild(label);
+
+      const grid = document.createElement('div');
+      grid.className = 'flex flex-1 gap-0.5';
+
+      for (let s = 0; s < STEPS; s++) {
+        const cell = document.createElement('button');
+        const on = pat.drums[i][s];
+        const beat = s % 4 === 0;
+        cell.className = `flex-1 aspect-square max-h-8 rounded-sm transition-all active:scale-90 ${
+          on
+            ? 'bg-rose-500 hover:bg-rose-400'
+            : beat
+              ? 'bg-matte-200 dark:bg-surface-elevated hover:bg-rose-200 dark:hover:bg-rose-900/30'
+              : 'bg-matte-100 dark:bg-matte-800 hover:bg-rose-200 dark:hover:bg-rose-900/30'
+        }`;
+        cell.dataset.msStep = String(s);
+        cell.dataset.drum = String(i);
+        cell.setAttribute('aria-label', `${def.name} step ${s + 1}`);
+        cell.addEventListener('click', () => {
+          pat.drums[i][s] = !pat.drums[i][s];
+          if (pat.drums[i][s]) previewDrum(def.id, mixer[i].vol, mixer[i].pan);
+          renderDrums();
+          if (playing) applyStepHighlight(currentStepShown);
+        });
+        grid.appendChild(cell);
+      }
+
+      row.appendChild(grid);
+      drumsEl.appendChild(row);
+    });
+  }
+
+  function renderSynthTabs(): void {
+    synthTabs.innerHTML = '';
+    SYNTHS.forEach((syn, i) => {
+      const btn = document.createElement('button');
+      btn.className = `px-3 py-1 rounded-lg text-2xs font-bold transition-colors ${
+        i === currentSynth
+          ? 'bg-violet-500 text-white'
+          : 'bg-matte-100 dark:bg-surface-elevated text-matte-500 hover:text-violet-500'
+      }`;
+      btn.textContent = syn.name;
+      btn.addEventListener('click', () => {
+        currentSynth = i;
+        waveSelect.value = waves[i];
+        renderPiano();
+      });
+      synthTabs.appendChild(btn);
+    });
+  }
+
+  function renderPiano(): void {
+    renderSynthTabs();
+    waveSelect.value = waves[currentSynth];
+    pianoEl.innerHTML = '';
+    const pat = patterns[currentPattern];
+    const syn = SYNTHS[currentSynth];
+
+    for (let row = NOTES - 1; row >= 0; row--) {
+      const line = document.createElement('div');
+      line.className = 'flex items-center gap-0.5';
+
+      const label = document.createElement('div');
+      label.className = 'w-12 shrink-0 text-2xs font-mono text-matte-400 text-right pr-1';
+      label.textContent = noteName(syn.base + row);
+      line.appendChild(label);
+
+      const black = noteName(syn.base + row).includes('#');
+
+      for (let s = 0; s < STEPS; s++) {
+        const cell = document.createElement('button');
+        const on = pat.notes[currentSynth][row][s];
+        const beat = s % 4 === 0;
+        cell.className = `flex-1 h-5 rounded-sm transition-colors ${
+          on
+            ? 'bg-violet-500 hover:bg-violet-400'
+            : black
+              ? 'bg-matte-200 dark:bg-surface-elevated hover:bg-violet-200 dark:hover:bg-violet-900/30'
+              : beat
+                ? 'bg-matte-100 dark:bg-matte-800 hover:bg-violet-100 dark:hover:bg-violet-900/20'
+                : 'bg-matte-50 dark:bg-matte-800/40 hover:bg-violet-100 dark:hover:bg-violet-900/20'
+        }`;
+        cell.dataset.msStep = String(s);
+        cell.dataset.note = String(row);
+        cell.title = `${noteName(syn.base + row)} · step ${s + 1}`;
+        cell.addEventListener('click', () => {
+          const next = !pat.notes[currentSynth][row][s];
+          pat.notes[currentSynth][row][s] = next;
+          if (next) previewNote(syn.base + row, waves[currentSynth], mixer[4 + currentSynth].vol, mixer[4 + currentSynth].pan);
+          renderPiano();
+          if (playing) applyStepHighlight(currentStepShown);
+        });
+        line.appendChild(cell);
+      }
+
+      pianoEl.appendChild(line);
+    }
+  }
+
+  function renderPatternBtns(): void {
+    patternBtns.innerHTML = '';
+    PATTERN_LETTERS.forEach((letter, i) => {
+      const btn = document.createElement('button');
+      btn.className = `w-6 h-6 rounded text-2xs font-bold transition-colors ${
+        i === currentPattern
+          ? 'bg-rose-500 text-white'
+          : 'bg-matte-200 dark:bg-surface-elevated text-matte-500 hover:bg-rose-200 dark:hover:bg-rose-900/30'
+      }`;
+      btn.textContent = letter;
+      btn.addEventListener('click', () => {
+        currentPattern = i;
+        renderDrums();
+        renderPiano();
+        renderPatternBtns();
+        if (playing && mode === 'pattern') applyStepHighlight(currentStepShown);
+      });
+      patternBtns.appendChild(btn);
+    });
+  }
+
+  function renderSong(): void {
+    songEl.innerHTML = '';
+    songCount.textContent = `${song.length} bar`;
+    song.forEach((patIdx, barIdx) => {
+      const chip = document.createElement('button');
+      chip.className = 'px-2.5 py-1 rounded-lg bg-violet-500 text-white text-2xs font-bold hover:bg-violet-600 transition-colors';
+      chip.dataset.msPat = String(patIdx);
+      chip.textContent = PATTERN_LETTERS[patIdx];
+      chip.title = `Bar ${barIdx + 1} — hapus`;
+      chip.addEventListener('click', () => {
+        song.splice(barIdx, 1);
+        if (mode === 'song') stopPlayback();
+        renderSong();
+      });
+      songEl.appendChild(chip);
+    });
+
+    if (song.length === 0) {
+      const empty = document.createElement('span');
+      empty.className = 'text-2xs text-matte-400 italic';
+      empty.textContent = '\u2014';
+      songEl.appendChild(empty);
+    }
+  }
+
+  function buildMixer(): void {
+    mixerEl.innerHTML = '';
+    MIXER_NAMES.forEach((name, i) => {
+      const row = document.createElement('div');
+
+      const head = document.createElement('div');
+      head.className = 'flex items-center gap-1';
+
+      const label = document.createElement('span');
+      label.className = 'flex-1 text-2xs font-bold text-matte-500 truncate';
+      label.textContent = name;
+      head.appendChild(label);
+
+      const solo = document.createElement('button');
+      solo.className = `w-5 h-5 rounded text-2xs font-bold transition-colors ${
+        mixer[i].solo ? 'bg-yellow-400 text-white' : 'bg-matte-200 dark:bg-surface-elevated text-matte-400 hover:text-yellow-500'
+      }`;
+      solo.textContent = 'S';
+      solo.title = 'Solo';
+      solo.addEventListener('click', () => {
+        mixer[i].solo = !mixer[i].solo;
+        if (mixer[i].solo) mixer[i].mute = false;
+        buildMixer();
+      });
+      head.appendChild(solo);
+
+      const mute = document.createElement('button');
+      mute.className = `w-5 h-5 rounded text-2xs font-bold transition-colors ${
+        mixer[i].mute ? 'bg-red-400 text-white' : 'bg-matte-200 dark:bg-surface-elevated text-matte-400 hover:text-red-500'
+      }`;
+      mute.textContent = 'M';
+      mute.title = 'Mute';
+      mute.addEventListener('click', () => {
+        mixer[i].mute = !mixer[i].mute;
+        if (mixer[i].mute) mixer[i].solo = false;
+        buildMixer();
+      });
+      head.appendChild(mute);
+
+      const sliders = document.createElement('div');
+      sliders.className = 'flex items-center gap-1 mt-0.5';
+
+      const vol = document.createElement('input');
+      vol.type = 'range';
+      vol.min = '0';
+      vol.max = '100';
+      vol.value = String(Math.round(mixer[i].vol * 100));
+      vol.className = 'flex-1 h-1 accent-rose-500';
+      vol.title = `Volume: ${Math.round(mixer[i].vol * 100)}%`;
+      vol.addEventListener('input', () => {
+        mixer[i].vol = Number(vol.value) / 100;
+        vol.title = `Volume: ${vol.value}%`;
+      });
+      sliders.appendChild(vol);
+
+      const pan = document.createElement('input');
+      pan.type = 'range';
+      pan.min = '-100';
+      pan.max = '100';
+      pan.value = String(Math.round(mixer[i].pan * 100));
+      pan.className = 'w-12 h-1 accent-sky-500';
+      pan.title = 'Pan';
+      pan.addEventListener('input', () => {
+        mixer[i].pan = Number(pan.value) / 100;
+      });
+      sliders.appendChild(pan);
+
+      row.appendChild(head);
+      row.appendChild(sliders);
+      mixerEl.appendChild(row);
+    });
+  }
+
+  function updateAudioUI(): void {
+    audioTracks.forEach((at, i) => {
+      const nameEl = document.getElementById(`ms-audio-name-${i}`)!;
+      const startEl = document.getElementById(`ms-audio-start-${i}`) as HTMLInputElement;
+      const clearBtn = document.getElementById(`ms-audio-clear-${i}`) as HTMLButtonElement;
+      if (at.buffer) {
+        nameEl.textContent = `${at.name} · ${at.buffer.duration.toFixed(1)}s`;
+        nameEl.classList.remove('italic');
+        clearBtn.classList.remove('hidden');
+      } else {
+        nameEl.textContent = 'Belum ada audio. Import stem dari Suno atau file WAV/MP3.';
+        nameEl.classList.add('italic');
+        clearBtn.classList.add('hidden');
+      }
+      startEl.value = String(at.startBar);
+    });
+  }
+
+  function updateModeUI(): void {
+    const base = 'px-2.5 py-1.5 rounded-lg text-2xs font-bold transition-colors';
+    modePatternBtn.className = `${base} ${mode === 'pattern' ? 'bg-rose-500 text-white' : 'bg-matte-100 dark:bg-surface-elevated text-matte-500'}`;
+    modeSongBtn.className = `${base} ${mode === 'song' ? 'bg-rose-500 text-white' : 'bg-matte-100 dark:bg-surface-elevated text-matte-500'}`;
+  }
+
+  function updateTransportUI(): void {
+    bpmInput.value = String(bpm);
+    bpmSlider.value = String(bpm);
+    masterSlider.value = String(Math.round(masterVol * 100));
+    updateModeUI();
+  }
+
+  // ── Preview ────────────────────────────────────────────────
+  function previewDrum(id: string, vol: number, pan: number): void {
+    const ctx = getCtx();
+    if (!masterNode) return;
+    scheduleDrum(ctx, masterNode, id, ctx.currentTime + 0.01, Math.max(0.2, vol), pan);
+  }
+
+  function previewNote(midi: number, wave: string, vol: number, pan: number): void {
+    const ctx = getCtx();
+    if (!masterNode) return;
+    scheduleNote(ctx, masterNode, midi, wave, ctx.currentTime + 0.01, 0.28, Math.max(0.2, vol), pan);
+  }
+
+  // ── Audio import ───────────────────────────────────────────
+  async function importAudio(index: number, file: File): Promise<void> {
+    if (file.size > 40 * 1024 * 1024) {
+      toast('File terlalu besar (maks 40 MB).', 'error');
+      return;
+    }
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const ctx = getCtx();
+      const buffer = await ctx.decodeAudioData(arrayBuffer);
+      if (buffer.duration > 720) {
+        toast('Audio terlalu panjang (maks 12 menit).', 'error');
+        return;
+      }
+      audioTracks[index] = { buffer, name: file.name, startBar: audioTracks[index].startBar };
+      updateAudioUI();
+      toast('Audio diimpor!');
+    } catch {
+      toast('Gagal membaca audio.', 'error');
+    }
+  }
+
+  // ── WAV export ─────────────────────────────────────────────
+  function encodeWav(buffer: AudioBuffer): Blob {
+    const channels = Math.min(2, buffer.numberOfChannels);
+    const bytes = buffer.length * channels * 2;
+    const arrayBuffer = new ArrayBuffer(44 + bytes);
+    const view = new DataView(arrayBuffer);
+
+    const writeText = (offset: number, text: string) => {
+      for (let i = 0; i < text.length; i++) view.setUint8(offset + i, text.charCodeAt(i));
+    };
+
+    writeText(0, 'RIFF');
+    view.setUint32(4, 36 + bytes, true);
+    writeText(8, 'WAVE');
+    writeText(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, channels, true);
+    view.setUint32(24, buffer.sampleRate, true);
+    view.setUint32(28, buffer.sampleRate * channels * 2, true);
+    view.setUint16(32, channels * 2, true);
+    view.setUint16(34, 16, true);
+    writeText(36, 'data');
+    view.setUint32(40, bytes, true);
+
+    const data: Float32Array[] = [];
+    for (let ch = 0; ch < channels; ch++) data.push(buffer.getChannelData(ch));
+
+    let offset = 44;
+    for (let i = 0; i < buffer.length; i++) {
+      for (let ch = 0; ch < channels; ch++) {
+        const sample = Math.max(-1, Math.min(1, data[ch][i]));
+        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+        offset += 2;
+      }
+    }
+
+    return new Blob([arrayBuffer], { type: 'audio/wav' });
+  }
+
+  async function exportWav(): Promise<void> {
+    const bars = arrangement();
+    if (bars.length === 0) {
+      toast('Susunan lagu kosong.', 'error');
+      return;
+    }
+
+    exportBtn.disabled = true;
+    toast('Merender\u2026', 'info');
+
+    try {
+      const barSeconds = barDur();
+      const durPerStep = stepDur();
+      let duration = bars.length * barSeconds;
+
+      audioTracks.forEach((at) => {
+        if (!at.buffer || at.startBar > bars.length) return;
+        duration = Math.max(duration, (at.startBar - 1) * barSeconds + at.buffer.duration);
+      });
+      duration += 0.4;
+
+      const sampleRate = 44100;
+      const offline = new OfflineAudioContext(2, Math.max(1, Math.ceil(duration * sampleRate)), sampleRate);
+      const out = offline.createGain();
+      out.gain.value = masterVol;
+      out.connect(offline.destination);
+
+      bars.forEach((patIdx, barIdx) => {
+        for (let s = 0; s < STEPS; s++) {
+          scheduleStepAt(offline, out, patterns[patIdx], s, barIdx * barSeconds + s * durPerStep, durPerStep);
+        }
+      });
+
+      const solo = hasSolo();
+      audioTracks.forEach((at, i) => {
+        if (!at.buffer || at.startBar > bars.length) return;
+        const trackIdx = 6 + i;
+        if (!audible(trackIdx, solo)) return;
+        const src = offline.createBufferSource();
+        src.buffer = at.buffer;
+        const chainOut = makeOut(offline, out, mixer[trackIdx].vol, mixer[trackIdx].pan);
+        src.connect(chainOut);
+        src.start((at.startBar - 1) * barSeconds);
+      });
+
+      const rendered = await offline.startRendering();
+      const blob = encodeWav(rendered);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `music-studio-${Date.now()}.wav`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      toast('WAV siap didownload!');
+    } catch {
+      toast('Gagal export audio.', 'error');
+    } finally {
+      exportBtn.disabled = false;
+    }
+  }
+
+  // ── Event binding ──────────────────────────────────────────
+  playBtn.addEventListener('click', startPlayback);
+
+  bpmInput.addEventListener('change', () => {
+    bpm = Math.max(40, Math.min(240, Number(bpmInput.value) || 112));
+    bpmSlider.value = String(bpm);
+    if (playing) stopPlayback();
+  });
+  bpmSlider.addEventListener('input', () => {
+    bpm = Number(bpmSlider.value);
+    bpmInput.value = String(bpm);
+    if (playing) stopPlayback();
+  });
+
+  masterSlider.addEventListener('input', () => {
+    masterVol = Number(masterSlider.value) / 100;
+    if (masterNode) masterNode.gain.value = masterVol;
+  });
+
+  modePatternBtn.addEventListener('click', () => {
+    if (mode === 'pattern') return;
+    if (playing) stopPlayback();
+    mode = 'pattern';
+    updateModeUI();
+  });
+  modeSongBtn.addEventListener('click', () => {
+    if (mode === 'song') return;
+    if (playing) stopPlayback();
+    mode = 'song';
+    updateModeUI();
+  });
+
+  waveSelect.addEventListener('change', () => {
+    waves[currentSynth] = waveSelect.value;
+  });
+
+  demoBtn.addEventListener('click', () => {
+    if (playing) stopPlayback();
+    patterns.forEach((p) => {
+      p.drums.forEach((d) => d.fill(false));
+      p.notes.forEach((rows) => rows.forEach((r) => r.fill(false)));
+    });
+    seedDemo();
+    song = [0, 0, 1, 0];
+    currentPattern = 0;
+    currentSynth = 0;
+    bpm = 112;
+    renderAll();
+    updateTransportUI();
+    toast('Demo dimuat!');
+  });
+
+  exportBtn.addEventListener('click', () => { void exportWav(); });
+
+  songClearBtn.addEventListener('click', () => {
+    song = [];
+    if (mode === 'song') stopPlayback();
+    renderSong();
+  });
+
+  PATTERN_LETTERS.forEach((letter, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'px-2 py-1 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:bg-violet-500 hover:text-white transition-colors';
+    btn.textContent = `+${letter}`;
+    btn.addEventListener('click', () => {
+      if (song.length >= MAX_BARS) return;
+      song.push(i);
+      if (mode === 'song') stopPlayback();
+      renderSong();
+    });
+    songAddEl.appendChild(btn);
+  });
+
+  for (let i = 0; i < 2; i++) {
+    const fileInput = document.getElementById(`ms-audio-file-${i}`) as HTMLInputElement;
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (file) void importAudio(i, file);
+      fileInput.value = '';
+    });
+
+    const startInput = document.getElementById(`ms-audio-start-${i}`) as HTMLInputElement;
+    startInput.addEventListener('change', () => {
+      const value = Math.max(1, Math.min(MAX_BARS, Number(startInput.value) || 1));
+      audioTracks[i].startBar = value;
+      startInput.value = String(value);
+    });
+
+    const clearBtn = document.getElementById(`ms-audio-clear-${i}`) as HTMLButtonElement;
+    clearBtn.addEventListener('click', () => {
+      audioTracks[i] = { buffer: null, name: '', startBar: 1 };
+      updateAudioUI();
+    });
+  }
+
+  function onKeyDown(event: KeyboardEvent): void {
+    if (event.code !== 'Space') return;
+    const target = event.target as HTMLElement | null;
+    if (target) {
+      const tag = target.tagName;
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'BUTTON' || tag === 'A' || target.isContentEditable) return;
+    }
+    event.preventDefault();
+    startPlayback();
+  }
+  document.addEventListener('keydown', onKeyDown);
+
+  function renderAll(): void {
+    renderDrums();
+    renderPiano();
+    renderPatternBtns();
+    renderSong();
+    buildMixer();
+    updateAudioUI();
+  }
+
+  renderStepNumbers();
+  renderAll();
+  updateTransportUI();
+
+  return () => {
+    stopPlayback();
+    document.removeEventListener('keydown', onKeyDown);
+    if (audioCtx) {
+      void audioCtx.close().catch(() => {});
+      audioCtx = null;
+      masterNode = null;
+    }
+  };
+}
+
+let cleanup: (() => void) | null = null;
+
+document.addEventListener('astro:page-load', () => {
+  if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+  cleanup?.();
+  cleanup = init();
+});
+
+document.addEventListener('astro:page-leave', () => {
+  cleanup?.();
+  cleanup = null;
+});
+</script>

@@ -805,4 +805,14 @@ window._i18nPhrases = {
   'Gagal memuat pustaka PDF — cek koneksi internet.':'Failed to load PDF library — check your connection.',
   'Gagal mengonversi presentasi. Pastikan file .pptx valid dan tidak terproteksi.':'Failed to convert the presentation. Make sure the .pptx is valid and not protected.',
   'Gambar berhasil dikonversi!':'Image converted successfully!','Gagal render: context tidak tersedia.':'Failed to render: context unavailable.',
+  // --- MUSIC STUDIO ---
+  'Merender…':'Rendering…',
+  'WAV siap didownload!':'WAV ready to download!',
+  'Audio diimpor!':'Audio imported!',
+  'Gagal membaca audio.':'Failed to read audio.',
+  'File terlalu besar (maks 40 MB).':'File too large (max 40 MB).',
+  'Susunan lagu kosong.':'Song arrangement is empty.',
+  'Demo dimuat!':'Demo loaded!',
+  'Gagal export audio.':'Failed to export audio.',
+  'Audio terlalu panjang (maks 12 menit).':'Audio is too long (max 12 minutes).',
 };

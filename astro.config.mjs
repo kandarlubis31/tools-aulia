@@ -39,7 +39,7 @@ export default defineConfig({
       skipWaiting: true,
       clientsClaim: true,
       globPatterns: ['**/*.{css,js,html,svg,png,ico,txt}'],
-      globIgnores: ["**/404.html", "**/404/index.html", "**/og/*.png", "**/_astro/index.*.js", "**/_astro/cl100k_base.*.js", "**/editor/**"], // OG: social-only | index.*.js: Vite shared chunks — skip precache | cl100k_base: tokenizer ranks 1MB (dipakai paste-to-md saja) — runtime-cached, bukan precache | editor: app standalone (bundle 5MB + aset 60MB) punya SW sendiri
+      globIgnores: ["**/404.html", "**/404/index.html", "**/og/*.png", "**/_astro/index.*.js", "**/_astro/cl100k_base.*.js"], // OG: social-only | index.*.js: Vite shared chunks — skip precache | cl100k_base: tokenizer ranks 1MB (dipakai paste-to-md saja) — runtime-cached, bukan precache
       // manifestTransforms custom → GANTI transform bawaan @vite-pwa/astro.
       // Transform bawaan mengubah 'pdf/annotate/index.html' → 'pdf/annotate' (tanpa
       // slash) yang TIDAK PERNAH cocok dengan navigasi Astro directory-format
@@ -73,10 +73,6 @@ export default defineConfig({
       // (manifest punya '/') dan jatuh ke halaman offline PADAHAL ONLINE.
       ignoreURLParametersMatching: [/.*/],
       navigateFallback: '/offline/',
-      // /editor → jangan intercept: app butuh COOP/COEP headers (COI) dari Vercel
-      // buat SharedArrayBuffer (ffprobe-wasm worker). Kalau SW serve /offline/
-      // tanpa header itu, self-heal malah nge-unregister SW + hapus SEMUA cache PWA.
-      navigateFallbackAllowlist: [/^(?!\/editor(?:$|\/))/],
       navigateFallbackDenylist: [/^\/api\/.*/],
       maximumFileSizeToCacheInBytes: 25 * 1024 * 1024, // 25 MB — headroom for kbbi-sinonim.json (9.4MB) + id-words.json (2.6MB) + AI models
       runtimeCaching: [

@@ -1,4 +1,4 @@
-# build output (root-only — jangan ignore dist/ di dalam public/editor/node_modules closure)
+# build output
 /dist/
 
 # generated types
@@ -15,8 +15,7 @@ docs/agents/
 docs/archive/
 docs/plan-*.md
 
-# dependencies (root-only — public/editor/node_modules/ TIDAK di-ignore,
-# itu closure runtime OmniClip yang WAJIB ke-commit biar /editor jalan di produksi)
+# dependencies
 /node_modules/
 
 # logs
@@ -76,13 +75,6 @@ bun.lock
 
 # Temp PWA icons (leftover dari pipeline generate-assets)
 public/favicon-temp-*.png
-
-# OmniClip vendored source — build artifacts (regenerable via npm ci + build)
-omniclip/node_modules/
-omniclip/x/
-omniclip/dev-dist/
-omniclip/*.tmp
-omniclip/package-lock.json   # project pakai pnpm; lock npm-nya omniclip tidak di-track
 
 # Catatan: scripts/ sengaja TIDAK di-ignore — dev tooling (generate-assets,
 # migrate-headers, new-tool) ikut di-version-control biar tidak hilang.

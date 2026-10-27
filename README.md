@@ -43,7 +43,7 @@
 | **Calc** | 23 | Currency (live rates), Age, BMI, EMI, Compound Interest, Matrix, Scientific, Timezone |
 | **Utils** | 25 | QR, WA Builder, Pomodoro, Todo, Nama Generator Indonesia, Wordle ID, Habit Tracker |
 | **Text** | 19 | Text-to-Speech, Speech-to-Text, Summarizer, Typing Test, Fancy, Morse, Readability |
-| **Media** | 17 | Video Studio (CapCut-style), Video Editor, Audio Recorder/Trimmer/EQ, Screen Recorder, Beat Maker |
+| **Media** | 17 | Music Studio (mini DAW), Video Editor, Audio Recorder/Trimmer/EQ, Screen Recorder, Beat Maker |
 | **Security** | 16 | Password, Hash, UUID, Bcrypt, TOTP, File Encrypt, Steganography, Cipher |
 | **Network** | 16 | REST Client, HTTP Builder, Speed Test, DNS Lookup, WebSocket, Whois, SSL |
 | **Data** | 15 | CSV Editor, XLSX Viewer, iCal, Fake Data, Barcode (+reader), GeoJSON, vCard |
@@ -140,7 +140,7 @@ Kode di repo ini boleh diindeks oleh corpus publik — termasuk [XERJ Corpus Hub
 | **Calc** | 23 | Currency (live rates), Age, BMI, EMI, Compound Interest, Matrix, Scientific, Timezone |
 | **Utils** | 25 | QR, WA Builder, Pomodoro, Todo, Indonesian Name Generator, Wordle ID, Habit Tracker |
 | **Text** | 19 | Text-to-Speech, Speech-to-Text, Summarizer, Typing Test, Fancy, Morse, Readability |
-| **Media** | 17 | Video Studio (CapCut-style), Video Editor, Audio Recorder/Trimmer/EQ, Screen Recorder, Beat Maker |
+| **Media** | 17 | Music Studio (mini DAW), Video Editor, Audio Recorder/Trimmer/EQ, Screen Recorder, Beat Maker |
 | **Security** | 16 | Password, Hash, UUID, Bcrypt, TOTP, File Encrypt, Steganography, Cipher |
 | **Network** | 16 | REST Client, HTTP Builder, Speed Test, DNS Lookup, WebSocket, Whois, SSL |
 | **Data** | 15 | CSV Editor, XLSX Viewer, iCal, Fake Data, Barcode (+reader), GeoJSON, vCard |
