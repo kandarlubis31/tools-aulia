@@ -86,7 +86,7 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 ## Status saat ini (Oktober 2026)
 
 - 🆕 **(Oct 27)** **Audit "Bersihkan Cache" + fix layout "Baru Digunakan" + catch-up changelog** —
-  commit `699e324` (layout), `be3801a` (cache), `123c990` (changelog).
+  commit `699e324` (layout), `be3801a` (cache), `123c990` (changelog), `1960ec8` (title SEO).
   - **Layout**: `#recent-section` landing dikasih `mt-6` senada section Favorit
     (`src/pages/index.astro` ~line 191) — sebelumnya nempel ke filter bar pas Favorit kosong
     (margin-collapse). Smoke: computed margin-top 24px, gap visual 24px semua state.
@@ -106,10 +106,15 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
     `performance.timeOrigin` berubah, bukan freshness window `Page.loadEventFired`.
   - **Changelog catch-up**: 6 entri v2.19 (rebrand Sep 24) s/d v2.24 (Oct 27) ditambah di atas
     v2.18 di `src/data/changelog.ts` — `/changelog` + RSS ikut ke-render otomatis.
-  - ⚠️ **Temuan terpisah (pre-existing, BELUM difix)**: `processI18n()` jalur bahasa ID menulis-
-    ULANG `document.title` = `${originalTitle} | Tools MasAul` → title SEO landing
+  - **Bonus fix title SEO** (`1960ec8`, ketahuan lewat smoke yang sama): `processI18n()` jalur
+    bahasa ID menulis-ULANG `document.title` = `${pageTitle} | Tools MasAul` → title SEO landing
     "Koleksi 251+ Tools…" diganti "Dashboard | Tools MasAul" pasca hydration (index.astro kirim
-    `pageTitle="Dashboard"`). Sudah di-file di `.scratch/base-layout/seo-title-landing.md`.
+    `pageTitle="Dashboard"`). Fix: jalur ID kini **restore** `document.title` dari
+    `meta[property="og:title"]` (= `fullTitle` statik, tidak pernah disentuh i18n; head-swap
+    ClientRouter ikut menggantinya saat SPA nav) — fresh load ID = no-op, EN→ID = balik ke
+    title SEO, EN rewrite tetap jalan. **Smoke CDP 10/10 PASS**: title === og:title di landing &
+    tool page, toggle EN/ID bolak-balik, SPA nav per-halaman, 0 exception. Arsitek: title statik
+    `<title>{fullTitle}</title>` TIDAK boleh ditimpa runtime di jalur ID (crawler default = ID).
 
 - 🆕 **(Oct 25)** **DropZone netral + sapu emoji dekoratif batch 1 (label/judul)** — commit `a3beedc`.
   - `DropZone.astro`: prop **`gradient` + `hoverClass` dihapus** (20 halaman mengirim palet warna
