@@ -85,7 +85,33 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 
 ## Status saat ini (Oktober 2026)
 
-- 🆕 **(Oct 25)** **DropZone netral + sapu emoji dekoratif batch 1 (label/judul)** — belum di-commit.
+- 🆕 **(Oct 27)** **Audit "Bersihkan Cache" + fix layout "Baru Digunakan" + catch-up changelog** —
+  commit `699e324` (layout), `be3801a` (cache), `123c990` (changelog).
+  - **Layout**: `#recent-section` landing dikasih `mt-6` senada section Favorit
+    (`src/pages/index.astro` ~line 191) — sebelumnya nempel ke filter bar pas Favorit kosong
+    (margin-collapse). Smoke: computed margin-top 24px, gap visual 24px semua state.
+  - **Audit "Bersihkan Cache"** (tombol footer `#cache-clear-btn` + mobile `#cache-clear-mobile`,
+    handler `cacheClearHandler` di `BaseLayout.astro` ~line 1265): fitur memang jalan —
+    confirm → unregister service worker → `caches.delete` → reload. **Tapi ada bug data-loss**:
+    handler lama juga memanggil `localStorage.clear()` → menghapus SEMUA data user
+    (`hrd_data_v1` dashboard HRD!, `hrd_auth_v1`, favorit, riwayat, todo/notes, tema/bahasa).
+    Fix: `localStorage.clear()` dihapus — senada self-heal `/offline` yang tidak pernah sentuh
+    localStorage. **Keputusan baru #24** (lihat docs/CONTEXT.md): localStorage = DATA user,
+    bukan cache.
+  - **Smoke CDP 19/19 PASS** (0 exception, 0 console error): layout L1–L5; dialog confirm terbuka
+    dibuktikan lewat target-suspension (event `Page.javascriptDialogOpening` TIDAK ter-deliver di
+    page-level CDP ws headless=new — jangan disandikan); data user utuh pasca clear via footer +
+    mobile + SPA nav; cache marker terhapus; reload terjadi. **Pelajaran harness**: reload via
+    handler butuh ±3–6 detik di headless (jangan buru-buru assert) — deteksi paling andal = polling
+    `performance.timeOrigin` berubah, bukan freshness window `Page.loadEventFired`.
+  - **Changelog catch-up**: 6 entri v2.19 (rebrand Sep 24) s/d v2.24 (Oct 27) ditambah di atas
+    v2.18 di `src/data/changelog.ts` — `/changelog` + RSS ikut ke-render otomatis.
+  - ⚠️ **Temuan terpisah (pre-existing, BELUM difix)**: `processI18n()` jalur bahasa ID menulis-
+    ULANG `document.title` = `${originalTitle} | Tools MasAul` → title SEO landing
+    "Koleksi 251+ Tools…" diganti "Dashboard | Tools MasAul" pasca hydration (index.astro kirim
+    `pageTitle="Dashboard"`). Sudah di-file di `.scratch/base-layout/seo-title-landing.md`.
+
+- 🆕 **(Oct 25)** **DropZone netral + sapu emoji dekoratif batch 1 (label/judul)** — commit `a3beedc`.
   - `DropZone.astro`: prop **`gradient` + `hoverClass` dihapus** (20 halaman mengirim palet warna
     sendiri → dropzone jadi blok warna paling menonjol). Border dashed 2px berwarna → **1px hairline**,
     hover lift + ikon `scale-110` dihapus, tile ikon gradient 16×16 → tile hairline 12×12 netral.
@@ -131,7 +157,7 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
     (1203 kemunculan di 176 halaman: 📋 ✅ ⚠ 💾 🔄 …) **belum disentuh** — itu sweep terpisah dan
     butuh klasifikasi mana emoji fungsional (status/ikon tombol) vs dekoratif.
 
-- 🆕 **(Oct 25, lanjutan 4)** Pencarian lebih pintar (belum di-commit).
+- 🆕 **(Oct 25, lanjutan 4)** Pencarian lebih pintar — commit `13b199c`.
   - **Filter hub `/pdf`**: hanya mencocokkan judul ID → sekarang `data-search` = judul + deskripsi (ID)
     + judul & deskripsi EN dari `translations` (dipetakan lewat `publicTools` by href, dihitung saat
     build). Terbukti: "gabungin" / "multiple pdf files" → Merge PDF, "putar" → Rotate PDF,
