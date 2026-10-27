@@ -1266,8 +1266,11 @@ if (isPdfRoot) {
       var cacheClearHandler = function() {
         var confirmMsg = (window.i18n && window.i18n.t) ? window.i18n.t('confirm.clear_cache', 'Bersihkan cache dan reload halaman?') : 'Bersihkan cache dan reload halaman?';
         if (!confirm(confirmMsg)) return;
-        // Clear localStorage
-        try { localStorage.clear(); } catch(e) { console.debug('localStorage.clear gagal:', e); }
+        // ⚠️ JANGAN localStorage.clear() — localStorage itu DATA user, bukan cache:
+        // hrd_data_v1 (dashboard HRD!), hrd_auth_v1, favorit, riwayat, todo/notes,
+        // tema/bahasa. Senada self-heal /offline (yang tidak sentuh localStorage):
+        // cukup unregister SW + delete Cache Storage → reload fetch fresh dari
+        // network, data user utuh.
         // Unregister service workers + clear caches, then reload
         var promises = [];
         if (navigator.serviceWorker) {
