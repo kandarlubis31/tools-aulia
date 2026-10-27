@@ -115,6 +115,12 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
     title SEO, EN rewrite tetap jalan. **Smoke CDP 10/10 PASS**: title === og:title di landing &
     tool page, toggle EN/ID bolak-balik, SPA nav per-halaman, 0 exception. Arsitek: title statik
     `<title>{fullTitle}</title>` TIDAK boleh ditimpa runtime di jalur ID (crawler default = ID).
+  - **Fix tambahan handler cache** (`a8e3c9e`, terukur di live): `unregister()` gak resolve
+    sampai install SW baru selesai (precache ±35MB) → reload nyangkut >20 detik di produksi.
+    Sekarang reload digerbangi delete-cache saja (<1s), unregister fire-and-forget.
+    **Live verify: reload cache-clear 620ms** (dulu >20s). Smoke live 4/4 PASS (0 exception):
+    title SEO + toggle EN/ID + layout margin 24px + cache-clear cepat + data user utuh.
+    Semua commit pushed & deployed.
 
 - 🆕 **(Oct 25)** **DropZone netral + sapu emoji dekoratif batch 1 (label/judul)** — commit `a3beedc`.
   - `DropZone.astro`: prop **`gradient` + `hoverClass` dihapus** (20 halaman mengirim palet warna
