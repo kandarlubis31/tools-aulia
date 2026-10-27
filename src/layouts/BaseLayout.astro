@@ -1271,23 +1271,28 @@ if (isPdfRoot) {
         // tema/bahasa. Senada self-heal /offline (yang tidak sentuh localStorage):
         // cukup unregister SW + delete Cache Storage → reload fetch fresh dari
         // network, data user utuh.
-        // Unregister service workers + clear caches, then reload
-        var promises = [];
-        if (navigator.serviceWorker) {
-          promises.push(navigator.serviceWorker.getRegistrations().then(function(regs) {
-            return Promise.all(regs.map(function(r) { return r.unregister(); }));
-          }).catch(function(err) { console.debug('Service worker unregister gagal:', err); }));
-        }
+        // Unregister service workers + clear caches, then reload.
+        // ⚠️ Reload JANGAN digate pada unregister(): di produksi (terukur via CDP,
+        // Okt 27) unregister() gak resolve sampai install SW baru selesai —
+        // precache 504 file (±35MB) bisa puluhan detik s/d menit di koneksi
+        // lambat → halaman keliatan mati setelah confirm. Delete Cache Storage
+        // jalan cepat (<1s) dan itu yang menentukan konten fresh (precache kosong
+        // → SW miss → fetch network). Jadi: unregister = fire-and-forget
+        // (operasi browser-level, tetap jalan walau halaman unload), reload
+        // digerbangi delete-cache.
+        var cacheDone = null;
         if (window.caches) {
-          promises.push(caches.keys().then(function(names) {
+          cacheDone = caches.keys().then(function(names) {
             return Promise.all(names.map(function(n) { return caches.delete(n); }));
-          }).catch(function(err) { console.debug('Cache delete gagal:', err); }));
+          }).catch(function(err) { console.debug('Cache delete gagal:', err); });
         }
-        Promise.all(promises).then(function() {
-          window.location.reload();
-        }).catch(function() {
-          window.location.reload();
-        });
+        if (navigator.serviceWorker) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            regs.forEach(function(r) { r.unregister(); });
+          }).catch(function(err) { console.debug('Service worker unregister gagal:', err); });
+        }
+        if (cacheDone) cacheDone.then(function() { window.location.reload(); });
+        else window.location.reload();
       };
       var cacheClearBtn = document.getElementById('cache-clear-btn');
       if (cacheClearBtn && !cacheClearBtn.dataset.hasListener) {
