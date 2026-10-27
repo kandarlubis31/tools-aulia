@@ -23,6 +23,27 @@ export interface ChangelogEntry {
 
 export const changelogEntries: ChangelogEntry[] = [
   {
+    date: '2026-10-28',
+    version: 'v2.25',
+    title: 'Music Studio — Mini DAW Baru, Video Studio OmniClip Dipensiunkan',
+    titleEn: 'Music Studio — New Mini DAW, OmniClip Video Studio Retired',
+    desc: 'Tool baru Music Studio: mini DAW 100% client-side dengan drum sequencer 4 track, piano roll 2 synth, import audio/stems (termasuk hasil Suno), mixer volume-pan-mute-solo, pattern A–D, song mode, dan export WAV. Sebagai gantinya, Video Studio berbasis OmniClip di /editor dihapus total karena kualitasnya di bawah standar — Video Editor FFmpeg di /edit-video tetap tersedia.',
+    descEn: 'New Music Studio tool: a 100% client-side mini DAW with a 4-track drum sequencer, 2 synth piano rolls, audio/stem import (including Suno output), volume-pan-mute-solo mixer, patterns A–D, song mode, and WAV export. In exchange, the OmniClip-based Video Studio at /editor is removed entirely because its quality fell below the bar — the FFmpeg Video Editor at /edit-video remains available.',
+    items: [
+      '🎹 Music Studio (/media/music-studio): 4 drum track + 2 synth piano roll 13 nada, pattern A–D, song mode, export WAV via OfflineAudioContext',
+      '🎛️ Mixer 8 channel (volume, pan, mute, solo) + master volume + BPM 40–240, shortcut Spasi untuk Play/Stop',
+      '🎵 Import 2 track audio/stems (WAV/MP3, maks 40 MB) dengan aturan mulai bar — cocok untuk stem Suno',
+      '🗑️ Video Studio OmniClip (/editor) dihapus total: route, bundle 28 MB, source 117 MB, build script, header Vercel & config service worker',
+    ],
+    itemsEn: [
+      '🎹 Music Studio (/media/music-studio): 4 drum tracks + 2 synth piano rolls (13 notes), patterns A–D, song mode, WAV export via OfflineAudioContext',
+      '🎛️ 8-channel mixer (volume, pan, mute, solo) + master volume + BPM 40–240, Space shortcut for Play/Stop',
+      '🎵 Import 2 audio/stem tracks (WAV/MP3, max 40 MB) with start-bar placement — handy for Suno stems',
+      '🗑️ OmniClip Video Studio (/editor) removed entirely: route, 28 MB bundle, 117 MB source, build script, Vercel headers & service worker config',
+    ],
+    tags: ['feat', 'media'],
+  },
+  {
     date: '2026-10-27',
     version: 'v2.24',
     title: 'Bersihkan Cache Aman — Data User & Title SEO Tidak Lagi Ikut Terhapus',

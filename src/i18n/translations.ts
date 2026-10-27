@@ -3144,7 +3144,6 @@ export const translations: Record<string, { id: string; en: string }> = {
 
   // --- VIDEO EDITOR (FFmpeg.wasm) ---
   'tool.video_editor': { id: 'Video Editor', en: 'Video Editor' },
-  'tool.video_studio': { id: 'Video Studio', en: 'Video Studio' },
   'tool.nama_generator': { id: 'Nama Generator Indonesia', en: 'Indonesian Name Generator' },
   'tool.nama_generator_desc': { id: 'Generate nama khas 11 suku Indonesia dengan marga & gelar.', en: 'Generate authentic names from 11 Indonesian ethnic groups with surnames & titles.' },
   'header.nama_generator': { id: 'Nama Generator Indonesia', en: 'Indonesian Name Generator' },
@@ -3220,9 +3219,6 @@ export const translations: Record<string, { id: string; en: string }> = {
   'scan.history': { id: 'Riwayat', en: 'History' },
   'scan.clear_all': { id: 'Hapus Semua', en: 'Clear All' },
   'scan.empty_history': { id: 'Belum ada riwayat', en: 'No history yet' },
-  'tool.video_studio_desc': { id: 'Editor video lengkap ala CapCut — timeline multi-track, efek, teks & transisi.', en: 'Full CapCut-style video editor — multi-track timeline, effects, text & transitions.' },
-  'header.video_studio': { id: 'Video Studio', en: 'Video Studio' },
-  'header.video_studio_desc': { id: 'Editor video lengkap di browser — timeline multi-track, efek, teks, transisi. Tanpa upload, tanpa akun.', en: 'Full in-browser video editor — multi-track timeline, effects, text, transitions. No upload, no account.' },
   'tool.video_editor_desc': { id: 'Gabung, potong & susun klip video jadi satu.', en: 'Merge, cut & arrange video clips into one.' },
   'header.video_editor': { id: 'Video Editor', en: 'Video Editor' },
   'header.video_editor_desc': { id: 'Gabung, potong & susun klip video jadi satu. 100% di browser tanpa upload.', en: 'Merge, cut & arrange video clips into one. 100% in-browser, no upload.' },
@@ -4783,6 +4779,35 @@ export const translations: Record<string, { id: string; en: string }> = {
   'notes.ph_body': { id: 'Tulis catatanmu di sini… markdown didukung!', en: 'Write your note here… markdown supported!' },
   'paste.ph_ctrlv': { id: 'Tempel teks di sini... (Ctrl+V)', en: 'Paste text here... (Ctrl+V)' },
   'shortener.ph_slug': { id: 'mis. promo-2026', en: 'e.g. promo-2026' },
+
+  // --- MUSIC STUDIO (mini DAW) ---
+  'tool.music_studio': { id: 'Music Studio', en: 'Music Studio' },
+  'tool.music_studio_desc': { id: 'Mini DAW: drum sequencer, piano roll, import audio, mixer, export WAV.', en: 'Mini DAW: drum sequencer, piano roll, audio import, mixer, WAV export.' },
+  'header.music_studio': { id: 'Music Studio', en: 'Music Studio' },
+  'header.music_studio_desc': { id: 'Mini DAW 100% di browser: 4 drum track + 2 synth piano roll, import audio/stems, mixer, song mode, export WAV. Tanpa upload.', en: 'Mini DAW 100% in-browser: 4 drum tracks + 2 synth piano rolls, audio/stem import, mixer, song mode, WAV export. No upload.' },
+  'ms.play': { id: 'Main', en: 'Play' },
+  'ms.bpm': { id: 'BPM', en: 'BPM' },
+  'ms.master': { id: 'Master', en: 'Master' },
+  'ms.mode': { id: 'Mode', en: 'Mode' },
+  'ms.mode_pattern': { id: 'Pattern', en: 'Pattern' },
+  'ms.mode_song': { id: 'Song', en: 'Song' },
+  'ms.export': { id: 'Export WAV', en: 'Export WAV' },
+  'ms.drums': { id: 'Drum Sequencer', en: 'Drum Sequencer' },
+  'ms.steps': { id: '1 bar = 16 step', en: '1 bar = 16 steps' },
+  'ms.piano': { id: 'Piano Roll', en: 'Piano Roll' },
+  'ms.wave': { id: 'Gelombang', en: 'Waveform' },
+  'ms.audio': { id: 'Audio / Stems', en: 'Audio / Stems' },
+  'ms.audio_hint': { id: 'Diputar di Song mode, mulai dari bar yang dipilih.', en: 'Played in Song mode, starting from the selected bar.' },
+  'ms.import': { id: 'Import audio', en: 'Import audio' },
+  'ms.no_audio': { id: 'Belum ada audio. Import stem dari Suno atau file WAV/MP3.', en: 'No audio yet. Import a Suno stem or WAV/MP3 file.' },
+  'ms.start_bar': { id: 'Mulai bar', en: 'Start bar' },
+  'ms.mixer': { id: 'Mixer', en: 'Mixer' },
+  'ms.song_title': { id: 'Susunan Lagu', en: 'Song Arrangement' },
+  'ms.add_bar': { id: 'Tambah bar', en: 'Add bar' },
+  'ms.clear': { id: 'Kosongkan', en: 'Clear' },
+  'ms.privacy': { id: 'Semua audio diproses di browser — file tidak pernah di-upload.', en: 'All audio is processed in the browser — files are never uploaded.' },
+  'ms.keys': { id: 'Spasi = Play/Stop. Klik sel drum/piano untuk mengisi.', en: 'Space = Play/Stop. Click a drum/piano cell to toggle.' },
+  'ms.demo': { id: 'Demo', en: 'Demo' },
 
 };
 
