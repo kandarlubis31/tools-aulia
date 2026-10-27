@@ -1941,9 +1941,14 @@ if (isPdfRoot) {
           }
         });
       } else {
-        if (originalTitle) {
-          document.title = `${originalTitle} | Tools MasAul`;
-        }
+        // ID: JANGAN menimpa document.title dari pageTitle pendek — itu menghapus
+        // title SEO statik (landing: "Koleksi 251+ Tools…" → "Dashboard | Tools
+        // MasAul", bug ketahuan via smoke CDP Okt 27). Title statik = fullTitle,
+        // terselamatkan di og:title (tidak pernah disentuh i18n; head-swap
+        // ClientRouter ikut menggantinya saat SPA nav). Jalur ID cukup RESTORE:
+        // kembali dari EN → title kembali fullTitle; fresh load ID → no-op.
+        const ogTitle = document.querySelector('meta[property="og:title"]')?.getAttribute('content');
+        if (ogTitle) document.title = ogTitle;
         // Restore semua elemen [data-i18n] dari snapshot -> ID benar-benar kembali
         document.querySelectorAll('[data-i18n]').forEach(el => {
           if (el.__d18n === undefined) return;
