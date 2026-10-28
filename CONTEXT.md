@@ -127,15 +127,20 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
     `new-tools.ts`, 4 key i18n, header COOP/COEP + redirect di `vercel.json`, exclusion SW di
     `astro.config.mjs`, `.gitignore`, aturan #11 AGENTS. **History git tetap** (tanpa rewrite) —
     changelog lama yang menyebut Video Studio sengaja dipertahankan.
-  - **Tool baru `/media/music-studio`**: 4 drum track × 16 step, 2 synth piano roll 13 nada,
-    2 track audio/stem import (WAV/MP3, maks 40 MB / 12 menit), mixer 8 channel (vol/pan/mute/solo),
-    pattern A–D, song chain maks 16 bar, export WAV via `OfflineAudioContext` (mode Pattern = 1 bar,
-    mode Song = susunan + tail audio), demo seed, shortcut Spasi, guard SPA + cleanup AudioContext.
-    Tanpa persistence di v1. **Beat Maker lama tetap ada** sebagai tool terpisah.
-  - **Verifikasi**: build ✅ (7 guardrail, 507 precache), 62/62 test, audit i18n exit 0
-    (250/250 FULL), smoke CDP statis **21/21** (grid 4×16, piano 13×16, play/stop, song mode,
-    mixer solo, export WAV 1.58 MB, SPA round-trip, 0 exception) + import stem **7/7**
-    (WAV 6 detik → export 12.8 detik).
+  - **Tool baru `/media/music-studio`**: 6 drum track × 16 step, 4 synth piano roll 13 nada dengan
+    5 preset, note length/velocity per note, 3 kit, accent/swing/metronome, 2 track audio/stem import
+    (WAV/MP3, maks 40 MB / 12 menit), mixer 12 channel (vol/pan/mute/solo), pattern A–D, song chain
+    maks 16 bar, export WAV via `OfflineAudioContext` (mode Pattern = 1 bar, mode Song = susunan +
+    tail audio), demo seed, shortcut Spasi, guard SPA + cleanup AudioContext. Proyek auto-save ke
+    localStorage serta ekspor/impor JSON tervalidasi; stem audio tidak disertakan dalam project file.
+    **Beat Maker lama tetap ada** sebagai tool terpisah.
+  - **Verifikasi rilis awal**: build ✅ (7 guardrail, 507 precache), 62/62 test, audit i18n exit 0
+    (250/250 FULL), smoke CDP statis **21/21** (grid, playback, song mode, mixer solo, WAV export,
+    SPA round-trip, 0 exception) + import stem **7/7** (WAV 6 detik → export 12.8 detik).
+  - **Verifikasi follow-up (Oct 28)**: build ✅ (7 guardrail), 62/62 test, audit i18n 250/250, smoke
+    CDP **22/22** (playhead style, note length/velocity + autosave, JSON export/import, lifecycle
+    re-init, drum interaction, 0 page exception/console error). Note duration now extends audible
+    synth sustain; CSS playhead uses valid theme color syntax.
   - ⚠️ **Jangan jalankan `pnpm build` bareng `pnpm dev`** di laptop ini — watcher + build + Chrome
     bikin Node `EMFILE` (dev server mati; halaman nyangkut `readyState=loading`). Untuk smoke:
     build dulu, lalu serve `dist/client` pakai static server kecil.
