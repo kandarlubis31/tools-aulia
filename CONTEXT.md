@@ -141,10 +141,18 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
     CDP **22/22** (playhead style, note length/velocity + autosave, JSON export/import, lifecycle
     re-init, drum interaction, 0 page exception/console error). Note duration now extends audible
     synth sustain; CSS playhead uses valid theme color syntax. Commit `472baf7`.
-    Review edge case (probe CDP terpisah, tanpa perubahan kode): hapus note lewat klik kedua tanpa
-    undo, dropdown Length mengedit note terpilih + memotong default global, edit <350 ms sebelum
-    reload hilang (tak ada flush `pagehide`), project tersimpan yang rusak ditimpa tanpa notifikasi,
-    note bisa tumpang-tindih (diterima `validProject`), dan shortcut Spasi mati setelah sel diklik.
+  - **Fix edge case hasil review (Oct 28)** — commit `b356c46`: klik kedua pada note kini melepas
+    pilihan (bukan menghapus); hapus lewat Del/Backspace dengan tombol Undo + Ctrl+Z (riwayat 40
+    snapshot pattern, reset saat project dimuat). Dropdown Length = panjang default saat tak ada
+    note terpilih, dan saat mengedit note memberi toast kalau terpotong head berikutnya; pembuatan
+    & ekstensi note berhenti di head berikutnya, `validProject` menolak note bertumpuk. Project
+    lama yang sudah bertumpuk (dibuat sebelum aturan ini) dirapikan `trimOverlaps` saat dimuat —
+    head yang tertutup dibuang, bukan seluruh project — lalu langsung disimpan ulang. Autosave
+    flush saat `pagehide`/tab hidden; project tersimpan yang benar-benar rusak dicadangkan ke
+    `music-studio-project-v1-corrupt` + toast. Shortcut Spasi hidup lagi setelah sel diklik (blur
+    fokus tombol hanya untuk klik mouse, navigasi keyboard tetap). Verifikasi: build ✅, 62/62 test,
+    audit i18n 250/250, smoke regresi **22/22**, smoke fix **31/31**, probe restore **10/10**
+    (normal / legacy overlap / rusak), 0 page exception/console error.
   - ⚠️ **Jangan jalankan `pnpm build` bareng `pnpm dev`** di laptop ini — watcher + build + Chrome
     bikin Node `EMFILE` (dev server mati; halaman nyangkut `readyState=loading`). Untuk smoke:
     build dulu, lalu serve `dist/client` pakai static server kecil.
