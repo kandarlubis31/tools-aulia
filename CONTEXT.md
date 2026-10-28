@@ -82,6 +82,9 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 
 - Vercel CLI via `npx` (gak global), login `kandarlubis31`, domain custom **tools.paklubis.my.id**.
 - Deploy: `pnpm build` dulu → `npx vercel --prod --yes` → verify endpoint dengan curl.
+- **SELALU production (`--prod`)**, jangan deploy preview doang — user cek langsung di domain
+  live, preview URL bikin dikira "belum rilis". Setelah deploy wajib verifikasi live (status
+  route baru, isi `/search-tools.json`, changelog, `sw.js`).
 
 ## Status saat ini (Oktober 2026)
 
@@ -106,10 +109,16 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
     CDP 14/14 (AbortError/Failed to fetch/string rejection tidak memunculkan toast; error nyata
     muncul top-right; stack tidak tumpuk; dismiss restore; muat di 360px; cari "musik") +
     SPA smoke 9/9 (BMI → Age → BMI tetap hidup, Music Studio via search, 0 exception).
-  - ⚠️ **Music Studio belum ada di live** saat catatan ini ditulis: commit `bb0e898`/`1e1740f`
-    + `c712b91` masih lokal. Live `/media/music-studio` = 404 dan `/search-tools.json` live
-    (250 entri) masih memuat "Video Studio". Push + deploy Vercel dulu, baru tool muncul di
-    pencarian web.
+  - ✅ **SUDAH LIVE (Oct 28)** — deploy production `npx vercel --prod --yes` sukses
+    (`tools-aulia-qdwjriani`, alias `https://tools.paklubis.my.id`). Verifikasi live:
+    `/media/music-studio/` **200** (title + `#ms-play` ada), viewport `interactive-widget`
+    terpasang, `/search-tools.json` live 250 entri **berisi Music Studio + keywords** dan
+    **tidak ada lagi Video Studio/`/editor`**, changelog **v2.26** tampil, `sw.js` precache
+    memuat `music-studio`. Smoke CDP live **7/7**: kartu di homepage, cari "musik" →
+    Music Studio peringkat 1, buka via SPA (64 step drum, 4 pattern), 0 toast error,
+    0 exception.
+  - 📌 **Alasan awal gak muncul**: live masih deployment lama — `/media/music-studio` 404 dan
+    index pencarian live belum punya entri baru. Bukan bug search.
 
 - 🆕 **(Oct 28)** **Music Studio (mini DAW) rilis + Video Studio/OmniClip dihapus total** —
   commit `bb0e898`.
