@@ -8,7 +8,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     <ToolPageHeader
       title="Music Studio"
       titleKey="header.music_studio"
-      desc="Mini DAW 100% di browser: 4 drum track + 2 synth piano roll, import audio/stems, mixer, song mode, export WAV. Tanpa upload."
+      desc="Mini DAW 100% di browser: 6 drum track + 3 kit, 4 synth + preset, accent & swing, import audio/stems, mixer, song mode, export WAV. Tanpa upload."
       descKey="header.music_studio_desc"
       icon='<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M12 4v16M17 4v16"/><path d="M5 4v8M9.5 4v8M14.5 4v8M19 4v8"/>'
     />
@@ -22,10 +22,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             <span data-i18n="ms.play">Main</span>
           </button>
 
+          <button id="ms-metro" class="px-2.5 py-1.5 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 transition-colors" data-i18n="ms.metronome">Metronom</button>
+
           <div class="flex items-center gap-1.5">
             <span class="text-2xs text-matte-400 font-bold" data-i18n="ms.bpm">BPM</span>
             <input id="ms-bpm" type="number" value="112" min="40" max="240" class="w-14 px-2 py-1.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-xs font-mono font-bold outline-none focus:ring-2 focus:ring-rose-500/40 text-center" />
             <input id="ms-bpm-slider" type="range" min="40" max="240" value="112" class="w-20 h-1 accent-rose-500" />
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <span class="text-2xs text-matte-400 font-bold" data-i18n="ms.swing">Swing</span>
+            <input id="ms-swing" type="range" min="0" max="60" value="0" class="w-16 h-1 accent-amber-500" />
+            <span id="ms-swing-val" class="text-2xs font-mono text-matte-400 w-7">0%</span>
           </div>
 
           <div class="flex items-center gap-1.5">
@@ -44,9 +52,18 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
           <div class="flex items-center gap-1">
             <span class="text-2xs text-matte-400 font-bold">PTN</span>
             <div id="ms-patterns" class="flex gap-0.5"></div>
+            <div class="flex gap-0.5 ml-1">
+              <button id="ms-pat-copy" class="px-1.5 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:text-rose-500 transition-colors" data-i18n="ms.copy">Copy</button>
+              <button id="ms-pat-paste" class="px-1.5 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:text-rose-500 transition-colors" data-i18n="ms.paste">Paste</button>
+              <button id="ms-pat-clear" class="px-1.5 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:text-red-500 transition-colors" data-i18n="ms.reset">Reset</button>
+            </div>
           </div>
 
           <div class="flex items-center gap-1 ml-auto">
+            <button id="ms-save" class="px-3 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:text-rose-500 transition-colors" data-i18n="ms.save">Simpan</button>
+            <button id="ms-project-export" class="px-3 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:text-rose-500 transition-colors" data-i18n="ms.export_project">JSON</button>
+            <label for="ms-project-file" class="px-3 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:text-rose-500 transition-colors cursor-pointer" data-i18n="ms.import_project">Muat JSON</label>
+            <input id="ms-project-file" type="file" accept="application/json,.json" class="hidden" />
             <button id="ms-demo" class="px-3 py-1.5 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:text-rose-500 transition-colors" data-i18n="ms.demo">Demo</button>
             <button id="ms-export" class="px-3 py-1.5 rounded-lg bg-rose-500 text-white text-2xs font-bold hover:bg-rose-600 transition-colors" data-i18n="ms.export">Export WAV</button>
           </div>
@@ -57,9 +74,19 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         <div class="space-y-3">
           <!-- Drum sequencer -->
           <div class="card-base p-4 overflow-x-auto">
-            <div class="flex items-center justify-between mb-2 gap-2">
+            <div class="flex flex-wrap items-center justify-between mb-2 gap-2">
               <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200" data-i18n="ms.drums">Drum Sequencer</h2>
-              <span class="text-2xs text-matte-400" data-i18n="ms.steps">1 bar = 16 step</span>
+              <div class="flex items-center gap-2">
+                <label class="flex items-center gap-1.5">
+                  <span class="text-2xs text-matte-400 font-bold" data-i18n="ms.kit">Kit</span>
+                  <select id="ms-kit" class="px-2 py-1 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-2xs font-bold outline-none focus:ring-2 focus:ring-rose-500/40">
+                    <option value="0">808</option>
+                    <option value="1">Acoustic</option>
+                    <option value="2">Lo-Fi</option>
+                  </select>
+                </label>
+                <span class="hidden sm:inline text-2xs text-matte-400" data-i18n="ms.accent_hint">Klik: off → on → aksen</span>
+              </div>
             </div>
             <div class="min-w-[540px]">
               <div class="flex items-center mb-1">
@@ -75,17 +102,25 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
             <div class="flex flex-wrap items-center gap-2 mb-2">
               <h2 class="text-sm font-bold text-matte-700 dark:text-matte-200" data-i18n="ms.piano">Piano Roll</h2>
               <div id="ms-synth-tabs" class="flex gap-0.5"></div>
+              <label class="flex items-center gap-1.5">
+                <span class="text-2xs text-matte-400 font-bold" data-i18n="ms.preset">Preset</span>
+                <select id="ms-preset" class="px-2 py-1 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-2xs font-bold outline-none focus:ring-2 focus:ring-violet-500/40"></select>
+              </label>
               <label class="ml-auto flex items-center gap-1.5">
-                <span class="text-2xs text-matte-400 font-bold" data-i18n="ms.wave">Gelombang</span>
-                <select id="ms-wave" class="px-2 py-1 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-2xs font-bold outline-none focus:ring-2 focus:ring-violet-500/40">
-                  <option value="sawtooth">Saw</option>
-                  <option value="square">Square</option>
-                  <option value="triangle">Triangle</option>
+                <span class="text-2xs text-matte-400 font-bold" data-i18n="ms.note_length">Length</span>
+                <select id="ms-note-length" class="px-2 py-1 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-2xs font-bold outline-none focus:ring-2 focus:ring-violet-500/40">
+                  <option value="1">1/16</option><option value="2">2 steps</option><option value="3">3 steps</option><option value="4">1/4</option><option value="5">5 steps</option><option value="6">6 steps</option><option value="7">7 steps</option><option value="8">1/2</option><option value="9">9 steps</option><option value="10">10 steps</option><option value="11">11 steps</option><option value="12">12 steps</option><option value="13">13 steps</option><option value="14">14 steps</option><option value="15">15 steps</option><option value="16">1 bar</option>
                 </select>
+              </label>
+              <label class="flex items-center gap-1.5">
+                <span class="text-2xs text-matte-400 font-bold" data-i18n="ms.velocity">Velocity</span>
+                <input id="ms-note-velocity" type="range" min="1" max="127" value="102" class="w-16 h-1 accent-violet-500" />
+                <span id="ms-note-velocity-val" class="w-6 text-right text-2xs font-mono text-matte-400">80</span>
               </label>
             </div>
             <div class="overflow-x-auto">
               <div id="ms-piano" class="min-w-[540px]"></div>
+              <p class="mt-2 text-2xs text-matte-400" data-i18n="ms.stems_not_saved">Project menyimpan pattern dan mixer; file audio perlu diimpor ulang.</p>
             </div>
           </div>
 
@@ -153,7 +188,7 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
         </div>
       </div>
 
-      <p class="text-center text-2xs text-matte-400" data-i18n="ms.keys">Spasi = Play/Stop. Klik sel drum/piano untuk mengisi.</p>
+      <p class="text-center text-2xs text-matte-400" data-i18n="ms.keys">Spasi = Play/Stop. Klik drum: off → on → aksen, piano: on/off.</p>
     </div>
   </div>
 </BaseLayout>
@@ -171,20 +206,95 @@ const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 
 const DRUMS = [
   { id: 'kick', name: 'Kick' },
   { id: 'snare', name: 'Snare' },
-  { id: 'hat', name: 'Hat' },
   { id: 'clap', name: 'Clap' },
-] as const;
+  { id: 'hat', name: 'Hat' },
+  { id: 'ohat', name: 'Open Hat' },
+  { id: 'perc', name: 'Perc' },
+];
 
 const SYNTHS = [
   { name: 'Bass', base: 36 },
   { name: 'Lead', base: 60 },
-] as const;
+  { name: 'Pad', base: 48 },
+  { name: 'Keys', base: 60 },
+];
 
-const MIXER_NAMES = ['Kick', 'Snare', 'Hat', 'Clap', 'Bass', 'Lead', 'Audio 1', 'Audio 2'];
+interface SynthPreset {
+  name: string;
+  wave: OscillatorType;
+  cutoff: number;
+  q: number;
+  attack: number;
+  decay: number;
+  sustain: number;
+  release: number;
+}
+
+// Preset ala FL: satu track bisa ganti karakter tanpa ganti track.
+const SYNTH_PRESETS: SynthPreset[] = [
+  { name: 'Saw Lead', wave: 'sawtooth', cutoff: 2800, q: 1.2, attack: 0.008, decay: 0.09, sustain: 0.5, release: 0.06 },
+  { name: 'Square Bass', wave: 'square', cutoff: 900, q: 1.4, attack: 0.006, decay: 0.1, sustain: 0.6, release: 0.05 },
+  { name: 'Warm Pad', wave: 'triangle', cutoff: 1600, q: 0.7, attack: 0.12, decay: 0.25, sustain: 0.75, release: 0.35 },
+  { name: 'Pluck', wave: 'sawtooth', cutoff: 3600, q: 2, attack: 0.004, decay: 0.11, sustain: 0.15, release: 0.08 },
+  { name: 'Sub Sine', wave: 'sine', cutoff: 420, q: 0.6, attack: 0.01, decay: 0.08, sustain: 0.8, release: 0.06 },
+];
+
+interface Kit {
+  name: string;
+  kick: { f0: number; f1: number; decay: number };
+  snare: { tone: number; hp: number; decay: number };
+  clap: { hp: number; spread: number; decay: number };
+  hat: { hp: number; decay: number };
+  ohat: { hp: number; decay: number };
+  perc: { type: OscillatorType; f0: number; f1: number; bp: number; decay: number };
+}
+
+// Kit = karakter drum. "Acoustic" lebih pendek/tebal, "Lo-Fi" lebih gelap.
+const KITS: Kit[] = [
+  {
+    name: '808',
+    kick: { f0: 150, f1: 40, decay: 0.45 },
+    snare: { tone: 190, hp: 1400, decay: 0.15 },
+    clap: { hp: 1200, spread: 0.011, decay: 0.02 },
+    hat: { hp: 8000, decay: 0.05 },
+    ohat: { hp: 7000, decay: 0.3 },
+    perc: { type: 'square', f0: 620, f1: 420, bp: 900, decay: 0.12 },
+  },
+  {
+    name: 'Acoustic',
+    kick: { f0: 170, f1: 55, decay: 0.28 },
+    snare: { tone: 180, hp: 1600, decay: 0.18 },
+    clap: { hp: 1100, spread: 0.013, decay: 0.024 },
+    hat: { hp: 9000, decay: 0.06 },
+    ohat: { hp: 8000, decay: 0.34 },
+    perc: { type: 'triangle', f0: 230, f1: 150, bp: 600, decay: 0.2 },
+  },
+  {
+    name: 'Lo-Fi',
+    kick: { f0: 120, f1: 46, decay: 0.32 },
+    snare: { tone: 240, hp: 900, decay: 0.12 },
+    clap: { hp: 900, spread: 0.014, decay: 0.02 },
+    hat: { hp: 6500, decay: 0.045 },
+    ohat: { hp: 6000, decay: 0.24 },
+    perc: { type: 'triangle', f0: 420, f1: 300, bp: 700, decay: 0.1 },
+  },
+];
+
+const DRUM_COUNT = DRUMS.length;
+const SYNTH_COUNT = SYNTHS.length;
+const MIXER_NAMES = [...DRUMS.map((d) => d.name), ...SYNTHS.map((s) => s.name), 'Audio 1', 'Audio 2'];
+const synthTrack = (index: number) => DRUM_COUNT + index;
+const audioTrack = (index: number) => DRUM_COUNT + SYNTH_COUNT + index;
+
+interface NoteState {
+  length: number;
+  velocity: number;
+}
 
 interface PatternState {
-  drums: boolean[][];
-  notes: boolean[][][];
+  /** 0 = off, 1 = on, 2 = accent */
+  drums: number[][];
+  notes: (NoteState | null)[][][];
 }
 
 interface MixerState {
@@ -194,16 +304,47 @@ interface MixerState {
   solo: boolean;
 }
 
+interface ProjectData {
+  version: 1;
+  patterns: PatternState[];
+  mixer: MixerState[];
+  presets: number[];
+  song: number[];
+  currentPattern: number;
+  currentSynth: number;
+  mode: 'pattern' | 'song';
+  bpm: number;
+  masterVol: number;
+  swing: number;
+  kitIndex: number;
+  metronome: boolean;
+  noteLength: number;
+  noteVelocity: number;
+  audioStartBars: number[];
+}
+
 interface AudioState {
   buffer: AudioBuffer | null;
   name: string;
   startBar: number;
 }
 
+interface StripSet {
+  gains: GainNode[];
+  pans: StereoPannerNode[];
+}
+
 function emptyPattern(): PatternState {
   return {
-    drums: DRUMS.map(() => new Array<boolean>(STEPS).fill(false)),
-    notes: SYNTHS.map(() => Array.from({ length: NOTES }, () => new Array<boolean>(STEPS).fill(false))),
+    drums: DRUMS.map(() => new Array<number>(STEPS).fill(0)),
+    notes: SYNTHS.map(() => Array.from({ length: NOTES }, () => new Array<NoteState | null>(STEPS).fill(null))),
+  };
+}
+
+function clonePattern(pattern: PatternState): PatternState {
+  return {
+    drums: pattern.drums.map((row) => [...row]),
+    notes: pattern.notes.map((track) => track.map((row) => row.map((note) => note ? { ...note } : null))),
   };
 }
 
@@ -215,13 +356,41 @@ function midiToFreq(midi: number): number {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
+
+function drumCellClass(state: number, beat: boolean): string {
+  const base = 'ms-cell flex-1 aspect-square max-h-8 rounded-sm transition-all active:scale-90 ';
+  if (state === 2) return base + 'bg-rose-400 ms-accent hover:bg-rose-300';
+  if (state === 1) return base + 'bg-rose-500 hover:bg-rose-400';
+  return (
+    base +
+    (beat
+      ? 'bg-matte-200 dark:bg-surface-elevated hover:bg-rose-200 dark:hover:bg-rose-900/30'
+      : 'bg-matte-100 dark:bg-matte-800 hover:bg-rose-200 dark:hover:bg-rose-900/30')
+  );
+}
+
+function pianoCellClass(on: boolean, black: boolean, beat: boolean): string {
+  const base = 'ms-cell flex-1 h-5 rounded-sm transition-colors ';
+  if (on) return base + 'bg-violet-500 hover:bg-violet-400';
+  return (
+    base +
+    (black
+      ? 'bg-matte-200 dark:bg-surface-elevated hover:bg-violet-200 dark:hover:bg-violet-900/30'
+      : beat
+        ? 'bg-matte-100 dark:bg-matte-800 hover:bg-violet-100 dark:hover:bg-violet-900/20'
+        : 'bg-matte-50 dark:bg-matte-800/40 hover:bg-violet-100 dark:hover:bg-violet-900/20')
+  );
+}
+
 function init(): () => void {
   const root = document.getElementById('ms-root');
   if (!root || root.dataset.bound === '1') return () => {};
   root.dataset.bound = '1';
 
+  const tI18n = (key: string, fallback: string) => window.i18n?.t?.(key, fallback) ?? fallback;
   const toast = (msg: string, type = 'success') =>
     window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+  const LOCAL_PROJECT_KEY = 'music-studio-project-v1';
 
   // ── State ──────────────────────────────────────────────────
   const patterns: PatternState[] = Array.from({ length: PATTERNS }, emptyPattern);
@@ -230,61 +399,144 @@ function init(): () => void {
     { buffer: null, name: '', startBar: 1 },
     { buffer: null, name: '', startBar: 1 },
   ];
-  const waves: string[] = ['sawtooth', 'square'];
+  const presets: number[] = [1, 0, 2, 3];
   let song: number[] = [0, 0, 1, 0];
   let currentPattern = 0;
   let currentSynth = 0;
   let mode: 'pattern' | 'song' = 'pattern';
   let bpm = 112;
   let masterVol = 0.8;
+  let swing = 0;
+  let kitIndex = 0;
+  let metronome = false;
+  let noteLength = 1;
+  let noteVelocity = 102;
+  let selectedNote: { synth: number; row: number; step: number } | null = null;
+  let autosaveTimer = 0;
+  let patternClipboard: PatternState | null = null;
 
   // ── Demo content ───────────────────────────────────────────
   function seedDemo(): void {
+    const paintDrums = (pat: PatternState, row: number, steps: number[], accents: number[] = []) => {
+      steps.forEach((s) => {
+        pat.drums[row][s] = accents.includes(s) ? 2 : 1;
+      });
+    };
+
     const a = patterns[0];
-    [0, 4, 8, 12].forEach((s) => { a.drums[0][s] = true; });
-    [4, 12].forEach((s) => { a.drums[1][s] = true; });
-    [0, 2, 4, 6, 8, 10, 12, 14].forEach((s) => { a.drums[2][s] = true; });
-    [12].forEach((s) => { a.drums[3][s] = true; });
+    paintDrums(a, 0, [0, 4, 8, 12], [0, 8]);
+    paintDrums(a, 1, [4, 12]);
+    paintDrums(a, 2, [12]);
+    paintDrums(a, 3, [0, 2, 4, 6, 8, 10, 12, 14]);
+    paintDrums(a, 4, [6, 14]);
+    paintDrums(a, 5, [7, 15]);
     const bassA: [number, number][] = [[0, 0], [3, 0], [6, 7], [8, 3], [12, 10], [14, 7]];
-    bassA.forEach(([s, r]) => { a.notes[0][r][s] = true; });
+    bassA.forEach(([s, r]) => {
+      a.notes[0][r][s] = { length: 1, velocity: 102 };
+    });
 
     const b = patterns[1];
-    [0, 4, 7, 8, 12].forEach((s) => { b.drums[0][s] = true; });
-    [4, 12].forEach((s) => { b.drums[1][s] = true; });
-    [2, 6, 10, 14].forEach((s) => { b.drums[2][s] = true; });
-    [4, 12].forEach((s) => { b.drums[3][s] = true; });
+    paintDrums(b, 0, [0, 4, 7, 8, 12], [0]);
+    paintDrums(b, 1, [4, 12]);
+    paintDrums(b, 2, [4, 12]);
+    paintDrums(b, 3, [2, 6, 10, 14]);
+    paintDrums(b, 4, [4, 12]);
     const bassB: [number, number][] = [[0, 7], [4, 3], [8, 0], [10, 10], [12, 7], [15, 3]];
-    bassB.forEach(([s, r]) => { b.notes[0][r][s] = true; });
+    bassB.forEach(([s, r]) => {
+      b.notes[0][r][s] = { length: 1, velocity: 102 };
+    });
     const leadB: [number, number][] = [[0, 7], [2, 7], [4, 9], [6, 7], [8, 4], [10, 2], [12, 0], [14, 2]];
-    leadB.forEach(([s, r]) => { b.notes[1][r][s] = true; });
+    leadB.forEach(([s, r]) => {
+      b.notes[1][r][s] = { length: 1, velocity: 102 };
+    });
+    const padB: [number, number][] = [[0, 0], [8, 0]];
+
+    padB.forEach(([s, r]) => {
+      b.notes[2][r][s] = { length: 8, velocity: 80 };
+      b.notes[2][r + 4][s] = { length: 8, velocity: 80 };
+      b.notes[2][r + 7][s] = { length: 8, velocity: 80 };
+    });
   }
   seedDemo();
 
   // ── DOM refs ───────────────────────────────────────────────
   const playBtn = document.getElementById('ms-play') as HTMLButtonElement;
   const playIcon = document.getElementById('ms-play-icon')!;
+  const metroBtn = document.getElementById('ms-metro') as HTMLButtonElement;
   const bpmInput = document.getElementById('ms-bpm') as HTMLInputElement;
   const bpmSlider = document.getElementById('ms-bpm-slider') as HTMLInputElement;
+  const swingSlider = document.getElementById('ms-swing') as HTMLInputElement;
+  const swingVal = document.getElementById('ms-swing-val')!;
   const masterSlider = document.getElementById('ms-master') as HTMLInputElement;
   const modePatternBtn = document.getElementById('ms-mode-pattern') as HTMLButtonElement;
   const modeSongBtn = document.getElementById('ms-mode-song') as HTMLButtonElement;
   const patternBtns = document.getElementById('ms-patterns')!;
+  const patCopyBtn = document.getElementById('ms-pat-copy') as HTMLButtonElement;
+  const patPasteBtn = document.getElementById('ms-pat-paste') as HTMLButtonElement;
+  const patClearBtn = document.getElementById('ms-pat-clear') as HTMLButtonElement;
   const demoBtn = document.getElementById('ms-demo') as HTMLButtonElement;
   const exportBtn = document.getElementById('ms-export') as HTMLButtonElement;
   const drumNumbers = document.getElementById('ms-drum-numbers')!;
   const drumsEl = document.getElementById('ms-drums')!;
+  const kitSelect = document.getElementById('ms-kit') as HTMLSelectElement;
   const pianoEl = document.getElementById('ms-piano')!;
   const synthTabs = document.getElementById('ms-synth-tabs')!;
-  const waveSelect = document.getElementById('ms-wave') as HTMLSelectElement;
+  const presetSelect = document.getElementById('ms-preset') as HTMLSelectElement;
   const mixerEl = document.getElementById('ms-mixer')!;
   const songEl = document.getElementById('ms-song')!;
   const songCount = document.getElementById('ms-song-count')!;
   const songClearBtn = document.getElementById('ms-song-clear') as HTMLButtonElement;
   const songAddEl = document.getElementById('ms-song-add')!;
+  const noteLengthSelect = document.getElementById('ms-note-length') as HTMLSelectElement;
+  const noteVelocitySlider = document.getElementById('ms-note-velocity') as HTMLInputElement;
+  const noteVelocityValue = document.getElementById('ms-note-velocity-val')!;
+  const saveBtn = document.getElementById('ms-save') as HTMLButtonElement;
+  const projectExportBtn = document.getElementById('ms-project-export') as HTMLButtonElement;
+  const projectFileInput = document.getElementById('ms-project-file') as HTMLInputElement;
 
   // ── Audio engine ───────────────────────────────────────────
   let audioCtx: AudioContext | null = null;
   let masterNode: GainNode | null = null;
+
+  // Satu strip (gain + panner) per track, dibuat SEKALI per AudioContext.
+  // Dulu tiap hit bikin 1 gain + 1 panner baru → ratusan node/detik + GC.
+  const stripCache = new WeakMap<BaseAudioContext, StripSet>();
+  const noiseCache = new WeakMap<BaseAudioContext, AudioBuffer>();
+
+  function hasSolo(): boolean {
+    return mixer.some((m) => m.solo);
+  }
+
+  function trackAudible(index: number): boolean {
+    const m = mixer[index];
+    if (m.mute) return false;
+    return !hasSolo() || m.solo;
+  }
+
+  function trackGain(index: number): number {
+    return trackAudible(index) ? mixer[index].vol : 0;
+  }
+
+  function getStrips(ctx: BaseAudioContext, dest: AudioNode): StripSet {
+    let set = stripCache.get(ctx);
+    if (!set) {
+      const gains: GainNode[] = [];
+      const pans: StereoPannerNode[] = [];
+      for (let i = 0; i < MIXER_NAMES.length; i++) {
+        const gain = ctx.createGain();
+        gain.gain.value = trackGain(i);
+        const pan = ctx.createStereoPanner();
+        pan.pan.value = mixer[i].pan;
+        gain.connect(pan);
+        pan.connect(dest);
+        gains.push(gain);
+        pans.push(pan);
+      }
+      set = { gains, pans };
+      stripCache.set(ctx, set);
+    }
+    return set;
+  }
 
   function getCtx(): AudioContext {
     if (!audioCtx) {
@@ -292,43 +544,59 @@ function init(): () => void {
       masterNode = audioCtx.createGain();
       masterNode.gain.value = masterVol;
       masterNode.connect(audioCtx.destination);
+      getStrips(audioCtx, masterNode);
     }
     return audioCtx;
   }
 
-  function makeOut(ctx: BaseAudioContext, dest: AudioNode, vol: number, pan: number): GainNode {
-    const gain = ctx.createGain();
-    gain.gain.value = Math.max(0, vol);
-    const panner = ctx.createStereoPanner();
-    panner.pan.value = pan;
-    gain.connect(panner);
-    panner.connect(dest);
-    return gain;
+  function syncMixerNodes(): void {
+    if (!audioCtx || !masterNode) return;
+    const set = stripCache.get(audioCtx);
+    if (!set) return;
+    const now = audioCtx.currentTime;
+    for (let i = 0; i < MIXER_NAMES.length; i++) {
+      set.gains[i].gain.setTargetAtTime(trackGain(i), now, 0.01);
+      set.pans[i].pan.setTargetAtTime(mixer[i].pan, now, 0.01);
+    }
   }
 
-  function noiseBuffer(ctx: BaseAudioContext, seconds: number): AudioBuffer {
-    const len = Math.max(1, Math.floor(ctx.sampleRate * seconds));
-    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-    return buf;
+  // Satu buffer noise 1 detik dipakai ulang (random offset per hit) — dulu
+  // tiap snare/hat/clap mengisi buffer baru sample-per-sample (mahal + GC).
+  function noiseBuffer(ctx: BaseAudioContext): AudioBuffer {
+    let buffer = noiseCache.get(ctx);
+    if (!buffer) {
+      buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate), ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      noiseCache.set(ctx, buffer);
+    }
+    return buffer;
   }
 
-  function scheduleDrum(ctx: BaseAudioContext, dest: AudioNode, id: string, when: number, vol: number, pan: number): void {
-    const out = makeOut(ctx, dest, vol, pan);
+  function noiseSource(ctx: BaseAudioContext, when: number, duration: number): AudioBufferSourceNode {
+    const buffer = noiseBuffer(ctx);
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    const maxOffset = Math.max(0, buffer.duration - duration - 0.01);
+    src.start(when, Math.random() * maxOffset, duration);
+    return src;
+  }
+
+  function playDrum(ctx: BaseAudioContext, dest: AudioNode, id: string, when: number, vel: number): void {
+    const kit = KITS[kitIndex];
 
     if (id === 'kick') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(155, when);
-      osc.frequency.exponentialRampToValueAtTime(42, when + 0.13);
-      gain.gain.setValueAtTime(1, when);
-      gain.gain.exponentialRampToValueAtTime(0.001, when + 0.4);
+      osc.frequency.setValueAtTime(kit.kick.f0, when);
+      osc.frequency.exponentialRampToValueAtTime(kit.kick.f1, when + 0.13);
+      gain.gain.setValueAtTime(vel, when);
+      gain.gain.exponentialRampToValueAtTime(0.001, when + kit.kick.decay);
       osc.connect(gain);
-      gain.connect(out);
+      gain.connect(dest);
       osc.start(when);
-      osc.stop(when + 0.42);
+      osc.stop(when + kit.kick.decay + 0.02);
       return;
     }
 
@@ -336,107 +604,127 @@ function init(): () => void {
       const osc = ctx.createOscillator();
       const tone = ctx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(190, when);
-      tone.gain.setValueAtTime(0.5, when);
+      osc.frequency.setValueAtTime(kit.snare.tone, when);
+      tone.gain.setValueAtTime(0.5 * vel, when);
       tone.gain.exponentialRampToValueAtTime(0.001, when + 0.12);
       osc.connect(tone);
-      tone.connect(out);
+      tone.connect(dest);
       osc.start(when);
       osc.stop(when + 0.14);
 
-      const noise = ctx.createBufferSource();
-      noise.buffer = noiseBuffer(ctx, 0.16);
+      const noise = noiseSource(ctx, when, 0.16);
       const hp = ctx.createBiquadFilter();
       hp.type = 'highpass';
-      hp.frequency.value = 1400;
+      hp.frequency.value = kit.snare.hp;
       const ng = ctx.createGain();
-      ng.gain.setValueAtTime(0.6, when);
-      ng.gain.exponentialRampToValueAtTime(0.001, when + 0.15);
+      ng.gain.setValueAtTime(0.6 * vel, when);
+      ng.gain.exponentialRampToValueAtTime(0.001, when + kit.snare.decay);
       noise.connect(hp);
       hp.connect(ng);
-      ng.connect(out);
-      noise.start(when);
+      ng.connect(dest);
       return;
     }
 
-    if (id === 'hat') {
-      const noise = ctx.createBufferSource();
-      noise.buffer = noiseBuffer(ctx, 0.06);
-      const hp = ctx.createBiquadFilter();
-      hp.type = 'highpass';
-      hp.frequency.value = 8000;
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.45, when);
-      gain.gain.exponentialRampToValueAtTime(0.001, when + 0.05);
-      noise.connect(hp);
-      hp.connect(gain);
-      gain.connect(out);
-      noise.start(when);
+    if (id === 'clap') {
+      for (let i = 0; i < 3; i++) {
+        const at = when + i * kit.clap.spread;
+        const noise = noiseSource(ctx, at, 0.03);
+        const hp = ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = kit.clap.hp;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.5 * vel, at);
+        gain.gain.exponentialRampToValueAtTime(0.001, at + kit.clap.decay + 0.01);
+        noise.connect(hp);
+        hp.connect(gain);
+        gain.connect(dest);
+      }
       return;
     }
 
-    // clap
-    for (let i = 0; i < 3; i++) {
-      const noise = ctx.createBufferSource();
-      noise.buffer = noiseBuffer(ctx, 0.02);
+    if (id === 'hat' || id === 'ohat') {
+      const cfg = id === 'hat' ? kit.hat : kit.ohat;
+      const noise = noiseSource(ctx, when, cfg.decay + 0.02);
       const hp = ctx.createBiquadFilter();
       hp.type = 'highpass';
-      hp.frequency.value = 1100;
+      hp.frequency.value = cfg.hp;
       const gain = ctx.createGain();
-      const at = when + i * 0.011;
-      gain.gain.setValueAtTime(0.5, at);
-      gain.gain.exponentialRampToValueAtTime(0.001, at + 0.02);
+      gain.gain.setValueAtTime((id === 'hat' ? 0.45 : 0.3) * vel, when);
+      gain.gain.exponentialRampToValueAtTime(0.001, when + cfg.decay);
       noise.connect(hp);
       hp.connect(gain);
-      gain.connect(out);
-      noise.start(at);
+      gain.connect(dest);
+      return;
     }
+
+    // perc
+    const osc = ctx.createOscillator();
+    const bp = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+    osc.type = kit.perc.type;
+    osc.frequency.setValueAtTime(kit.perc.f0, when);
+    osc.frequency.exponentialRampToValueAtTime(kit.perc.f1, when + kit.perc.decay * 0.7);
+    bp.type = 'bandpass';
+    bp.frequency.value = kit.perc.bp;
+    bp.Q.value = 1.4;
+    gain.gain.setValueAtTime(0.5 * vel, when);
+    gain.gain.exponentialRampToValueAtTime(0.001, when + kit.perc.decay);
+    osc.connect(bp);
+    bp.connect(gain);
+    gain.connect(dest);
+    osc.start(when);
+    osc.stop(when + kit.perc.decay + 0.02);
   }
 
   function scheduleNote(
     ctx: BaseAudioContext,
     dest: AudioNode,
     midi: number,
-    wave: string,
+    preset: SynthPreset,
     when: number,
-    dur: number,
-    vol: number,
-    pan: number,
+    duration: number,
+    vel: number,
   ): void {
-    const out = makeOut(ctx, dest, vol, pan);
     const osc = ctx.createOscillator();
-    osc.type = wave as OscillatorType;
+    osc.type = preset.wave;
     osc.frequency.value = midiToFreq(midi);
 
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.value = 2200;
-    filter.Q.value = 0.8;
+    filter.frequency.value = preset.cutoff;
+    filter.Q.value = preset.q;
 
     const env = ctx.createGain();
-    const peak = 0.75;
-    const sustain = 0.5;
+    const peak = 0.7 * vel;
+    const sustain = Math.max(0.0001, peak * preset.sustain);
+    const attackEnd = when + preset.attack;
+    const decayEnd = attackEnd + preset.decay;
+    const releaseStart = Math.max(decayEnd, when + duration * 0.65);
+
     env.gain.setValueAtTime(0.0001, when);
-    env.gain.exponentialRampToValueAtTime(peak, when + 0.008);
-    env.gain.exponentialRampToValueAtTime(sustain, when + 0.09);
-    env.gain.setValueAtTime(sustain, when + Math.max(0.1, dur * 0.65));
-    env.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+    env.gain.exponentialRampToValueAtTime(peak, attackEnd);
+    env.gain.exponentialRampToValueAtTime(sustain, decayEnd);
+    env.gain.setValueAtTime(sustain, releaseStart);
+    env.gain.exponentialRampToValueAtTime(0.0001, releaseStart + preset.release);
 
     osc.connect(filter);
     filter.connect(env);
-    env.connect(out);
+    env.connect(dest);
     osc.start(when);
-    osc.stop(when + dur + 0.03);
+    osc.stop(releaseStart + preset.release + 0.03);
   }
 
-  function hasSolo(): boolean {
-    return mixer.some((m) => m.solo);
-  }
-
-  function audible(index: number, solo: boolean): boolean {
-    const m = mixer[index];
-    if (m.mute) return false;
-    return !solo || m.solo;
+  function scheduleClick(ctx: BaseAudioContext, dest: AudioNode, when: number, accent: boolean): void {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = accent ? 1600 : 1100;
+    gain.gain.setValueAtTime(0.12, when);
+    gain.gain.exponentialRampToValueAtTime(0.001, when + 0.03);
+    osc.connect(gain);
+    gain.connect(dest);
+    osc.start(when);
+    osc.stop(when + 0.04);
   }
 
   // ── Playback ───────────────────────────────────────────────
@@ -453,45 +741,48 @@ function init(): () => void {
   const barDur = () => (60 / bpm) * 4;
   const stepDur = () => barDur() / STEPS;
   const arrangement = () => (mode === 'song' ? song : [currentPattern]);
+  const swingOffset = (stepIndex: number, duration: number) =>
+    stepIndex % 2 === 1 ? (swing / 100) * duration * 0.5 : 0;
+  const cellVelocity = (cell: HTMLElement) => Number(cell.style.getPropertyValue('--ms-velocity')) || 0;
+  const timeFor = (stepIndex: number, duration: number) =>
+    startAt + stepIndex * duration + swingOffset(stepIndex, duration);
 
   function scheduleStepAt(
     ctx: BaseAudioContext,
-    dest: AudioNode,
+    strips: StripSet,
     pat: PatternState,
     step: number,
     when: number,
     durPerStep: number,
   ): void {
-    const solo = hasSolo();
-
     DRUMS.forEach((def, i) => {
-      if (!pat.drums[i][step] || !audible(i, solo)) return;
-      scheduleDrum(ctx, dest, def.id, when, mixer[i].vol, mixer[i].pan);
+      const state = pat.drums[i][step];
+      if (!state || !trackAudible(i)) return;
+      playDrum(ctx, strips.gains[i], def.id, when, state === 2 ? 1.35 : 1);
     });
 
     SYNTHS.forEach((syn, i) => {
-      const trackIdx = 4 + i;
-      if (!audible(trackIdx, solo)) return;
+      const trackIdx = synthTrack(i);
+      if (!trackAudible(trackIdx)) return;
+      const preset = SYNTH_PRESETS[presets[i]];
       for (let row = 0; row < NOTES; row++) {
-        if (!pat.notes[i][row][step]) continue;
-        scheduleNote(ctx, dest, syn.base + row, waves[i], when, durPerStep * 0.9, mixer[trackIdx].vol * 0.75, mixer[trackIdx].pan);
+        const note = pat.notes[i][row][step];
+        if (!note) continue;
+        scheduleNote(ctx, strips.gains[trackIdx], syn.base + row, preset, when, Math.max(durPerStep, durPerStep * note.length - preset.release), note.velocity / 127);
       }
     });
   }
 
-  function scheduleAudioTracks(ctx: BaseAudioContext, dest: AudioNode, t0: number, bars: number[]): void {
-    const solo = hasSolo();
+  function scheduleAudioTracks(ctx: BaseAudioContext, strips: StripSet, t0: number, bars: number[]): void {
     const barSeconds = barDur();
-    audioTracks.forEach((at, i) => {
-      if (!at.buffer) return;
-      if (at.startBar > bars.length) return;
-      const trackIdx = 6 + i;
-      if (!audible(trackIdx, solo)) return;
+    audioTracks.forEach((audio, i) => {
+      if (!audio.buffer || audio.startBar > bars.length) return;
+      const trackIdx = audioTrack(i);
+      if (!trackAudible(trackIdx)) return;
       const src = ctx.createBufferSource();
-      src.buffer = at.buffer;
-      const out = makeOut(ctx, dest, mixer[trackIdx].vol, mixer[trackIdx].pan);
-      src.connect(out);
-      src.start(t0 + (at.startBar - 1) * barSeconds);
+      src.buffer = audio.buffer;
+      src.connect(strips.gains[trackIdx]);
+      src.start(t0 + (audio.startBar - 1) * barSeconds);
       audioSources.push(src);
     });
   }
@@ -499,23 +790,30 @@ function init(): () => void {
   function scheduleAhead(): void {
     if (!playing || !audioCtx || !masterNode) return;
     const ctx = audioCtx;
+    const strips = getStrips(ctx, masterNode);
     const ahead = ctx.currentTime + 0.15;
     const dur = stepDur();
 
-    while (startAt + nextStep * dur < ctx.currentTime - 0.05) nextStep++;
-
     if (mode === 'pattern') {
-      while (startAt + nextStep * dur < ahead) {
-        scheduleStepAt(ctx, masterNode, patterns[currentPattern], nextStep % STEPS, startAt + nextStep * dur, dur);
+      while (timeFor(nextStep, dur) < ahead) {
+        const when = timeFor(nextStep, dur);
+        if (metronome && nextStep % 4 === 0 && masterNode) {
+          scheduleClick(ctx, masterNode, when, nextStep % 16 === 0);
+        }
+        scheduleStepAt(ctx, strips, patterns[currentPattern], nextStep % STEPS, when, dur);
         nextStep++;
       }
       return;
     }
 
     const total = chain.length * STEPS;
-    while (nextStep < total && startAt + nextStep * dur < ahead) {
+    while (nextStep < total && timeFor(nextStep, dur) < ahead) {
+      const when = timeFor(nextStep, dur);
       const bar = Math.floor(nextStep / STEPS);
-      scheduleStepAt(ctx, masterNode, patterns[chain[bar]], nextStep % STEPS, startAt + nextStep * dur, dur);
+      if (metronome && nextStep % 4 === 0 && masterNode) {
+        scheduleClick(ctx, masterNode, when, nextStep % 16 === 0);
+      }
+      scheduleStepAt(ctx, strips, patterns[chain[bar]], nextStep % STEPS, when, dur);
       nextStep++;
     }
   }
@@ -524,9 +822,8 @@ function init(): () => void {
     if (!playing || !audioCtx) return;
     const elapsed = audioCtx.currentTime - startAt;
     const pos = Math.max(0, elapsed) / stepDur();
-    const step = Math.floor(pos) % STEPS;
-    currentStepShown = step;
-    applyStepHighlight(step);
+    currentStepShown = Math.floor(pos) % STEPS;
+    applyStepHighlight(currentStepShown);
 
     if (mode === 'song') {
       const bar = Math.min(chain.length - 1, Math.max(0, Math.floor(pos / STEPS)));
@@ -562,13 +859,15 @@ function init(): () => void {
 
     const barSeconds = barDur();
     let songEnd = chain.length * barSeconds;
-    audioTracks.forEach((at) => {
-      if (!at.buffer || at.startBar > chain.length) return;
-      songEnd = Math.max(songEnd, (at.startBar - 1) * barSeconds + at.buffer.duration);
+    audioTracks.forEach((audio) => {
+      if (!audio.buffer || audio.startBar > chain.length) return;
+      songEnd = Math.max(songEnd, (audio.startBar - 1) * barSeconds + audio.buffer.duration);
     });
     playbackEndAt = startAt + songEnd;
 
-    if (mode === 'song' && masterNode) scheduleAudioTracks(ctx, masterNode, startAt, chain);
+    if (mode === 'song' && masterNode) {
+      scheduleAudioTracks(ctx, getStrips(ctx, masterNode), startAt, chain);
+    }
 
     timerId = window.setInterval(scheduleAhead, 25);
     scheduleAhead();
@@ -578,9 +877,21 @@ function init(): () => void {
 
   function stopPlayback(): void {
     playing = false;
-    if (timerId) { clearInterval(timerId); timerId = 0; }
-    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
-    audioSources.forEach((src) => { try { src.stop(); } catch { /* already stopped */ } });
+    if (timerId) {
+      clearInterval(timerId);
+      timerId = 0;
+    }
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
+    audioSources.forEach((src) => {
+      try {
+        src.stop();
+      } catch {
+        /* already stopped */
+      }
+    });
     audioSources = [];
     currentStepShown = -1;
     applyStepHighlight(-1);
@@ -594,21 +905,48 @@ function init(): () => void {
     playBtn.classList.toggle('ring-rose-300', playing);
   }
 
+  // ── Highlight (dulu querySelectorAll tiap frame = sumber lag) ──
+  const stepCells: HTMLElement[][] = Array.from({ length: STEPS }, () => []);
+  let highlightedStep = -1;
+  let shownPattern = -1;
+  let patternChips: HTMLElement[] = [];
+
   function applyStepHighlight(step: number): void {
-    document.querySelectorAll<HTMLElement>('[data-ms-step]').forEach((el) => {
-      const match = step >= 0 && el.dataset.msStep === String(step);
-      el.classList.toggle('ring-2', match);
-      el.classList.toggle('ring-rose-400', match);
-      el.classList.toggle('dark:ring-rose-500', match);
-    });
+    if (step === highlightedStep) return;
+    const previous = highlightedStep;
+    highlightedStep = step;
+    if (previous >= 0) {
+      stepCells[previous]?.forEach((el) => {
+        el.classList.remove('is-playing');
+        el.style.removeProperty('--ms-playhead-velocity');
+      });
+    }
+    if (step >= 0) {
+      stepCells[step]?.forEach((el) => {
+        el.classList.add('is-playing');
+        if (el.matches('#ms-piano .ms-cell')) el.style.setProperty('--ms-playhead-velocity', String(cellVelocity(el)));
+      });
+    }
   }
 
-  function highlightPlayingPattern(patIdx: number): void {
-    document.querySelectorAll<HTMLElement>('[data-ms-pat]').forEach((el) => {
-      const match = patIdx >= 0 && el.dataset.msPat === String(patIdx);
-      el.classList.toggle('ring-2', match);
-      el.classList.toggle('ring-white', match);
+  function highlightPlayingPattern(patternIndex: number): void {
+    if (patternIndex === shownPattern) return;
+    const previous = shownPattern;
+    shownPattern = patternIndex;
+    if (previous >= 0) patternChips[previous]?.classList.remove('is-playing');
+    if (patternIndex >= 0) patternChips[patternIndex]?.classList.add('is-playing');
+  }
+
+  function rebuildStepCells(): void {
+    stepCells.forEach((cells) => {
+      cells.length = 0;
     });
+    highlightedStep = -1;
+    root.querySelectorAll<HTMLElement>('.ms-cell[data-ms-step]').forEach((el) => {
+      const step = Number(el.dataset.msStep);
+      if (step >= 0 && step < STEPS) stepCells[step].push(el);
+    });
+    if (playing) applyStepHighlight(currentStepShown);
   }
 
   // ── Rendering ──────────────────────────────────────────────
@@ -622,9 +960,18 @@ function init(): () => void {
     }
   }
 
+  function updateDrumRow(rowIndex: number): void {
+    const cells = drumsEl.querySelectorAll<HTMLButtonElement>(`.ms-cell[data-drum="${rowIndex}"]`);
+    for (let step = 0; step < STEPS; step++) {
+      const cell = cells[step];
+      if (!cell) continue;
+      cell.className = drumCellClass(patterns[currentPattern].drums[rowIndex][step], step % 4 === 0) +
+        (step === highlightedStep ? ' is-playing' : '');
+    }
+  }
+
   function renderDrums(): void {
     drumsEl.innerHTML = '';
-    const pat = patterns[currentPattern];
     DRUMS.forEach((def, i) => {
       const row = document.createElement('div');
       row.className = 'flex items-center gap-1';
@@ -639,24 +986,12 @@ function init(): () => void {
 
       for (let s = 0; s < STEPS; s++) {
         const cell = document.createElement('button');
-        const on = pat.drums[i][s];
+        const state = patterns[currentPattern].drums[i][s];
         const beat = s % 4 === 0;
-        cell.className = `flex-1 aspect-square max-h-8 rounded-sm transition-all active:scale-90 ${
-          on
-            ? 'bg-rose-500 hover:bg-rose-400'
-            : beat
-              ? 'bg-matte-200 dark:bg-surface-elevated hover:bg-rose-200 dark:hover:bg-rose-900/30'
-              : 'bg-matte-100 dark:bg-matte-800 hover:bg-rose-200 dark:hover:bg-rose-900/30'
-        }`;
+        cell.className = drumCellClass(state, beat);
         cell.dataset.msStep = String(s);
         cell.dataset.drum = String(i);
         cell.setAttribute('aria-label', `${def.name} step ${s + 1}`);
-        cell.addEventListener('click', () => {
-          pat.drums[i][s] = !pat.drums[i][s];
-          if (pat.drums[i][s]) previewDrum(def.id, mixer[i].vol, mixer[i].pan);
-          renderDrums();
-          if (playing) applyStepHighlight(currentStepShown);
-        });
         grid.appendChild(cell);
       }
 
@@ -677,18 +1012,61 @@ function init(): () => void {
       btn.textContent = syn.name;
       btn.addEventListener('click', () => {
         currentSynth = i;
-        waveSelect.value = waves[i];
-        renderPiano();
+        presetSelect.value = String(presets[i]);
+        selectedNote = null;
+        refreshPiano();
+        queueAutosave();
       });
       synthTabs.appendChild(btn);
     });
   }
 
+  function updatePianoRow(synthIndex: number, row: number): void {
+    if (synthIndex !== currentSynth) return;
+    const pat = patterns[currentPattern];
+    const syn = SYNTHS[synthIndex];
+    const black = noteName(syn.base + row).includes('#');
+    const cells = pianoEl.querySelectorAll<HTMLButtonElement>(`.ms-cell[data-note="${row}"]`);
+    for (let step = 0; step < STEPS; step++) {
+      const cell = cells[step];
+      if (!cell) continue;
+      const rowNotes = pat.notes[synthIndex][row];
+      const head = rowNotes[step];
+      let owner: NoteState | null = null;
+      let headStep = -1;
+      if (!head) {
+        for (let candidateStep = step - 1; candidateStep >= 0; candidateStep--) {
+          const candidate = rowNotes[candidateStep];
+          if (candidate && candidateStep + candidate.length > step) {
+            owner = candidate;
+            headStep = candidateStep;
+            break;
+          }
+        }
+      }
+      const tail = !head && !!owner;
+      const noteStep = head ? step : headStep;
+      cell.className = pianoCellClass(!!head || tail, black, step % 4 === 0) +
+        (head ? ' ms-note-head' : tail ? ' ms-note-tail' : '') +
+        (selectedNote?.synth === synthIndex && selectedNote.row === row && selectedNote.step === noteStep ? ' ms-note-selected' : '') +
+        (step === highlightedStep ? ' is-playing' : '');
+      cell.style.setProperty('--ms-velocity', String(head ? head.velocity / 127 : owner ? owner.velocity / 127 : 0));
+      if (step === highlightedStep) cell.style.setProperty('--ms-playhead-velocity', String(cellVelocity(cell)));
+      else cell.style.removeProperty('--ms-playhead-velocity');
+      if (head) {
+        cell.dataset.noteLength = String(head.length);
+        cell.title = `${noteName(syn.base + row)} · step ${step + 1} · ${head.length}/16 · ${Math.round(head.velocity / 127 * 100)}%`;
+      } else {
+        delete cell.dataset.noteLength;
+        cell.title = `${noteName(syn.base + row)} · step ${step + 1}${tail ? ` · ${owner.length}/16` : ''}`;
+      }
+    }
+  }
+
   function renderPiano(): void {
     renderSynthTabs();
-    waveSelect.value = waves[currentSynth];
+    presetSelect.value = String(presets[currentSynth]);
     pianoEl.innerHTML = '';
-    const pat = patterns[currentPattern];
     const syn = SYNTHS[currentSynth];
 
     for (let row = NOTES - 1; row >= 0; row--) {
@@ -704,39 +1082,38 @@ function init(): () => void {
 
       for (let s = 0; s < STEPS; s++) {
         const cell = document.createElement('button');
-        const on = pat.notes[currentSynth][row][s];
+        const note = patterns[currentPattern].notes[currentSynth][row][s];
         const beat = s % 4 === 0;
-        cell.className = `flex-1 h-5 rounded-sm transition-colors ${
-          on
-            ? 'bg-violet-500 hover:bg-violet-400'
-            : black
-              ? 'bg-matte-200 dark:bg-surface-elevated hover:bg-violet-200 dark:hover:bg-violet-900/30'
-              : beat
-                ? 'bg-matte-100 dark:bg-matte-800 hover:bg-violet-100 dark:hover:bg-violet-900/20'
-                : 'bg-matte-50 dark:bg-matte-800/40 hover:bg-violet-100 dark:hover:bg-violet-900/20'
-        }`;
+        cell.className = pianoCellClass(!!note, black, beat);
         cell.dataset.msStep = String(s);
         cell.dataset.note = String(row);
         cell.title = `${noteName(syn.base + row)} · step ${s + 1}`;
-        cell.addEventListener('click', () => {
-          const next = !pat.notes[currentSynth][row][s];
-          pat.notes[currentSynth][row][s] = next;
-          if (next) previewNote(syn.base + row, waves[currentSynth], mixer[4 + currentSynth].vol, mixer[4 + currentSynth].pan);
-          renderPiano();
-          if (playing) applyStepHighlight(currentStepShown);
-        });
         line.appendChild(cell);
       }
 
       pianoEl.appendChild(line);
     }
+    refreshPiano();
+  }
+
+  function renderPresetOptions(): void {
+    presetSelect.innerHTML = '';
+    SYNTH_PRESETS.forEach((preset, i) => {
+      const option = document.createElement('option');
+      option.value = String(i);
+      option.textContent = preset.name;
+      presetSelect.appendChild(option);
+    });
+    presetSelect.value = String(presets[currentSynth]);
   }
 
   function renderPatternBtns(): void {
     patternBtns.innerHTML = '';
+    patternChips = [];
+    shownPattern = -1;
     PATTERN_LETTERS.forEach((letter, i) => {
       const btn = document.createElement('button');
-      btn.className = `w-6 h-6 rounded text-2xs font-bold transition-colors ${
+      btn.className = `ms-pattern w-6 h-6 rounded text-2xs font-bold transition-colors ${
         i === currentPattern
           ? 'bg-rose-500 text-white'
           : 'bg-matte-200 dark:bg-surface-elevated text-matte-500 hover:bg-rose-200 dark:hover:bg-rose-900/30'
@@ -744,11 +1121,14 @@ function init(): () => void {
       btn.textContent = letter;
       btn.addEventListener('click', () => {
         currentPattern = i;
-        renderDrums();
-        renderPiano();
+        selectedNote = null;
+        for (let row = 0; row < DRUM_COUNT; row++) updateDrumRow(row);
+        refreshPiano();
         renderPatternBtns();
         if (playing && mode === 'pattern') applyStepHighlight(currentStepShown);
+        queueAutosave();
       });
+      patternChips.push(btn);
       patternBtns.appendChild(btn);
     });
   }
@@ -761,12 +1141,8 @@ function init(): () => void {
       chip.className = 'px-2.5 py-1 rounded-lg bg-violet-500 text-white text-2xs font-bold hover:bg-violet-600 transition-colors';
       chip.dataset.msPat = String(patIdx);
       chip.textContent = PATTERN_LETTERS[patIdx];
+      chip.dataset.bar = String(barIdx);
       chip.title = `Bar ${barIdx + 1} — hapus`;
-      chip.addEventListener('click', () => {
-        song.splice(barIdx, 1);
-        if (mode === 'song') stopPlayback();
-        renderSong();
-      });
       songEl.appendChild(chip);
     });
 
@@ -800,7 +1176,9 @@ function init(): () => void {
       solo.addEventListener('click', () => {
         mixer[i].solo = !mixer[i].solo;
         if (mixer[i].solo) mixer[i].mute = false;
+        syncMixerNodes();
         buildMixer();
+        queueAutosave();
       });
       head.appendChild(solo);
 
@@ -813,7 +1191,9 @@ function init(): () => void {
       mute.addEventListener('click', () => {
         mixer[i].mute = !mixer[i].mute;
         if (mixer[i].mute) mixer[i].solo = false;
+        syncMixerNodes();
         buildMixer();
+        queueAutosave();
       });
       head.appendChild(mute);
 
@@ -830,6 +1210,8 @@ function init(): () => void {
       vol.addEventListener('input', () => {
         mixer[i].vol = Number(vol.value) / 100;
         vol.title = `Volume: ${vol.value}%`;
+        syncMixerNodes();
+        queueAutosave();
       });
       sliders.appendChild(vol);
 
@@ -842,6 +1224,8 @@ function init(): () => void {
       pan.title = 'Pan';
       pan.addEventListener('input', () => {
         mixer[i].pan = Number(pan.value) / 100;
+        syncMixerNodes();
+        queueAutosave();
       });
       sliders.appendChild(pan);
 
@@ -852,20 +1236,20 @@ function init(): () => void {
   }
 
   function updateAudioUI(): void {
-    audioTracks.forEach((at, i) => {
+    audioTracks.forEach((audio, i) => {
       const nameEl = document.getElementById(`ms-audio-name-${i}`)!;
       const startEl = document.getElementById(`ms-audio-start-${i}`) as HTMLInputElement;
       const clearBtn = document.getElementById(`ms-audio-clear-${i}`) as HTMLButtonElement;
-      if (at.buffer) {
-        nameEl.textContent = `${at.name} · ${at.buffer.duration.toFixed(1)}s`;
+      if (audio.buffer) {
+        nameEl.textContent = `${audio.name} · ${audio.buffer.duration.toFixed(1)}s`;
         nameEl.classList.remove('italic');
         clearBtn.classList.remove('hidden');
       } else {
-        nameEl.textContent = 'Belum ada audio. Import stem dari Suno atau file WAV/MP3.';
+        nameEl.textContent = tI18n('ms.no_audio', 'Belum ada audio. Import stem dari Suno atau file WAV/MP3.');
         nameEl.classList.add('italic');
         clearBtn.classList.add('hidden');
       }
-      startEl.value = String(at.startBar);
+      startEl.value = String(audio.startBar);
     });
   }
 
@@ -878,21 +1262,32 @@ function init(): () => void {
   function updateTransportUI(): void {
     bpmInput.value = String(bpm);
     bpmSlider.value = String(bpm);
+    swingSlider.value = String(swing);
+    swingVal.textContent = `${swing}%`;
     masterSlider.value = String(Math.round(masterVol * 100));
     updateModeUI();
+    updateMetroUI();
+  }
+
+  function updateMetroUI(): void {
+    metroBtn.className = `px-2.5 py-1.5 rounded-lg text-2xs font-bold transition-colors ${
+      metronome ? 'bg-amber-500 text-white' : 'bg-matte-100 dark:bg-surface-elevated text-matte-500'
+    }`;
   }
 
   // ── Preview ────────────────────────────────────────────────
-  function previewDrum(id: string, vol: number, pan: number): void {
+  function previewDrum(trackIdx: number, vel: number): void {
     const ctx = getCtx();
     if (!masterNode) return;
-    scheduleDrum(ctx, masterNode, id, ctx.currentTime + 0.01, Math.max(0.2, vol), pan);
+    const strips = getStrips(ctx, masterNode);
+    playDrum(ctx, strips.gains[trackIdx], DRUMS[trackIdx].id, ctx.currentTime + 0.01, Math.max(0.6, vel));
   }
 
-  function previewNote(midi: number, wave: string, vol: number, pan: number): void {
+  function previewNote(synthIdx: number, midi: number, velocity = 0.8): void {
     const ctx = getCtx();
     if (!masterNode) return;
-    scheduleNote(ctx, masterNode, midi, wave, ctx.currentTime + 0.01, 0.28, Math.max(0.2, vol), pan);
+    const strips = getStrips(ctx, masterNode);
+    scheduleNote(ctx, strips.gains[synthTrack(synthIdx)], midi, SYNTH_PRESETS[presets[synthIdx]], ctx.currentTime + 0.01, 0.3, velocity);
   }
 
   // ── Audio import ───────────────────────────────────────────
@@ -972,9 +1367,9 @@ function init(): () => void {
       const durPerStep = stepDur();
       let duration = bars.length * barSeconds;
 
-      audioTracks.forEach((at) => {
-        if (!at.buffer || at.startBar > bars.length) return;
-        duration = Math.max(duration, (at.startBar - 1) * barSeconds + at.buffer.duration);
+      audioTracks.forEach((audio) => {
+        if (!audio.buffer || audio.startBar > bars.length) return;
+        duration = Math.max(duration, (audio.startBar - 1) * barSeconds + audio.buffer.duration);
       });
       duration += 0.4;
 
@@ -983,23 +1378,25 @@ function init(): () => void {
       const out = offline.createGain();
       out.gain.value = masterVol;
       out.connect(offline.destination);
+      const strips = getStrips(offline, out);
 
       bars.forEach((patIdx, barIdx) => {
         for (let s = 0; s < STEPS; s++) {
-          scheduleStepAt(offline, out, patterns[patIdx], s, barIdx * barSeconds + s * durPerStep, durPerStep);
+          // Ikutkan swing juga di render (dulu hanya playback → hasil WAV
+          // beda dengan yang didengar begitu swing > 0).
+          const when = barIdx * barSeconds + s * durPerStep + swingOffset(s, durPerStep);
+          scheduleStepAt(offline, strips, patterns[patIdx], s, when, durPerStep);
         }
       });
 
-      const solo = hasSolo();
-      audioTracks.forEach((at, i) => {
-        if (!at.buffer || at.startBar > bars.length) return;
-        const trackIdx = 6 + i;
-        if (!audible(trackIdx, solo)) return;
+      audioTracks.forEach((audio, i) => {
+        if (!audio.buffer || audio.startBar > bars.length) return;
+        const trackIdx = audioTrack(i);
+        if (!trackAudible(trackIdx)) return;
         const src = offline.createBufferSource();
-        src.buffer = at.buffer;
-        const chainOut = makeOut(offline, out, mixer[trackIdx].vol, mixer[trackIdx].pan);
-        src.connect(chainOut);
-        src.start((at.startBar - 1) * barSeconds);
+        src.buffer = audio.buffer;
+        src.connect(strips.gains[trackIdx]);
+        src.start((audio.startBar - 1) * barSeconds);
       });
 
       const rendered = await offline.startRendering();
@@ -1019,22 +1416,125 @@ function init(): () => void {
   }
 
   // ── Event binding ──────────────────────────────────────────
+  root.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    const drumCell = target.closest<HTMLButtonElement>('#ms-drums [data-drum][data-ms-step]');
+    if (drumCell) {
+      const row = Number(drumCell.dataset.drum);
+      const step = Number(drumCell.dataset.msStep);
+      if (!Number.isInteger(row) || row < 0 || row >= DRUM_COUNT || !Number.isInteger(step) || step < 0 || step >= STEPS) return;
+      const next = (patterns[currentPattern].drums[row][step] + 1) % 3;
+      patterns[currentPattern].drums[row][step] = next;
+      drumCell.className = drumCellClass(next, step % 4 === 0) + (step === highlightedStep ? ' is-playing' : '');
+      if (next) previewDrum(row, next === 2 ? 1.35 : 1);
+      queueAutosave();
+      return;
+    }
+
+    const pianoCell = target.closest<HTMLButtonElement>('#ms-piano [data-note][data-ms-step]');
+    if (!pianoCell) return;
+    const row = Number(pianoCell.dataset.note);
+    const step = Number(pianoCell.dataset.msStep);
+    if (!Number.isInteger(row) || row < 0 || row >= NOTES || !Number.isInteger(step) || step < 0 || step >= STEPS) return;
+    const notes = patterns[currentPattern].notes[currentSynth][row];
+    let noteStep = step;
+    let existing = notes[step];
+    if (!existing) {
+      for (let candidate = step - 1; candidate >= 0; candidate--) {
+        if (notes[candidate] && candidate + notes[candidate]!.length > step) {
+          noteStep = candidate;
+          existing = notes[candidate];
+          break;
+        }
+      }
+    }
+    if (existing) {
+      if (selectedNote?.synth === currentSynth && selectedNote.row === row && selectedNote.step === noteStep) {
+        notes[noteStep] = null;
+        selectedNote = null;
+      } else {
+        selectedNote = { synth: currentSynth, row, step: noteStep };
+        noteLengthSelect.value = String(existing.length);
+        noteLength = existing.length;
+        noteVelocity = existing.velocity;
+        noteVelocitySlider.value = String(noteVelocity);
+        noteVelocityValue.textContent = String(Math.round(noteVelocity / 127 * 100));
+      }
+    } else {
+      notes[step] = { length: Math.min(noteLength, STEPS - step), velocity: noteVelocity };
+      selectedNote = { synth: currentSynth, row, step };
+      previewNote(currentSynth, SYNTHS[currentSynth].base + row, noteVelocity / 127);
+    }
+    updatePianoRow(currentSynth, row);
+    queueAutosave();
+  });
+
+  function syncNoteControls(): void {
+    noteLengthSelect.value = String(noteLength);
+    noteVelocitySlider.value = String(noteVelocity);
+    noteVelocityValue.textContent = String(Math.round(noteVelocity / 127 * 100));
+  }
+
+  noteLengthSelect.addEventListener('change', () => {
+    noteLength = Math.max(1, Math.min(STEPS, Number(noteLengthSelect.value) || 1));
+    if (selectedNote) {
+      const rowNotes = patterns[currentPattern].notes[selectedNote.synth][selectedNote.row];
+      const available = Math.min(STEPS - selectedNote.step, ...rowNotes.slice(selectedNote.step + 1).map((note, offset) => note ? offset + 1 : STEPS));
+      noteLength = Math.min(noteLength, available);
+      const note = rowNotes[selectedNote.step];
+      if (note) {
+        note.length = noteLength;
+        updatePianoRow(selectedNote.synth, selectedNote.row);
+      }
+    }
+    noteLengthSelect.value = String(noteLength);
+    queueAutosave();
+  });
+
+  noteVelocitySlider.addEventListener('input', () => {
+    noteVelocity = Math.max(1, Math.min(127, Number(noteVelocitySlider.value) || 1));
+    noteVelocityValue.textContent = String(Math.round(noteVelocity / 127 * 100));
+    if (selectedNote) {
+      const note = patterns[currentPattern].notes[selectedNote.synth][selectedNote.row][selectedNote.step];
+      if (note) {
+        note.velocity = noteVelocity;
+        updatePianoRow(selectedNote.synth, selectedNote.row);
+      }
+    }
+    queueAutosave();
+  });
+  window.addEventListener('langchange', updateAudioUI);
   playBtn.addEventListener('click', startPlayback);
+
+  metroBtn.addEventListener('click', () => {
+    metronome = !metronome;
+    updateMetroUI();
+    queueAutosave();
+  });
 
   bpmInput.addEventListener('change', () => {
     bpm = Math.max(40, Math.min(240, Number(bpmInput.value) || 112));
     bpmSlider.value = String(bpm);
     if (playing) stopPlayback();
+    queueAutosave();
   });
   bpmSlider.addEventListener('input', () => {
     bpm = Number(bpmSlider.value);
     bpmInput.value = String(bpm);
     if (playing) stopPlayback();
+    queueAutosave();
+  });
+
+  swingSlider.addEventListener('input', () => {
+    swing = Number(swingSlider.value);
+    swingVal.textContent = `${swing}%`;
+    queueAutosave();
   });
 
   masterSlider.addEventListener('input', () => {
     masterVol = Number(masterSlider.value) / 100;
     if (masterNode) masterNode.gain.value = masterVol;
+    queueAutosave();
   });
 
   modePatternBtn.addEventListener('click', () => {
@@ -1042,56 +1542,115 @@ function init(): () => void {
     if (playing) stopPlayback();
     mode = 'pattern';
     updateModeUI();
+    queueAutosave();
   });
   modeSongBtn.addEventListener('click', () => {
     if (mode === 'song') return;
     if (playing) stopPlayback();
     mode = 'song';
     updateModeUI();
+    queueAutosave();
   });
 
-  waveSelect.addEventListener('change', () => {
-    waves[currentSynth] = waveSelect.value;
+  kitSelect.addEventListener('change', () => {
+    kitIndex = Math.max(0, Math.min(KITS.length - 1, Number(kitSelect.value) || 0));
+    previewDrum(0, 1);
+    queueAutosave();
+  });
+
+  presetSelect.addEventListener('change', () => {
+    presets[currentSynth] = Number(presetSelect.value) || 0;
+    previewNote(currentSynth, SYNTHS[currentSynth].base + 7);
+    queueAutosave();
+  });
+
+  patCopyBtn.addEventListener('click', () => {
+    patternClipboard = clonePattern(patterns[currentPattern]);
+    toast('Pattern disalin.', 'info');
+  });
+
+  patPasteBtn.addEventListener('click', () => {
+    if (!patternClipboard) {
+      toast('Belum ada pattern yang disalin.', 'error');
+      return;
+    }
+    patterns[currentPattern] = clonePattern(patternClipboard);
+    for (let row = 0; row < DRUM_COUNT; row++) updateDrumRow(row);
+    refreshPiano();
+    queueAutosave();
+    toast('Pattern ditempel.', 'info');
+  });
+
+  patClearBtn.addEventListener('click', () => {
+    patterns[currentPattern] = emptyPattern();
+    selectedNote = null;
+    for (let row = 0; row < DRUM_COUNT; row++) updateDrumRow(row);
+    refreshPiano();
+    queueAutosave();
+    toast('Pattern direset.', 'info');
   });
 
   demoBtn.addEventListener('click', () => {
     if (playing) stopPlayback();
-    patterns.forEach((p) => {
-      p.drums.forEach((d) => d.fill(false));
-      p.notes.forEach((rows) => rows.forEach((r) => r.fill(false)));
+    patterns.forEach((pattern) => {
+      pattern.drums.forEach((row) => row.fill(0));
+      pattern.notes.forEach((track) => track.forEach((row) => row.fill(null)));
     });
     seedDemo();
     song = [0, 0, 1, 0];
     currentPattern = 0;
     currentSynth = 0;
     bpm = 112;
+    kitIndex = 0;
+    kitSelect.value = '0';
     renderAll();
     updateTransportUI();
+    queueAutosave();
     toast('Demo dimuat!');
   });
 
-  exportBtn.addEventListener('click', () => { void exportWav(); });
+  exportBtn.addEventListener('click', () => {
+    void exportWav();
+  });
 
   songClearBtn.addEventListener('click', () => {
     song = [];
     if (mode === 'song') stopPlayback();
     renderSong();
+    queueAutosave();
+  });
+
+  songEl.addEventListener('click', (event) => {
+    const bar = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-bar]');
+    if (!bar) return;
+    song.splice(Number(bar.dataset.bar), 1);
+    if (mode === 'song') stopPlayback();
+    renderSong();
+    queueAutosave();
+  });
+
+  songAddEl.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-add-pattern]');
+    if (!button) return;
+    if (song.length >= MAX_BARS) {
+      toast('Maksimal susunan 16 bar.', 'error');
+      return;
+    }
+    song.push(Number(button.dataset.addPattern));
+    if (mode === 'song') stopPlayback();
+    renderSong();
+    queueAutosave();
   });
 
   PATTERN_LETTERS.forEach((letter, i) => {
     const btn = document.createElement('button');
     btn.className = 'px-2 py-1 rounded-lg bg-matte-100 dark:bg-surface-elevated text-2xs font-bold text-matte-500 hover:bg-violet-500 hover:text-white transition-colors';
     btn.textContent = `+${letter}`;
-    btn.addEventListener('click', () => {
-      if (song.length >= MAX_BARS) return;
-      song.push(i);
-      if (mode === 'song') stopPlayback();
-      renderSong();
-    });
+    btn.dataset.addPattern = String(i);
     songAddEl.appendChild(btn);
   });
 
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < audioTracks.length; i++) {
     const fileInput = document.getElementById(`ms-audio-file-${i}`) as HTMLInputElement;
     fileInput.addEventListener('change', () => {
       const file = fileInput.files?.[0];
@@ -1104,12 +1663,14 @@ function init(): () => void {
       const value = Math.max(1, Math.min(MAX_BARS, Number(startInput.value) || 1));
       audioTracks[i].startBar = value;
       startInput.value = String(value);
+      queueAutosave();
     });
 
     const clearBtn = document.getElementById(`ms-audio-clear-${i}`) as HTMLButtonElement;
     clearBtn.addEventListener('click', () => {
       audioTracks[i] = { buffer: null, name: '', startBar: 1 };
       updateAudioUI();
+      queueAutosave();
     });
   }
 
@@ -1125,6 +1686,20 @@ function init(): () => void {
   }
   document.addEventListener('keydown', onKeyDown);
 
+  function refreshPiano(): void {
+    const rows = pianoEl.children;
+    for (let visualRow = 0; visualRow < NOTES; visualRow++) {
+      const row = NOTES - 1 - visualRow;
+      const label = rows[visualRow]?.firstElementChild;
+      if (label) label.textContent = noteName(SYNTHS[currentSynth].base + row);
+      updatePianoRow(currentSynth, row);
+    }
+    renderSynthTabs();
+    presetSelect.value = String(presets[currentSynth]);
+    syncNoteControls();
+    rebuildStepCells();
+  }
+
   function renderAll(): void {
     renderDrums();
     renderPiano();
@@ -1132,15 +1707,168 @@ function init(): () => void {
     renderSong();
     buildMixer();
     updateAudioUI();
+    rebuildStepCells();
   }
 
+  function projectData(): ProjectData {
+    return {
+      version: 1,
+      patterns: patterns.map(clonePattern),
+      mixer: mixer.map((track) => ({ ...track })),
+      presets: [...presets],
+      song: [...song],
+      currentPattern,
+      currentSynth,
+      mode,
+      bpm,
+      masterVol,
+      swing,
+      kitIndex,
+      metronome,
+      noteLength,
+      noteVelocity,
+      audioStartBars: audioTracks.map((track) => track.startBar),
+    };
+  }
+
+  function validProject(value: unknown): value is ProjectData {
+    if (!value || typeof value !== 'object') return false;
+    const data = value as Partial<ProjectData>;
+    const validInt = (n: unknown, min: number, max: number) => Number.isInteger(n) && Number(n) >= min && Number(n) <= max;
+    if (data.version !== 1 || !Array.isArray(data.patterns) || data.patterns.length !== PATTERNS ||
+        !Array.isArray(data.mixer) || data.mixer.length !== MIXER_NAMES.length ||
+        !Array.isArray(data.presets) || data.presets.length !== SYNTH_COUNT ||
+        !Array.isArray(data.song) || data.song.length > MAX_BARS ||
+        !Array.isArray(data.audioStartBars) || data.audioStartBars.length !== audioTracks.length ||
+        !validInt(data.currentPattern, 0, PATTERNS - 1) || !validInt(data.currentSynth, 0, SYNTH_COUNT - 1) ||
+        (data.mode !== 'pattern' && data.mode !== 'song') || !validInt(data.bpm, 40, 240) ||
+        typeof data.masterVol !== 'number' || !Number.isFinite(data.masterVol) || data.masterVol < 0 || data.masterVol > 1 ||
+        !validInt(data.swing, 0, 60) || !validInt(data.kitIndex, 0, KITS.length - 1) ||
+        typeof data.metronome !== 'boolean' || !validInt(data.noteLength, 1, STEPS) || !validInt(data.noteVelocity, 1, 127)) return false;
+    if (!data.song.every((idx) => validInt(idx, 0, PATTERNS - 1)) ||
+        !data.presets.every((idx) => validInt(idx, 0, SYNTH_PRESETS.length - 1)) ||
+        !data.audioStartBars.every((bar) => validInt(bar, 1, MAX_BARS))) return false;
+
+    return data.patterns.every((pattern) =>
+      !!pattern && Array.isArray(pattern.drums) && pattern.drums.length === DRUM_COUNT &&
+      pattern.drums.every((row) => Array.isArray(row) && row.length === STEPS && row.every((state) => validInt(state, 0, 2))) &&
+      Array.isArray(pattern.notes) && pattern.notes.length === SYNTH_COUNT &&
+      pattern.notes.every((track) => Array.isArray(track) && track.length === NOTES &&
+        track.every((row) => Array.isArray(row) && row.length === STEPS && row.every((note, step) =>
+          note === null || (!!note && validInt(note.length, 1, Math.min(STEPS, STEPS - step)) && validInt(note.velocity, 1, 127)))))
+    ) && data.mixer.every((track) =>
+      !!track && typeof track.vol === 'number' && Number.isFinite(track.vol) && track.vol >= 0 && track.vol <= 1 &&
+      typeof track.pan === 'number' && Number.isFinite(track.pan) && track.pan >= -1 && track.pan <= 1 &&
+      typeof track.mute === 'boolean' && typeof track.solo === 'boolean'
+    );
+  }
+
+  function applyProject(value: unknown): boolean {
+    if (!validProject(value)) return false;
+    if (playing) stopPlayback();
+    const data = value;
+    data.patterns.forEach((pattern, index) => { patterns[index] = clonePattern(pattern); });
+    data.mixer.forEach((track, index) => { mixer[index] = { ...track }; });
+    data.presets.forEach((preset, index) => { presets[index] = preset; });
+    song = [...data.song];
+    currentPattern = data.currentPattern;
+    currentSynth = data.currentSynth;
+    mode = data.mode;
+    bpm = data.bpm;
+    masterVol = data.masterVol;
+    swing = data.swing;
+    kitIndex = data.kitIndex;
+    metronome = data.metronome;
+    noteLength = data.noteLength;
+    noteVelocity = data.noteVelocity;
+    data.audioStartBars.forEach((startBar, index) => {
+      audioTracks[index].startBar = startBar;
+    });
+    selectedNote = null;
+    kitSelect.value = String(kitIndex);
+    renderAll();
+    updateTransportUI();
+    syncNoteControls();
+    syncMixerNodes();
+    return true;
+  }
+
+  function queueAutosave(): void {
+    if (autosaveTimer) window.clearTimeout(autosaveTimer);
+    autosaveTimer = window.setTimeout(() => {
+      autosaveTimer = 0;
+      try {
+        localStorage.setItem(LOCAL_PROJECT_KEY, JSON.stringify(projectData()));
+      } catch {
+        toast('Gagal menyimpan proyek di browser.', 'error');
+      }
+    }, 350);
+  }
+
+  function downloadProjectJson(): void {
+    const blob = new Blob([JSON.stringify(projectData(), null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `music-studio-${Date.now()}.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    toast('Ekspor JSON siap didownload!');
+  }
+
+  saveBtn.addEventListener('click', () => {
+    try {
+      localStorage.setItem(LOCAL_PROJECT_KEY, JSON.stringify(projectData()));
+      toast('Proyek disimpan.', 'info');
+    } catch {
+      toast('Gagal menyimpan proyek di browser.', 'error');
+    }
+  });
+
+  projectExportBtn.addEventListener('click', downloadProjectJson);
+  projectFileInput.addEventListener('change', () => {
+    const file = projectFileInput.files?.[0];
+    projectFileInput.value = '';
+    if (!file) return;
+    void file.text().then((text) => {
+      const data = JSON.parse(text);
+      if (!applyProject(data)) {
+        toast('File proyek tidak valid.', 'error');
+        return;
+      }
+      queueAutosave();
+      toast('Proyek dimuat.', 'info');
+    }).catch(() => toast('File proyek tidak valid.', 'error'));
+  });
+
+  renderPresetOptions();
   renderStepNumbers();
-  renderAll();
-  updateTransportUI();
+  let restored = false;
+  try {
+    const saved = localStorage.getItem(LOCAL_PROJECT_KEY);
+    if (saved) restored = applyProject(JSON.parse(saved));
+  } catch {
+    restored = false;
+  }
+  if (!restored) {
+    renderAll();
+    updateTransportUI();
+  }
 
   return () => {
     stopPlayback();
+    if (autosaveTimer) {
+      window.clearTimeout(autosaveTimer);
+      autosaveTimer = 0;
+      try {
+        localStorage.setItem(LOCAL_PROJECT_KEY, JSON.stringify(projectData()));
+      } catch {
+        toast('Gagal menyimpan proyek di browser.', 'error');
+      }
+    }
     document.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('langchange', updateAudioUI);
+    root.dataset.bound = '0';
     if (audioCtx) {
       void audioCtx.close().catch(() => {});
       audioCtx = null;

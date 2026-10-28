@@ -699,3 +699,35 @@ body.app-mode > #pwa-custom-modal,
 body.app-mode nav[aria-label='Breadcrumb'] {
   display: none;
 }
+
+/* ========== MUSIC STUDIO (mini DAW) ==========
+   Playhead & pattern aktif — script music-studio.astro memasang class
+   `.is-playing` per frame rAF (sel kolom langkah + chip pattern A–D). Tanpa
+   blok ini class-nya tak punya styling sama sekali → indikator playback
+   invisible (audit Okt 28). Pakai --accent-blue (indigo) karena kontras di
+   atas sel rose (lit) maupun matte (off), di mode light & dark. */
+.ms-cell.is-playing {
+  box-shadow: inset 0 0 0 2px var(--accent-blue);
+}
+.ms-cell.ms-note-head.is-playing,
+.ms-cell.ms-note-tail.is-playing {
+  filter: brightness(calc(0.65 + var(--ms-playhead-velocity, 0) * 0.35));
+}
+.ms-pattern.is-playing {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 1px;
+}
+/* Ekor not (panjang not > 1 step) di piano roll — kepala not tetap
+   bg-violet-500 penuh, ekor diredupkan biar terbaca sebagai satu not. */
+.ms-cell.ms-note-head,
+.ms-cell.ms-note-tail {
+  filter: brightness(calc(0.65 + var(--ms-velocity, 0) * 0.35));
+}
+.ms-cell.ms-note-tail {
+  opacity: 0.55;
+  cursor: pointer;
+}
+.ms-cell.ms-note-selected {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 1px;
+}
