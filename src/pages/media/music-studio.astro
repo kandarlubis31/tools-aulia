@@ -117,9 +117,11 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
                 <input id="ms-note-velocity" type="range" min="1" max="127" value="102" class="w-16 h-1 accent-violet-500" />
                 <span id="ms-note-velocity-val" class="w-6 text-right text-2xs font-mono text-matte-400">80</span>
               </label>
+              <button id="ms-undo" disabled title="Undo (Ctrl+Z)" class="px-2 py-1 rounded-lg text-2xs font-bold bg-matte-100 dark:bg-surface-elevated text-matte-500 hover:text-violet-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" data-i18n="ms.undo">Undo</button>
             </div>
             <div class="overflow-x-auto">
               <div id="ms-piano" class="min-w-[540px]"></div>
+              <p class="mt-2 text-2xs text-matte-400" data-i18n="ms.note_hint">Klik not untuk memilih, klik lagi untuk melepas. Del menghapus not; Ctrl+Z membatalkan.</p>
               <p class="mt-2 text-2xs text-matte-400" data-i18n="ms.stems_not_saved">Project menyimpan pattern dan mixer; file audio perlu diimpor ulang.</p>
             </div>
           </div>
@@ -414,6 +416,8 @@ function init(): () => void {
   let selectedNote: { synth: number; row: number; step: number } | null = null;
   let autosaveTimer = 0;
   let patternClipboard: PatternState | null = null;
+  const HISTORY_LIMIT = 40;
+  const history: string[] = [];
 
   // ── Demo content ───────────────────────────────────────────
   function seedDemo(): void {
@@ -491,6 +495,7 @@ function init(): () => void {
   const noteVelocitySlider = document.getElementById('ms-note-velocity') as HTMLInputElement;
   const noteVelocityValue = document.getElementById('ms-note-velocity-val')!;
   const saveBtn = document.getElementById('ms-save') as HTMLButtonElement;
+  const undoBtn = document.getElementById('ms-undo') as HTMLButtonElement;
   const projectExportBtn = document.getElementById('ms-project-export') as HTMLButtonElement;
   const projectFileInput = document.getElementById('ms-project-file') as HTMLInputElement;
 
@@ -1415,6 +1420,70 @@ function init(): () => void {
     }
   }
 
+  // ── Note helpers & riwayat undo ────────────────────────────
+  function pushHistory(): void {
+    const snapshot = JSON.stringify(patterns);
+    if (history[history.length - 1] === snapshot) return;
+    history.push(snapshot);
+    if (history.length > HISTORY_LIMIT) history.shift();
+    syncUndoUI();
+  }
+
+  function syncUndoUI(): void {
+    undoBtn.disabled = history.length === 0;
+  }
+
+  function undoLastEdit(): void {
+    const snapshot = history.pop();
+    syncUndoUI();
+    if (!snapshot) return;
+    (JSON.parse(snapshot) as PatternState[]).forEach((pattern, index) => {
+      patterns[index] = pattern;
+    });
+    selectedNote = null;
+    for (let row = 0; row < DRUM_COUNT; row++) updateDrumRow(row);
+    refreshPiano();
+    queueAutosave();
+    toast(tI18n('ms.edit_undone', 'Perubahan dibatalkan.'), 'info');
+  }
+
+  function noteAt(rowNotes: (NoteState | null)[], step: number): { step: number; note: NoteState } | null {
+    if (rowNotes[step]) return { step, note: rowNotes[step]! };
+    for (let candidate = step - 1; candidate >= 0; candidate--) {
+      const note = rowNotes[candidate];
+      if (note && candidate + note.length > step) return { step: candidate, note };
+    }
+    return null;
+  }
+
+  function stepsUntilNextNote(rowNotes: (NoteState | null)[], step: number): number {
+    for (let candidate = step + 1; candidate < STEPS; candidate++) {
+      if (rowNotes[candidate]) return candidate - step;
+    }
+    return STEPS - step;
+  }
+
+  function setSelection(next: { synth: number; row: number; step: number } | null): void {
+    const previous = selectedNote;
+    selectedNote = next;
+    if (previous && (!next || previous.synth !== next.synth || previous.row !== next.row)) {
+      updatePianoRow(previous.synth, previous.row);
+    }
+    if (next) updatePianoRow(next.synth, next.row);
+    syncNoteControls();
+  }
+
+  function syncNoteControls(): void {
+    const note = selectedNote
+      ? patterns[currentPattern].notes[selectedNote.synth][selectedNote.row][selectedNote.step]
+      : null;
+    const length = note ? note.length : noteLength;
+    const velocity = note ? note.velocity : noteVelocity;
+    noteLengthSelect.value = String(length);
+    noteVelocitySlider.value = String(velocity);
+    noteVelocityValue.textContent = String(Math.round(velocity / 127 * 100));
+  }
+
   // ── Event binding ──────────────────────────────────────────
   root.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
@@ -1423,6 +1492,9 @@ function init(): () => void {
       const row = Number(drumCell.dataset.drum);
       const step = Number(drumCell.dataset.msStep);
       if (!Number.isInteger(row) || row < 0 || row >= DRUM_COUNT || !Number.isInteger(step) || step < 0 || step >= STEPS) return;
+      // Blur setelah klik mouse biar shortcut Spasi tidak tertahan fokus tombol.
+      if (event.detail > 0) drumCell.blur();
+      pushHistory();
       const next = (patterns[currentPattern].drums[row][step] + 1) % 3;
       patterns[currentPattern].drums[row][step] = next;
       drumCell.className = drumCellClass(next, step % 4 === 0) + (step === highlightedStep ? ' is-playing' : '');
@@ -1436,71 +1508,68 @@ function init(): () => void {
     const row = Number(pianoCell.dataset.note);
     const step = Number(pianoCell.dataset.msStep);
     if (!Number.isInteger(row) || row < 0 || row >= NOTES || !Number.isInteger(step) || step < 0 || step >= STEPS) return;
+    if (event.detail > 0) pianoCell.blur();
     const notes = patterns[currentPattern].notes[currentSynth][row];
-    let noteStep = step;
-    let existing = notes[step];
-    if (!existing) {
-      for (let candidate = step - 1; candidate >= 0; candidate--) {
-        if (notes[candidate] && candidate + notes[candidate]!.length > step) {
-          noteStep = candidate;
-          existing = notes[candidate];
-          break;
-        }
-      }
+    const hit = noteAt(notes, step);
+    if (hit) {
+      // Klik not: pilih; klik not yang sama: lepas pilihan (tidak menghapus).
+      const alreadySelected = selectedNote?.synth === currentSynth && selectedNote.row === row && selectedNote.step === hit.step;
+      setSelection(alreadySelected ? null : { synth: currentSynth, row, step: hit.step });
+      return;
     }
-    if (existing) {
-      if (selectedNote?.synth === currentSynth && selectedNote.row === row && selectedNote.step === noteStep) {
-        notes[noteStep] = null;
-        selectedNote = null;
-      } else {
-        selectedNote = { synth: currentSynth, row, step: noteStep };
-        noteLengthSelect.value = String(existing.length);
-        noteLength = existing.length;
-        noteVelocity = existing.velocity;
-        noteVelocitySlider.value = String(noteVelocity);
-        noteVelocityValue.textContent = String(Math.round(noteVelocity / 127 * 100));
-      }
-    } else {
-      notes[step] = { length: Math.min(noteLength, STEPS - step), velocity: noteVelocity };
-      selectedNote = { synth: currentSynth, row, step };
-      previewNote(currentSynth, SYNTHS[currentSynth].base + row, noteVelocity / 127);
-    }
-    updatePianoRow(currentSynth, row);
+    pushHistory();
+    const length = Math.max(1, Math.min(noteLength, stepsUntilNextNote(notes, step)));
+    notes[step] = { length, velocity: noteVelocity };
+    setSelection({ synth: currentSynth, row, step });
+    previewNote(currentSynth, SYNTHS[currentSynth].base + row, noteVelocity / 127);
     queueAutosave();
   });
 
-  function syncNoteControls(): void {
-    noteLengthSelect.value = String(noteLength);
-    noteVelocitySlider.value = String(noteVelocity);
-    noteVelocityValue.textContent = String(Math.round(noteVelocity / 127 * 100));
-  }
+  undoBtn.addEventListener('click', undoLastEdit);
 
   noteLengthSelect.addEventListener('change', () => {
-    noteLength = Math.max(1, Math.min(STEPS, Number(noteLengthSelect.value) || 1));
-    if (selectedNote) {
-      const rowNotes = patterns[currentPattern].notes[selectedNote.synth][selectedNote.row];
-      const available = Math.min(STEPS - selectedNote.step, ...rowNotes.slice(selectedNote.step + 1).map((note, offset) => note ? offset + 1 : STEPS));
-      noteLength = Math.min(noteLength, available);
-      const note = rowNotes[selectedNote.step];
-      if (note) {
-        note.length = noteLength;
-        updatePianoRow(selectedNote.synth, selectedNote.row);
-      }
+    const wanted = Math.max(1, Math.min(STEPS, Number(noteLengthSelect.value) || 1));
+    if (!selectedNote) {
+      noteLength = wanted;
+      syncNoteControls();
+      queueAutosave();
+      return;
     }
-    noteLengthSelect.value = String(noteLength);
+    const rowNotes = patterns[currentPattern].notes[selectedNote.synth][selectedNote.row];
+    const note = rowNotes[selectedNote.step];
+    if (!note) {
+      setSelection(null);
+      return;
+    }
+    const maxLength = Math.max(1, Math.min(STEPS - selectedNote.step, stepsUntilNextNote(rowNotes, selectedNote.step)));
+    const nextLength = Math.min(wanted, maxLength);
+    if (nextLength !== note.length) pushHistory();
+    note.length = nextLength;
+    if (nextLength < wanted) toast(tI18n('ms.length_clamped', 'Panjang dibatasi oleh not berikutnya.'), 'info');
+    updatePianoRow(selectedNote.synth, selectedNote.row);
+    syncNoteControls();
     queueAutosave();
   });
 
+  noteVelocitySlider.addEventListener('pointerdown', () => {
+    if (selectedNote) pushHistory();
+  });
+  noteVelocitySlider.addEventListener('keydown', () => {
+    if (selectedNote) pushHistory();
+  });
   noteVelocitySlider.addEventListener('input', () => {
-    noteVelocity = Math.max(1, Math.min(127, Number(noteVelocitySlider.value) || 1));
-    noteVelocityValue.textContent = String(Math.round(noteVelocity / 127 * 100));
+    const value = Math.max(1, Math.min(127, Number(noteVelocitySlider.value) || 1));
+    noteVelocityValue.textContent = String(Math.round(value / 127 * 100));
     if (selectedNote) {
       const note = patterns[currentPattern].notes[selectedNote.synth][selectedNote.row][selectedNote.step];
       if (note) {
-        note.velocity = noteVelocity;
+        note.velocity = value;
         updatePianoRow(selectedNote.synth, selectedNote.row);
+        queueAutosave();
+        return;
       }
     }
+    noteVelocity = value;
     queueAutosave();
   });
   window.addEventListener('langchange', updateAudioUI);
@@ -1574,7 +1643,9 @@ function init(): () => void {
       toast('Belum ada pattern yang disalin.', 'error');
       return;
     }
+    pushHistory();
     patterns[currentPattern] = clonePattern(patternClipboard);
+    selectedNote = null;
     for (let row = 0; row < DRUM_COUNT; row++) updateDrumRow(row);
     refreshPiano();
     queueAutosave();
@@ -1582,6 +1653,7 @@ function init(): () => void {
   });
 
   patClearBtn.addEventListener('click', () => {
+    pushHistory();
     patterns[currentPattern] = emptyPattern();
     selectedNote = null;
     for (let row = 0; row < DRUM_COUNT; row++) updateDrumRow(row);
@@ -1592,6 +1664,8 @@ function init(): () => void {
 
   demoBtn.addEventListener('click', () => {
     if (playing) stopPlayback();
+    pushHistory();
+    selectedNote = null;
     patterns.forEach((pattern) => {
       pattern.drums.forEach((row) => row.fill(0));
       pattern.notes.forEach((track) => track.forEach((row) => row.fill(null)));
@@ -1675,16 +1749,46 @@ function init(): () => void {
   }
 
   function onKeyDown(event: KeyboardEvent): void {
-    if (event.code !== 'Space') return;
     const target = event.target as HTMLElement | null;
-    if (target) {
-      const tag = target.tagName;
-      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'BUTTON' || tag === 'A' || target.isContentEditable) return;
+    const tag = target?.tagName;
+    const typing = !!target && (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || target.isContentEditable);
+
+    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === 'z' && !typing) {
+      event.preventDefault();
+      undoLastEdit();
+      return;
     }
+
+    if ((event.key === 'Delete' || event.key === 'Backspace') && selectedNote && !typing) {
+      const { synth, row, step } = selectedNote;
+      if (!patterns[currentPattern].notes[synth][row][step]) return;
+      event.preventDefault();
+      pushHistory();
+      patterns[currentPattern].notes[synth][row][step] = null;
+      setSelection(null);
+      updatePianoRow(synth, row);
+      queueAutosave();
+      toast(tI18n('ms.note_deleted', 'Not dihapus. Ctrl+Z untuk membatalkan.'), 'info');
+      return;
+    }
+
+    if (event.code !== 'Space') return;
+    if (typing || tag === 'BUTTON' || tag === 'A') return;
     event.preventDefault();
     startPlayback();
   }
   document.addEventListener('keydown', onKeyDown);
+
+  // Flush autosave saat tab ditutup/reload — timer 350 ms saja bisa
+  // kehilangan edit terakhir kalau halaman ditinggalkan lebih cepat.
+  const flushOnHide = (): void => {
+    if (autosaveTimer) saveNow();
+  };
+  const onVisibilityChange = (): void => {
+    if (document.visibilityState === 'hidden') flushOnHide();
+  };
+  window.addEventListener('pagehide', flushOnHide);
+  document.addEventListener('visibilitychange', onVisibilityChange);
 
   function refreshPiano(): void {
     const rows = pianoEl.children;
@@ -1731,6 +1835,35 @@ function init(): () => void {
     };
   }
 
+  // Project lama (sebelum aturan anti-overlap) bisa punya not bertumpuk.
+  // Rapikan dengan membuang head yang tertutup, jangan buang seluruh project.
+  function trimOverlaps(value: unknown): boolean {
+    if (!value || typeof value !== 'object') return false;
+    const data = value as Partial<ProjectData>;
+    if (!Array.isArray(data.patterns)) return false;
+    let trimmed = false;
+    data.patterns.forEach((pattern) => {
+      if (!pattern || !Array.isArray(pattern.notes)) return;
+      pattern.notes.forEach((track) => {
+        if (!Array.isArray(track)) return;
+        track.forEach((row) => {
+          if (!Array.isArray(row)) return;
+          for (let step = 0; step < row.length; step++) {
+            const note = row[step];
+            if (!note || typeof note.length !== 'number') continue;
+            for (let inner = step + 1; inner < step + note.length && inner < row.length; inner++) {
+              if (row[inner]) {
+                row[inner] = null;
+                trimmed = true;
+              }
+            }
+          }
+        });
+      });
+    });
+    return trimmed;
+  }
+
   function validProject(value: unknown): value is ProjectData {
     if (!value || typeof value !== 'object') return false;
     const data = value as Partial<ProjectData>;
@@ -1749,14 +1882,31 @@ function init(): () => void {
         !data.presets.every((idx) => validInt(idx, 0, SYNTH_PRESETS.length - 1)) ||
         !data.audioStartBars.every((bar) => validInt(bar, 1, MAX_BARS))) return false;
 
-    return data.patterns.every((pattern) =>
+    const validPatterns = data.patterns.every((pattern) =>
       !!pattern && Array.isArray(pattern.drums) && pattern.drums.length === DRUM_COUNT &&
       pattern.drums.every((row) => Array.isArray(row) && row.length === STEPS && row.every((state) => validInt(state, 0, 2))) &&
       Array.isArray(pattern.notes) && pattern.notes.length === SYNTH_COUNT &&
       pattern.notes.every((track) => Array.isArray(track) && track.length === NOTES &&
         track.every((row) => Array.isArray(row) && row.length === STEPS && row.every((note, step) =>
-          note === null || (!!note && validInt(note.length, 1, Math.min(STEPS, STEPS - step)) && validInt(note.velocity, 1, 127)))))
-    ) && data.mixer.every((track) =>
+          note === null || (!!note && validInt(note.length, 1, STEPS - step) && validInt(note.velocity, 1, 127)))))
+    );
+    if (!validPatterns) return false;
+
+    // Not yang saling menimpa bikin not panjang tak bisa diedit di area yang
+    // tertutup dan bunyi dobel saat playback — tolak saat impor.
+    const rowHasOverlap = (row: (NoteState | null)[]) => {
+      for (let step = 0; step < row.length; step++) {
+        const note = row[step];
+        if (!note) continue;
+        for (let inner = step + 1; inner < step + note.length && inner < row.length; inner++) {
+          if (row[inner]) return true;
+        }
+      }
+      return false;
+    };
+    if (data.patterns.some((pattern) => pattern.notes.some((track) => track.some((row) => rowHasOverlap(row))))) return false;
+
+    return data.mixer.every((track) =>
       !!track && typeof track.vol === 'number' && Number.isFinite(track.vol) && track.vol >= 0 && track.vol <= 1 &&
       typeof track.pan === 'number' && Number.isFinite(track.pan) && track.pan >= -1 && track.pan <= 1 &&
       typeof track.mute === 'boolean' && typeof track.solo === 'boolean'
@@ -1766,6 +1916,8 @@ function init(): () => void {
   function applyProject(value: unknown): boolean {
     if (!validProject(value)) return false;
     if (playing) stopPlayback();
+    history.length = 0;
+    syncUndoUI();
     const data = value;
     data.patterns.forEach((pattern, index) => { patterns[index] = clonePattern(pattern); });
     data.mixer.forEach((track, index) => { mixer[index] = { ...track }; });
@@ -1793,15 +1945,23 @@ function init(): () => void {
     return true;
   }
 
+  function saveNow(): void {
+    if (autosaveTimer) {
+      window.clearTimeout(autosaveTimer);
+      autosaveTimer = 0;
+    }
+    try {
+      localStorage.setItem(LOCAL_PROJECT_KEY, JSON.stringify(projectData()));
+    } catch {
+      toast(tI18n('ms.save_failed', 'Gagal menyimpan proyek di browser.'), 'error');
+    }
+  }
+
   function queueAutosave(): void {
     if (autosaveTimer) window.clearTimeout(autosaveTimer);
     autosaveTimer = window.setTimeout(() => {
       autosaveTimer = 0;
-      try {
-        localStorage.setItem(LOCAL_PROJECT_KEY, JSON.stringify(projectData()));
-      } catch {
-        toast('Gagal menyimpan proyek di browser.', 'error');
-      }
+      saveNow();
     }, 350);
   }
 
@@ -1843,10 +2003,33 @@ function init(): () => void {
 
   renderPresetOptions();
   renderStepNumbers();
+  syncUndoUI();
   let restored = false;
   try {
     const saved = localStorage.getItem(LOCAL_PROJECT_KEY);
-    if (saved) restored = applyProject(JSON.parse(saved));
+    if (saved) {
+      let parsed: unknown = null;
+      try {
+        parsed = JSON.parse(saved);
+      } catch {
+        parsed = null;
+      }
+      const trimmed = trimOverlaps(parsed);
+      restored = applyProject(parsed);
+      if (restored && trimmed) {
+        toast(tI18n('ms.project_trimmed', 'Not bertumpuk dirapikan saat memuat project.'), 'info');
+        queueAutosave();
+      }
+      if (!restored) {
+        // Simpan salinan data lama sebelum ditimpa demo, biar tidak hilang diam-diam.
+        try {
+          localStorage.setItem(`${LOCAL_PROJECT_KEY}-corrupt`, saved);
+        } catch {
+          /* quota penuh — biarkan, yang penting user diberi tahu */
+        }
+        toast(tI18n('ms.project_corrupt', 'Proyek tersimpan rusak; cadangan disimpan, mulai dari demo.'), 'error');
+      }
+    }
   } catch {
     restored = false;
   }
@@ -1857,17 +2040,11 @@ function init(): () => void {
 
   return () => {
     stopPlayback();
-    if (autosaveTimer) {
-      window.clearTimeout(autosaveTimer);
-      autosaveTimer = 0;
-      try {
-        localStorage.setItem(LOCAL_PROJECT_KEY, JSON.stringify(projectData()));
-      } catch {
-        toast('Gagal menyimpan proyek di browser.', 'error');
-      }
-    }
+    if (autosaveTimer) saveNow();
     document.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('langchange', updateAudioUI);
+    window.removeEventListener('pagehide', flushOnHide);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
     root.dataset.bound = '0';
     if (audioCtx) {
       void audioCtx.close().catch(() => {});

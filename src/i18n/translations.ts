@@ -4821,6 +4821,14 @@ export const translations: Record<string, { id: string; en: string }> = {
   'ms.save': { id: 'Simpan', en: 'Save' },
   'ms.export_project': { id: 'JSON', en: 'JSON' },
   'ms.import_project': { id: 'Muat JSON', en: 'Load JSON' },
+  'ms.undo': { id: 'Undo', en: 'Undo' },
+  'ms.note_hint': { id: 'Klik not untuk memilih, klik lagi untuk melepas. Del menghapus not; Ctrl+Z membatalkan.', en: 'Click a note to select it, click again to deselect. Del deletes, Ctrl+Z undoes.' },
+  'ms.note_deleted': { id: 'Not dihapus. Ctrl+Z untuk membatalkan.', en: 'Note deleted. Ctrl+Z to undo.' },
+  'ms.edit_undone': { id: 'Perubahan dibatalkan.', en: 'Change undone.' },
+  'ms.length_clamped': { id: 'Panjang dibatasi oleh not berikutnya.', en: 'Length limited by the next note.' },
+  'ms.project_corrupt': { id: 'Proyek tersimpan rusak; cadangan disimpan, mulai dari demo.', en: 'Saved project was corrupt; a backup was kept and the demo loaded.' },
+  'ms.project_trimmed': { id: 'Not bertumpuk dirapikan saat memuat project.', en: 'Overlapping notes were tidied up while loading the project.' },
+  'ms.save_failed': { id: 'Gagal menyimpan proyek di browser.', en: 'Failed to save the project in this browser.' },
   'ms.stems_not_saved': { id: 'Project menyimpan pattern dan mixer; file audio perlu diimpor ulang.', en: 'Projects save patterns and mixer; audio files must be imported again.' },
 
 };
