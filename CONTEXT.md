@@ -85,6 +85,32 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 
 ## Status saat ini (Oktober 2026)
 
+- 🆕 **(Oct 28) Toast error anti false-positive + posisi kanan atas + gap keyboard HP** —
+  commit `c712b91`.
+  - **False positive "Operasi gagal"**: `window.onerror` + `unhandledrejection` di
+    `BaseLayout.astro` sekarang memfilter error rutin client-side (AbortError saat SPA nav,
+    NotAllowedError clipboard/audio, InvalidStateError AudioContext, `ResizeObserver loop`,
+    `Failed to fetch`/network, `Script error.`, stack dari ekstensi). Rejection non-`Error`
+    (string/undefined) cuma dicatat console. Maks 3 toast error per halaman (anti error loop).
+  - **Posisi toast**: dari `bottom-6 left-1/2 -translate-x-1/2` → `top-24 right-5` (sejajar
+    `#toast-container`), `role="alert"`, `max-w-[min(24rem,calc(100vw-2.5rem))]`. Stack toast
+    biasa otomatis digeser via inline `top` selama toast error tampil, dipulihkan saat dismiss.
+    z-index tetap `z-[85]` (di bawah search modal z-100 & feedback z-110).
+  - **Gap hitam di atas keyboard**: `meta viewport` ditambah `interactive-widget=resizes-content`
+    → layout viewport ikut menyusut saat keyboard Android muncul (default `resizes-visual`
+    menyisakan pita gelap di halaman input numerik).
+  - **Pencarian**: `ToolDefinition.keywords` baru + field `keywords` di `/search-tools.json` +
+    ranking relevansi (exact/awalan nama > nama > keywords > kategori > deskripsi). Cari
+    "musik" sekarang menaruh Music Studio di urutan teratas.
+  - **Verifikasi**: build ✅ (7 guardrail), 62/62 test, audit i18n exit 0 (250/250 FULL),
+    CDP 14/14 (AbortError/Failed to fetch/string rejection tidak memunculkan toast; error nyata
+    muncul top-right; stack tidak tumpuk; dismiss restore; muat di 360px; cari "musik") +
+    SPA smoke 9/9 (BMI → Age → BMI tetap hidup, Music Studio via search, 0 exception).
+  - ⚠️ **Music Studio belum ada di live** saat catatan ini ditulis: commit `bb0e898`/`1e1740f`
+    + `c712b91` masih lokal. Live `/media/music-studio` = 404 dan `/search-tools.json` live
+    (250 entri) masih memuat "Video Studio". Push + deploy Vercel dulu, baru tool muncul di
+    pencarian web.
+
 - 🆕 **(Oct 28)** **Music Studio (mini DAW) rilis + Video Studio/OmniClip dihapus total** —
   commit `bb0e898`.
   - **Hapus total**: route `/editor`, `public/editor` (28.3 MB / 374 file tracked), source
