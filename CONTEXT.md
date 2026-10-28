@@ -88,6 +88,36 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
 
 ## Status saat ini (Oktober 2026)
 
+- 🆕 **(Oct 28) Music Studio v2 push live + review/fix edge case (fix BELUM push)** —
+  commit `472baf7` + `54d8a5f` (**sudah push & live**), `b356c46` + `f037dca`
+  (**lokal, menunggu push**).
+  - **Sudah live**: Music Studio v2 (6 drum × 16 step, 4 synth + 5 preset, note
+    length/velocity per note, 3 kit, accent/swing/metronom, mixer 12 channel, auto-save ke
+    localStorage + ekspor/impor JSON tervalidasi, styling playhead `.is-playing`), deskripsi SEO
+    `tools.ts` diperbarui, dan buang 2 key i18n duplikat (`btn.download_jpg`,
+    `label.output_format`) yang diam-diam menimpa label unduh jadi `' Download JPG '` — peringatan
+    duplicate key di build kini 0. Verifikasi live: `/media/music-studio/` 200 + deskripsi "6 drum
+    track + 3 kit" terpasang ±60 detik setelah push.
+  - **Review edge case (4 temuan, diuji probe CDP mouse/keyboard asli, bukan `.click()`)**:
+    (1) klik kedua pada note menghapus seluruh note tanpa undo; (2) dropdown Length mengedit note
+    terpilih + memotong default global diam-diam; (3) edit <350 ms sebelum reload/tutup tab hilang
+    (tak ada flush `pagehide`); (4) project tersimpan yang rusak ditimpa senyap tanpa notifikasi.
+    Ekstra: note bisa tumpang-tindih (lolos `validProject`) dan shortcut Spasi mati setelah sel
+    diklik karena fokus berhenti di `<button>`.
+  - **Fix (`b356c46`)**: klik kedua kini melepas pilihan; hapus lewat Del/Backspace dengan tombol
+    Undo + Ctrl+Z (riwayat 40 snapshot pattern, reset saat project dimuat). Dropdown Length =
+    panjang default saat tak ada note terpilih, memberi toast saat terpotong head berikutnya;
+    pembuatan & ekstensi note berhenti di head berikutnya, `validProject` menolak note bertumpuk.
+    Project lama yang sudah bertumpuk dirapikan `trimOverlaps` saat dimuat (head tertutup dibuang,
+    bukan seluruh project) lalu disimpan ulang. Autosave flush saat `pagehide`/tab hidden; project
+    yang benar-benar rusak dicadangkan ke `music-studio-project-v1-corrupt` + toast. Shortcut
+    Spasi hidup lagi (blur fokus tombol hanya untuk klik mouse; navigasi keyboard tetap).
+  - **Verifikasi**: build ✅ (0 dup key), 62/62 test, audit i18n 250/250 FULL, smoke regresi
+    **22/22**, smoke fix **31/31**, probe restore **10/10** (normal / legacy overlap / rusak),
+    0 page exception & 0 console error.
+  - 📌 **Sisa kerja**: jalankan `git push origin main` (auto-deploy Vercel) + verifikasi live;
+    `scripts/tmp-smoke-ms.mjs` sengaja dibiarkan untracked (harness sementara).
+
 - 🆕 **(Oct 28) Toast error anti false-positive + posisi kanan atas + gap keyboard HP** —
   commit `c712b91`.
   - **False positive "Operasi gagal"**: `window.onerror` + `unhandledrejection` di
@@ -141,18 +171,6 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
     CDP **22/22** (playhead style, note length/velocity + autosave, JSON export/import, lifecycle
     re-init, drum interaction, 0 page exception/console error). Note duration now extends audible
     synth sustain; CSS playhead uses valid theme color syntax. Commit `472baf7`.
-  - **Fix edge case hasil review (Oct 28)** — commit `b356c46`: klik kedua pada note kini melepas
-    pilihan (bukan menghapus); hapus lewat Del/Backspace dengan tombol Undo + Ctrl+Z (riwayat 40
-    snapshot pattern, reset saat project dimuat). Dropdown Length = panjang default saat tak ada
-    note terpilih, dan saat mengedit note memberi toast kalau terpotong head berikutnya; pembuatan
-    & ekstensi note berhenti di head berikutnya, `validProject` menolak note bertumpuk. Project
-    lama yang sudah bertumpuk (dibuat sebelum aturan ini) dirapikan `trimOverlaps` saat dimuat —
-    head yang tertutup dibuang, bukan seluruh project — lalu langsung disimpan ulang. Autosave
-    flush saat `pagehide`/tab hidden; project tersimpan yang benar-benar rusak dicadangkan ke
-    `music-studio-project-v1-corrupt` + toast. Shortcut Spasi hidup lagi setelah sel diklik (blur
-    fokus tombol hanya untuk klik mouse, navigasi keyboard tetap). Verifikasi: build ✅, 62/62 test,
-    audit i18n 250/250, smoke regresi **22/22**, smoke fix **31/31**, probe restore **10/10**
-    (normal / legacy overlap / rusak), 0 page exception/console error.
   - ⚠️ **Jangan jalankan `pnpm build` bareng `pnpm dev`** di laptop ini — watcher + build + Chrome
     bikin Node `EMFILE` (dev server mati; halaman nyangkut `readyState=loading`). Untuk smoke:
     build dulu, lalu serve `dist/client` pakai static server kecil.
