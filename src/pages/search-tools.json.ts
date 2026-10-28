@@ -28,6 +28,7 @@ export const GET: APIRoute = () => {
     category: t.category,
     descKey: t.descKey,
     descFallback: t.descFallback,
+    keywords: t.keywords || '',
     icon: t.icon,
   }));
 

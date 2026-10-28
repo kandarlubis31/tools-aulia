@@ -24,6 +24,29 @@ export interface ChangelogEntry {
 export const changelogEntries: ChangelogEntry[] = [
   {
     date: '2026-10-28',
+    version: 'v2.26',
+    title: 'Notifikasi Error Lebih Akurat, Toast Pindah ke Kanan Atas, Gap Keyboard HP Diperbaiki',
+    titleEn: 'More Accurate Error Notifications, Toast Moved to Top-Right, Mobile Keyboard Gap Fixed',
+    desc: 'Notifikasi "Operasi gagal" dulu muncul hampir tiap saat walau tidak ada yang rusak. Sekarang toast hanya tampil untuk error nyata: rejection rutin seperti AbortError (fetch dibatalkan saat pindah halaman), clipboard/audio yang ditolak browser, atau jaringan putus cukup dicatat di console. Posisi toast juga dipindah ke pojok kanan atas biar sejajar dengan notifikasi lain, dan halaman dengan input numerik tidak lagi menyisakan pita gelap di atas keyboard Android.',
+    descEn: 'The "Operation failed" notification used to pop up constantly even when nothing was broken. The toast now only appears for genuine errors: routine rejections such as AbortError (fetch cancelled during page navigation), browser-denied clipboard/audio, or network failures stay in the console. The toast is also moved to the top-right corner to line up with other notifications, and pages with numeric inputs no longer leave a dark strip above the Android keyboard.',
+    items: [
+      'Filter error rutin (AbortError, NotAllowedError, InvalidStateError, ResizeObserver loop, Failed to fetch, Script error, error dari ekstensi) supaya toast "Operasi gagal / reload halaman" tidak lagi false positive',
+      'Toast error dipindah dari tengah-bawah ke kanan atas (top-24 right-5), stack notifikasi biasa otomatis bergeser supaya tidak tumpuk, plus role="alert" untuk screen reader',
+      'Batasi maksimal 3 toast error per halaman supaya error loop tidak membanjiri layar',
+      'Viewport meta tambah interactive-widget=resizes-content: layout ikut menyusut saat keyboard Android muncul, hilangkan pita hitam di atas keyboard pada halaman input numerik',
+      'Pencarian: field keywords baru + ranking relevansi, jadi cari "musik" langsung memunculkan Music Studio di urutan teratas',
+    ],
+    itemsEn: [
+      'Filter routine errors (AbortError, NotAllowedError, InvalidStateError, ResizeObserver loop, Failed to fetch, Script error, extension errors) so the "Operation failed / reload" toast is no longer a false positive',
+      'Error toast moved from bottom-center to top-right (top-24 right-5), the regular toast stack shifts automatically so they never overlap, plus role="alert" for screen readers',
+      'Cap at 3 error toasts per page so an error loop cannot flood the screen',
+      'Viewport meta now includes interactive-widget=resizes-content: the layout shrinks with the Android keyboard, removing the black strip above it on numeric-input pages',
+      'Search: new keywords field + relevance ranking, so typing "musik" puts Music Studio at the top',
+    ],
+    tags: ['fix', 'ux'],
+  },
+  {
+    date: '2026-10-28',
     version: 'v2.25',
     title: 'Music Studio — Mini DAW Baru, Video Studio OmniClip Dipensiunkan',
     titleEn: 'Music Studio — New Mini DAW, OmniClip Video Studio Retired',
