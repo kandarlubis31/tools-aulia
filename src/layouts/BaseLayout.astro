@@ -94,7 +94,11 @@ if (isPdfRoot) {
 <html lang="id" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
+  <!-- interactive-widget=resizes-content: layout viewport IKUT menyusut saat
+       keyboard Android muncul. Tanpa ini (default resizes-visual) tinggi halaman
+       tetap 100vh → Chrome scroll maksa dan menyisakan pita gelap di atas
+       keyboard pada halaman yang isinya cuma input numerik. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, interactive-widget=resizes-content" />
   <title>{fullTitle}</title>
   <meta name="original-title" content={pageTitle} />
   <meta name="description" content={description} />
@@ -1440,16 +1444,31 @@ if (isPdfRoot) {
               return;
             }
 
-            const filtered = toolsList.filter(t => {
+            // Skor relevansi: exact/awalan nama > nama > alias keywords >
+            // kategori > deskripsi. Tanpa ini hasil cuma ikut urutan tools.ts
+            // (cari "musik" memunculkan "Music Scale Reference" di atas
+            // "Music Studio").
+            const scoreTool = (t) => {
+              const name = t.name.toLowerCase();
+              const nameEn = (t.nameEn || '').toLowerCase();
+              const kw = (t.keywords || '').toLowerCase();
+              if (name === query || nameEn === query) return 100;
+              if (name.startsWith(query) || nameEn.startsWith(query)) return 90;
+              if (name.includes(query)) return 80;
+              if (nameEn.includes(query)) return 70;
+              if (kw && kw.includes(query)) return 60;
+              if (t.category.toLowerCase().includes(query)) return 40;
+              if (t.descFallback.toLowerCase().includes(query)) return 20;
               const enDesc = (window.i18n && window.i18n.t) ? window.i18n.t(t.descKey, '') : '';
-              // nameEn = judul versi Inggris dari translations (fallback '' kalau
-              // index lama masih tersaji dari cache SW yang belum punya field ini).
-              return t.name.toLowerCase().includes(query) ||
-                     (t.nameEn || '').toLowerCase().includes(query) ||
-                     t.descFallback.toLowerCase().includes(query) ||
-                     t.category.toLowerCase().includes(query) ||
-                     enDesc.toLowerCase().includes(query);
-            });
+              if (enDesc.toLowerCase().includes(query)) return 10;
+              return 0;
+            };
+
+            const filtered = toolsList
+              .map((t) => ({ t, s: scoreTool(t) }))
+              .filter((x) => x.s > 0)
+              .sort((a, b) => b.s - a.s)
+              .map((x) => x.t);
 
             if (filtered.length === 0) {
               searchResultsEl.innerHTML = '<div class="text-center py-8 text-matte-500 dark:text-matte-400"><p data-i18n="search.no_results">Tidak ada hasil untuk</p><p class="font-bold mt-1">"' + escHtml(query) + '"</p></div>';
@@ -1551,16 +1570,22 @@ if (isPdfRoot) {
       const showErrorOverlay = (message) => {
         // Avoid stacking multiple error toasts
         if (document.getElementById('error-boundary-toast')) return;
+        // Error loop (listener rusak, dll.) bisa memicu ratusan kali per detik.
+        const shown = (window.__errorToastCount || 0);
+        if (shown >= 3) return;
+        window.__errorToastCount = shown + 1;
 
         const toast = document.createElement('div');
         toast.id = 'error-boundary-toast';
-        // z-[85]: DI BAWAH search-modal (z-100) & feedback-modal (z-110) — sebelumnya
-        // z-[200] menutupi tombol Tutup/X modal di layar kecil → search "gak bisa
-        // ditutup" padahal yang kena tap adalah toast ini.
-        toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[85] bg-rose-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-sm font-medium animate-fade-in-up max-w-lg';
+        toast.setAttribute('role', 'alert');
+        // Top-right, sejajar dengan #toast-container (top-24 right-5) — dulu
+        // bottom-center: nutupin konten bawah dan di mobile ketutup keyboard.
+        // z-[85]: DI BAWAH search-modal (z-100) & feedback-modal (z-110) —
+        // sebelumnya z-[200] menutupi tombol Tutup/X modal di layar kecil.
+        toast.className = 'fixed top-24 right-5 z-[85] w-max max-w-[min(24rem,calc(100vw-2.5rem))] bg-rose-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-sm font-medium animate-fade-in-down';
         toast.innerHTML = `
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span class="flex-1">${message}</span>
+          <span class="flex-1 min-w-0 break-words">${message}</span>
           <button id="error-reload-btn" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-colors whitespace-nowrap">Reload</button>
           <button id="error-dismiss-btn" class="text-white/60 hover:text-white transition-colors" aria-label="Tutup">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1568,38 +1593,90 @@ if (isPdfRoot) {
         `;
         document.body.appendChild(toast);
 
-        document.getElementById('error-reload-btn')?.addEventListener('click', () => {
+        // Geser stack toast biasa ke bawah selama toast error tampil, biar
+        // keduanya tidak saling tumpuk di pojok kanan atas.
+        const toastHost = document.getElementById('toast-container');
+        const placeBelow = () => {
+          if (!toastHost || !toast.parentNode) return;
+          toastHost.style.top = Math.round(toast.getBoundingClientRect().bottom + 12) + 'px';
+        };
+        const removeToast = () => {
+          toast.remove();
+          if (toastHost) toastHost.style.top = '';
+          window.removeEventListener('resize', placeBelow);
+        };
+        requestAnimationFrame(placeBelow);
+        window.addEventListener('resize', placeBelow);
+
+        toast.querySelector('#error-reload-btn')?.addEventListener('click', () => {
           window.location.reload();
         });
-        document.getElementById('error-dismiss-btn')?.addEventListener('click', () => {
-          toast.remove();
-        });
+        toast.querySelector('#error-dismiss-btn')?.addEventListener('click', removeToast);
         // Klik body toast (bukan tombol) → dismiss juga, biar cepat hilang
         // dan tidak menghalangi interaksi di bawahnya.
         toast.addEventListener('click', function (e) {
           var t = e.target;
-          if (t && t.closest && !t.closest('#error-reload-btn') && !t.closest('#error-dismiss-btn')) toast.remove();
+          if (t && t.closest && !t.closest('#error-reload-btn') && !t.closest('#error-dismiss-btn')) removeToast();
         });
 
         // Auto-dismiss after 30s
-        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 30000);
+        setTimeout(() => { if (toast.parentNode) removeToast(); }, 30000);
       };
 
-      window.onerror = (msg, _source, _lineno, _colno, _error) => {
+      // ── Filter error "normal" ──
+      // App ini 100% client-side, jadi rejection berikut rutin terjadi dan BUKAN
+      // tanda halaman rusak. Dulu semuanya memunculkan "Operasi gagal. Coba
+      // reload halaman." (false positive yang bikin user panik):
+      //  - AbortError: fetch/stream dibatalkan saat pindah halaman (SPA)
+      //  - NotAllowedError: clipboard/audio/fullscreen ditolak browser
+      //  - InvalidStateError: AudioContext / AudioBufferSource sudah closed
+      //  - ResizeObserver loop / Script error: warning layout & cross-origin
+      //  - Failed to fetch / network error: masalah koneksi, bukan kode
+      const BENIGN_NAMES = /^(AbortError|NotAllowedError|InvalidStateError|NotSupportedError|NetworkError|QuotaExceededError|TimeoutError|EncodingError)$/;
+      const BENIGN_TEXT = /(AbortError|operation was aborted|aborted by|The user aborted|interrupted|ResizeObserver loop|Script error|Failed to fetch|NetworkError|Load failed|ERR_NETWORK|ERR_INTERNET_DISCONNECTED|ERR_CONNECTION|Importing a module script failed|AudioContext|not allowed to start|play\(\) failed|The operation is insecure|QuotaExceeded|document is not focused|permissions policy)/i;
+      const FOREIGN_SOURCE = /^(chrome|moz|safari|safari-web|ms-browser|edge)-extension:|^(about|data|blob):/i;
+
+      const isBenignError = (err, msg) => {
+        const name = err && err.name ? String(err.name) : '';
+        const text = String(msg || (err && (err.message || err)) || '');
+        if (BENIGN_NAMES.test(name)) return true;
+        if (BENIGN_TEXT.test(name + ' ' + text)) return true;
+        // Stack yang berakhir di ekstensi browser bukan urusan aplikasi.
+        const stack = err && err.stack ? String(err.stack) : '';
+        if (stack) {
+          const lines = stack.split('\n');
+          if (lines.some((l) => FOREIGN_SOURCE.test(l.trim().replace(/^at\s+/, '')))) return true;
+        }
+        return false;
+      };
+
+      window.onerror = (msg, source, _lineno, _colno, error) => {
+        console.error('[ErrorBoundary]', msg, source || '');
+        // Tanpa Error object = resource error / "Script error." cross-origin:
+        // tidak ada informasi yang bisa ditindaklanjuti user.
+        if (!error) return false;
+        if (source && FOREIGN_SOURCE.test(String(source))) return false;
+        if (isBenignError(error, msg)) return false;
         const text = window._tToast
           ? window._tToast('⚠️ Terjadi error. Coba reload halaman.')
           : '⚠️ Terjadi error. Coba reload halaman.';
         showErrorOverlay(text);
-        console.error('[ErrorBoundary]', msg);
         return false; // Let console still log
       };
 
       window.addEventListener('unhandledrejection', (event) => {
+        const reason = event.reason;
+        console.error('[ErrorBoundary] Unhandled rejection:', reason);
+        // Hanya Error asli (punya stack) dari kode aplikasi yang layak memunculkan
+        // toast. Rejection string/undefined/AbortError cukup di console.
+        if (!(reason instanceof Error) || isBenignError(reason)) {
+          event.preventDefault();
+          return;
+        }
         const text = window._tToast
           ? window._tToast('⚠️ Operasi gagal. Coba reload halaman.')
           : '⚠️ Operasi gagal. Coba reload halaman.';
         showErrorOverlay(text);
-        console.error('[ErrorBoundary] Unhandled rejection:', event.reason);
         event.preventDefault();
       });
     }
