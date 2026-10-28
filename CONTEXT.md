@@ -140,7 +140,11 @@ Input karyawan (+import massal) → absensi/cuti → hitung (PPh 21 / THR / hari
   - **Verifikasi follow-up (Oct 28)**: build ✅ (7 guardrail), 62/62 test, audit i18n 250/250, smoke
     CDP **22/22** (playhead style, note length/velocity + autosave, JSON export/import, lifecycle
     re-init, drum interaction, 0 page exception/console error). Note duration now extends audible
-    synth sustain; CSS playhead uses valid theme color syntax.
+    synth sustain; CSS playhead uses valid theme color syntax. Commit `472baf7`.
+    Review edge case (probe CDP terpisah, tanpa perubahan kode): hapus note lewat klik kedua tanpa
+    undo, dropdown Length mengedit note terpilih + memotong default global, edit <350 ms sebelum
+    reload hilang (tak ada flush `pagehide`), project tersimpan yang rusak ditimpa tanpa notifikasi,
+    note bisa tumpang-tindih (diterima `validProject`), dan shortcut Spasi mati setelah sel diklik.
   - ⚠️ **Jangan jalankan `pnpm build` bareng `pnpm dev`** di laptop ini — watcher + build + Chrome
     bikin Node `EMFILE` (dev server mati; halaman nyangkut `readyState=loading`). Untuk smoke:
     build dulu, lalu serve `dist/client` pakai static server kecil.
