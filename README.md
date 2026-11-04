@@ -90,7 +90,6 @@ tools-aulia/
 │   └── styles/         # global.css + critical.css (inline above-the-fold)
 ├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json, vendor/
 ├── docs/
-│   ├── CONTEXT.md      # Project context & decision log
 │   ├── adr/            # Architecture Decision Records
 │   ├── agents/         # Agent config references
 │   └── archive/        # Old plans & audits
@@ -186,7 +185,6 @@ tools-aulia/
 │   └── styles/         # global.css + critical.css (inline above-the-fold)
 ├── public/             # Static assets, PWA icons, id-words.json, kbbi-sinonim.json, vendor/
 ├── docs/
-│   ├── CONTEXT.md      # Project context & decision log
 │   ├── adr/            # Architecture Decision Records
 │   ├── agents/         # Agent config references
 │   └── archive/        # Old plans & audits
