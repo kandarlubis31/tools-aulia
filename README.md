@@ -4,7 +4,7 @@
 
 **250+ Tools Developer & Produktivitas · 100% Client-Side · Gratis Selamanya**
 
-[🇮🇩 Indonesia](#indonesia) · [🇬🇧 English](#english)
+[ Indonesia](#indonesia) · [ English](#english)
 
 ![Astro](https://img.shields.io/badge/astro-5.x-purple.svg)
 ![Tailwind](https://img.shields.io/badge/tailwind-3.x-06B6D4.svg)
@@ -18,22 +18,22 @@
 ---
 
 <a name="indonesia"></a>
-## 🇮🇩 Indonesia
+## Indonesia
 
 ### Tentang
 
 **Tools MasAul** adalah koleksi 250+ tools developer & produktivitas yang berjalan **100% di browser**. Tidak ada data yang dikirim ke server — semua pemrosesan file (PDF, gambar, teks) dilakukan secara lokal. PWA-enabled untuk akses offline.
 
-### ✨ Kenapa Tools MasAul?
+### Kenapa Tools MasAul?
 
-- 🔒 **Privasi Utama** — File tidak pernah di-upload ke server. Semua diproses di browser kamu.
-- ⚡ **Cepat & Ringan** — Built dengan Astro 5 + Tailwind CSS. Skor Lighthouse 95+.
-- 📱 **PWA Ready** — Install sebagai aplikasi di HP/laptop, akses offline.
-- 🌙 **Dark Mode** — Otomatis mengikuti sistem.
-- 🌍 **Bilingual** — Bahasa Indonesia & English (client-side i18n).
-- ♿ **Accessible** — Skip-to-content, aria-labels lengkap, keyboard shortcuts (`/` atau `Ctrl+K` cari).
+- **Privasi Utama** — File tidak pernah di-upload ke server. Semua diproses di browser kamu.
+- **Cepat & Ringan** — Built dengan Astro 5 + Tailwind CSS. Skor Lighthouse 95+.
+- **PWA Ready** — Install sebagai aplikasi di HP/laptop, akses offline.
+- **Dark Mode** — Otomatis mengikuti sistem.
+- **Bilingual** — Bahasa Indonesia & English (client-side i18n).
+- **Accessible** — Skip-to-content, aria-labels lengkap, keyboard shortcuts (`/` atau `Ctrl+K` cari).
 
-### 🧰 Kategori Tools
+### Kategori Tools
 
 | Kategori | Jumlah | Highlight |
 |----------|--------|-----------|
@@ -50,7 +50,7 @@
 | **Life** | 8 | Mood Tracker, Certificate, Snake, Magic 8-Ball |
 | **File** | 7 | CSV↔JSON, PDF→Markdown, Zip Extractor, Batch Convert, Splitter, Renamer |
 
-### 🚀 Quick Start
+### Quick Start
 
 ```bash
 git clone https://github.com/kandarlubis31/tools-aulia.git
@@ -60,7 +60,7 @@ pnpm dev        # → http://localhost:4321
 pnpm build      # Production build
 ```
 
-### 🛠️ Tech Stack
+### Tech Stack
 
 | Layer | Tech |
 |-------|------|
@@ -76,7 +76,7 @@ pnpm build      # Production build
 | PWA | vite-pwa (NetworkFirst, 25MB cache) |
 | Hosting | Vercel (SSG) |
 
-### 📁 Struktur Project
+### Struktur Project
 
 ```
 tools-aulia/
@@ -96,7 +96,7 @@ tools-aulia/
 └── package.json
 ```
 
-### 🤝 Kontribusi
+### Kontribusi
 
 1. Fork repository ini
 2. Buat branch: `git checkout -b feature/nama-tool`
@@ -104,7 +104,7 @@ tools-aulia/
 4. Push: `git push origin feature/nama-tool`
 5. Buat Pull Request
 
-### 📄 Lisensi
+### Lisensi
 
 [MIT License](LICENSE) © Aulia Iskandar Lubis
 
@@ -113,22 +113,22 @@ Kode di repo ini boleh diindeks oleh corpus publik — termasuk [XERJ Corpus Hub
 ---
 
 <a name="english"></a>
-## 🇬🇧 English
+## English
 
 ### About
 
 **Tools MasAul** is a collection of 250+ developer & productivity tools that run **100% in the browser**. No data is ever sent to a server — all file processing (PDF, images, text) happens locally. PWA-enabled for offline access.
 
-### ✨ Why Tools MasAul?
+### Why Tools MasAul?
 
-- 🔒 **Privacy First** — Files never leave your browser. Everything is processed locally.
-- ⚡ **Fast & Lightweight** — Built with Astro 5 + Tailwind CSS. Lighthouse score 95+.
-- 📱 **PWA Ready** — Install as an app on mobile/desktop, works offline.
-- 🌙 **Dark Mode** — Auto-detects system preference.
-- 🌍 **Bilingual** — Indonesian & English (client-side i18n).
-- ♿ **Accessible** — Skip-to-content, 22+ aria-labels, keyboard shortcuts.
+- **Privacy First** — Files never leave your browser. Everything is processed locally.
+- **Fast & Lightweight** — Built with Astro 5 + Tailwind CSS. Lighthouse score 95+.
+- **PWA Ready** — Install as an app on mobile/desktop, works offline.
+- **Dark Mode** — Auto-detects system preference.
+- **Bilingual** — Indonesian & English (client-side i18n).
+- **Accessible** — Skip-to-content, 22+ aria-labels, keyboard shortcuts.
 
-### 🧰 Tool Categories
+### Tool Categories
 
 | Category | Count | Highlights |
 |----------|-------|------------|
@@ -145,7 +145,7 @@ Kode di repo ini boleh diindeks oleh corpus publik — termasuk [XERJ Corpus Hub
 | **Life** | 8 | Mood Tracker, Certificate, Snake, Magic 8-Ball |
 | **File** | 7 | CSV↔JSON, PDF→Markdown, Zip Extractor, Batch Convert, Splitter, Renamer |
 
-### 🚀 Quick Start
+### Quick Start
 
 ```bash
 git clone https://github.com/kandarlubis31/tools-aulia.git
@@ -155,7 +155,7 @@ pnpm dev        # → http://localhost:4321
 pnpm build      # Production build
 ```
 
-### 🛠️ Tech Stack
+### Tech Stack
 
 | Layer | Tech |
 |-------|------|
@@ -171,7 +171,7 @@ pnpm build      # Production build
 | PWA | vite-pwa (NetworkFirst, 25MB cache) |
 | Hosting | Vercel (SSG) |
 
-### 📁 Project Structure
+### Project Structure
 
 ```
 tools-aulia/
@@ -191,7 +191,7 @@ tools-aulia/
 └── package.json
 ```
 
-### 🤝 Contributing
+### Contributing
 
 1. Fork this repository
 2. Create branch: `git checkout -b feature/tool-name`
@@ -199,7 +199,7 @@ tools-aulia/
 4. Push: `git push origin feature/tool-name`
 5. Open Pull Request
 
-### 📄 License
+### License
 
 [MIT License](LICENSE) © Aulia Iskandar Lubis
 
@@ -209,6 +209,6 @@ Code in this repo may be indexed by public code corpora — including the [XERJ 
 
 <div align="center">
 
-**Made with ❤️ by [Kandar Lubis](https://github.com/kandarlubis31)** · [paklubis.my.id](https://paklubis.my.id)
+**Made with by [Kandar Lubis](https://github.com/kandarlubis31)** · [paklubis.my.id](https://paklubis.my.id)
 
 </div>
