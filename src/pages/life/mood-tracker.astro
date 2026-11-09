@@ -57,9 +57,19 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 </BaseLayout>
 
 <script>
+import { t } from '../../i18n/translations';
+
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+  // Label mood & teks riwayat di-bake via t() → render ulang saat ganti bahasa
+  let __moodRender: (() => void) | null = null;
+  window.addEventListener('langchange', () => { __moodRender?.(); });
+
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) { __moodRender = null; return; }
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
 
     const todayDate = document.getElementById('today-date')!;
     const moodButtons = document.getElementById('mood-buttons')!;
@@ -72,11 +82,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     const STORAGE_KEY = 'ta-mood-tracker';
     const MOODS = [
-      { emoji: '😄', label: 'Senang', value: 5, color: 'bg-yellow-400' },
-      { emoji: '🙂', label: 'Baik', value: 4, color: 'bg-green-400' },
-      { emoji: '😐', label: 'Biasa', value: 3, color: 'bg-blue-400' },
-      { emoji: '😕', label: 'Kurang', value: 2, color: 'bg-orange-400' },
-      { emoji: '😢', label: 'Sedih', value: 1, color: 'bg-red-400' },
+      { emoji: '😄', key: 'mood.senang', label: 'Senang', value: 5, color: 'bg-yellow-400' },
+      { emoji: '🙂', key: 'mood.baik', label: 'Baik', value: 4, color: 'bg-green-400' },
+      { emoji: '😐', key: 'mood.biasa', label: 'Biasa', value: 3, color: 'bg-blue-400' },
+      { emoji: '😕', key: 'mood.kurang', label: 'Kurang', value: 2, color: 'bg-orange-400' },
+      { emoji: '😢', key: 'mood.sedih', label: 'Sedih', value: 1, color: 'bg-red-400' },
     ];
 
     function getToday() {
@@ -90,43 +100,45 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     function formatDate(key: string): string {
       const d = new Date(key);
-      return d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      // Locale ikut bahasa aktif — dulu hardcoded id-ID (EN user tetap lihat format ID)
+      let loc = 'id-ID';
+      try { if ((localStorage.getItem('lang') || 'id') === 'en') loc = 'en-US'; } catch { /* storage blokir */ }
+      return d.toLocaleDateString(loc, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     }
 
     const today = getToday();
     todayDate.textContent = formatDate(today);
 
-    // Render mood buttons
-    const history = getHistory();
-    const todayEntry = history[today];
-
-    MOODS.forEach(mood => {
-      const btn = document.createElement('button');
-      btn.className = `mood-btn flex flex-col items-center gap-1 p-3 rounded-xl text-center transition-all active:scale-95 ${
-        todayEntry?.value === mood.value
-          ? 'ring-2 ring-amber-500 scale-110 bg-matte-100 dark:bg-surface-elevated'
-          : 'bg-matte-50 dark:bg-surface-elevated hover:bg-matte-100 dark:hover:bg-surface-hover'
-      }`;
-      btn.innerHTML = `<span class="text-3xl">${mood.emoji}</span><span class="text-2xs font-bold text-matte-500 dark:text-matte-300">${mood.label}</span>`;
-      btn.addEventListener('click', () => {
-        const h = getHistory();
-        h[today] = { value: mood.value, note: moodNote.value.trim() };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(h));
-        // Highlight selected
-        document.querySelectorAll('.mood-btn').forEach(b => {
-          b.className = 'mood-btn flex flex-col items-center gap-1 p-3 rounded-xl text-center transition-all active:scale-95 bg-matte-50 dark:bg-surface-elevated hover:bg-matte-100 dark:hover:bg-surface-hover';
+    // Render mood buttons — fungsi terpisah biar bisa render ulang saat ganti bahasa
+    function renderButtons() {
+      const te = getHistory()[today];
+      moodButtons.innerHTML = '';
+      MOODS.forEach(mood => {
+        const btn = document.createElement('button');
+        btn.className = `mood-btn flex flex-col items-center gap-1 p-3 rounded-xl text-center transition-all active:scale-95 ${
+          te?.value === mood.value
+            ? 'ring-2 ring-amber-500 scale-110 bg-matte-100 dark:bg-surface-elevated'
+            : 'bg-matte-50 dark:bg-surface-elevated hover:bg-matte-100 dark:hover:bg-surface-hover'
+        }`;
+        btn.innerHTML = `<span class="text-3xl">${mood.emoji}</span><span class="text-2xs font-bold text-matte-500 dark:text-matte-300">${t(mood.key, mood.label)}</span>`;
+        btn.addEventListener('click', () => {
+          const h = getHistory();
+          h[today] = { value: mood.value, note: moodNote.value.trim() };
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(h)); } catch { /* quota — abaikan */ }
+          renderButtons();
+          renderHistory();
+          renderStats();
         });
-        btn.className = 'mood-btn flex flex-col items-center gap-1 p-3 rounded-xl text-center transition-all active:scale-95 ring-2 ring-amber-500 scale-110 bg-matte-100 dark:bg-surface-elevated';
-        renderHistory();
-        renderStats();
+        moodButtons.appendChild(btn);
       });
-      moodButtons.appendChild(btn);
-    });
+    }
+    renderButtons();
 
+    const todayEntry = getHistory()[today];
     if (todayEntry?.note) moodNote.value = todayEntry.note;
     moodNote.addEventListener('input', () => {
       const h = getHistory();
-      if (h[today]) { h[today].note = moodNote.value.trim(); localStorage.setItem(STORAGE_KEY, JSON.stringify(h)); }
+      if (h[today]) { h[today].note = moodNote.value.trim(); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(h)); } catch { /* quota — abaikan */ } }
     });
 
     // Undo hari ini (DoD Life: undo input)
@@ -137,9 +149,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         delete h[today];
         localStorage.setItem(STORAGE_KEY, JSON.stringify(h));
         moodNote.value = '';
-        document.querySelectorAll('.mood-btn').forEach((b) => {
-          b.className = 'mood-btn flex flex-col items-center gap-1 p-3 rounded-xl text-center transition-all active:scale-95 bg-matte-50 dark:bg-surface-elevated hover:bg-matte-100 dark:hover:bg-surface-hover';
-        });
+        renderButtons();
         renderHistory();
         renderStats();
         toast('Mood hari ini dihapus.');
@@ -185,7 +195,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       const entries = Object.entries(h).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 30);
 
       if (!entries.length) {
-        moodHistory.innerHTML = '<p class="text-xs text-matte-400 text-center py-4">Belum ada catatan mood.</p>';
+        moodHistory.innerHTML = '<p class="text-xs text-matte-400 text-center py-4">' + t('mood.history_empty', 'Belum ada catatan mood.') + '</p>';
         return;
       }
 
@@ -199,7 +209,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
               <span class="text-xs font-bold text-matte-700 dark:text-matte-200">${formatDate(date)}</span>
-              ${isToday ? '<span class="text-2xs text-amber-500 font-bold">Hari ini</span>' : ''}
+              ${isToday ? '<span class="text-2xs text-amber-500 font-bold">' + t('label.today', 'Hari ini') + '</span>' : ''}
             </div>
             <div class="h-1.5 rounded-full bg-matte-200 dark:bg-matte-700 mt-1">
               <div class="h-full rounded-full ${mood.color}" style="width:${pct}%"></div>
@@ -216,5 +226,13 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
     renderHistory();
     renderStats();
+
+    // Re-render saat ganti bahasa (label mood, badge, teks kosong, format tanggal)
+    __moodRender = () => {
+      todayDate.textContent = formatDate(today);
+      renderButtons();
+      renderHistory();
+      renderStats();
+    };
   });
 </script>

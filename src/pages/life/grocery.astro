@@ -42,7 +42,7 @@ import { t } from '../../i18n/translations';
     window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
   function esc(s: unknown) { return String(s ?? '').replace(/</g, '&lt;'); }
 
-  function save() { localStorage.setItem(KEY, JSON.stringify(items)); render(); }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch { toast('Gagal menyimpan - penyimpanan penuh', 'error'); } render(); }
 
   function render() {
     const done = items.filter(it => it.done).length;
@@ -68,6 +68,7 @@ import { t } from '../../i18n/translations';
     save();
   });
   itemInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('add-btn')!.click(); });
+  qtyInput.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('add-btn')!.click(); });
 
   document.getElementById('clear-done')!.addEventListener('click', () => {
     const n = items.filter(it => it.done).length;
@@ -78,6 +79,8 @@ import { t } from '../../i18n/translations';
   });
   document.getElementById('clear-all')!.addEventListener('click', () => {
     if (!items.length) { toast('Daftar sudah kosong.', 'info'); return; }
+    // Konfirmasi dulu — 1 klik tanpa jaring = data lenyap (pola bmi)
+    if (!confirm(window._tToast ? window._tToast('Hapus semua item belanja?') : 'Hapus semua item belanja?')) return;
     items = [];
     save();
     toast('Daftar belanja dikosongkan', 'info');

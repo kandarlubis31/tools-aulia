@@ -71,10 +71,20 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
 <script>
 import { useLocalHistory } from '../../composables/useLocalHistory';
+import { t } from '../../i18n/translations';
 
 const __page = (location.pathname.replace(/\/+$/, '') || '/');
 
-  document.addEventListener('astro:page-load', () => {if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) return;
+  // Teks canvas di-bake via t() → re-draw saat ganti bahasa (pola langchange sleep/bucket)
+  let __certRender: (() => void) | null = null;
+  window.addEventListener('langchange', () => { __certRender?.(); });
+  const getLang = () => { try { return localStorage.getItem('lang') || 'id'; } catch { return 'id'; } };
+
+  document.addEventListener('astro:page-load', () => {
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== __page) { __certRender = null; return; }
+    const anchor = document.querySelector('main button, main input, main select, main textarea');
+    if (!anchor || anchor.dataset.autoBound === 'true') return;
+    anchor.dataset.autoBound = 'true';
 
     const nameInput = document.getElementById('name-input') as HTMLInputElement;
     const eventInput = document.getElementById('event-input') as HTMLInputElement;
@@ -115,7 +125,11 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         historyList.appendChild(li);
       });
     };
-    historyClear.addEventListener('click', () => { history.clear(); renderHistory(); });
+    historyClear.addEventListener('click', () => {
+      if (!confirm(window._tToast ? window._tToast('Hapus semua riwayat?') : 'Hapus semua riwayat?')) return;
+      history.clear();
+      renderHistory();
+    });
 
     const makeThumb = (): string | undefined => {
       try {
@@ -129,6 +143,15 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     };
 
     let borderColor = '#1e40af';
+
+    // Auto-shrink: teks panjang mengecil sendiri biar gak ke-clip tepi canvas
+    const fitFont = (c: CanvasRenderingContext2D, text: string, maxW: number, px: number, weight = '') => {
+      const set = (s: number) => { c.font = (weight ? weight + ' ' : '') + s + 'px serif'; };
+      set(px);
+      let size = px;
+      while (c.measureText(text).width > maxW && size > 11) { size -= 1; set(size); }
+      return size;
+    };
 
     // Set today
     dateInput.value = new Date().toISOString().split('T')[0];
@@ -162,22 +185,22 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       ctx.fillStyle = borderColor;
       ctx.font = 'bold 28px serif';
       ctx.textAlign = 'center';
-      ctx.fillText('SERTIFIKAT', W / 2, 110);
+      ctx.fillText(t('cert.canvas_title', 'SERTIFIKAT'), W / 2, 110);
 
       ctx.fillStyle = '#64748b';
       ctx.font = 'italic 16px serif';
-      ctx.fillText('PENGHARGAAN', W / 2, 140);
+      ctx.fillText(t('cert.canvas_subtitle', 'PENGHARGAAN'), W / 2, 140);
 
-      // Event
+      // Event (fit — teks panjang mengecil sendiri, gak ke-clip)
       ctx.fillStyle = '#334155';
-      ctx.font = 'bold 18px serif';
-      const event = eventInput.value || '[Nama Acara]';
+      const event = eventInput.value || t('cert.ph_event', '[Nama Acara]');
+      fitFont(ctx, event, W - 120, 18, 'bold');
       ctx.fillText(event, W / 2, 185);
 
-      // Name
+      // Name (fit — nama panjang mengecil sendiri, gak ke-clip)
       ctx.fillStyle = borderColor;
-      ctx.font = 'bold 32px serif';
-      const name = nameInput.value || '[Nama Penerima]';
+      const name = nameInput.value || t('cert.ph_name', '[Nama Penerima]');
+      fitFont(ctx, name, W - 140, 32, 'bold');
       ctx.fillText(name, W / 2, 250);
       ctx.strokeStyle = borderColor;
       ctx.lineWidth = 1;
@@ -187,21 +210,24 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       ctx.lineTo(W / 2 + nameW / 2 + 20, 270);
       ctx.stroke();
 
-      // Description
+      // Description (fit per baris)
       ctx.fillStyle = '#64748b';
-      ctx.font = '14px serif';
-      ctx.fillText('Atas dedikasi dan prestasi luar biasa dalam:', W / 2, 305);
+      const descLine = t('cert.canvas_desc', 'Atas dedikasi dan prestasi luar biasa dalam:');
+      fitFont(ctx, descLine, W - 90, 14);
+      ctx.fillText(descLine, W / 2, 305);
+      fitFont(ctx, event, W - 90, 14);
       ctx.fillText(event, W / 2, 325);
 
-      // Date
-      const date = dateInput.value ? new Date(dateInput.value).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '[Tanggal]';
+      // Date (locale ikut bahasa aktif — dulu hardcoded id-ID)
+      const loc = getLang() === 'en' ? 'en-US' : 'id-ID';
+      const date = dateInput.value ? new Date(dateInput.value).toLocaleDateString(loc, { year: 'numeric', month: 'long', day: 'numeric' }) : t('cert.ph_date', '[Tanggal]');
       ctx.font = '14px serif';
       ctx.fillText(date, W / 2, 365);
 
-      // Organization
+      // Organization (fit)
       ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 16px serif';
-      const org = orgInput.value || '[Organisasi]';
+      const org = orgInput.value || t('cert.ph_org', '[Organisasi]');
+      fitFont(ctx, org, W - 140, 16, 'bold');
       ctx.fillText(org, W / 2, 395);
     }
 
@@ -246,6 +272,7 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
     // Default active
     const defaultBtn = document.querySelector('.border-color-btn[data-color="#1e40af"]');
     if (defaultBtn) defaultBtn.style.outline = '3px solid #1e40af';
+    __certRender = update;
     update();
     renderHistory();
   });

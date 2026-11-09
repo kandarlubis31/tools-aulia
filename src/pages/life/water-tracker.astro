@@ -6,13 +6,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
   <ToolPageHeader title="Water Tracker" titleKey="header.water_tracker" desc="Catat minum air — capai target harian!" descKey="header.water_tracker_desc" icon='<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><path d="M7 14a5 5 0 0 0 10 0"/>' />
 
   <div class="card-base p-5 space-y-4">
-    <div class="flex gap-2 justify-center">
+    <div class="flex gap-2 justify-center flex-wrap">
       <button id="add-200" class="btn-secondary text-sm px-4">+200ml</button>
       <button id="add-300" class="btn-secondary text-sm px-4">+300ml</button>
       <button id="add-500" class="btn-primary text-sm px-4">+500ml</button>
       <button id="add-custom-btn" class="btn-secondary text-sm px-3" data-i18n="water.custom">+Custom</button>
-      <input id="custom-amt" type="number" min="50" step="50" value="350" class="input-field w-16 text-sm hidden" aria-label="Custom ml">
-      <button id="undo-btn" class="btn-secondary text-sm" aria-label="Undo">↩</button>
+      <input id="custom-amt" type="number" min="50" step="50" value="350" class="input-field w-16 text-sm hidden" aria-label="Custom ml" data-i18n-attr="aria-label" data-i18n="water.custom_aria">
+      <button id="undo-btn" class="btn-secondary text-sm" aria-label="Undo" data-i18n-attr="aria-label" data-i18n="btn.undo">↩</button>
     </div>
 
     <div class="text-center">
@@ -47,7 +47,11 @@ import { t } from '../../i18n/translations';
   const KEY = 'water_tracker';
   const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
     window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
-  const today = new Date().toISOString().slice(0, 10);
+  // Tanggal LOCAL — dulu pakai toISOString (UTC) → batas hari geser ke07:00 WIB,
+  // minum jam 6 pagi jatuh ke "kemarin"
+  const localDate = (d: Date = new Date()) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const today = localDate();
 
   let data: Record<string, number[]> = {};
   try {
@@ -56,8 +60,16 @@ import { t } from '../../i18n/translations';
   } catch { data = {}; }
   if (!Array.isArray(data[today])) data[today] = [];
 
+  // Target harian di-persist — dulu reset ke 2000 tiap reload
+  const GOAL_KEY = 'water_goal';
+  const goalInp = document.getElementById('goal') as HTMLInputElement;
+  try {
+    const saved = parseInt(localStorage.getItem(GOAL_KEY) || '', 10);
+    if (saved >= 500) goalInp.value = String(saved);
+  } catch { /* storage blokir — pakai default */ }
+
   function getGoal(): number {
-    return parseInt((document.getElementById('goal') as HTMLInputElement).value, 10) || 2000;
+    return parseInt(goalInp.value, 10) || 2000;
   }
 
   function update() {
@@ -79,7 +91,7 @@ import { t } from '../../i18n/translations';
       : t('water.empty_log', 'Belum minum hari ini');
   }
 
-  function save() { localStorage.setItem(KEY, JSON.stringify(data)); update(); }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { /* quota — abaikan */ } update(); }
 
   function addAmount(ml: number) {
     const before = (data[today] || []).reduce((s, v) => s + v, 0);
@@ -112,7 +124,10 @@ import { t } from '../../i18n/translations';
     }
   });
 
-  document.getElementById('goal')!.addEventListener('input', update);
+  goalInp.addEventListener('input', () => {
+    try { localStorage.setItem(GOAL_KEY, goalInp.value); } catch { /* quota — abaikan */ }
+    update();
+  });
   update();
   __render = update;
 

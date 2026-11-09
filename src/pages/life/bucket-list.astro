@@ -38,8 +38,13 @@ import { t } from '../../i18n/translations';
   const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
     window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
   function esc(s: unknown) { return String(s ?? '').replace(/</g, '&lt;'); }
+  // Tanggal LOCAL (bukan UTC — dulu jam pagi tanggalnya kegeser ke hari sebelumnya)
+  const localDate = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
 
-  function save() { localStorage.setItem(KEY, JSON.stringify(goals)); render(); }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(goals)); } catch { toast('Gagal menyimpan - penyimpanan penuh', 'error'); } render(); }
 
   function render() {
     const done = goals.filter(g => g.done).length;
@@ -66,7 +71,7 @@ import { t } from '../../i18n/translations';
     const text = goalInput.value.trim();
     if (!text) { toast('Tulis goal dulu!', 'error'); return; }
     if (text.length > 200) { toast('Goal terlalu panjang (maks 200 karakter)', 'error'); return; }
-    goals.push({ text, date: new Date().toISOString().slice(0, 10), done: false });
+    goals.push({ text, date: localDate(), done: false });
     goalInput.value = '';
     save();
     toast('Goal ditambahkan!');
