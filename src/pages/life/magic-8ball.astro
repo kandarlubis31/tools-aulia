@@ -3,112 +3,163 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolPageHeader from '../../components/ToolPageHeader.astro';
 ---
 
-<BaseLayout pageTitle="Magic 8-Ball">
+<BaseLayout pageTitle="Kerang Ajaib - Tanya Nasib & Tarik Tali" description="Kerang ajaib ala Club SpongeBob: ketik pertanyaan, tarik talinya, dengarkan sabda mutlaknya. Fun tool 100% client-side.">
   <div class="max-w-lg mx-auto px-4 min-h-[60vh]">
     <ToolPageHeader
-      title="Magic 8-Ball"
+      title="Kerang Ajaib"
       titleKey="header.magic_8ball"
-      desc="Tanya bola ajaib & dapatkan jawaban misterius. Fun tool 100% random."
+      desc="Tarik talinya & dengarkan sabda mutlaknya!"
       descKey="header.magic_8ball_desc"
-      icon='<circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2a10 10 0 0 0 0 20"/><path d="M12 9v3"/><circle cx="12" cy="8" r="0.5"/>'
+      icon='<path d="M12 21 4.3 12.8A9.7 9.7 0 0 1 19.7 12.8Z"/><path d="M12 21 9 11"/><path d="M12 21v-10"/><path d="M12 21 15 11"/>'
     />
 
     <div class="card-base p-8 text-center animate-fade-in">
-      <div class="relative mx-auto w-56 h-56 mb-6">
-        <div id="ball" aria-label="Bola ajaib — klik untuk bertanya" data-i18n-attr="aria-label" data-i18n="magic.aria" class="w-full h-full rounded-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-2xl flex items-center justify-center transition-transform duration-500 cursor-pointer active:scale-95">
-          <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-800 to-indigo-900 flex items-center justify-center shadow-inner">
-            <div id="ball-text" class="text-white text-center px-4">
-              <p class="text-2xs font-bold uppercase tracking-wider opacity-60" data-i18n="magic.ask">Klik untuk bertanya</p>
-            </div>
-          </div>
-        </div>
+      <!-- Dua elemen: parent float (CSS animation) > child shake (inline transform) —
+           biar animasi melayang gak ketimpa getaran (cascade: animation > inline) -->
+      <div class="mx-auto w-40 h-40 mb-4 conch-float">
+        <button id="conch" type="button"
+          aria-label="Kerang ajaib - klik untuk menarik tali" data-i18n-attr="aria-label" data-i18n="magic.aria"
+          class="w-full h-full text-[88px] leading-none cursor-pointer active:scale-95 transition-transform focus:outline-none">🐚</button>
       </div>
 
-      <p class="text-sm text-matte-500 dark:text-matte-300 mb-4 italic" data-i18n="magic.think">Pikirkan pertanyaanmu, lalu klik bola ajaib…</p>
+      <p class="text-sm text-matte-500 dark:text-matte-300 mb-3 italic" data-i18n="magic.think">Pikirkan pertanyaanmu, lalu tarik talinya…</p>
+      <p class="text-xs text-matte-400 mb-3" data-i18n="magic.hint">Tekan Enter atau klik kerang untuk menarik tali.</p>
 
-      <p class="text-xs text-matte-400 mb-3" data-i18n="magic.hint">Tekan Enter atau klik bola untuk mengocok jawaban.</p>
-
-      <input id="question-input" type="text" placeholder="Aku akan sukses di 2026?"
+      <input id="question-input" type="text" placeholder="Tanyakan nasibmu (cth: Boleh aku makan?)"
         class="w-full max-w-xs px-3 py-2.5 rounded-lg bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 text-sm text-center outline-none focus:ring-2 focus:ring-purple-500/40"
         data-i18n-attr="placeholder" data-i18n="magic.placeholder" />
+
+      <button id="pull-btn" class="btn-primary mt-4" data-i18n="magic.pull_btn">Tarik Tali! 🧵</button>
+
+      <!-- Response box (pola referensi): initial (di-i18n, diganti proses langchange) vs
+           dynamic span (diisi JS — TANPA data-i18n biar gak ditimpa processI18n) -->
+      <div id="conch-response" class="mt-5 min-h-[72px] px-4 py-4 rounded-xl bg-matte-50 dark:bg-surface-elevated border border-matte-200 dark:border-matte-700 flex items-center justify-center">
+        <span id="conch-initial" class="text-sm font-bold text-matte-400" data-i18n="magic.initial">"Puja Kerang Ajaib..."</span>
+        <span id="conch-answer" class="hidden"></span>
+      </div>
 
       <button id="copy-answer" class="hidden mt-4 text-xs px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 rounded-full" data-i18n="magic.copy_btn">Salin jawaban</button>
     </div>
   </div>
 </BaseLayout>
 
+<style>
+  .conch-float { animation: conchFloat 4s ease-in-out infinite; }
+  @keyframes conchFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(3deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .conch-float { animation: none; }
+  }
+</style>
+
 <script>
+  import { t } from '../../i18n/translations';
+
   const toast = (msg, type = 'success') => window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
-  const ANSWERS_ID = [
-    'Iya pasti! ✨', 'Tidak diragukan.', '100% yakin.', 'Kayaknya iya deh.', 'Tanda-tanda baik.',
-    'Bisa jadi.', 'Masih abu-abu.', 'Tanya lagi nanti.', 'Lebih baik tidak tahu.', 'Jangan harap deh.',
-    'Nope.', 'Mimpi aja!', 'Hmm… ragu.', 'Sepertinya begini.', 'Fokus dulu, baru tanya.',
-    'Bismillah, iya!', 'Skip deh.', 'Besok tanya lagi.', 'Jawabannya ada di dirimu.', 'Ya Allah, jauhkan! 🙏',
+  // 8 sabda legendaris dari episode Club SpongeBob — pola array inline ID/EN
+  const SABDA_ID = [
+    'Jangan lakukan apa-apa.',
+    'Dua-duanya boleh.',
+    'Mungkin suatu hari nanti.',
+    'Kurasa tidak.',
+    'Coba tanya lagi nanti.',
+    'Tidak.',
+    'Ya.',
+    'Sama sekali tidak.',
   ];
-  const ANSWERS_EN = [
-    'Absolutely yes! ✨', 'Without a doubt.', '100% certain.', 'Looks like yes.', 'Good signs.',
-    'Maybe.', 'Still unclear.', 'Ask again later.', 'Better not to know.', 'Do not count on it.',
-    'Nope.', 'Just a dream!', 'Hmm… doubtful.', 'Seems so.', 'Focus first, then ask.',
-    'Fingers crossed, yes!', 'Skip it.', 'Ask again tomorrow.', 'The answer is within you.', 'Heavens, no! 🙏',
+  const SABDA_EN = [
+    'Do nothing.',
+    'Both are fine.',
+    'Maybe someday.',
+    "I don't think so.",
+    'Ask again later.',
+    'No.',
+    'Yes.',
+    'Absolutely not.',
   ];
 
-  function getAnswers() {
-    try { return (localStorage.getItem('lang') || 'id') === 'en' ? ANSWERS_EN : ANSWERS_ID; }
-    catch { return ANSWERS_ID; }
+  function getSabda() {
+    try { return (localStorage.getItem('lang') || 'id') === 'en' ? SABDA_EN : SABDA_ID; }
+    catch { return SABDA_ID; }
   }
 
-  // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
-  // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
-  let __shakeInt: number | null = null; // dirujuk page-leave biar timer gak bocor (#2)
+  // Class literal (bukan template dinamis — guard #6) buat 3 state response
+  const CLS = {
+    loading: 'text-sm font-bold text-matte-400',
+    empty: 'text-sm font-bold text-rose-500',
+    answer: 'text-base font-bold text-amber-500',
+  };
+
+  let __pullInt: number | null = null; // dirujuk page-leave biar timer gak bocor (#2)
+
   function init() {
-  const ball = document.getElementById('ball');
-  const ballText = document.getElementById('ball-text');
-  const copyBtn = document.getElementById('copy-answer');
-  let shaking = false;
-  let lastAnswer = '';
+    const conch = document.getElementById('conch')!;
+    const input = document.getElementById('question-input') as HTMLInputElement;
+    const pullBtn = document.getElementById('pull-btn')!;
+    const initial = document.getElementById('conch-initial')!;
+    const answerEl = document.getElementById('conch-answer')!;
+    const copyBtn = document.getElementById('copy-answer')!;
+    let pulling = false;
+    let lastSabda = '';
 
-  function showAnswer() {
-    const answers = getAnswers();
-    lastAnswer = answers[Math.floor(Math.random() * answers.length)];
-    ballText.textContent = '';
-    const p = document.createElement('p');
-    p.className = 'text-sm font-bold leading-tight';
-    p.textContent = lastAnswer;
-    ballText.appendChild(p);
-    copyBtn.classList.remove('hidden');
-  }
+    function showSabda() {
+      const list = getSabda();
+      lastSabda = list[Math.floor(Math.random() * list.length)];
+      answerEl.className = CLS.answer;
+      answerEl.textContent = '📢 "' + lastSabda + '"';
+      initial.classList.add('hidden');
+      answerEl.classList.remove('hidden');
+      copyBtn.classList.remove('hidden');
+    }
 
-  ball.addEventListener('click', () => {
-    if (shaking) return;
-    shaking = true;
-    ballText.textContent = '…';
-    copyBtn.classList.add('hidden');
-    const shakes = 8;
-    let i = 0;
-    __shakeInt = window.setInterval(() => {
-      i++;
-      const x = (i % 2 === 0 ? 10 : -10) * (1 - i / shakes);
-      ball.style.transform = 'rotate(' + x + 'deg)';
-      if (i >= shakes) {
-        clearInterval(__shakeInt!);
-        __shakeInt = null;
-        ball.style.transform = 'rotate(0deg)';
-        shaking = false;
-        showAnswer();
+    function pull() {
+      if (pulling) return;
+      initial.classList.add('hidden');
+      answerEl.classList.remove('hidden');
+
+      // Pertanyaan kosong → sabda penolakan (mekanik mainan: gak ditarik, langsung jawab)
+      if (!input.value.trim()) {
+        lastSabda = '';
+        copyBtn.classList.add('hidden');
+        answerEl.className = CLS.empty;
+        answerEl.textContent = t('magic.empty_q', 'Isi pertanyaannya dulu, Squidward! 🙄');
+        return;
       }
-    }, 60);
-  });
 
-  document.getElementById('question-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') ball.click();
-  });
+      pulling = true;
+      copyBtn.classList.add('hidden');
+      answerEl.className = CLS.loading;
+      answerEl.textContent = t('magic.loading', '*Sreeettt... (Tali ditarik)* 🤔');
 
-  copyBtn.addEventListener('click', async () => {
-    if (!lastAnswer) return;
-    try { await navigator.clipboard.writeText(lastAnswer); toast('Jawaban disalin'); }
-    catch { toast('Gagal menyalin', 'error'); }
-  });
+      // Getar — 16 tick × 60ms ≈ 1 dtk, sama kayak jeda "berpikir" di referensi
+      const shakes = 16;
+      let i = 0;
+      __pullInt = window.setInterval(() => {
+        i++;
+        const x = (i % 2 === 0 ? 10 : -10) * (1 - i / shakes);
+        conch.style.transform = 'rotate(' + x + 'deg)';
+        if (i >= shakes) {
+          clearInterval(__pullInt!);
+          __pullInt = null;
+          conch.style.transform = '';
+          pulling = false;
+          showSabda();
+        }
+      }, 60);
+    }
+
+    conch.addEventListener('click', pull);
+    pullBtn.addEventListener('click', pull);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') pull(); });
+
+    copyBtn.addEventListener('click', async () => {
+      if (!lastSabda) return;
+      try { await navigator.clipboard.writeText(lastSabda); toast('Jawaban disalin'); }
+      catch { toast('Gagal menyalin', 'error'); }
+    });
   }
 
   // SPA boot (#14): guard path + guard dobel-bind
@@ -121,8 +172,8 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
     init();
   });
 
-  // Cleanup (#2): timer shake dibersihkan saat pindah halaman
+  // Cleanup (#2): timer getar dibersihkan saat pindah halaman
   document.addEventListener('astro:page-leave', () => {
-    if (__shakeInt !== null) { clearInterval(__shakeInt); __shakeInt = null; }
+    if (__pullInt !== null) { clearInterval(__pullInt); __pullInt = null; }
   });
 </script>
