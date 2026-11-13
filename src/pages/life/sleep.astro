@@ -14,9 +14,13 @@ import ToolPageHeader from '../../components/ToolPageHeader.astro';
 
       <!-- Format 24 jam langsung (AM/PM dibuang — Nov 2026) -->
       <div class="flex gap-2 items-center justify-center">
-        <input id="hour" type="number" min="0" max="23" value="7" inputmode="numeric" class="input-field w-16 text-center text-sm" aria-label="Jam" data-i18n-attr="aria-label" data-i18n="label.hour">
+        <input id="hour" type="number" min="1" max="12" value="7" inputmode="numeric" class="input-field w-16 text-center text-sm" aria-label="Jam" data-i18n-attr="aria-label" data-i18n="label.hour">
         <span class="text-matte-500">:</span>
         <input id="min" type="number" min="0" max="59" value="0" inputmode="numeric" class="input-field w-16 text-center text-sm" aria-label="Menit" data-i18n-attr="aria-label" data-i18n="label.minute">
+        <div class="flex rounded-lg overflow-hidden border border-matte-200 dark:border-surface-border" role="group" aria-label="AM/PM">
+          <button id="ampm-am" type="button" aria-pressed="true" class="px-2.5 py-2 text-xs font-bold bg-matte-900 dark:bg-white text-white dark:text-matte-900 transition-colors">AM</button>
+          <button id="ampm-pm" type="button" aria-pressed="false" class="px-2.5 py-2 text-xs font-bold text-matte-500 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors">PM</button>
+        </div>
       </div>
 
       <!-- Jam cepat — sekali tap di HP, gak perlu ketik (isinya mode-dependent) -->
@@ -60,8 +64,25 @@ window.addEventListener('langchange', () => { __sleepRender?.(); });
   let mode: 'wake' | 'sleep' = 'wake';
   const hourInp = document.getElementById('hour') as HTMLInputElement;
   const minInp = document.getElementById('min') as HTMLInputElement;
+  const amBtn = document.getElementById('ampm-am') as HTMLButtonElement;
+  const pmBtn = document.getElementById('ampm-pm') as HTMLButtonElement;
   const modeWake = document.getElementById('mode-wake') as HTMLButtonElement;
   const modeSleep = document.getElementById('mode-sleep') as HTMLButtonElement;
+  let isPM = false;
+
+  const PERIOD_ACTIVE = 'px-2.5 py-2 text-xs font-bold bg-matte-900 dark:bg-white text-white dark:text-matte-900 transition-colors';
+  const PERIOD_IDLE = 'px-2.5 py-2 text-xs font-bold text-matte-500 dark:text-matte-300 hover:bg-matte-100 dark:hover:bg-surface-hover transition-colors';
+
+  function setPeriod(pm: boolean) {
+    isPM = pm;
+    amBtn.className = pm ? PERIOD_IDLE : PERIOD_ACTIVE;
+    pmBtn.className = pm ? PERIOD_ACTIVE : PERIOD_IDLE;
+    amBtn.setAttribute('aria-pressed', String(!pm));
+    pmBtn.setAttribute('aria-pressed', String(pm));
+    calc();
+  }
+  amBtn.addEventListener('click', () => setPeriod(false));
+  pmBtn.addEventListener('click', () => setPeriod(true));
   const toast = (msg: string, type: 'success' | 'error' | 'info' = 'success') =>
     window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
 
@@ -94,20 +115,24 @@ window.addEventListener('langchange', () => { __sleepRender?.(); });
     const btn = (e.target as HTMLElement).closest('button[data-chip]') as HTMLButtonElement | null;
     if (!btn) return;
     const [ch, cm] = (btn.dataset.chip || '00:00').split(':');
-    hourInp.value = String(parseInt(ch, 10));
+    const h24 = parseInt(ch, 10);
+    hourInp.value = String(h24 % 12 || 12);
     minInp.value = String(parseInt(cm, 10));
-    calc();
+    setPeriod(h24 >= 12);
   });
 
   const pad = (n: number) => String(n).padStart(2, '0');
 
   function calc() {
-    let h = parseInt(hourInp.value, 10) || 0;
+    let h12 = parseInt(hourInp.value, 10) || 12;
     let m = parseInt(minInp.value, 10) || 0;
-    h = Math.min(23, Math.max(0, h));
+    h12 = Math.min(12, Math.max(1, h12));
     m = Math.min(59, Math.max(0, m));
-    if (String(parseInt(hourInp.value, 10)) !== hourInp.value) hourInp.value = String(h);
+    if (String(parseInt(hourInp.value, 10)) !== hourInp.value) hourInp.value = String(h12);
+    if (String(parseInt(minInp.value, 10)) !== minInp.value) minInp.value = String(m);
 
+    // 12 jam + AM/PM -> 24 jam untuk hitungan siklus tidur
+    const h = (h12 % 12) + (isPM ? 12 : 0);
     const totalMin = h * 60 + m;
     const cycle = 90;
     const buffer = 15; // waktu rata-rata tertidur — konsisten di 2 mode
