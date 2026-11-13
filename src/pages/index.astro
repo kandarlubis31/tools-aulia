@@ -350,47 +350,51 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         </article>`;
       }
 
-      let renderedPlaceholders = new Set();
-      async function activatePlaceholder(placeholder) {
+      const activationPromises = new Map();
+      function activatePlaceholder(placeholder) {
         const idx = parseInt(placeholder.getAttribute('data-tool-index') || '');
-        if (isNaN(idx) || renderedPlaceholders.has(idx)) return;
-        renderedPlaceholders.add(idx);
-        const { toolsData } = await getData();
-        const tool = toolsData[idx];
-        if (!tool) { renderedPlaceholders.delete(idx); return; }
-        placeholder.innerHTML = renderCardHTML(tool);
-        placeholder.classList.remove('tool-placeholder');
-        // Wire up event handlers for the new card
-        const link = placeholder.querySelector('a');
-        if (link) {
-          link.addEventListener('click', () => {
-            const href = link.getAttribute('href')?.split('?')[0];
-            // data-name berisi i18n KEY — pakai judul asli biar chip "Baru
-            // Digunakan" tidak pernah menampilkan "tool.merge_pdf".
-            const title = placeholder.getAttribute('data-title') || placeholder.getAttribute('data-name');
-            const color = placeholder.getAttribute('data-color');
-            const icon = placeholder.getAttribute('data-icon');
-            if (href) { saveToRecent(href, title, color, icon); incrementUsage(href); }
-          });
+        if (isNaN(idx)) return Promise.resolve();
+        if (!activationPromises.has(idx)) {
+          activationPromises.set(idx, (async () => {
+            try {
+              const { toolsData } = await getData();
+              const tool = toolsData[idx];
+              if (!tool) { activationPromises.delete(idx); return; }
+              placeholder.innerHTML = renderCardHTML(tool);
+              placeholder.classList.remove('tool-placeholder');
+              // Wire up event handlers for the new card
+              const link = placeholder.querySelector('a');
+              if (link) {
+                link.addEventListener('click', () => {
+                  const href = link.getAttribute('href')?.split('?')[0];
+                  // data-name berisi i18n KEY — pakai judul asli biar chip "Baru
+                  // Digunakan" tidak pernah menampilkan "tool.merge_pdf".
+                  const title = placeholder.getAttribute('data-title') || placeholder.getAttribute('data-name');
+                  const color = placeholder.getAttribute('data-color');
+                  const icon = placeholder.getAttribute('data-icon');
+                  if (href) { saveToRecent(href, title, color, icon); incrementUsage(href); }
+                });
+              }
+              const starBtn = placeholder.querySelector('.fav-star');
+              if (starBtn) {
+                starBtn.addEventListener('click', (e) => {
+                  e.preventDefault(); e.stopPropagation();
+                  const href = starBtn.getAttribute('data-fav');
+                  if (href) toggleFav(href);
+                });
+              }
+            } catch (err) {
+              activationPromises.delete(idx);
+              console.error('Gagal render kartu tool:', err);
+            }
+          })());
         }
-        const starBtn = placeholder.querySelector('.fav-star');
-        if (starBtn) {
-          starBtn.addEventListener('click', (e) => {
-            e.preventDefault(); e.stopPropagation();
-            const href = starBtn.getAttribute('data-fav');
-            if (href) toggleFav(href);
-          });
-        }
+        return activationPromises.get(idx);
       }
 
-      async function ensureCardsRendered(startIdx, endIdx) {
-        const allPlaceholders = document.querySelectorAll('.tool-placeholder');
-        for (const ph of allPlaceholders) {
-          const idx = parseInt(ph.getAttribute('data-tool-index') || '');
-          if (!isNaN(idx) && idx >= startIdx && idx < endIdx) {
-            await activatePlaceholder(ph);
-          }
-        }
+      async function ensureCardsRendered(pageItems) {
+        const pending = pageItems.filter(el => el.classList.contains('tool-placeholder'));
+        await Promise.all(pending.map(el => activatePlaceholder(el)));
       }
 
       // IntersectionObserver: lazy-render placeholders 400px before they enter viewport
@@ -565,7 +569,9 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
          });
       };
 
-      function renderTools() {
+      let renderToken = 0;
+      async function renderTools() {
+        const token = ++renderToken;
         const toolsArray = Array.from(tools);
         const matched = [];
 
@@ -613,8 +619,12 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         const start = (currentPage - 1) * PER_PAGE;
         const pageItems = matched.slice(start, start + PER_PAGE);
 
-        // E5: ensure cards for this page are rendered before showing
-        ensureCardsRendered(start, start + PER_PAGE);
+        // E5: render dulu SEMUA kartu halaman ini (termasuk placeholder lazy)
+        // sebelum ditampilkan — kalau tidak, di mobile user melihat deretan
+        // skeleton shimmer "loading" sampai scroll (search results kebanyakan
+        // berasal dari placeholder #37+, bukan kartu SSR).
+        await ensureCardsRendered(pageItems);
+        if (token !== renderToken) return; // render lebih baru sudah menang
 
         // Hide all, show only current page
         toolsArray.forEach(t => { t.classList.add('hidden'); t.classList.remove('animate-fade-in-up'); });
@@ -624,12 +634,10 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
             tool.style.animationDelay = `${Math.min(i, 8) * 25}ms`;
         });
 
-        // Batch DOM writes in rAF to prevent layout thrashing
+        // Reorder grid sesuai hasil sort/filter (replaceChildren = atomic,
+        // tidak menyisakan node lama yang sudah di-render).
         if(toolsGrid) {
-            requestAnimationFrame(() => {
-                toolsGrid.innerHTML = '';
-                pageItems.forEach(el => toolsGrid.appendChild(el));
-            });
+            toolsGrid.replaceChildren(...pageItems);
         }
 
         // Update title
