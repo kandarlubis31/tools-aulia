@@ -1021,6 +1021,7 @@ export const translations: Record<string, { id: string; en: string }> = {
   'pdfpass.new_pass': { id: 'Password Baru', en: 'New Password' },
   'pdfpass.confirm_pass': { id: 'Konfirmasi Password', en: 'Confirm Password' },
   'pdfpass.current_pass': { id: 'Password Saat Ini', en: 'Current Password' },
+  'pdfpass.change_file': { id: 'Ganti file', en: 'Change file' },
   'pdfpass.remove_hint': { id: 'Kami tidak bisa memulihkan password yang lupa — file diproses lokal tanpa akses ke isi password.', en: 'We cannot recover forgotten passwords — files are processed locally with no access to your password.' },
   'pdfpass.process': { id: 'Proteksi PDF', en: 'Protect PDF' },
   // Image Watermark
