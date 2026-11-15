@@ -570,8 +570,15 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       };
 
       let renderToken = 0;
+      let lastSignature = '';
       async function renderTools() {
         const token = ++renderToken;
+        // Tiap ketikan dulu memicu sort 250 tool + replaceChildren 36 kartu +
+        // ulang animasi. Di HP kelas Mi A1 itu terasa ngelag; kalau input tidak
+        // berubah (debounce/ketik cepat bolak-balik), langsung keluar.
+        const signature = [currentFilter, currentPage, currentSearch, currentSort, localStorage.getItem('lang') || 'id'].join('|');
+        if (signature === lastSignature) return;
+        lastSignature = signature;
         const toolsArray = Array.from(tools);
         const matched = [];
 
@@ -626,10 +633,18 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
         await ensureCardsRendered(pageItems);
         if (token !== renderToken) return; // render lebih baru sudah menang
 
-        // Hide all, show only current page
-        toolsArray.forEach(t => { t.classList.add('hidden'); t.classList.remove('animate-fade-in-up'); });
+        // Hide all, show only current page. Animasi stagger hanya saat tidak
+        // sedang mencari: saat mengetik, 36 kartu beranimasi tiap render cuma
+        // menambah kerja layout/paint tanpa manfaat.
+        const animateCards = !currentSearch;
+        toolsArray.forEach(t => {
+            t.classList.add('hidden');
+            t.classList.remove('animate-fade-in-up');
+            t.style.animationDelay = '';
+        });
         pageItems.forEach((tool, i) => {
             tool.classList.remove('hidden');
+            if (!animateCards) return;
             tool.classList.add('animate-fade-in-up');
             tool.style.animationDelay = `${Math.min(i, 8) * 25}ms`;
         });
@@ -789,7 +804,16 @@ const __page = (location.pathname.replace(/\/+$/, '') || '/');
       // Reset page on filter/search change
       const origSetActiveFilter = setActiveFilter;
       setActiveFilter = function(id) { currentPage = 1; origSetActiveFilter(id); };
-      searchInput?.addEventListener('input', (e) => { currentPage = 1; currentSearch = e.target.value.toLowerCase(); syncSearchClear(); renderTools(); });
+      // Debounce 120 ms: render penuh per ketikan (sort + 36 kartu) terlalu berat
+      // di HP lama. Tombol clear tetap instan karena hanya mengubah state input.
+      let searchDebounce = 0;
+      searchInput?.addEventListener('input', (e) => {
+        currentPage = 1;
+        currentSearch = (e.target as HTMLInputElement).value.toLowerCase();
+        syncSearchClear();
+        window.clearTimeout(searchDebounce);
+        searchDebounce = window.setTimeout(() => { renderTools(); }, 120);
+      });
       syncSearchClear();
 
       updateRecentDisplay();
