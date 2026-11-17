@@ -16,25 +16,49 @@ import DropZone from '../../components/DropZone.astro';
 
     <DropZone
       accept="image/*"
+      multiple
       label="Upload Gambar"
       labelKey="text.upload_image"
-      subLabel="JPG, PNG, WEBP (Max 5MB)"
-      subLabelKey="text.supported_formats"
+      subLabel="Boleh banyak file sekaligus — JPG, PNG, WEBP. Tanpa batas ukuran, semua diproses di browser."
+      subLabelKey="imgc.drop_sub"
       icon='<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'
       className="max-w-2xl mx-auto animate-on-scroll"
     />
 
-    <div id="workspace" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-8 pb-20 animate-fade-in">
+    <div id="workspace" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-8 pb-8 animate-fade-in">
       
       <div class="card-base p-6 h-fit">
          <h3 class="font-bold text-lg mb-6 border-b border-matte-200 dark:border-surface-border pb-2" data-i18n="label.compression_settings">Pengaturan Kompresi</h3>
          
          <div class="mb-6">
+            <span class="mb-2 block text-sm font-semibold text-matte-700 dark:text-white" data-i18n="label.compression_mode">Mode Kompresi</span>
+            <div id="mode-switch" class="grid grid-cols-2 gap-1 rounded-xl bg-matte-100 p-1 dark:bg-surface-hover">
+               <button type="button" data-mode="quality" class="rounded-lg px-3 py-2 text-xs font-bold transition-colors" data-i18n="imgc.mode_quality">Kualitas</button>
+               <button type="button" data-mode="target" class="rounded-lg px-3 py-2 text-xs font-bold transition-colors" data-i18n="imgc.mode_target">Target Ukuran</button>
+            </div>
+         </div>
+
+         <div id="quality-panel" class="mb-6">
             <label class="flex justify-between text-sm font-semibold text-matte-700 dark:text-white mb-2">
                <span data-i18n="label.quality">Kualitas</span>
                <span id="quality-val" class="text-emerald-500">80%</span>
             </label>
             <input type="range" id="quality" min="1" max="100" value="80" class="w-full h-2 bg-matte-200 dark:bg-matte-700 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+         </div>
+
+         <div id="target-panel" class="mb-6 hidden">
+            <label class="mb-2 flex items-center justify-between text-sm font-semibold text-matte-700 dark:text-white" for="target-kb">
+               <span data-i18n="imgc.target_label">Target maksimal per gambar</span>
+               <span class="text-emerald-500">KB</span>
+            </label>
+            <input type="number" id="target-kb" min="10" max="5120" step="10" value="200" inputmode="numeric" class="w-full rounded-xl border border-matte-200 bg-white px-3 py-2 text-sm font-semibold text-matte-700 outline-none transition-colors focus:border-emerald-500 dark:border-surface-border dark:bg-surface-elevated dark:text-white" />
+            <div class="mt-2 flex flex-wrap gap-1.5">
+               <button type="button" data-preset="50" class="rounded-lg border border-matte-200 px-2.5 py-1 text-xs font-semibold text-matte-500 transition-colors hover:border-emerald-400 hover:text-emerald-600 dark:border-surface-border dark:text-matte-400">50 KB</button>
+               <button type="button" data-preset="100" class="rounded-lg border border-matte-200 px-2.5 py-1 text-xs font-semibold text-matte-500 transition-colors hover:border-emerald-400 hover:text-emerald-600 dark:border-surface-border dark:text-matte-400">100 KB</button>
+               <button type="button" data-preset="200" class="rounded-lg border border-matte-200 px-2.5 py-1 text-xs font-semibold text-matte-500 transition-colors hover:border-emerald-400 hover:text-emerald-600 dark:border-surface-border dark:text-matte-400">200 KB</button>
+               <button type="button" data-preset="500" class="rounded-lg border border-matte-200 px-2.5 py-1 text-xs font-semibold text-matte-500 transition-colors hover:border-emerald-400 hover:text-emerald-600 dark:border-surface-border dark:text-matte-400">500 KB</button>
+            </div>
+            <p class="mt-2 text-xs text-matte-400" data-i18n="imgc.target_hint">Kualitas dicari otomatis — hasil terbaik yang masih di bawah target.</p>
          </div>
 
          <div class="grid grid-cols-2 gap-4 mb-6 text-center">
@@ -61,8 +85,29 @@ import DropZone from '../../components/DropZone.astro';
       <div class="flex flex-col items-center justify-center bg-matte-100 dark:bg-surface-hover p-4 rounded-2xl border border-matte-200 dark:border-surface-border">
          <p class="section-title mb-2" data-i18n="text.result_preview">Preview Hasil</p>
          <img id="preview-img" class="max-w-full max-h-[500px] rounded shadow-lg object-contain" alt="Compressed image preview" loading="lazy" />
+         <p id="preview-name" class="mt-2 max-w-full truncate text-xs font-medium text-matte-500 dark:text-matte-400"></p>
       </div>
 
+    </div>
+
+    <div id="batch-panel" class="hidden pb-20">
+      <div class="card-base p-6">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-matte-200 dark:border-surface-border pb-3">
+          <h3 class="font-bold text-lg">
+            <span data-i18n="label.image_list">Daftar Gambar</span>
+            <span id="file-count" class="text-sm font-normal text-matte-500"></span>
+          </h3>
+          <div class="flex items-center gap-2">
+            <button id="add-more-btn" type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-matte-200 dark:border-surface-border px-4 py-2 text-xs font-bold text-matte-600 dark:text-matte-300 hover:bg-matte-50 dark:hover:bg-surface-hover transition-colors">
+              + <span data-i18n="imgc.add_more">Tambah Gambar</span>
+            </button>
+            <button id="download-all-btn" type="button" class="hidden items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-bold text-white transition-colors active:scale-95">
+              <span data-i18n="btn.download_all_zip">📦 Download Semua (ZIP)</span>
+            </button>
+          </div>
+        </div>
+        <div id="file-list" class="divide-y divide-matte-200 dark:divide-surface-border"></div>
+      </div>
     </div>
   </div>
 </BaseLayout>
@@ -77,6 +122,7 @@ import DropZone from '../../components/DropZone.astro';
   const fileInput = document.getElementById('file-input');
   const workspace = document.getElementById('workspace');
   const previewImg = document.getElementById('preview-img');
+  const previewName = document.getElementById('preview-name');
   const qualityInp = document.getElementById('quality');
   const qualityVal = document.getElementById('quality-val');
   const sizeOri = document.getElementById('size-original');
@@ -84,12 +130,37 @@ import DropZone from '../../components/DropZone.astro';
   const downloadBtn = document.getElementById('download-btn');
   const savingsBadge = document.getElementById('savings-badge');
   const savingsVal = document.getElementById('savings-val');
+  const batchPanel = document.getElementById('batch-panel');
+  const fileList = document.getElementById('file-list');
+  const fileCount = document.getElementById('file-count');
+  const addMoreBtn = document.getElementById('add-more-btn');
+  const downloadAllBtn = document.getElementById('download-all-btn');
+  const modeSwitch = document.getElementById('mode-switch');
+  const qualityPanel = document.getElementById('quality-panel');
+  const targetPanel = document.getElementById('target-panel');
+  const targetKbInp = document.getElementById('target-kb');
 
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-  let originalFile = null;
-  let compressedBlob = null;
-  let _compressPending = false; // guard concurrent calls
+  // Tanpa batas ukuran file: semuanya diproses di browser, tidak ada upload.
+  const EXT_BY_TYPE = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+
+  // items: { id, key, file, blob, error, thumbUrl, previewUrl }
+  let items = [];
+  let selectedId = null;
+  let seq = 0;
+  let mode = 'quality'; // 'quality' | 'target'
+  // Naik tiap kali proses batch dimulai ulang — hasil run lama dibuang.
+  let runId = 0;
   let debounceTimer;
+
+  function toast(msg, type) {
+    window.showToast?.(window._tToast ? window._tToast(msg) : msg, type);
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
 
   function formatBytes(bytes, decimals = 2) {
     if (!+bytes) return '0 Bytes';
@@ -100,54 +171,537 @@ import DropZone from '../../components/DropZone.astro';
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
   }
 
-  async function compressImage() {
-    if (!originalFile || _compressPending) return;
+  // PNG tetap PNG: kalau dipaksa ke JPEG, area transparan dirasterisasi jadi
+  // hitam dan alpha-nya hilang sama sekali.
+  function outputTypeFor(file) {
+    if (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/webp') {
+      return file.type;
+    }
+    // GIF/BMP/AVIF/dll belum tentu bisa di-encode canvas → pakai JPEG.
+    return 'image/jpeg';
+  }
 
-    _compressPending = true;
+  // canvas.toBlob() mengabaikan argumen quality untuk PNG, jadi ukuran file
+  // ditekan lewat jumlah warna palet: makin kecil kualitas → makin sedikit warna.
+  function paletteSizeFor(quality) {
+    return Math.max(8, Math.min(256, Math.round(8 + (quality / 100) * 248)));
+  }
+
+  // Median-cut: pecah ruang warna jadi `maxColors` kotak, ambil warna rata-rata
+  // tiap kotak sebagai palet.
+  function buildPalette(pixels, maxColors) {
+    // Sampel ~60k piksel cukup untuk menentukan palet, tanpa menyapu full-res.
+    const total = pixels.length / 4;
+    const step = Math.max(1, Math.floor(total / 60000));
+    const samples = [];
+    for (let i = 0; i < total; i += step) {
+      const o = i * 4;
+      if (pixels[o + 3] === 0) continue; // piksel transparan tak menentukan warna
+      samples.push([pixels[o], pixels[o + 1], pixels[o + 2]]);
+    }
+    if (!samples.length) return [];
+
+    const makeBox = (colors) => {
+      const min = [255, 255, 255];
+      const max = [0, 0, 0];
+      const sum = [0, 0, 0];
+      for (const c of colors) {
+        for (let ch = 0; ch < 3; ch++) {
+          if (c[ch] < min[ch]) min[ch] = c[ch];
+          if (c[ch] > max[ch]) max[ch] = c[ch];
+          sum[ch] += c[ch];
+        }
+      }
+      const range = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
+      const channel = range[0] >= range[1] && range[0] >= range[2] ? 0 : range[1] >= range[2] ? 1 : 2;
+      return {
+        colors,
+        channel,
+        range: range[channel],
+        avg: [
+          Math.round(sum[0] / colors.length),
+          Math.round(sum[1] / colors.length),
+          Math.round(sum[2] / colors.length),
+        ],
+      };
+    };
+
+    let boxes = [makeBox(samples)];
+    while (boxes.length < maxColors) {
+      let target = -1;
+      let widest = 0;
+      for (let i = 0; i < boxes.length; i++) {
+        if (boxes[i].colors.length < 2) continue;
+        if (boxes[i].range > widest) {
+          widest = boxes[i].range;
+          target = i;
+        }
+      }
+      if (target === -1) break;
+      const box = boxes[target];
+      box.colors.sort((a, b) => a[box.channel] - b[box.channel]);
+      const mid = box.colors.length >> 1;
+      boxes.splice(target, 1, makeBox(box.colors.slice(0, mid)), makeBox(box.colors.slice(mid)));
+    }
+
+    return boxes.map((b) => b.avg);
+  }
+
+  // Petakan tiap piksel ke warna palet terdekat. Kanal alpha TIDAK disentuh,
+  // jadi transparansi asli tetap utuh.
+  function applyPalette(imageData, palette) {
+    if (!palette.length) return;
+    const data = imageData.data;
+    // Cache warna 5-5-5 → cari nearest sekali per warna, bukan per piksel.
+    const cache = new Int32Array(1 << 15).fill(-1);
+
+    for (let o = 0; o < data.length; o += 4) {
+      if (data[o + 3] === 0) {
+        // Transparan penuh: nolkan RGB biar tepi bersih & file lebih kecil.
+        data[o] = 0;
+        data[o + 1] = 0;
+        data[o + 2] = 0;
+        continue;
+      }
+
+      const r = data[o];
+      const g = data[o + 1];
+      const b = data[o + 2];
+      const key = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+      let idx = cache[key];
+
+      if (idx === -1) {
+        let bestD = Infinity;
+        for (let i = 0; i < palette.length; i++) {
+          const c = palette[i];
+          const dr = r - c[0];
+          const dg = g - c[1];
+          const db = b - c[2];
+          const d = dr * dr + dg * dg + db * db;
+          if (d < bestD) {
+            bestD = d;
+            idx = i;
+          }
+        }
+        cache[key] = idx;
+      }
+
+      const c = palette[idx];
+      data[o] = c[0];
+      data[o + 1] = c[1];
+      data[o + 2] = c[2];
+    }
+  }
+
+  function canvasToBlob(canvas, type, quality) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('encode-failed'))), type, quality);
+    });
+  }
+
+  // Binary search kualitas tertinggi yang hasilnya masih ≤ target.
+  async function searchTarget(encodeAt, bytes) {
+    const top = await encodeAt(100);
+    if (top.size <= bytes) return { blob: top, metTarget: true, usedQuality: 100 };
+
+    let lo = 1;
+    let hi = 99;
+    let best = null;
+    let bestQ = 0;
+    let steps = 0;
+
+    // ~6 langkah sudah menyempitkan rentang 1–100 jadi ±1,5 poin.
+    while (lo <= hi && steps < 6) {
+      steps++;
+      const mid = (lo + hi) >> 1;
+      const blob = await encodeAt(mid);
+      if (blob.size <= bytes) {
+        best = blob;
+        bestQ = mid;
+        lo = mid + 1; // masih muat → coba kualitas lebih tinggi
+      } else {
+        hi = mid - 1;
+      }
+    }
+
+    if (best) return { blob: best, metTarget: true, usedQuality: bestQ };
+
+    // Kualitas terendah pun belum muat → kembalikan yang paling kecil.
+    return { blob: await encodeAt(1), metTarget: false, usedQuality: 1 };
+  }
+
+  async function compressFile(file, opts) {
+    // Sudah di bawah target? Pakai file aslinya — tanpa re-encode, tanpa turun kualitas.
+    if (opts.mode === 'target' && file.size <= opts.targetBytes) {
+      return { blob: file, metTarget: true, usedQuality: null };
+    }
+
+    const mimeType = outputTypeFor(file);
+    const img = await createImageBitmap(file);
+
     try {
-      const quality = parseInt(qualityInp.value) / 100;
-      
-      // Create Image Bitmap
-      const img = await createImageBitmap(originalFile);
-      
-      // Create Canvas
       const canvas = document.createElement('canvas');
       canvas.width = img.width;
       canvas.height = img.height;
-      
+
       const ctx = canvas.getContext('2d');
-      if (!ctx) { img.close(); _compressPending = false; window.showToast?.(window._tToast ? window._tToast('Gagal mengompres gambar.') : 'Gagal mengompres gambar.', 'error'); return; }
+      if (!ctx) throw new Error('no-2d-context');
       ctx.drawImage(img, 0, 0);
 
-      // Convert to Blob with quality
-      let mimeType = originalFile.type === 'image/png' ? 'image/jpeg' : originalFile.type;
-      
-      canvas.toBlob((blob) => {
-          if (!blob) { _compressPending = false; window.showToast?.(window._tToast ? window._tToast('Gagal mengompres gambar.') : 'Gagal mengompres gambar.', 'error'); return; }
-          compressedBlob = blob;
-          const url = URL.createObjectURL(blob);
-          if (previewImg) {
-            if (previewImg.src?.startsWith('blob:')) URL.revokeObjectURL(previewImg.src);
-            previewImg.src = url;
+      // PNG: ambil piksel sekali, lalu tiap percobaan kuantisasi dari salinan
+      // bersih — supaya pencarian target tidak menumpuk artefak.
+      const baseData = mimeType === 'image/png'
+        ? ctx.getImageData(0, 0, canvas.width, canvas.height)
+        : null;
+
+      const encodeAt = async (q) => {
+        if (baseData) {
+          if (q < 100) {
+            const work = new ImageData(
+              new Uint8ClampedArray(baseData.data),
+              canvas.width,
+              canvas.height
+            );
+            applyPalette(work, buildPalette(work.data, paletteSizeFor(q)));
+            ctx.putImageData(work, 0, 0);
+          } else {
+            ctx.putImageData(baseData, 0, 0);
           }
-          
-          // Update Stats
-          if (sizeComp) sizeComp.innerText = formatBytes(blob.size);
-          
-          const saving = ((originalFile.size - blob.size) / originalFile.size) * 100;
-          if (savingsBadge && savingsVal) {
-            if (saving > 0) {
-              savingsBadge.classList.remove('hidden');
-              savingsVal.innerText = `${saving.toFixed(1)}%`;
-            } else {
-              savingsBadge.classList.add('hidden');
-            }
-          }
-          _compressPending = false;
-      }, mimeType, quality);
-    } catch (e) {
-      _compressPending = false;
-      window.showToast?.(window._tToast ? window._tToast(t('imgc.compress_fail', 'Gagal mengompres gambar.')) : 'Gagal mengompres gambar.', 'error');
+        }
+        return canvasToBlob(canvas, mimeType, q / 100);
+      };
+
+      if (opts.mode === 'target') return await searchTarget(encodeAt, opts.targetBytes);
+
+      return { blob: await encodeAt(opts.quality), metTarget: null, usedQuality: opts.quality };
+    } finally {
+      if (typeof img.close === 'function') img.close();
+    }
+  }
+
+  function itemSaving(item) {
+    if (!item.blob) return 0;
+    return ((item.file.size - item.blob.size) / item.file.size) * 100;
+  }
+
+  function extFor(blob) {
+    return EXT_BY_TYPE[blob.type] || 'png';
+  }
+
+  function rowHtml(item) {
+    const selected = item.id === selectedId;
+    let detail;
+
+    if (item.error) {
+      detail = `<span class="font-semibold text-rose-500">${esc(t('imgc.failed', 'Gagal mengompres'))}</span>`;
+    } else if (item.blob) {
+      const saving = itemSaving(item);
+      const savingTxt = saving > 0
+        ? `<span class="font-semibold text-emerald-600 dark:text-emerald-400">· ${saving.toFixed(0)}%</span>`
+        : `<span class="font-semibold text-amber-600 dark:text-amber-400">· ${esc(t('imgc.no_saving', 'tidak turun'))}</span>`;
+      // Di mode target, tunjukkan kualitas yang dipilih otomatis / kalau target meleset.
+      const missTxt = item.metTarget === false
+        ? ` <span class="font-semibold text-rose-500">· ${esc(t('imgc.target_missed', 'target tidak tercapai'))}</span>`
+        : '';
+      const qTxt = mode === 'target' && item.usedQuality
+        ? ` <span class="text-matte-400">· q${item.usedQuality}</span>`
+        : '';
+      detail = `<span>${formatBytes(item.file.size)}</span> <span class="text-matte-400">→</span> <span class="font-semibold text-matte-700 dark:text-matte-200">${formatBytes(item.blob.size)}</span> ${savingTxt}${missTxt}${qTxt}`;
+    } else {
+      detail = `<span>${formatBytes(item.file.size)}</span> <span class="text-matte-400">→</span> <span class="text-matte-400">${esc(t('imgc.compressing', 'mengompres…'))}</span>`;
+    }
+
+    return `
+      <div class="flex items-center gap-3 rounded-lg px-2 py-3 transition-colors ${selected ? 'bg-matte-50 dark:bg-surface-hover' : ''}" data-row="${item.id}">
+        <button type="button" class="shrink-0" data-select="${item.id}" aria-pressed="${selected}" aria-label="${esc(item.file.name)}">
+          <img src="${item.thumbUrl}" alt="" loading="lazy" class="h-12 w-12 rounded-lg border border-matte-200 object-cover dark:border-surface-border" />
+        </button>
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-semibold text-matte-700 dark:text-matte-200" title="${esc(item.file.name)}">${esc(item.file.name)}</p>
+          <p class="text-xs text-matte-500 dark:text-matte-400">${detail}</p>
+        </div>
+        <button type="button" data-remove="${item.id}" class="shrink-0 rounded-lg p-2 text-matte-400 transition-colors hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-900/20" aria-label="${esc(t('common.remove', 'Hapus'))}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>`;
+  }
+
+  function renderList() {
+    fileList.innerHTML = items.map(rowHtml).join('');
+    fileCount.textContent = items.length
+      ? `· ${t('imgc.file_count', '{n} gambar').replace('{n}', String(items.length))}`
+      : '';
+
+    const many = items.length > 1;
+    downloadAllBtn.classList.toggle('hidden', !many);
+    downloadAllBtn.classList.toggle('inline-flex', many);
+  }
+
+  function updatePreview() {
+    const item = items.find((it) => it.id === selectedId);
+    if (!item) {
+      previewImg.removeAttribute('src');
+      if (previewName) previewName.textContent = '';
+      return;
+    }
+    if (item.previewUrl && previewImg.getAttribute('src') !== item.previewUrl) {
+      previewImg.src = item.previewUrl;
+    }
+    if (previewName) previewName.textContent = item.file.name;
+  }
+
+  function updateTotals() {
+    const totalOri = items.reduce((sum, it) => sum + it.file.size, 0);
+    const totalComp = items.reduce((sum, it) => sum + (it.blob ? it.blob.size : 0), 0);
+
+    if (sizeOri) sizeOri.innerText = formatBytes(totalOri);
+    if (sizeComp) sizeComp.innerText = formatBytes(totalComp);
+
+    // Persentase baru bermakna kalau semua file sudah selesai diproses.
+    const allDone = items.length > 0 && items.every((it) => it.blob || it.error);
+    const saving = totalOri ? ((totalOri - totalComp) / totalOri) * 100 : 0;
+
+    if (savingsBadge && savingsVal) {
+      if (allDone && saving > 0) {
+        savingsBadge.classList.remove('hidden');
+        savingsVal.innerText = `${saving.toFixed(1)}%`;
+      } else {
+        savingsBadge.classList.add('hidden');
+      }
+    }
+  }
+
+  function targetBytes() {
+    const kb = Math.round(Number(targetKbInp.value));
+    // Clamp ke rentang input (10 KB – 5 MB) biar nilai aneh tidak bikin loop panjang.
+    return Math.min(5120, Math.max(10, Number.isFinite(kb) && kb > 0 ? kb : 200)) * 1024;
+  }
+
+  function setMode(next) {
+    mode = next;
+    const isQuality = next === 'quality';
+    qualityPanel.classList.toggle('hidden', !isQuality);
+    targetPanel.classList.toggle('hidden', isQuality);
+
+    modeSwitch.querySelectorAll('[data-mode]').forEach((btn) => {
+      const on = btn.dataset.mode === next;
+      btn.classList.toggle('bg-white', on);
+      btn.classList.toggle('dark:bg-surface-elevated', on);
+      btn.classList.toggle('text-emerald-600', on);
+      btn.classList.toggle('dark:text-emerald-400', on);
+      btn.classList.toggle('shadow-sm', on);
+      btn.classList.toggle('text-matte-500', !on);
+      btn.classList.toggle('dark:text-matte-400', !on);
+      btn.setAttribute('aria-pressed', String(on));
+    });
+  }
+
+  function scheduleRun() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(compressAll, 300);
+  }
+
+  function syncChrome() {
+    const has = items.length > 0;
+    dropZone.classList.toggle('hidden', has);
+    workspace.classList.toggle('hidden', !has);
+    workspace.classList.toggle('grid', has);
+    batchPanel.classList.toggle('hidden', !has);
+  }
+
+  function selectItem(id) {
+    selectedId = id;
+    fileList.querySelectorAll('[data-row]').forEach((row) => {
+      const on = Number(row.dataset.row) === id;
+      row.classList.toggle('bg-matte-50', on);
+      row.classList.toggle('dark:bg-surface-hover', on);
+      const btn = row.querySelector('[data-select]');
+      if (btn) btn.setAttribute('aria-pressed', String(on));
+    });
+    updatePreview();
+  }
+
+  async function compressAll(pendingOnly = false) {
+    if (!items.length) return;
+    const myRun = ++runId;
+    const q = parseInt(qualityInp.value, 10) || 80;
+    const opts = mode === 'target'
+      ? { mode: 'target', targetBytes: targetBytes() }
+      : { mode: 'quality', quality: q };
+
+    for (const item of items) {
+      if (myRun !== runId) return;
+      if (pendingOnly && item.blob) continue;
+      try {
+        const result = await compressFile(item.file, opts);
+        if (myRun !== runId) return;
+        item.blob = result.blob;
+        item.metTarget = result.metTarget;
+        item.usedQuality = result.usedQuality;
+        item.error = false;
+        if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+        item.previewUrl = URL.createObjectURL(result.blob);
+      } catch (err) {
+        if (myRun !== runId) return;
+        item.blob = null;
+        item.metTarget = null;
+        item.usedQuality = null;
+        item.error = true;
+        if (item.previewUrl) {
+          URL.revokeObjectURL(item.previewUrl);
+          item.previewUrl = null;
+        }
+      }
+      renderList();
+      updatePreview();
+      updateTotals();
+    }
+
+    if (items.some((it) => it.error)) {
+      toast(t('imgc.compress_fail', 'Gagal mengompres gambar.'), 'error');
+    } else if (items.some((it) => it.metTarget === false)) {
+      toast(t('imgc.target_missed_toast', 'Ada gambar yang belum mencapai target — pakai kualitas terendah.'), 'warning');
+    }
+  }
+
+  function resetUi() {
+    items.forEach((it) => {
+      if (it.thumbUrl) URL.revokeObjectURL(it.thumbUrl);
+      if (it.previewUrl) URL.revokeObjectURL(it.previewUrl);
+    });
+    items = [];
+    selectedId = null;
+    fileInput.value = '';
+    fileList.innerHTML = '';
+    previewImg.removeAttribute('src');
+    if (previewName) previewName.textContent = '';
+    if (savingsBadge) savingsBadge.classList.add('hidden');
+    if (sizeOri) sizeOri.innerText = '0 KB';
+    if (sizeComp) sizeComp.innerText = '0 KB';
+    syncChrome();
+  }
+
+  function removeItem(id) {
+    const idx = items.findIndex((it) => it.id === id);
+    if (idx === -1) return;
+
+    runId++; // hentikan batch yang masih jalan sebelum daftar diubah
+    const [item] = items.splice(idx, 1);
+    if (item.thumbUrl) URL.revokeObjectURL(item.thumbUrl);
+    if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+
+    if (!items.length) {
+      resetUi();
+      return;
+    }
+
+    if (selectedId === id) selectedId = items[0].id;
+    renderList();
+    updatePreview();
+    updateTotals();
+
+    // File yang belum selesai diproses dilanjutkan (yang sudah jadi tidak diulang).
+    if (items.some((it) => !it.blob && !it.error)) compressAll(true);
+  }
+
+  function addFiles(fileLike) {
+    const incoming = Array.from(fileLike || []);
+    if (!incoming.length) return;
+
+    let skippedType = 0;
+    let added = 0;
+
+    for (const file of incoming) {
+      if (!file.type.startsWith('image/')) {
+        skippedType++;
+        continue;
+      }
+      // Hindari dobel kalau file yang sama di-drop dua kali.
+      const key = `${file.name}:${file.size}:${file.lastModified}`;
+      if (items.some((it) => it.key === key)) continue;
+
+      items.push({
+        id: ++seq,
+        key,
+        file,
+        blob: null,
+        error: false,
+        thumbUrl: URL.createObjectURL(file),
+        previewUrl: null,
+      });
+      added++;
+    }
+
+    if (skippedType) toast(t('imgc.must_image', 'File harus berupa gambar.'), 'error');
+    if (!added) return;
+
+    if (selectedId === null) selectedId = items[0].id;
+    syncChrome();
+    renderList();
+    updatePreview();
+    updateTotals();
+    compressAll();
+  }
+
+  function downloadItem(item) {
+    if (!item || !item.blob) return;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(item.blob);
+    // Ekstensi ikut tipe blob hasil encode, bukan nama file asli — PNG tetap
+    // .png, dan fallback canvas (mis. GIF → PNG) juga tidak salah nama.
+    link.download = `compressed-${item.file.name.replace(/\.[^/.]+$/, '')}.${extFor(item.blob)}`;
+    link.click();
+    // Delay revoke — langsung revoke bisa abort download di Firefox
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    toast(t('imgc.downloaded', 'Gambar berhasil diunduh!'), 'success');
+  }
+
+  function loadJSZip() {
+    return new Promise((resolve, reject) => {
+      if (window.JSZip) return resolve(window.JSZip);
+      const s = document.createElement('script');
+      s.src = '/vendor/jszip/jszip.min.js';
+      s.onload = () => (window.JSZip ? resolve(window.JSZip) : reject(new Error('jszip')));
+      s.onerror = () => reject(new Error('jszip'));
+      document.head.appendChild(s);
+    });
+  }
+
+  async function downloadZip() {
+    const ready = items.filter((it) => it.blob);
+    if (!ready.length) return;
+
+    const originalLabel = downloadAllBtn.innerHTML;
+    downloadAllBtn.disabled = true;
+    downloadAllBtn.textContent = t('btn.preparing_zip', 'Menyiapkan ZIP...');
+
+    try {
+      const JSZip = await loadJSZip();
+      const zip = new JSZip();
+      const used = new Set();
+
+      for (const item of ready) {
+        const base = item.file.name.replace(/\.[^/.]+$/, '');
+        const ext = extFor(item.blob);
+        let name = `compressed-${base}.${ext}`;
+        let n = 2;
+        while (used.has(name)) name = `compressed-${base}-${n++}.${ext}`;
+        used.add(name);
+        zip.file(name, item.blob);
+      }
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `compressed-images-${new Date().toISOString().slice(0, 10)}.zip`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      toast(t('imgc.zip_done', 'ZIP diunduh!'), 'success');
+    } catch (err) {
+      toast(t('imgc.zip_fail', 'Gagal membuat ZIP.'), 'error');
+    } finally {
+      downloadAllBtn.disabled = false;
+      downloadAllBtn.innerHTML = originalLabel;
     }
   }
 
@@ -165,63 +719,55 @@ import DropZone from '../../components/DropZone.astro';
   dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.classList.remove('border-emerald-500', 'bg-emerald-50', 'dark:bg-emerald-900/10');
-    const file = e.dataTransfer?.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      window.showToast?.(window._tToast ? window._tToast(t('imgc.must_image', 'File harus berupa gambar.')) : 'File harus berupa gambar.', 'error');
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      window.showToast?.(window._tToast ? window._tToast(t('imgc.too_big', 'File terlalu besar! Maksimal 5MB.')) : 'File terlalu besar! Maksimal 5MB.', 'error');
-      return;
-    }
-    originalFile = file;
-    dropZone.classList.add('hidden');
-    workspace.classList.remove('hidden');
-    workspace.classList.add('grid');
-    if (sizeOri) sizeOri.innerText = formatBytes(originalFile.size);
-    compressImage();
+    addFiles(e.dataTransfer?.files);
   });
 
-  fileInput.addEventListener('change', (e) => {
-    if (fileInput.files[0]) {
-        originalFile = fileInput.files[0];
-        
-        // Validate file size
-        if (originalFile.size > MAX_FILE_SIZE) {
-          window.showToast?.(window._tToast ? window._tToast(t('imgc.too_big', 'File terlalu besar! Maksimal 5MB.')) : 'File terlalu besar! Maksimal 5MB.', 'error');
-          fileInput.value = ''; // reset input
-          return;
-        }
-
-        dropZone.classList.add('hidden');
-        workspace.classList.remove('hidden');
-        workspace.classList.add('grid');
-        
-        if (sizeOri) sizeOri.innerText = formatBytes(originalFile.size);
-        compressImage(); // Initial compress
-    }
+  fileInput.addEventListener('change', () => {
+    addFiles(fileInput.files);
+    fileInput.value = ''; // biar file yang sama bisa dipilih lagi
   });
+
+  addMoreBtn.addEventListener('click', () => fileInput.click());
 
   qualityInp.addEventListener('input', (e) => {
     qualityVal.innerText = `${e.target.value}%`;
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(compressImage, 300);
+    scheduleRun();
   });
 
-  downloadBtn.addEventListener('click', () => {
-    if (!compressedBlob) return;
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(compressedBlob);
-    let ext = originalFile.name.split('.').pop();
-    if (compressedBlob.type === 'image/jpeg' && ext !== 'jpg' && ext !== 'jpeg') ext = 'jpg';
-    
-    link.download = `compressed-${originalFile.name.replace(/\.[^/.]+$/, "")}.${ext}`;
-    link.click();
-    // Delay revoke — langsung revoke bisa abort download di Firefox
-    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-    window.showToast?.(window._tToast ? window._tToast(t('imgc.downloaded', 'Gambar berhasil diunduh!')) : 'Gambar berhasil diunduh!', 'success');
+  modeSwitch.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-mode]');
+    if (!btn || btn.dataset.mode === mode) return;
+    setMode(btn.dataset.mode);
+    scheduleRun();
   });
+
+  targetPanel.addEventListener('click', (e) => {
+    const preset = e.target.closest('[data-preset]');
+    if (!preset) return;
+    targetKbInp.value = preset.dataset.preset;
+    scheduleRun();
+  });
+
+  targetKbInp.addEventListener('input', scheduleRun);
+
+  downloadBtn.addEventListener('click', () => {
+    const item = items.find((it) => it.id === selectedId) || items[0];
+    downloadItem(item);
+  });
+
+  downloadAllBtn.addEventListener('click', downloadZip);
+
+  fileList.addEventListener('click', (e) => {
+    const selectBtn = e.target.closest('[data-select]');
+    if (selectBtn) {
+      selectItem(Number(selectBtn.dataset.select));
+      return;
+    }
+    const removeBtn = e.target.closest('[data-remove]');
+    if (removeBtn) removeItem(Number(removeBtn.dataset.remove));
+  });
+
+  setMode('quality');
 
   }
 
