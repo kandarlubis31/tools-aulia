@@ -68,10 +68,13 @@ const {
     multiple={multiple}
     class={overlay ? 'absolute inset-0 w-full h-full opacity-0 cursor-pointer' : 'hidden'}
   />
-  {extraInputId && (
-    <input type="file" id={extraInputId} accept={extraInputAccept} class="hidden" />
-  )}
 </div>
+<!-- DI LUAR root dropzone: label `for` di halaman pemanggil memicu
+     input.click() yang bubble ke zona -> tanpa ini dialog file utama ikut
+     terbuka (dua dialog sekaligus). -->
+{extraInputId && (
+  <input type="file" id={extraInputId} accept={extraInputAccept} class="hidden" />
+)}
 
 <script>
   // A11y: Enter/Space membuka file dialog untuk mode hidden-input

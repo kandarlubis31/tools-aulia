@@ -54,7 +54,7 @@ import DropZone from '../../components/DropZone.astro';
             <div id="result-loading" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-matte-900/60 rounded-xl z-10 backdrop-blur-sm">
               <div class="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mb-3"></div>
               <p id="loading-text" class="text-white text-sm font-bold">Memproses...</p>
-              <p class="text-white/60 text-xs mt-1">Download model AI pertama kali ~5-15MB</p>
+              <p class="text-white/60 text-xs mt-1">Download model AI pertama kali ~90MB (berikutnya dari cache)</p>
             </div>
             <img id="result-img" class="max-w-full max-h-[400px] object-contain rounded-lg shadow-md" alt="Result image" loading="lazy" />
           </div>
@@ -139,6 +139,11 @@ import DropZone from '../../components/DropZone.astro';
 <script>
   import { t } from '../../i18n/translations';
 
+  // Listener paste global disimpan di scope modul supaya bisa dilepas saat
+  // astro:page-leave — kalau tidak, tiap round-trip SPA menambah listener baru
+  // yang masih memegang DOM lama (paste memicu proses dobel).
+  let pasteHandler: ((e: ClipboardEvent) => void) | null = null;
+
   // Semua binding DOM dibungkus init() — dipanggil via astro:page-load dengan
   // guard path (#14), soalnya script top-level mati begitu navigasi SPA balik.
   async function init() {
@@ -216,14 +221,9 @@ import DropZone from '../../components/DropZone.astro';
     resultContainer.style.position = '';
   }
 
-  // Composite result image onto a background (color or image)
+  // Composite result image onto the chosen background.
   async function compositeResult(): Promise<Blob | null> {
     if (!resultBlob) return null;
-
-    // Blur mode: render background with strong blur for portrait effect
-    if (bgMode === 'blur') {
-      return resultBlob;
-    }
 
     const resultBmp = await createImageBitmap(resultBlob);
     const canvas = document.createElement('canvas');
@@ -245,6 +245,20 @@ import DropZone from '../../components/DropZone.astro';
         const dx = (canvas.width - dw) / 2;
         const dy = (canvas.height - dh) / 2;
         ctx.drawImage(bgBmp, dx, dy, dw, dh);
+      } else if (bgMode === 'blur' && originalFile) {
+        // Blur = gambar asli di-blur jadi background. Dulu mode ini mengembalikan
+        // PNG transparan, jadi hasil download tidak sesuai preview.
+        bgBmp = await createImageBitmap(originalFile);
+        // Oversize 60%: kernel blur(20px) menjangkau ~3x sigma, jadi tepi
+        // gambar harus jauh di luar canvas biar sudut tidak ikut transparan.
+        const scale = Math.max(canvas.width / bgBmp.width, canvas.height / bgBmp.height) * 1.6;
+        const dw = bgBmp.width * scale;
+        const dh = bgBmp.height * scale;
+        const dx = (canvas.width - dw) / 2;
+        const dy = (canvas.height - dh) / 2;
+        ctx.filter = 'blur(20px) brightness(0.7)';
+        ctx.drawImage(bgBmp, dx, dy, dw, dh);
+        ctx.filter = 'none';
       }
 
       ctx.drawImage(resultBmp, 0, 0);
@@ -270,57 +284,20 @@ import DropZone from '../../components/DropZone.astro';
       resultImg.src = url;
     }
 
-    // Update checkerboard / background
+    // Update checkerboard / background. Mode blur/color/image sudah "dibakar"
+    // ke dalam compositedBlob, jadi container cukup transparan tanpa dekorasi.
     if (bgMode === 'transparent') {
       resultContainer.classList.add('checkerboard');
+      resultContainer.classList.remove('blur-bg');
       resultContainer.style.backgroundImage = '';
       resultContainer.style.backgroundColor = '';
-    } else if (bgMode === 'blur') {
-      resultContainer.classList.remove('checkerboard');
-      resultContainer.style.backgroundColor = '';
-      resultContainer.style.filter = '';
-      // Blur only the background via ::before pseudo (result image stays sharp)
-      resultContainer.style.position = 'relative';
-      resultContainer.style.overflow = 'hidden';
-      if (originalImg.src) {
-        resultContainer.style.backgroundImage = 'none';
-        // Inject a blurred pseudo-element style if not already present
-        if (!document.getElementById('blur-bg-style')) {
-          const style = document.createElement('style');
-          style.id = 'blur-bg-style';
-          style.textContent = `
-            #result-container.blur-bg::before {
-              content: '';
-              position: absolute;
-              inset: 0;
-              background-image: inherit;
-              background-size: cover;
-              background-position: center;
-              background-repeat: no-repeat;
-              filter: blur(20px) brightness(0.7);
-              z-index: 0;
-            }
-            #result-container.blur-bg > * { position: relative; z-index: 1; }
-          `;
-          document.head.appendChild(style);
-        }
-        resultContainer.style.backgroundImage = `url(${originalImg.src})`;
-        resultContainer.style.backgroundSize = 'cover';
-        resultContainer.style.backgroundPosition = 'center';
-        resultContainer.classList.add('blur-bg');
-      }
-    } else if (bgMode === 'color') {
-      resultContainer.classList.remove('checkerboard', 'blur-bg');
-      resultContainer.style.backgroundColor = bgColor;
-      resultContainer.style.backgroundImage = '';
-      resultContainer.style.filter = '';
-      resultContainer.style.overflow = '';
-      resultContainer.style.position = '';
     } else {
       resultContainer.classList.remove('checkerboard', 'blur-bg');
       resultContainer.style.backgroundColor = '';
       resultContainer.style.backgroundImage = '';
       resultContainer.style.filter = '';
+      resultContainer.style.overflow = '';
+      resultContainer.style.position = '';
     }
   }
 
@@ -332,7 +309,15 @@ import DropZone from '../../components/DropZone.astro';
     resetResult();
 
     try {
-      const { default: removeBg } = await import('@imgly/background-removal');
+      const mod = await import('@imgly/background-removal');
+      // PENTING: @imgly/background-removal 1.7.0 TIDAK punya export default
+      // saat runtime (index.mjs hanya named export), walau file .d.ts-nya
+      // mendeklarasikan `export default`. Dulu `{ default: removeBg }` →
+      // undefined → "e is not a function" tiap upload. Pakai named export,
+      // fallback ke default untuk versi paket lain.
+      const removeBg = mod.removeBackground ??
+        (mod as { default?: typeof mod.removeBackground }).default;
+      if (typeof removeBg !== 'function') throw new Error('Modul AI gagal dimuat.');
 
       showLoading(window._tToast ? window._tToast(t('rb.removing_bg', 'Menghapus background...')) : 'Menghapus background...');
 
@@ -344,7 +329,7 @@ import DropZone from '../../components/DropZone.astro';
         device: 'cpu',
         progress: (key: string, current: number, total: number) => {
           const pct = Math.round((current / total) * 100);
-          if (key.includes('download') || key.includes('model') || key === 'init') {
+          if (key.startsWith('fetch:') || key.includes('download') || key.includes('model') || key === 'init') {
             loadingText.textContent = `${window._tToast ? window._tToast('Download model...') : 'Download model...'} ${pct}%`;
           } else {
             loadingText.textContent = `${window._tToast ? window._tToast('Memproses...') : 'Memproses...'} ${pct}%`;
@@ -437,7 +422,7 @@ import DropZone from '../../components/DropZone.astro';
 
   bgModeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      bgMode = btn.dataset.mode as 'transparent' | 'color' | 'image';
+      bgMode = btn.dataset.mode as 'transparent' | 'color' | 'image' | 'blur';
       updateBgToggleUI();
       updatePreview().catch(() => {
         window.showToast?.(
@@ -498,13 +483,17 @@ import DropZone from '../../components/DropZone.astro';
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      window.showToast?.(window._tToast ? window._tToast('File terlalu besar! Maksimal 20MB.') : 'File terlalu besar! Maksimal 20MB.', 'error');
+      window.showToast?.(
+        window._tToast ? window._tToast(t('rb.max_10', 'File terlalu besar! Maksimal 10MB.')) : 'File terlalu besar! Maksimal 10MB.',
+        'error'
+      );
       return;
     }
     bgImageFile = file;
     bgImageName.textContent = file.name;
     bgImageLabel.textContent = window._tToast ? window._tToast(t('rb.change_bg', 'Ganti Background')) : 'Ganti Background';
     updatePreview();
+    input.value = ''; // izinkan pilih file yang sama lagi
   });
 
   // --- Download ---
@@ -512,10 +501,12 @@ import DropZone from '../../components/DropZone.astro';
     const blobToDownload = compositedBlob || resultBlob;
     if (!blobToDownload) return;
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blobToDownload);
+    const url = URL.createObjectURL(blobToDownload);
+    link.href = url;
     const baseName = originalFile?.name?.replace(/\.[^/.]+$/, '') || 'image';
     link.download = `${baseName}-nobg.png`;
     link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     window.showToast?.(
       window._tToast ? window._tToast(t('rb.downloaded', 'Gambar berhasil diunduh!')) : 'Gambar berhasil diunduh!',
       'success'
@@ -527,7 +518,13 @@ import DropZone from '../../components/DropZone.astro';
   });
 
   // --- Drag & drop, paste ---
-  dropZone.addEventListener('click', () => fileInput.click());
+  // bg-image-input dirender DI LUAR #drop-zone (lihat DropZone.astro), tapi
+  // synthetic click dari <label for> tetap bisa bubble ke sini kalau input
+  // masih di dalam. Guard target = cegah dua dialog file terbuka sekaligus.
+  dropZone.addEventListener('click', (e) => {
+    if (e.target === bgImageInput) return;
+    fileInput.click();
+  });
   fileInput.addEventListener('change', (e) => {
     const input = e.target as HTMLInputElement;
     if (input.files?.[0]) handleFile(input.files[0]);
@@ -547,7 +544,9 @@ import DropZone from '../../components/DropZone.astro';
     if (file) handleFile(file);
   });
 
-  document.addEventListener('paste', (e: ClipboardEvent) => {
+  // Listener global: pasang ulang yang baru tanpa menumpuk (idempoten).
+  if (pasteHandler) document.removeEventListener('paste', pasteHandler);
+  pasteHandler = (e: ClipboardEvent) => {
     const items = e.clipboardData?.items;
     if (!items) return;
     for (const item of Array.from(items)) {
@@ -557,7 +556,8 @@ import DropZone from '../../components/DropZone.astro';
         break;
       }
     }
-  });
+  };
+  document.addEventListener('paste', pasteHandler);
 
   }
 
@@ -569,6 +569,15 @@ import DropZone from '../../components/DropZone.astro';
     if (!anchor || anchor.dataset.autoBound === 'true') return;
     anchor.dataset.autoBound = 'true';
     init();
+  });
+
+  // Lepas listener paste global begitu halaman ditinggalkan. init() akan
+  // memasangnya lagi saat pengguna balik (round-trip SPA tetap hidup).
+  document.addEventListener('astro:page-leave', () => {
+    if (pasteHandler) {
+      document.removeEventListener('paste', pasteHandler);
+      pasteHandler = null;
+    }
   });
 
 </script>
